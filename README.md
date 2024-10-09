@@ -160,6 +160,9 @@ BLINK
 
 https://solanafyafrica.com/
 
+# X
+
+https://x.com/solanafyafrica
 
 
 
