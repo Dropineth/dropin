@@ -117,6 +117,8 @@ It is recommended to partner with a professional blockchain development team to 
 Proficient in Solidity, Python, and Java. 2+ years developing Ethereum smart contracts. Experienced in blockchain technology, including Ethereum, Solana, and Sui. Strong background in data and backend development.
 
 **XUANRUI** https://github.com/lvxuan149
+Solana Bot丨Solana Dev丨
+@Solana_zh Contributor丨Cooking #Blinks 丨Cooking @solfunmedia丨
 
 
 
@@ -126,5 +128,9 @@ Proficient in Solidity, Python, and Java. 2+ years developing Ethereum smart con
 [Click here](https://docs.google.com/presentation/d/1EQe44HkeCRy0gmnBXn2PY2odMYfLssrhFr1e4a9n9Tk/edit?usp=sharing)
 
 ## Frontend Interaction Example
+
+BLINK
 [Click here](https://dial.to/?action=solana-action:https://dropin-plum.vercel.app/api/supply)
+
+抽奖结果
 [Click here](https://claude.site/artifacts/2d539d34-e005-41eb-bfc9-540b7ba56d43)
