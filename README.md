@@ -116,6 +116,10 @@ It is recommended to partner with a professional blockchain development team to 
 **Junhua** https://github.com/XieJunhua/
 Proficient in Solidity, Python, and Java. 2+ years developing Ethereum smart contracts. Experienced in blockchain technology, including Ethereum, Solana, and Sui. Strong background in data and backend development.
 
+**XUANRUI** https://github.com/lvxuan149
+
+
+
 # Project Demo
 
 ## Deck
