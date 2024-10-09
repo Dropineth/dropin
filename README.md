@@ -1,5 +1,3 @@
-# dropin
- base Solana v2.0
  
 # V2.0 Solana Dropin DApp gamefi
 
@@ -145,3 +143,24 @@ BLINK
 
 抽奖结果
 [Click here](https://claude.site/artifacts/2d539d34-e005-41eb-bfc9-540b7ba56d43)
+
+![2298b09b81dd2b79d9226422e910172](https://github.com/user-attachments/assets/026b6cb8-7768-4fda-8828-352be3ebea5c)
+![1f907d20d1749916a5a51538fbfa81b](https://github.com/user-attachments/assets/50481eb2-e563-42a0-a3c3-a52e9b129ca6)
+![a77d6dde9f81ec42e733fa3ac0fb57e](https://github.com/user-attachments/assets/29d55859-216f-4356-98b5-b880b059cb78)
+![f444bb6d8f16ec5ebab7c4b288d155d](https://github.com/user-attachments/assets/fa0c29e6-3e7f-468b-adbb-9e71d16829ac)
+![79e37b28f8789eecf19677ae4154a38](https://github.com/user-attachments/assets/2c39d259-eaba-4a70-8f25-b41176a27317)
+![bb714e0a6dc1186f603f3011462eced](https://github.com/user-attachments/assets/8fdec8bb-eb6a-4c97-a734-a3a56f7924e5)
+![1f086c8a3ca74edd8be8ddb4a78eeec](https://github.com/user-attachments/assets/0d0e9a03-ec56-43a5-b136-e5efec708454)
+![68b93e7151ab5570a39c92c8211e06f](https://github.com/user-attachments/assets/809c350b-d9e3-4d72-9926-9961d412584c)
+![bd518aa65e5b8d5b713ca4434d5a0f8](https://github.com/user-attachments/assets/5607e4f8-353a-41c0-9c39-b757f37ef07b)
+![868461ef0830fc74906088620d9a53a](https://github.com/user-attachments/assets/9783e569-7ac3-4062-972b-e352d3077e1c)
+
+
+# website
+
+https://solanafyafrica.com/
+
+
+
+
+
