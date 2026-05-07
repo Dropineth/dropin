@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: dropin-earth-postgres
+    environment:
+      POSTGRES_USER: dropin
+      POSTGRES_PASSWORD: dropin
+      POSTGRES_DB: dropin_earth
+    ports:
+      - "5432:5432"
+    volumes:
+      - dropin_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dropin -d dropin_earth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dropin-earth-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  dropin_postgres:

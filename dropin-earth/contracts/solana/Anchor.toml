@@ -1,0 +1,16 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+dropin_anchor = "D27zujuVZsAZdS1SHS2Lpi6573ioTQAvjrpWSXV3k1ks"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "node --test --test-concurrency=1 --import tsx tests/**/*.spec.ts"

@@ -1,0 +1,799 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  wallets   Wallet[]
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String
+  chain     String
+  address   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([chain, address])
+  @@index([userId])
+}
+
+model Region {
+  id                   String              @id
+  name                 String
+  slug                 String              @unique
+  country              String
+  restorationType      String
+  restorationPriority  String
+  requiredTreesLow     BigInt
+  requiredTreesHigh    BigInt
+  verifiedTrees        BigInt              @default(0)
+  estimatedCo2eTonnes  Decimal             @default(0)
+  survivalRateEstimate Decimal             @default(0)
+  species              Species[]
+  lotteryRounds        LotteryRound[]
+  projects             Project[]
+}
+
+model Species {
+  id                  String  @id
+  regionId            String
+  scientificName      String
+  commonName          String
+  waterRequirement    String
+  climateSuitability  Int
+  carbonPotential     Int
+  biodiversityScore   Int
+  localEconomicValue  Int
+  invasiveRisk        String
+  region              Region  @relation(fields: [regionId], references: [id])
+
+  @@index([regionId])
+}
+
+model LotteryRound {
+  id                       String                   @id
+  chain                    String
+  regionId                 String
+  title                    String
+  status                   String
+  ticketPriceAmount        Decimal
+  ticketPriceSymbol        String
+  prizePoolBps             Int
+  treeFundBps              Int
+  canopyDropBps            Int
+  rwaFragmentDropBps       Int
+  referralBps              Int
+  operationsBps            Int
+  challengePoolBps         Int
+  opensAt                  DateTime
+  closesAt                 DateTime
+  entryMerkleRoot          String?
+  entryCount               Int                      @default(0)
+  totalAmount              Decimal                  @default(0)
+  randomnessCertificateId  String?
+  roundCertificateHash     String?
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  region                   Region                   @relation(fields: [regionId], references: [id])
+  entries                  LotteryEntry[]
+  randomnessCertificates   RandomnessCertificate[]
+  dropResults              DropResult[]
+  winnerResults            WinnerResult[]
+  tickets                  LotteryTicket[]
+
+  @@index([regionId, status])
+}
+
+model LotteryEntry {
+  id               String       @id
+  userId           String
+  wallet           String
+  roundId          String
+  amount           Decimal
+  currency         String
+  regionId         String
+  txHash           String?
+  paymentIntentId  String?
+  antiSybilScore   Int
+  idempotencyKey   String?
+  createdAt        DateTime     @default(now())
+  round            LotteryRound @relation(fields: [roundId], references: [id])
+  dropResults      DropResult[]
+  winnerResults    WinnerResult[]
+  tickets          LotteryTicket[]
+
+  @@index([roundId])
+  @@index([wallet])
+  @@index([paymentIntentId])
+  @@unique([roundId, idempotencyKey])
+}
+
+model LotteryTicket {
+  id            String       @id
+  roundId       String
+  entryId       String       @unique
+  userId        String
+  wallet        String
+  ticketNumber  Int
+  receiptHash   String
+  status        String
+  createdAt     DateTime     @default(now())
+  round         LotteryRound @relation(fields: [roundId], references: [id])
+  entry         LotteryEntry @relation(fields: [entryId], references: [id])
+
+  @@index([roundId])
+  @@index([userId])
+}
+
+model RandomnessCertificate {
+  id                    String       @id
+  roundId               String
+  entryMerkleRoot        String
+  publicRandomness       String
+  committeeCommitment    String
+  committeeReveal        String
+  finalSeed              String
+  algorithm              String
+  winnerMerkleRoot       String
+  dropMerkleRoot         String
+  scriptHash             String
+  signatures             Json
+  pqSignature            String?
+  createdAt              DateTime     @default(now())
+  round                  LotteryRound @relation(fields: [roundId], references: [id])
+
+  @@index([roundId])
+}
+
+model DropResult {
+  id                 String        @id
+  roundId            String
+  entryId            String
+  userId             String
+  wallet             String
+  canopyAmount       Decimal
+  rwaFragmentAmount  Decimal
+  rarity             String
+  merkleLeaf         String
+  createdAt          DateTime      @default(now())
+  round              LotteryRound  @relation(fields: [roundId], references: [id])
+  entry              LotteryEntry  @relation(fields: [entryId], references: [id])
+
+  @@index([roundId])
+  @@index([userId])
+  @@unique([roundId, entryId])
+}
+
+model WinnerResult {
+  id             String        @id
+  roundId        String
+  entryId        String
+  userId         String
+  wallet         String
+  rank           Int
+  prizeAmount    Decimal
+  prizeCurrency  String
+  merkleLeaf      String
+  createdAt       DateTime      @default(now())
+  round           LotteryRound  @relation(fields: [roundId], references: [id])
+  entry           LotteryEntry  @relation(fields: [entryId], references: [id])
+
+  @@index([roundId])
+  @@index([userId])
+  @@unique([roundId, entryId])
+}
+
+model Project {
+  id               String             @id
+  title            String
+  regionId         String
+  operator         String
+  targetTreeCount  Int
+  targetSpecies    Json
+  budgetAmount     Decimal
+  status           String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  region           Region             @relation(fields: [regionId], references: [id])
+  milestones       ProjectMilestone[]
+  evidenceObjects  EvidenceObject[]
+  certificates     ImpactCertificate[]
+
+  @@index([regionId, status])
+}
+
+model ProjectMilestone {
+  id          String   @id @default(cuid())
+  projectId   String
+  title       String
+  amount      Decimal
+  status      String
+  dueAt       DateTime?
+  createdAt   DateTime @default(now())
+  project     Project  @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
+}
+
+model EvidenceObject {
+  id             String              @id
+  projectId      String
+  treeClusterId  String?
+  kind           String
+  uri            String
+  sha256Hash     String
+  latitude       Decimal?
+  longitude      Decimal?
+  submittedBy    String
+  status         String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  project        Project             @relation(fields: [projectId], references: [id])
+  certificateMap CertificateEvidence[]
+
+  @@index([projectId])
+  @@index([sha256Hash])
+}
+
+model ImpactCertificate {
+  id                    String                @id
+  projectId             String
+  treeClusterId          String
+  regionId              String
+  certificateLevel       String
+  evidenceRoot           String
+  methodologyVersion     String
+  verifiedTreeCount      Int
+  survivalRateEstimate   Decimal
+  estimatedCo2eLow       Decimal
+  estimatedCo2eHigh      Decimal
+  confidenceScore        Int
+  validatorSignatures    Json
+  pqSignature            String?
+  chainAnchorHash        String?
+  status                 String
+  issuedAt               DateTime?
+  createdAt              DateTime              @default(now())
+  project                Project               @relation(fields: [projectId], references: [id])
+  evidenceMap            CertificateEvidence[]
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model CertificateEvidence {
+  certificateId String
+  evidenceId    String
+  certificate   ImpactCertificate @relation(fields: [certificateId], references: [id])
+  evidence      EvidenceObject     @relation(fields: [evidenceId], references: [id])
+
+  @@id([certificateId, evidenceId])
+}
+
+model RwaFragment {
+  id                  String   @id
+  holderUserId        String
+  holderWallet        String
+  roundId             String?
+  projectId           String?
+  regionId            String?
+  type                String
+  status              String
+  notionalCo2e        Decimal?
+  feeCreditAmount     Decimal?
+  sourceDropResultId  String?
+  rarity              String?
+  jurisdictionMode    String
+  transferability     String
+  evidenceRoot        String?
+  certificateId       String?
+  expiresAt           DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([holderUserId])
+  @@index([status])
+}
+
+model ChallengeCase {
+  id              String   @id
+  targetType      String
+  targetId        String
+  challenger      String
+  severity        String
+  title           String
+  attackScenario  String
+  evidenceHash    String
+  bondAmount      Decimal
+  status          String
+  result          String
+  rewardAmount    Decimal  @default(0)
+  protocolFix     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([targetType, targetId])
+  @@index([status])
+}
+
+model ChallengeBond {
+  id                String    @id
+  challengeId       String
+  challengerUserId  String
+  amount            Decimal
+  currency          String
+  status            String
+  lockedAt          DateTime  @default(now())
+  resolvedAt        DateTime?
+  slashReason       String?
+  rewardReason      String?
+
+  @@index([challengeId])
+  @@index([status])
+}
+
+model ChallengeEvidence {
+  id            String   @id
+  challengeId   String
+  uri           String
+  evidenceHash  String
+  submittedBy   String
+  createdAt     DateTime @default(now())
+
+  @@index([challengeId])
+}
+
+model ChallengeResolution {
+  id           String   @id
+  challengeId  String
+  resolver     String
+  action       String
+  outcome      String
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@index([challengeId])
+}
+
+model RiskEvent {
+  id                 String    @id
+  subjectType        String
+  subjectId          String
+  riskLevel          String
+  score              Decimal
+  recommendedAction  String
+  reasonCodes        Json
+  status             String
+  resolution         String?
+  createdAt          DateTime  @default(now())
+  resolvedAt         DateTime?
+
+  @@index([status])
+  @@index([subjectType, subjectId])
+}
+
+model RiskScoreSnapshot {
+  id                 String   @id
+  subjectType        String
+  subjectId          String
+  wallet             String?
+  userId             String?
+  score              Decimal
+  riskLevel          String
+  recommendedAction  String
+  reasons            Json
+  input              Json
+  createdAt          DateTime @default(now())
+
+  @@index([subjectType, subjectId])
+  @@index([wallet])
+}
+
+model TreasuryAccount {
+  id         String   @id
+  type       String
+  name       String
+  currency   String
+  status     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([type, currency])
+  @@index([status])
+}
+
+model TreasuryTransaction {
+  id               String    @id
+  type             String
+  debitAccountId   String
+  creditAccountId  String
+  amount           Decimal
+  currency         String
+  sourceType       String
+  sourceId         String
+  status           String
+  reversalOfId     String?
+  memo             String?
+  createdAt        DateTime  @default(now())
+  postedAt         DateTime?
+
+  @@index([sourceType, sourceId])
+  @@index([status])
+  @@index([debitAccountId])
+  @@index([creditAccountId])
+}
+
+model FundAllocation {
+  id                   String   @id
+  sourceType           String
+  sourceId             String
+  allocationType       String
+  projectId            String?
+  amount               Decimal
+  currency             String
+  status               String
+  ledgerTransactionId  String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([sourceType, sourceId])
+  @@index([projectId])
+  @@index([status])
+  @@unique([sourceType, sourceId, allocationType])
+}
+
+model ProjectMilestoneRelease {
+  id                   String   @id
+  projectId            String
+  milestoneId          String
+  allocationId         String?
+  amount               Decimal
+  currency             String
+  status               String
+  ledgerTransactionId  String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([projectId, milestoneId])
+  @@index([allocationId])
+  @@index([status])
+}
+
+model SettlementCertificate {
+  id                String   @id
+  projectId         String
+  milestoneId       String
+  releaseId         String
+  evidenceRoot      String
+  amount            Decimal
+  currency          String
+  certificateId     String?
+  settlementHash    String
+  finalSettlement   Boolean
+  status            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([projectId, milestoneId])
+  @@index([releaseId])
+  @@index([status])
+}
+
+model PaymentIntent {
+  id                     String    @id
+  userId                 String
+  wallet                 String
+  purpose                String
+  purposeId              String
+  chain                  String
+  currency               String
+  amount                 Decimal
+  status                 String
+  expectedRecipient      String
+  paymentNonce           String?
+  expectedMemo           String?
+  submittedTxHash        String?
+  confirmedTxHash        String?
+  confirmedAt            DateTime?
+  confirmedBlockTime     DateTime?
+  confirmedRawPayloadHash String?
+  verificationSource     String?
+  expiresAt              DateTime
+  idempotencyKey         String?   @unique
+  metadata               Json
+  treasuryTransactionId  String?
+  reconciliationStatus   String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@index([purpose, purposeId])
+  @@index([status])
+  @@index([wallet])
+  @@index([paymentNonce])
+  @@index([submittedTxHash])
+  @@index([confirmedTxHash])
+}
+
+model PaymentEvent {
+  id               String   @id
+  paymentIntentId  String
+  type             String
+  txHash           String?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+
+  @@index([paymentIntentId])
+  @@index([txHash])
+}
+
+model PaymentReconciliationReport {
+  id                     String   @id
+  status                 String
+  checkedIntentCount     Int
+  duplicateTxCount       Int
+  amountMismatchCount    Int
+  currencyMismatchCount  Int
+  stalePendingCount      Int
+  anomalies              Json
+  createdAt              DateTime @default(now())
+
+  @@index([status])
+}
+
+model TelegramAccount {
+  id              String   @id
+  telegramUserId  String   @unique
+  username        String?
+  firstName       String?
+  lastName        String?
+  languageCode    String?
+  linkedUserId    String
+  wallet          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([linkedUserId])
+  @@index([wallet])
+}
+
+model ReferralCode {
+  id           String   @id
+  code         String   @unique
+  ownerUserId  String
+  sourceType   String
+  sourceId     String
+  status       String
+  createdAt    DateTime @default(now())
+
+  @@index([ownerUserId])
+  @@index([sourceType, sourceId])
+  @@index([status])
+}
+
+model ReferralEvent {
+  id                       String   @id
+  code                     String
+  referrerUserId           String
+  referredTelegramUserId   String?
+  referredUserId           String?
+  roundId                  String?
+  status                   String
+  riskScoreSnapshot        Json?
+  leafPoints               Int      @default(0)
+  createdAt                DateTime @default(now())
+
+  @@index([code])
+  @@index([referrerUserId])
+  @@index([referredTelegramUserId])
+  @@index([referredUserId])
+  @@unique([code, referredTelegramUserId])
+  @@unique([code, referredUserId])
+}
+
+model ShareCard {
+  id            String   @id
+  ticketId      String?
+  roundId       String
+  ownerUserId   String
+  referralCode  String
+  title         String
+  copy          String
+  url           String
+  status        String
+  createdAt     DateTime @default(now())
+
+  @@index([ownerUserId])
+  @@index([roundId])
+  @@index([referralCode])
+}
+
+model Campaign {
+  id                   String   @id
+  title                String
+  slug                 String   @unique
+  regionId             String
+  status               String
+  startsAt             DateTime
+  endsAt               DateTime
+  fundingGoalAmount    Decimal
+  fundingGoalCurrency  String
+  treeGoal             Int
+  roundId              String?
+  projectId            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([regionId])
+  @@index([roundId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model CampaignParticipant {
+  id            String   @id
+  campaignId    String
+  userId        String
+  wallet        String?
+  referralCode  String?
+  status        String
+  joinedAt      DateTime @default(now())
+
+  @@unique([campaignId, userId])
+  @@index([campaignId])
+  @@index([userId])
+  @@index([status])
+}
+
+model CampaignRound {
+  id          String   @id
+  campaignId  String
+  roundId     String
+  createdAt   DateTime @default(now())
+
+  @@unique([campaignId, roundId])
+  @@index([roundId])
+}
+
+model CampaignProject {
+  id          String   @id
+  campaignId  String
+  projectId   String
+  createdAt   DateTime @default(now())
+
+  @@unique([campaignId, projectId])
+  @@index([projectId])
+}
+
+model LeafPointsAccount {
+  id          String   @id
+  userId      String
+  campaignId  String
+  balance     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([campaignId, userId])
+  @@index([userId])
+  @@index([campaignId])
+}
+
+model LeafPointsTransaction {
+  id          String   @id
+  accountId   String
+  userId      String
+  campaignId  String
+  amount      Int
+  sourceType  String
+  sourceId    String
+  reason      String
+  status      String
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, sourceType, sourceId])
+  @@index([accountId])
+  @@index([campaignId])
+  @@index([status])
+}
+
+model CampaignReport {
+  id                           String   @id
+  campaignId                   String
+  status                       String
+  participantCount             Int
+  ticketCount                  Int
+  confirmedPaymentIntentCount  Int
+  totalConfirmedPaymentAmount  Decimal
+  fundingGoalAmount            Decimal
+  fundingGoalCurrency          String
+  treeGoal                     Int
+  evidenceCount                Int
+  challengeCount               Int
+  riskEventCount               Int
+  fundAllocations              Json
+  projectMilestones            Json
+  impactCertificateStatuses    Json
+  leaderboard                  Json
+  createdAt                    DateTime @default(now())
+
+  @@index([campaignId])
+  @@index([status])
+}
+
+model FeedbackItem {
+  id          String    @id
+  source      String
+  userId      String?
+  wallet      String?
+  campaignId  String?
+  roundId     String?
+  page        String?
+  category    String
+  message     String
+  severity    String
+  status      String
+  metadata    Json
+  resolution  String?
+  resolvedBy  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([source])
+  @@index([campaignId])
+  @@index([roundId])
+}
+
+model LaunchCheck {
+  id          String   @id
+  actor       String
+  campaignId  String
+  decision    String
+  summary     Json
+  createdAt   DateTime @default(now())
+
+  @@index([campaignId])
+  @@index([decision])
+}
+
+model SystemStatusSnapshot {
+  id                         String   @id
+  status                     String
+  repositoryMode             String
+  paymentMode                String
+  campaignCount              Int
+  liveCampaignCount          Int
+  openRiskEventCount         Int
+  openChallengeCount         Int
+  pendingPaymentIntentCount  Int
+  stalePaymentIntentCount    Int
+  metrics                    Json
+  createdAt                  DateTime @default(now())
+
+  @@index([status])
+}
+
+model AuditLog {
+  id           String   @id
+  actor        String
+  action       String
+  entityType   String
+  entityId     String
+  beforeState  Json?
+  afterState   Json?
+  requestId    String?
+  createdAt    DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actor])
+}

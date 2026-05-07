@@ -1,0 +1,51 @@
+{
+  "name": "dropin-earth-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,green \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:admin": "npm --workspace apps/admin run dev",
+    "dev:miniapp-ton": "npm --workspace apps/miniapp-ton run dev",
+    "dev:api": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} npm --workspace services/api run dev",
+    "db:generate": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema services/api/prisma/schema.prisma",
+    "db:push": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma db push --schema services/api/prisma/schema.prisma",
+    "seed": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} npm --workspace services/api run seed",
+    "anchor:build": "cd contracts/solana && COPYFILE_DISABLE=1 anchor build --no-idl",
+    "anchor:test": "cd contracts/solana && rm -rf .anchor/test-ledger test-ledger && COPYFILE_DISABLE=1 anchor build --no-idl && mkdir -p target/idl target/types && cp idl/dropin_anchor.json target/idl/dropin_anchor.json && cp idl/dropin_anchor.ts target/types/dropin_anchor.ts && COPYFILE_DISABLE=1 anchor test --skip-build --no-idl",
+    "anchor:devnet:e2e": "tsx scripts/solana-anchor-devnet-e2e.ts",
+    "dry-run:operator": "tsx scripts/operator-dry-run.ts",
+    "dry-run:failure": "tsx scripts/failure-injection.ts",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "test": "node --test --import tsx tests/unit/*.test.ts",
+    "audit": "npm audit --audit-level=moderate",
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run audit"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@eslint/js": "^9.39.4",
+    "@prisma/client": "^6.19.3",
+    "@types/node": "^20.19.25",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.4",
+    "postcss": "8.5.14",
+    "prisma": "^6.19.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.49.0"
+  },
+  "overrides": {
+    "postcss": "8.5.14",
+    "next@15.5.15": {
+      "postcss": "8.5.14"
+    }
+  }
+}
