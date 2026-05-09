@@ -215,7 +215,7 @@ write_wrangler_config() {
   cat >"$WRANGLER_CONFIG" <<EOF
 name = "$(toml_escape "$WORKER_NAME")"
 main = "canopyproof-api-proxy.ts"
-compatibility_date = "2026-05-10"
+compatibility_date = "2026-05-09"
 workers_dev = false
 
 routes = [
