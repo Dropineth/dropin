@@ -24,6 +24,8 @@ test("CanopyProof imported UI components exist as web-local adapters", () => {
   const heroCss = file("apps/web/src/components/ui/HeroEarthOrb.module.css");
   const metrics = file("apps/web/src/components/ui/MetricsCard.tsx");
   const button = file("apps/web/src/components/ui/CTAButton.tsx");
+  const economics = file("apps/web/src/components/ui/RoundEconomicsCard.tsx");
+  const proofTimeline = file("apps/web/src/components/ui/ProofTimeline.tsx");
   const index = file("apps/web/src/components/ui/index.ts");
 
   assert.match(hero, /CanopyProof rotating Earth and forest orb/);
@@ -33,9 +35,15 @@ test("CanopyProof imported UI components exist as web-local adapters", () => {
   assert.match(metrics, /prefers-reduced-motion/);
   assert.match(button, /aria-disabled/);
   assert.match(button, /min-w-\[200px\]/);
+  assert.match(economics, /Verified Reforestation/);
+  assert.match(economics, /70\/20\/10/);
+  assert.match(proofTimeline, /Impact proof timeline/);
+  assert.match(proofTimeline, /Challengeable/);
   assert.match(index, /HeroEarthOrb/);
   assert.match(index, /MetricsCard/);
   assert.match(index, /CTAButton/);
+  assert.match(index, /RoundEconomicsCard/);
+  assert.match(index, /ProofTimeline/);
 });
 
 test("Active Draw renders prize pool and Plant & Enter CTA", () => {
@@ -84,9 +92,55 @@ test("Admin readiness panel renders pass, warn, and fail states", () => {
 
 test("Mini App campaign includes testnet-only and Leaf Points non-transferable notices", () => {
   const source = file("apps/miniapp-ton/src/app/campaign/[campaignId]/page.tsx");
+  const index = file("apps/miniapp-ton/src/components/ui/index.ts");
+  const hero = file("apps/miniapp-ton/src/components/ui/MiniHeroEarthOrb.tsx");
+  const economics = file("apps/miniapp-ton/src/components/ui/MiniRoundEconomicsCard.tsx");
+  const leaderboard = file("apps/miniapp-ton/src/components/ui/MiniLeaderboardCard.tsx");
 
   assert.match(source, /Testnet only/);
   assert.match(source, /Leaf Points are non-transferable testnet points/);
   assert.match(source, /Climate Impact Lottery/);
   assert.match(source, /1 TON \/ USDC/);
+  assert.match(source, /Plant & Enter/);
+  assert.match(source, /MiniHeroEarthOrb/);
+  assert.match(source, /MiniRoundEconomicsCard/);
+  assert.match(source, /MiniLeaderboardCard/);
+  assert.doesNotMatch(source, /Math\.random/);
+  assert.doesNotMatch(source, /setInterval/);
+  assert.match(index, /MiniHeroEarthOrb/);
+  assert.match(index, /MiniMetricsCard/);
+  assert.match(index, /MiniCTAButton/);
+  assert.match(index, /MiniRoundEconomicsCard/);
+  assert.match(index, /MiniLeaderboardCard/);
+  assert.match(hero, /TON \/ USDC testnet only/);
+  assert.match(economics, /Verified Reforestation/);
+  assert.match(economics, /70\/20\/10/);
+  assert.match(leaderboard, /Leaderboard/);
+  assert.match(leaderboard, /No Leaf Points yet/);
+});
+
+test("Mini App round links campaign and renders production-safe payment and proof status", () => {
+  const source = file("apps/miniapp-ton/src/app/round/[roundId]/page.tsx");
+  const entry = file("apps/miniapp-ton/src/app/round/[roundId]/mini-round-entry.tsx");
+  const index = file("apps/miniapp-ton/src/components/ui/index.ts");
+  const proofTimeline = file("apps/miniapp-ton/src/components/ui/MiniProofTimeline.tsx");
+  const statusCard = file("apps/miniapp-ton/src/components/ui/MiniStatusCard.tsx");
+
+  assert.match(source, /campaign_v1_ggw_testnet/);
+  assert.match(source, /Back to Campaign/);
+  assert.match(source, /Proof Layer \/ Anchor/);
+  assert.match(source, /Proof Layer Online/);
+  assert.match(source, /Leaf Points/);
+  assert.match(source, /TON \/ USDC testnet draw/);
+  assert.match(entry, /Payment Intent Status/);
+  assert.match(entry, /Ticket Seed/);
+  assert.match(entry, /Create \$\{selectedCurrency\} Payment Intent/);
+  assert.doesNotMatch(source, /Math\.random/);
+  assert.doesNotMatch(source, /setInterval/);
+  assert.doesNotMatch(entry, /Math\.random/);
+  assert.doesNotMatch(entry, /setInterval/);
+  assert.match(index, /MiniProofTimeline/);
+  assert.match(index, /MiniStatusCard/);
+  assert.match(proofTimeline, /Proof Layer \/ Anchor/);
+  assert.match(statusCard, /MiniStatusCard/);
 });

@@ -1,5 +1,4 @@
 import {
-  AllocationBreakdown,
   AppShell,
   ButtonLink,
   ClimateDrawPass,
@@ -7,12 +6,11 @@ import {
   ImpactMetricCard,
   MobileFrame,
   PrizePoolCard,
-  ProofTimeline,
   SafetyNotice,
   StatusBadge,
 } from "@dropin/ui";
 import { seedRegions } from "@dropin/schemas";
-import { CTAButton, HeroEarthOrb, MetricsCard } from "@/components/ui";
+import { CTAButton, HeroEarthOrb, MetricsCard, ProofTimeline, RoundEconomicsCard } from "@/components/ui";
 
 const activeRound = {
   id: "round_v1_ggw_demo",
@@ -83,7 +81,7 @@ export default function Home() {
                 ticketPrice="1 TON / USDC Join Draw"
                 title={activeRound.title}
               />
-              <AllocationBreakdown compact title="Round economics" />
+              <RoundEconomicsCard compact operations={10} reforestation={20} title="Round economics" winner={70} />
             </div>
           </MobileFrame>
         </div>
@@ -129,7 +127,7 @@ export default function Home() {
           ticketPrice="1 USDC / TON testnet"
           title="Active Draw / Pre-draw"
         />
-        <AllocationBreakdown title="Every public pool uses 70/20/10" />
+        <RoundEconomicsCard operations={10} reforestation={20} title="Every public pool uses 70/20/10" winner={70} />
       </section>
 
       <section className="grid gap-6 pb-14 lg:grid-cols-3">
@@ -171,11 +169,11 @@ export default function Home() {
         </div>
         <ProofTimeline
           disclaimer="Impact Certificate is not a certified carbon credit."
-          items={[
-            { label: "Join prize pool", value: "Payment Intent confirms testnet participation.", status: "ready" },
-            { label: "Freeze entries", value: "Entry root is generated before deterministic finalization.", status: "pending" },
-            { label: "Fund project", value: "20% verified reforestation allocation links to project milestones.", status: "ready" },
-            { label: "Anchor proof", value: "Roots can be anchored and challenged before trust is finalized.", status: "challengeable" },
+          steps={[
+            { completed: true, description: "Payment Intent confirms testnet participation.", label: "Join prize pool" },
+            { completed: true, description: "Entry root is generated before deterministic finalization.", label: "Freeze entries" },
+            { completed: false, description: "20% verified reforestation allocation links to project milestones.", label: "Fund project" },
+            { completed: false, description: "Roots can be anchored and challenged before trust is finalized.", label: "Anchor proof" },
           ]}
         />
       </section>
