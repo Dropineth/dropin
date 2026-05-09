@@ -140,30 +140,13 @@ jobs:
       - name: Smoke test production
         if: env.DROPIN_DEPLOY_MODE == 'live'
         run: |
-          PAGES_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" https://canopyproof.org/)"
-          API_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" https://canopyproof.org/api/ready)"
-          ADMIN_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" https://canopyproof.org/api/admin/launch/readiness)"
-
-          echo "Pages HTTP: $PAGES_STATUS"
-          echo "API /ready HTTP: $API_STATUS"
-          echo "Admin proxy HTTP: $ADMIN_STATUS"
-
-          if [[ ! "$PAGES_STATUS" =~ ^[23] ]]; then
-            echo "::error::Frontend smoke test failed with HTTP $PAGES_STATUS."
-            exit 1
-          fi
-
-          if [[ ! "$API_STATUS" =~ ^2 ]]; then
-            echo "::error::API ready smoke test failed with HTTP $API_STATUS."
-            exit 1
-          fi
-
-          if [ "$ADMIN_STATUS" != "403" ]; then
-            echo "::error::Expected /api/admin/* to be blocked with 403, got HTTP $ADMIN_STATUS."
-            exit 1
-          fi
-
-          echo "Smoke test passed."
+          python3 scripts/check-canopyproof.py \
+            --domain canopyproof.org \
+            --www-domain www.canopyproof.org \
+            --require-www \
+            --api-ready-path /api/ready \
+            --admin-path /api/admin/launch/readiness \
+            --json-report canopyproof-smoke-report.json
 
       - name: Deployment summary
         if: always()

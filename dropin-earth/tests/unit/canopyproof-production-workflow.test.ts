@@ -26,8 +26,11 @@ test("root GitHub Actions workflow deploys CanopyProof production with guardrail
   assert.match(workflow, /npm run ci/);
   assert.match(workflow, /npm install --global wrangler/);
   assert.match(workflow, /\.\/deploy-canopyproof-auto\.sh/);
-  assert.match(workflow, /https:\/\/canopyproof\.org\/api\/ready/);
-  assert.match(workflow, /\/api\/admin\/\*/);
+  assert.match(workflow, /python3 scripts\/check-canopyproof\.py/);
+  assert.match(workflow, /--require-www/);
+  assert.match(workflow, /--api-ready-path \/api\/ready/);
+  assert.match(workflow, /--admin-path \/api\/admin\/launch\/readiness/);
+  assert.match(workflow, /canopyproof-smoke-report\.json/);
   assert.match(workflow, /SLACK_WEBHOOK_URL/);
   assert.match(workflow, /TELEGRAM_BOT_TOKEN/);
   assert.doesNotMatch(workflow, /YOUR_CF/);
