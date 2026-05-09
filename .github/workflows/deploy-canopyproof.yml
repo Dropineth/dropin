@@ -119,6 +119,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate Prisma client
+        run: npm run db:generate
+
       - name: Run release CI
         run: npm run ci
 
