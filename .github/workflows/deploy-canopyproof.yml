@@ -1,0 +1,175 @@
+name: CanopyProof Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      deploy_mode:
+        description: "Run a dry-run validation or deploy to production."
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - live
+      frontend_deploy_mode:
+        description: "Frontend deploy path. Use skip when Cloudflare Pages Git integration owns the web deploy."
+        required: true
+        default: "skip"
+        type: choice
+        options:
+          - skip
+          - auto
+          - pages-static
+          - opennext
+
+concurrency:
+  group: canopyproof-production-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-production:
+    name: Build, deploy, smoke test, and notify
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode == 'dry-run' && 'canopyproof-dry-run' || 'canopyproof-production' }}
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: dropin-earth
+
+    env:
+      CANOPYPROOF_DOMAIN: canopyproof.org
+      CANOPYPROOF_ZONE_NAME: canopyproof.org
+      CF_PROJECT_NAME: canopyproof
+      CF_BRANCH: ${{ github.ref_name }}
+      WORKER_NAME: canopyproof-api-proxy
+      WORKER_ROUTE: canopyproof.org/api/*
+      WORKER_ZONE_NAME: canopyproof.org
+      DROPIN_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'live' }}
+      DROPIN_FRONTEND_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.frontend_deploy_mode || 'skip' }}
+      DROPIN_CANOPYPROOF_MODE: production
+      DROPIN_ALLOWED_ORIGINS: https://canopyproof.org,https://www.canopyproof.org
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}
+      CF_API_TOKEN_PROD: ${{ secrets.CF_API_TOKEN_PROD }}
+      CF_ACCOUNT_ID_PROD: ${{ secrets.CF_ACCOUNT_ID_PROD }}
+      WORKER_ZONE_ID_PROD: ${{ secrets.WORKER_ZONE_ID_PROD }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN_PROD }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID_PROD }}
+      DROPIN_OPENNEXT_DEPLOY_COMMAND: ${{ secrets.DROPIN_OPENNEXT_DEPLOY_COMMAND }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      DROPIN_SKIP_CI: "true"
+      DROPIN_RUN_ANCHOR_TEST: "false"
+      DROPIN_RUN_SMOKE: "true"
+      DROPIN_SMOKE_BASE_URL: https://canopyproof.org
+      DROPIN_NOTIFY_DEPLOYMENT: "true"
+      DROPIN_NOTIFY_DRY_RUN: "false"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fail-fast secret and mode checks
+        run: |
+          case "$DROPIN_DEPLOY_MODE" in
+            dry-run|live) ;;
+            *)
+              echo "::error::DROPIN_DEPLOY_MODE must be dry-run or live."
+              exit 1
+              ;;
+          esac
+
+          REQUIRED_VARS=(CF_API_TOKEN_PROD CF_ACCOUNT_ID_PROD WORKER_ZONE_ID_PROD)
+          if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
+            REQUIRED_VARS+=(DROPIN_API_ORIGIN)
+          fi
+
+          for var in "${REQUIRED_VARS[@]}"; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Required deployment secret or env var is missing: $var"
+              exit 1
+            fi
+          done
+
+          if [ -n "${DROPIN_API_ORIGIN:-}" ] && [[ "$DROPIN_API_ORIGIN" != https://* ]]; then
+            echo "::error::DROPIN_API_ORIGIN must be HTTPS for production deployment."
+            exit 1
+          fi
+
+          if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
+            echo "DROPIN_CLOUDFLARE_DEPLOY_CONFIRM=canopyproof.org" >> "$GITHUB_ENV"
+          fi
+
+          echo "CanopyProof deployment preflight passed."
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run release CI
+        run: npm run ci
+
+      - name: Install Wrangler
+        run: npm install --global wrangler
+
+      - name: Verify production guardrails
+        run: |
+          test "$CANOPYPROOF_DOMAIN" = "canopyproof.org"
+          test "$WORKER_ROUTE" = "canopyproof.org/api/*"
+          test "$WORKER_ZONE_NAME" = "canopyproof.org"
+          test "$DROPIN_CANOPYPROOF_MODE" = "production"
+          test "$DROPIN_ALLOW_ADMIN_PROXY" = "false"
+          test "$DROPIN_DEPLOY_MODE" = "dry-run" || test "${DROPIN_CLOUDFLARE_DEPLOY_CONFIRM:-}" = "canopyproof.org"
+
+      - name: Deploy Pages and Worker
+        run: ./deploy-canopyproof-auto.sh
+
+      - name: Smoke test production
+        if: env.DROPIN_DEPLOY_MODE == 'live'
+        run: |
+          PAGES_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" https://canopyproof.org/)"
+          API_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" https://canopyproof.org/api/ready)"
+          ADMIN_STATUS="$(curl -sS -o /dev/null -w "%{http_code}" https://canopyproof.org/api/admin/launch/readiness)"
+
+          echo "Pages HTTP: $PAGES_STATUS"
+          echo "API /ready HTTP: $API_STATUS"
+          echo "Admin proxy HTTP: $ADMIN_STATUS"
+
+          if [[ ! "$PAGES_STATUS" =~ ^[23] ]]; then
+            echo "::error::Frontend smoke test failed with HTTP $PAGES_STATUS."
+            exit 1
+          fi
+
+          if [[ ! "$API_STATUS" =~ ^2 ]]; then
+            echo "::error::API ready smoke test failed with HTTP $API_STATUS."
+            exit 1
+          fi
+
+          if [ "$ADMIN_STATUS" != "403" ]; then
+            echo "::error::Expected /api/admin/* to be blocked with 403, got HTTP $ADMIN_STATUS."
+            exit 1
+          fi
+
+          echo "Smoke test passed."
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "domain=$CANOPYPROOF_DOMAIN"
+          echo "deploy_mode=$DROPIN_DEPLOY_MODE"
+          echo "frontend_deploy_mode=$DROPIN_FRONTEND_DEPLOY_MODE"
+          echo "worker_route=$WORKER_ROUTE"
+          echo "admin_proxy=$DROPIN_ALLOW_ADMIN_PROXY"
