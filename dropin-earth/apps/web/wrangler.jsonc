@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "canopyproof-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-12-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "canopyproof-web"
+    }
+  ],
+  "routes": [
+    { "pattern": "canopyproof.org/*", "zone_name": "canopyproof.org" },
+    { "pattern": "www.canopyproof.org/*", "zone_name": "canopyproof.org" }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_DROPIN_API_URL": "https://canopyproof.org/api",
+    "NEXT_PUBLIC_DROPIN_SITE_URL": "https://canopyproof.org",
+    "NEXT_PUBLIC_CANOPYPROOF_MODE": "production"
+  }
+}
