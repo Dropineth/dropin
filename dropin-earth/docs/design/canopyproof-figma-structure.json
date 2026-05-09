@@ -1,0 +1,239 @@
+{
+  "file": {
+    "name": "CanopyProof Product UI System",
+    "version": "1.0.0",
+    "description": "Editable Figma structure for a premium Climate Impact Lottery and Proof-of-Planting Impact Dashboard."
+  },
+  "pages": [
+    {
+      "name": "00 Cover",
+      "frames": [
+        {
+          "name": "CanopyProof Cover",
+          "size": { "width": 1440, "height": 1024 },
+          "sections": ["Brand mark", "Hero Earth Orb", "Product positioning", "Safety disclaimer"]
+        }
+      ]
+    },
+    {
+      "name": "01 Foundations",
+      "frames": [
+        {
+          "name": "Color Tokens",
+          "size": { "width": 1440, "height": 1600 },
+          "components": ["Deep Space", "Earth Navy", "Climate Blue", "Canopy Green", "Carbon Gold", "Cyan Trace", "Alert Red"]
+        },
+        {
+          "name": "Typography Scale",
+          "size": { "width": 1440, "height": 1200 },
+          "components": ["Title 1", "Title 2", "Header", "Body", "Caption", "Eyebrow"]
+        },
+        {
+          "name": "Spacing / Radius / Shadow",
+          "size": { "width": 1440, "height": 1200 },
+          "components": ["8px grid", "22px card radius", "34px mobile frame", "glass card shadow"]
+        }
+      ]
+    },
+    {
+      "name": "02 Components",
+      "frames": [
+        {
+          "name": "App Shell",
+          "size": { "width": 1440, "height": 900 },
+          "components": ["Top navigation", "Trust links", "Status badges", "CTA group"]
+        },
+        {
+          "name": "Mobile Frame",
+          "size": { "width": 430, "height": 932 },
+          "components": ["iPhone 15 Pro container", "Safe-area padding", "Bottom CTA zone"]
+        },
+        {
+          "name": "Climate Draw Pass",
+          "size": { "width": 430, "height": 560 },
+          "components": ["Prize pool", "1 TON / USDC Join Draw", "70/20/10 split", "Participant avatars", "Proof badge"]
+        },
+        {
+          "name": "Impact Metric Cards",
+          "size": { "width": 1200, "height": 420 },
+          "components": ["Prize Pool", "Trees Funded", "CO2 Estimated", "Verified Sites", "Challenge Status"]
+        },
+        {
+          "name": "Proof Timeline",
+          "size": { "width": 900, "height": 760 },
+          "components": ["Payment Intent", "Ticket Seed", "Entry Root", "Randomness Certificate", "Impact Certificate", "Solana Anchor"]
+        },
+        {
+          "name": "Feedback Form",
+          "size": { "width": 760, "height": 760 },
+          "components": ["Category select", "Message field", "Safety notice", "Submit state", "Success state", "Error state"]
+        },
+        {
+          "name": "Admin Readiness Panel",
+          "size": { "width": 1100, "height": 900 },
+          "components": ["Pass check", "Warn check", "Fail check", "Run launch check action", "Risk/challenge/payment anomalies"]
+        }
+      ]
+    },
+    {
+      "name": "03 Web Screens",
+      "frames": [
+        {
+          "name": "Landing / Home",
+          "size": { "width": 1440, "height": 1800 },
+          "route": "/",
+          "sections": [
+            "Hero Earth Orb",
+            "Climate Draw Pass",
+            "Impact ticker",
+            "70/20/10 allocation",
+            "CanopyProof proof layer",
+            "Safety notice"
+          ]
+        },
+        {
+          "name": "Active Draw / Pre-draw",
+          "size": { "width": 1440, "height": 1800 },
+          "route": "/lottery/round_v1_ggw_demo",
+          "sections": [
+            "Round hero",
+            "Prize pool",
+            "Connect wallet",
+            "Payment Intent panel",
+            "Draw countdown",
+            "Draw progress",
+            "Proof timeline"
+          ]
+        },
+        {
+          "name": "Drawing In Progress",
+          "size": { "width": 1440, "height": 1400 },
+          "route": "/lottery/round_v1_ggw_demo?state=drawing",
+          "sections": [
+            "Cinematic Earth state",
+            "Entries frozen",
+            "Randomness certificate loading",
+            "Winner root computation",
+            "Drop root computation",
+            "Fund allocation created"
+          ]
+        },
+        {
+          "name": "Won / Result",
+          "size": { "width": 1440, "height": 1500 },
+          "route": "/lottery/round_v1_ggw_demo?state=result",
+          "sections": [
+            "Premium orange reward card",
+            "Claim Reward",
+            "Share Impact NFT placeholder",
+            "View Proof",
+            "Earth Response",
+            "Contribution even if not won"
+          ]
+        },
+        {
+          "name": "Campaign",
+          "size": { "width": 1440, "height": 2200 },
+          "route": "/campaigns/campaign_v1_ggw_testnet",
+          "sections": [
+            "Mission",
+            "How it works",
+            "Testnet status badge",
+            "Readiness mini panel",
+            "Leaderboard preview",
+            "Public report preview",
+            "FAQ",
+            "Feedback CTA",
+            "Challenge CTA"
+          ]
+        },
+        {
+          "name": "Impact Proof",
+          "size": { "width": 1440, "height": 1400 },
+          "route": "/certificates/cert_v1_ggw_demo",
+          "sections": ["Certificate ID", "Evidence root", "Verified tree count", "Estimated CO2e range", "Challenge warning", "Not carbon credit disclaimer"]
+        },
+        {
+          "name": "About / How It Works",
+          "size": { "width": 1440, "height": 1400 },
+          "route": "/about",
+          "sections": ["5-step explanation", "Donation to proof flow", "CanopyProof section", "Safety copy"]
+        },
+        {
+          "name": "Status",
+          "size": { "width": 1440, "height": 1400 },
+          "route": "/status",
+          "sections": ["API readiness", "Repository mode", "Payment mode", "TON testnet", "Open risk events", "Open challenge cases", "Last reconciliation"]
+        },
+        {
+          "name": "Feedback",
+          "size": { "width": 1440, "height": 1200 },
+          "route": "/feedback",
+          "sections": ["Trust-layer intro", "Category field", "Message field", "Success state", "Error state"]
+        }
+      ]
+    },
+    {
+      "name": "04 Mini App Screens",
+      "frames": [
+        {
+          "name": "Mini App Home",
+          "size": { "width": 430, "height": 932 },
+          "route": "apps/miniapp-ton:/",
+          "sections": ["Earth Seed loading", "Active round card", "Global impact counters", "Plant & Enter CTA"]
+        },
+        {
+          "name": "Mini App Campaign",
+          "size": { "width": 430, "height": 1200 },
+          "route": "apps/miniapp-ton:/campaign/campaign_v1_ggw_testnet",
+          "sections": ["3-step onboarding", "Testnet-only badge", "Plant & Enter CTA", "Co-Plant invite", "Leaf Points", "Safety microcopy"]
+        },
+        {
+          "name": "Mini App Round",
+          "size": { "width": 430, "height": 1200 },
+          "route": "apps/miniapp-ton:/round/round_v1_ggw_demo",
+          "sections": ["Round status", "Payment Intent", "TON testnet instructions", "Ticket Seed success", "Proof link"]
+        }
+      ]
+    },
+    {
+      "name": "05 Admin Screens",
+      "frames": [
+        {
+          "name": "Launch Readiness",
+          "size": { "width": 1440, "height": 1600 },
+          "route": "/admin/launch",
+          "sections": ["Go/no-go decision", "Pass/warn/fail checklist", "Risk queue", "Challenge queue", "Payment anomalies", "Runbook links"]
+        },
+        {
+          "name": "Status",
+          "size": { "width": 1440, "height": 1400 },
+          "route": "/admin/status",
+          "sections": ["System counts", "TON testnet config", "Anchor config", "Repository mode", "Payment mode"]
+        },
+        {
+          "name": "Feedback Queue",
+          "size": { "width": 1440, "height": 1400 },
+          "route": "/admin/feedback",
+          "sections": ["Open feedback", "Severity", "Resolution action", "Audit trail"]
+        }
+      ]
+    }
+  ],
+  "prototypeLinks": [
+    { "from": "Landing / Home", "to": "Active Draw / Pre-draw", "trigger": "Join Active Draw" },
+    { "from": "Active Draw / Pre-draw", "to": "Drawing In Progress", "trigger": "Round closes" },
+    { "from": "Drawing In Progress", "to": "Won / Result", "trigger": "Finalization complete" },
+    { "from": "Won / Result", "to": "Impact Proof", "trigger": "View Proof" },
+    { "from": "Campaign", "to": "Feedback", "trigger": "Feedback CTA" },
+    { "from": "Campaign", "to": "Status", "trigger": "Readiness mini panel" }
+  ],
+  "constraints": [
+    "Every campaign/testnet page must visibly state testnet-only limitations.",
+    "Impact Certificate must not be called a certified carbon credit.",
+    "RWA Fragment must not be described as guaranteed yield.",
+    "$CANOPY must not be described as carbon tax offset.",
+    "No private-key collection UI.",
+    "No casino or slot-machine visual language."
+  ]
+}

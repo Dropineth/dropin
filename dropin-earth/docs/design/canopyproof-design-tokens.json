@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "name": "CanopyProof Premium Climate Impact UI Tokens",
+    "version": "1.0.0",
+    "product": "Dropin Earth / CanopyProof",
+    "positioning": "Climate Impact Lottery + Proof-of-Planting Impact Dashboard",
+    "benchmarks": ["Apple Wallet", "Robinhood", "Patagonia Impact Report", "Premium Web3 climate dashboard"]
+  },
+  "color": {
+    "deepSpace": "#05070A",
+    "earthNavy": "#081827",
+    "climateBlue": "#1E88E5",
+    "canopyGreen": "#00C853",
+    "mossGreen": "#2E7D32",
+    "carbonGold": "#D4AF37",
+    "mistWhite": "#F5F7FA",
+    "softGray": "#AAB4C0",
+    "cyanTrace": "#00E5FF",
+    "warningAmber": "#F6A609",
+    "alertRed": "#FF4D4F",
+    "forestPrimary": "#007A5E",
+    "forestSecondary": "#00B07D",
+    "paperLight": "#F4F4F4",
+    "inkDark": "#0F0F0F",
+    "neutralDark": "#2E2E2E"
+  },
+  "semanticColor": {
+    "background": "{color.deepSpace}",
+    "surface": "{color.earthNavy}",
+    "surfaceGlass": "rgba(255, 255, 255, 0.06)",
+    "lineSubtle": "rgba(255, 255, 255, 0.10)",
+    "textPrimary": "{color.mistWhite}",
+    "textSecondary": "{color.softGray}",
+    "success": "{color.canopyGreen}",
+    "info": "{color.climateBlue}",
+    "proof": "{color.cyanTrace}",
+    "warning": "{color.warningAmber}",
+    "reward": "{color.carbonGold}",
+    "danger": "{color.alertRed}"
+  },
+  "typography": {
+    "fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+    "title1": { "fontSize": 64, "lineHeight": 68, "fontWeight": 700, "letterSpacing": 0 },
+    "title2": { "fontSize": 48, "lineHeight": 54, "fontWeight": 650, "letterSpacing": 0 },
+    "header": { "fontSize": 36, "lineHeight": 42, "fontWeight": 600, "letterSpacing": 0 },
+    "body": { "fontSize": 18, "lineHeight": 30, "fontWeight": 400, "letterSpacing": 0 },
+    "bodyCompact": { "fontSize": 15, "lineHeight": 24, "fontWeight": 400, "letterSpacing": 0 },
+    "caption": { "fontSize": 14, "lineHeight": 20, "fontWeight": 400, "opacity": 0.6, "letterSpacing": 0 },
+    "eyebrow": { "fontSize": 12, "lineHeight": 16, "fontWeight": 700, "letterSpacing": 0.16, "textTransform": "uppercase" }
+  },
+  "spacing": {
+    "0": 0,
+    "1": 4,
+    "2": 8,
+    "3": 12,
+    "4": 16,
+    "5": 20,
+    "6": 24,
+    "8": 32,
+    "10": 40,
+    "12": 48,
+    "16": 64,
+    "20": 80
+  },
+  "radius": {
+    "button": 999,
+    "card": 22,
+    "panel": 28,
+    "mobileFrame": 34,
+    "input": 18,
+    "badge": 999
+  },
+  "shadow": {
+    "card": "0 18px 80px rgba(0, 0, 0, 0.24)",
+    "mobileFrame": "0 24px 100px rgba(0, 0, 0, 0.38)",
+    "orb": "0 0 90px rgba(30, 136, 229, 0.52)",
+    "reward": "0 24px 90px rgba(212, 175, 55, 0.22)"
+  },
+  "allocation": {
+    "winner": { "label": "Winner", "percent": 70, "color": "{color.carbonGold}" },
+    "verifiedReforestation": { "label": "Verified Reforestation", "percent": 20, "color": "{color.canopyGreen}" },
+    "operations": { "label": "Dropin Operations", "percent": 10, "color": "{color.climateBlue}" }
+  },
+  "component": {
+    "buttonPrimary": {
+      "background": "{color.canopyGreen}",
+      "foreground": "{color.deepSpace}",
+      "radius": "{radius.button}",
+      "minHeight": 48
+    },
+    "buttonSecondary": {
+      "background": "transparent",
+      "foreground": "{color.carbonGold}",
+      "border": "1px solid rgba(212, 175, 55, 0.70)",
+      "radius": "{radius.button}",
+      "minHeight": 48
+    },
+    "cardGlass": {
+      "background": "{semanticColor.surfaceGlass}",
+      "border": "1px solid rgba(255, 255, 255, 0.10)",
+      "radius": "{radius.card}",
+      "shadow": "{shadow.card}",
+      "backdropBlur": 18
+    },
+    "statusBadge": {
+      "radius": "{radius.badge}",
+      "paddingX": 12,
+      "paddingY": 4,
+      "font": "{typography.eyebrow}"
+    }
+  },
+  "motion": {
+    "countUpDurationMs": 900,
+    "orbPulseDurationMs": 3200,
+    "routeTransitionMs": 220,
+    "cardHoverTranslateY": -2,
+    "reducedMotionFallback": "disable decorative transforms and keep opacity-only transitions"
+  },
+  "accessibility": {
+    "minContrastBody": 4.5,
+    "minContrastLargeText": 3,
+    "focusRing": "2px solid #00E5FF",
+    "hitTargetMin": 44,
+    "noColorOnlyStatus": true
+  }
+}
