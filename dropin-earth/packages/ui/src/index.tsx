@@ -255,6 +255,114 @@ export function PrizePoolCard({
   );
 }
 
+export function ParticipantAvatars({
+  count,
+  label = "participants",
+}: {
+  count: number;
+  label?: string;
+}) {
+  const visible = Math.min(5, Math.max(0, count));
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex -space-x-2" aria-hidden="true">
+        {Array.from({ length: visible }, (_, index) => (
+          <span
+            className="grid h-9 w-9 place-items-center rounded-full border border-[#05070A] bg-gradient-to-br from-emerald-300 via-sky-300 to-amber-200 text-xs font-black text-[#05070A]"
+            key={index}
+          >
+            {index + 1}
+          </span>
+        ))}
+      </div>
+      <div className="text-sm text-slate-300">
+        <strong className="text-white">{count.toLocaleString()}</strong> {label}
+      </div>
+    </div>
+  );
+}
+
+export function ClimateDrawPass({
+  title,
+  region,
+  poolSize,
+  ticketPrice,
+  proofStatus,
+  participants,
+}: {
+  title: string;
+  region: string;
+  poolSize: string;
+  ticketPrice: string;
+  proofStatus: string;
+  participants: number;
+}) {
+  return (
+    <Card tone="dark" className="relative overflow-hidden border-emerald-300/20 bg-[#07111C]/88">
+      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-300 via-cyan-200 to-amber-200" />
+      <div className="absolute -right-16 top-8 h-52 w-52 rounded-full bg-cyan-300/10 blur-3xl" />
+      <div className="relative flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">Climate Impact Lottery</p>
+          <h2 className="mt-3 text-3xl font-semibold leading-tight">{title}</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300">{region}</p>
+        </div>
+        <StatusBadge status={proofStatus}>{proofStatus}</StatusBadge>
+      </div>
+      <div className="relative mt-7 rounded-[24px] border border-white/10 bg-black/20 p-5">
+        <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Current Prize Pool</div>
+        <div className="mt-2 text-5xl font-semibold leading-none text-white">{poolSize}</div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <Metric label="Join Draw" value={ticketPrice} detail="Payment Intent first" />
+          <Metric label="Impact Split" value="70 / 20 / 10" detail="Winner / Reforestation / Ops" />
+        </div>
+      </div>
+      <div className="relative mt-5 flex flex-wrap items-center justify-between gap-4">
+        <ParticipantAvatars count={participants} />
+        <span className="rounded-full border border-cyan-200/30 bg-cyan-200/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-cyan-100">
+          Proof-of-Planting
+        </span>
+      </div>
+    </Card>
+  );
+}
+
+export function SafetyNotice({
+  children,
+  tone = "testnet",
+}: {
+  children: ReactNode;
+  tone?: "testnet" | "proof" | "risk";
+}) {
+  const palette =
+    tone === "proof"
+      ? "border-cyan-200/25 bg-cyan-200/10 text-cyan-50"
+      : tone === "risk"
+        ? "border-red-300/25 bg-red-400/10 text-red-50"
+        : "border-amber-200/25 bg-amber-200/10 text-amber-100";
+  return <div className={`rounded-[20px] border p-4 text-sm leading-6 ${palette}`}>{children}</div>;
+}
+
+export function ImpactTickerStrip({
+  items,
+}: {
+  items: Array<{ label: string; value: string; status?: string }>;
+}) {
+  return (
+    <div className="grid gap-3 md:grid-cols-4">
+      {items.map((item) => (
+        <Card className="min-h-28 p-4" key={`${item.label}:${item.value}`} tone="dark">
+          <div className="flex items-start justify-between gap-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{item.label}</div>
+            {item.status ? <StatusBadge status={item.status}>{item.status}</StatusBadge> : null}
+          </div>
+          <div className="mt-3 break-words text-2xl font-semibold text-white">{item.value}</div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export function DrawCountdown({ closesAt }: { closesAt: string }) {
   const closeDate = new Date(closesAt);
   return (

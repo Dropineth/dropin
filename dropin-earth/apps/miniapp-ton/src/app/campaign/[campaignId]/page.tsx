@@ -40,18 +40,18 @@ export default async function MiniCampaignPage({ params }: { params: Promise<{ c
         <div style={{ border: "1px solid rgb(0 200 83 / 40%)", color: "#8EF5B2", display: "inline-flex", fontSize: 11, fontWeight: 900, letterSpacing: "0.12em", padding: "5px 8px", textTransform: "uppercase" }}>
           Testnet only
         </div>
-        <p className="mini-kicker" style={{ marginTop: 12 }}>Public Testnet Campaign</p>
+        <p className="mini-kicker" style={{ marginTop: 12 }}>Climate Impact Lottery</p>
         <h1 style={{ fontSize: 32, lineHeight: 1.05, margin: "8px 0" }}>{campaign.title}</h1>
         <p style={{ color: "#AFC2D1", lineHeight: 1.55, margin: 0 }}>
-          Co-Plant into a testnet round, earn non-transferable Leaf Points, and follow the public impact report.
+          Co-Plant into a testnet round, earn non-transferable Leaf Points, and follow Proof-of-Planting impact.
         </p>
       </section>
 
       <section className="mini-card" style={{ display: "grid", gap: 10, marginTop: 16 }}>
         <h2 style={{ margin: 0, fontSize: 20 }}>Start in 3 Steps</h2>
         <div className="mini-row"><span>1. Join campaign</span><strong>testnet</strong></div>
-        <div className="mini-row"><span>2. Plant & Enter</span><strong>Payment Intent</strong></div>
-        <div className="mini-row"><span>3. Share Co-Plant</span><strong>Leaf Points</strong></div>
+        <div className="mini-row"><span>2. Plant & Enter</span><strong>1 TON / USDC</strong></div>
+        <div className="mini-row"><span>3. Track proof</span><strong>Leaf Points</strong></div>
       </section>
 
       <section className="mini-card" style={{ display: "grid", gap: 10, marginTop: 14 }}>

@@ -2,11 +2,14 @@ import {
   AllocationBreakdown,
   AppShell,
   ButtonLink,
+  ClimateDrawPass,
   HeroEarthOrb,
+  ImpactTickerStrip,
   ImpactMetricCard,
   MobileFrame,
   PrizePoolCard,
   ProofTimeline,
+  SafetyNotice,
   StatusBadge,
 } from "@dropin/ui";
 import { seedRegions } from "@dropin/schemas";
@@ -18,6 +21,7 @@ const activeRound = {
   poolSize: "1,000 testnet USDC",
   ticketPrice: "1 USDC",
   entries: "Open",
+  participants: 128,
 };
 
 export default function Home() {
@@ -58,10 +62,12 @@ export default function Home() {
               Send Feedback
             </ButtonLink>
           </div>
-          <div className="mt-6 rounded-[22px] border border-amber-200/25 bg-amber-200/10 p-4 text-sm leading-6 text-amber-100">
+          <div className="mt-6">
+            <SafetyNotice>
             Public testnet limitation: no mainnet payment rail, no automatic $CANOPY distribution,
             Leaf Points are non-transferable testnet points, and Impact Certificates are not
             certified carbon credits.
+            </SafetyNotice>
           </div>
         </div>
 
@@ -69,11 +75,12 @@ export default function Home() {
           <MobileFrame>
             <HeroEarthOrb compact />
             <div className="mt-4 grid gap-3">
-              <PrizePoolCard
-                entries={activeRound.entries}
+              <ClimateDrawPass
+                participants={activeRound.participants}
                 poolSize={activeRound.poolSize}
-                status="open"
-                ticketPrice={activeRound.ticketPrice}
+                proofStatus="open"
+                region={activeRound.region}
+                ticketPrice="1 TON / USDC Join Draw"
                 title={activeRound.title}
               />
               <AllocationBreakdown compact title="Round economics" />
@@ -82,17 +89,15 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid gap-3 pb-10 md:grid-cols-5">
-        <ImpactMetricCard
-          detail="Current demo pool"
-          label="Prize Pool"
-          status="open"
-          value={activeRound.poolSize}
+      <section className="pb-10">
+        <ImpactTickerStrip
+          items={[
+            { label: "Prize Pool", value: activeRound.poolSize, status: "open" },
+            { label: "Trees funded", value: (ggw?.verifiedTrees ?? 0).toLocaleString(), status: "verified" },
+            { label: "CO2 estimated", value: "Estimated only", status: "not credit" },
+            { label: "Verified sites", value: "Great Green Wall", status: "proof" },
+          ]}
         />
-        <ImpactMetricCard label="Winner Allocation" value="70%" detail="Transparent top-line pool share" />
-        <ImpactMetricCard label="Verified Reforestation" value="20%" detail="Tree Fund allocation" />
-        <ImpactMetricCard label="Operations" value="10%" detail="Dropin operating allocation" />
-        <ImpactMetricCard label="Proof Status" value="Challengeable" detail="Roots, evidence, and certificates can be reviewed" />
       </section>
 
       <section className="grid gap-6 pb-14 lg:grid-cols-[1fr_0.9fr]">

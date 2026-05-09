@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AllocationBreakdown, Card, HeroEarthOrb, ImpactMetricCard, StatusBadge } from "@dropin/ui";
+import { AllocationBreakdown, Card, ClimateDrawPass, HeroEarthOrb, ImpactTickerStrip, SafetyNotice, StatusBadge } from "@dropin/ui";
 import { getApi } from "@/lib/api";
 
 type CampaignDetail = {
@@ -94,15 +94,27 @@ export default async function CampaignPage({ params }: { params: Promise<{ campa
           </div>
           <div className="grid gap-4">
             <HeroEarthOrb compact label="Great Green Wall campaign proof orb" />
+            <ClimateDrawPass
+              participants={detail.participantCount}
+              poolSize={`${report.totalConfirmedPaymentAmount} ${campaign.fundingGoalCurrency}`}
+              proofStatus={readiness.decision}
+              region="Great Green Wall / Sahel"
+              ticketPrice="1 TON / USDC Join Draw"
+              title="Great Green Wall Climate Draw"
+            />
             <AllocationBreakdown compact title="Campaign pool economics" />
           </div>
         </section>
 
-        <section className="grid gap-3 pb-6 md:grid-cols-4">
-          <ImpactMetricCard label="Winner Allocation" value="70%" detail="Prize pool share" />
-          <ImpactMetricCard label="Verified Reforestation" value="20%" detail="Tree Fund allocation" />
-          <ImpactMetricCard label="Dropin Operations" value="10%" detail="Operations allocation" />
-          <ImpactMetricCard label="Proof Status" value={readiness.decision} detail="Readiness and challenges visible" status={readiness.decision} />
+        <section className="pb-6">
+          <ImpactTickerStrip
+            items={[
+              { label: "Winner Allocation", value: "70%", status: "open" },
+              { label: "Verified Reforestation", value: "20%", status: "proof" },
+              { label: "Dropin Operations", value: "10%" },
+              { label: "Proof Status", value: readiness.decision, status: readiness.decision },
+            ]}
+          />
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -157,9 +169,9 @@ export default async function CampaignPage({ params }: { params: Promise<{ campa
                 "An RWA Fragment is not guaranteed yield.",
                 "$CANOPY does not offset carbon tax.",
               ].map((notice) => (
-                <div className="border border-amber-200/20 bg-amber-200/5 p-3 text-sm leading-6 text-amber-100" key={notice}>
+                <SafetyNotice key={notice}>
                   {notice}
-                </div>
+                </SafetyNotice>
               ))}
             </div>
           </Card>

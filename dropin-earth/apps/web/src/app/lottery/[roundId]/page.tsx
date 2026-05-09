@@ -2,12 +2,14 @@ import {
   AllocationBreakdown,
   AppShell,
   ButtonLink,
+  ClimateDrawPass,
   DrawCountdown,
   DrawProgress,
   ImpactMetricCard,
   ParticipationHistory,
-  PrizePoolCard,
+  ParticipantAvatars,
   ProofTimeline,
+  SafetyNotice,
   StatusBadge,
   TicketCard,
   WinnerResultCard,
@@ -115,12 +117,13 @@ export default async function LotteryRoundPage({ params }: { params: Promise<{ r
             </ButtonLink>
           </div>
         </div>
-        <PrizePoolCard
-          entries={String(round.entryCount)}
+        <ClimateDrawPass
+          participants={round.entryCount}
           poolSize={poolSize}
-          status={round.status}
-          ticketPrice={`${round.ticketPriceAmount} ${round.ticketPriceSymbol}`}
-          title="Pool Detail"
+          proofStatus={round.status}
+          region={round.regionId}
+          ticketPrice={`${round.ticketPriceAmount} ${round.ticketPriceSymbol} Join Draw`}
+          title={round.title}
         />
       </section>
 
@@ -133,7 +136,16 @@ export default async function LotteryRoundPage({ params }: { params: Promise<{ r
 
       <section className="grid gap-6 pb-8 lg:grid-cols-[0.85fr_1.15fr]">
         <AllocationBreakdown title="Prize-pool economics" />
-        <DrawCountdown closesAt={round.closesAt} />
+        <div className="grid gap-4">
+          <DrawCountdown closesAt={round.closesAt} />
+          <SafetyNotice tone="proof">
+            Payment Intent, ticket seed, entry root, randomness certificate, winner root, drop root,
+            and Tree Fund allocation remain visible before the draw becomes trusted.
+          </SafetyNotice>
+          <div className="rounded-[20px] border border-white/10 bg-white/[0.05] p-4">
+            <ParticipantAvatars count={round.entryCount} label="participants in this pool" />
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-6 pb-8 lg:grid-cols-[0.9fr_1.1fr]" id="plant-enter">

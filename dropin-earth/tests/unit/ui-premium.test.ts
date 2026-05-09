@@ -13,13 +13,16 @@ test("Landing/Home includes 70% winner, 20% verified reforestation, 10% operatio
   assert.match(source, /20% Verified Reforestation/);
   assert.match(source, /10% Dropin Operations/);
   assert.match(source, /Join climate-impact prize pools\. Track every tree through proof\./);
+  assert.match(source, /1 TON \/ USDC Join Draw/);
+  assert.match(source, /ClimateDrawPass/);
 });
 
 test("Active Draw renders prize pool and Plant & Enter CTA", () => {
   const source = file("apps/web/src/app/lottery/[roundId]/page.tsx");
 
   assert.match(source, /Active Draw \/ Pre-draw/);
-  assert.match(source, /PrizePoolCard/);
+  assert.match(source, /ClimateDrawPass/);
+  assert.match(source, /ParticipantAvatars/);
   assert.match(source, /Plant & Enter/);
 });
 
@@ -63,4 +66,6 @@ test("Mini App campaign includes testnet-only and Leaf Points non-transferable n
 
   assert.match(source, /Testnet only/);
   assert.match(source, /Leaf Points are non-transferable testnet points/);
+  assert.match(source, /Climate Impact Lottery/);
+  assert.match(source, /1 TON \/ USDC/);
 });

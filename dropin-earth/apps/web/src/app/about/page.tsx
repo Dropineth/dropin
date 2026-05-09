@@ -8,6 +8,8 @@ const steps = [
   "Claims can be challenged before trust is finalized",
 ];
 
+const verificationFlow = ["Donation", "NGO", "Planting", "Satellite / Oracle", "On-chain proof"];
+
 export default function AboutPage() {
   return (
     <AppShell
@@ -45,6 +47,15 @@ export default function AboutPage() {
         {steps.map((step, index) => (
           <Card key={step} tone="dark">
             <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Step {index + 1}</div>
+            <h2 className="mt-3 text-xl font-semibold">{step}</h2>
+          </Card>
+        ))}
+      </section>
+
+      <section className="grid gap-4 pb-10 md:grid-cols-5">
+        {verificationFlow.map((step, index) => (
+          <Card key={step} tone="dark">
+            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-200">Verification {index + 1}</div>
             <h2 className="mt-3 text-xl font-semibold">{step}</h2>
           </Card>
         ))}

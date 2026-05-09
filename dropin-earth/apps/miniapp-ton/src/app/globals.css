@@ -37,12 +37,19 @@ select {
   max-width: 520px;
   min-height: 100vh;
   padding: 18px;
+  background:
+    radial-gradient(circle at 16% 8%, rgb(0 229 255 / 16%), transparent 32%),
+    radial-gradient(circle at 82% 14%, rgb(0 200 83 / 14%), transparent 30%),
+    var(--space);
 }
 
 .mini-card {
   border: 1px solid var(--line);
   background: rgb(255 255 255 / 6%);
+  border-radius: 22px;
+  box-shadow: 0 18px 70px rgb(0 0 0 / 24%);
   padding: 18px;
+  backdrop-filter: blur(18px);
 }
 
 .mini-kicker,
@@ -56,6 +63,7 @@ select {
 
 .seed-orb {
   min-height: 220px;
+  border-radius: 28px;
   border: 1px solid var(--line);
   background:
     radial-gradient(circle at 50% 45%, rgb(0 200 83 / 80%), transparent 0 4%, transparent 8%),
@@ -75,6 +83,7 @@ select {
 
 .mini-button {
   border: 0;
+  border-radius: 999px;
   background: var(--green);
   color: #05070a;
   display: inline-flex;
@@ -98,6 +107,7 @@ select {
 .mini-row {
   align-items: center;
   border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 16px;
   display: grid;
   gap: 8px;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
