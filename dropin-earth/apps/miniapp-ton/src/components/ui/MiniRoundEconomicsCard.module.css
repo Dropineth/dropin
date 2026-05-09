@@ -1,0 +1,82 @@
+.card {
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 5%);
+  box-shadow: 0 18px 70px rgb(0 0 0 / 24%);
+  padding: 18px;
+  backdrop-filter: blur(16px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  color: #f5f7fa;
+  font-size: 18px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.badge {
+  border: 1px solid rgb(83 245 255 / 28%);
+  border-radius: 999px;
+  background: rgb(83 245 255 / 10%);
+  color: #b9fbff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  padding: 6px 8px;
+}
+
+.bar {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 8%);
+  margin-top: 16px;
+}
+
+.winner {
+  background: #d4af37;
+}
+
+.reforestation {
+  background: #00c853;
+}
+
+.operations {
+  background: #00e5ff;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #aab4c0;
+  font-size: 14px;
+}
+
+.list strong {
+  color: #f5f7fa;
+}
+
+.pool {
+  color: #93ddff;
+  font-size: 14px;
+  font-weight: 900;
+  margin: 14px 0 0;
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { MiniStatusCard } from "@/components/ui";
 import { apiBaseUrl, type ApiResponse } from "@/lib/api";
 
 type PaymentIntent = {
@@ -55,6 +56,10 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
   const entryKey = useMemo(() => `miniapp-entry-${roundId}-${Date.now()}`, [roundId]);
   const isTonTestnet = selectedCurrency === "TON";
   const paymentAmount = amount;
+  const paymentStatus = intent?.status ?? (message && !intent ? "failed" : "not_created");
+  const paymentTone = statusTone(paymentStatus);
+  const ticketStatus = ticket ? "success" : busy && intent?.status === "confirmed" ? "generating" : message && intent?.status === "confirmed" ? "failed" : "pending";
+  const ticketTone = statusTone(ticketStatus);
 
   async function createPaymentIntent() {
     setBusy(true);
@@ -169,6 +174,21 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
       <button className="mini-button secondary" disabled={busy || Boolean(intent)} onClick={createPaymentIntent} type="button">
         {busy ? "Processing..." : `Create ${selectedCurrency} Payment Intent`}
       </button>
+      <MiniStatusCard
+        badge={selectedCurrency}
+        detail={intent ? `${intent.amount} ${intent.currency}` : `${paymentAmount} ${selectedCurrency}`}
+        label="Payment Intent Status"
+        tone={paymentTone}
+        value={paymentStatus.replaceAll("_", " ").toUpperCase()}
+      >
+        {intent ? (
+          <>
+            <CopyLine label="Intent ID" value={intent.id} />
+            {intent.confirmedTxHash ? <CopyLine label="Confirmed tx" value={intent.confirmedTxHash} /> : null}
+            {intent.confirmedRawPayloadHash ? <CopyLine label="Raw payload hash" value={intent.confirmedRawPayloadHash} /> : null}
+          </>
+        ) : null}
+      </MiniStatusCard>
       {instructions ? (
         <div style={{ border: "1px solid rgb(212 175 55 / 28%)", color: "#F2DCA0", padding: 12 }}>
           <strong>TON testnet instructions</strong>
@@ -176,14 +196,6 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
           <CopyLine label="Amount" value={`${instructions.amount} ${instructions.currency}`} />
           <CopyLine label="Memo" value={instructions.memo ?? "missing"} />
           <CopyLine label="Expires" value={new Date(instructions.expiresAt).toLocaleString()} />
-        </div>
-      ) : null}
-      {intent ? (
-        <div style={{ border: "1px solid rgb(0 229 255 / 28%)", color: "#D8F8FF", padding: 12 }}>
-          <strong>{intent.status}</strong>
-          <div style={{ marginTop: 6, overflowWrap: "anywhere", fontSize: 12 }}>{intent.id}</div>
-          <div style={{ marginTop: 6, overflowWrap: "anywhere", fontSize: 12 }}>{intent.confirmedTxHash}</div>
-          <div style={{ marginTop: 6, overflowWrap: "anywhere", fontSize: 12 }}>{intent.confirmedRawPayloadHash}</div>
         </div>
       ) : null}
       {isTonTestnet && intent && intent.status !== "confirmed" ? (
@@ -204,15 +216,24 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
       <button className="mini-button" disabled={busy || intent?.status !== "confirmed" || Boolean(ticket)} onClick={plantAndEnter} type="button">
         Plant & Enter
       </button>
-      {ticket ? (
-        <div style={{ border: "1px solid rgb(0 200 83 / 35%)", color: "#DDFBE8", padding: 12 }}>
-          <strong>Ticket Seed #{ticket.ticket?.ticketNumber ?? "issued"}</strong>
-          <div style={{ marginTop: 6, overflowWrap: "anywhere", fontSize: 12 }}>{ticket.ticket?.receiptHash}</div>
-        </div>
-      ) : null}
+      <MiniStatusCard
+        badge={ticketStatus}
+        detail={ticket?.ticket?.receiptHash ?? "Receipt hash appears after a confirmed Payment Intent enters the round."}
+        label="Ticket Seed"
+        tone={ticketTone}
+        value={ticket ? `Ticket Seed #${ticket.ticket?.ticketNumber ?? "issued"}` : intent?.status === "confirmed" ? "Ready to generate" : "Waiting for confirmed payment"}
+      />
       {message ? <p style={{ color: "#ffb4b4", margin: 0 }}>{message}</p> : null}
     </section>
   );
+}
+
+function statusTone(status: string): "green" | "blue" | "gold" | "red" | "muted" {
+  if (status === "confirmed" || status === "success") return "green";
+  if (status === "failed") return "red";
+  if (status === "pending" || status === "generating") return "gold";
+  if (status === "not_created") return "muted";
+  return "blue";
 }
 
 async function get<T>(path: string) {

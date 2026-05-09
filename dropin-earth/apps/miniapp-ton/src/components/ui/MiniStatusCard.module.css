@@ -1,0 +1,88 @@
+.card {
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 20px;
+  background: rgb(255 255 255 / 5%);
+  box-shadow: 0 14px 46px rgb(0 0 0 / 22%);
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  backdrop-filter: blur(14px);
+}
+
+.header {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.label {
+  color: #aab4c0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.badge {
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  padding: 5px 8px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.value {
+  color: #f5f7fa;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.detail {
+  color: #aab4c0;
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.children {
+  display: grid;
+  gap: 8px;
+}
+
+.green .badge {
+  background: rgb(0 200 83 / 12%);
+  border: 1px solid rgb(0 200 83 / 34%);
+  color: #8ef5b2;
+}
+
+.blue .badge {
+  background: rgb(0 229 255 / 10%);
+  border: 1px solid rgb(0 229 255 / 34%);
+  color: #b9fbff;
+}
+
+.gold .badge {
+  background: rgb(212 175 55 / 12%);
+  border: 1px solid rgb(212 175 55 / 34%);
+  color: #f2dca0;
+}
+
+.red .badge {
+  background: rgb(255 77 79 / 12%);
+  border: 1px solid rgb(255 77 79 / 36%);
+  color: #ffb4b4;
+}
+
+.muted .badge {
+  background: rgb(255 255 255 / 7%);
+  border: 1px solid rgb(255 255 255 / 12%);
+  color: #aab4c0;
+}

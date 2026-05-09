@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MiniHeroEarthOrb, MiniMetricsCard, MiniProofTimeline, MiniRoundEconomicsCard, MiniStatusCard } from "@/components/ui";
 import { getApi } from "@/lib/api";
 import { MiniRoundEntry } from "./mini-round-entry";
 import { FeedbackCta } from "../../feedback-cta";
@@ -31,13 +32,54 @@ type RoundResults = {
   };
 };
 
+type CampaignMe = {
+  leafPointsAccount?: {
+    balance: number;
+  };
+};
+
 export default async function MiniRoundPage({ params }: { params: Promise<{ roundId: string }> }) {
   const { roundId } = await params;
-  const [detail, results] = await Promise.all([
+  const campaignId = "campaign_v1_ggw_testnet";
+  const [detail, results, campaignMe] = await Promise.all([
     getApi<RoundDetail>(`/lottery/rounds/${roundId}`),
     getApi<RoundResults>(`/lottery/rounds/${roundId}/results`),
+    getApi<CampaignMe>(`/campaigns/${campaignId}/me?userId=demo-user`).catch((): CampaignMe => ({})),
   ]);
   const round = detail.round;
+  const proofSteps = [
+    { label: "Round status", completed: round.status !== "open", value: round.status },
+    {
+      label: "Entry root generated",
+      completed: Boolean(round.entryMerkleRoot),
+      value: round.entryMerkleRoot ?? "Waiting for round close",
+    },
+    {
+      label: "Randomness certificate",
+      completed: Boolean(results.proof.randomnessCertificateId),
+      value: results.proof.randomnessCertificateId ?? "Pending",
+    },
+    {
+      label: "Winner root",
+      completed: Boolean(results.proof.winnerMerkleRoot),
+      value: results.proof.winnerMerkleRoot ?? "Pending",
+    },
+    {
+      label: "Drop root",
+      completed: Boolean(results.proof.dropMerkleRoot),
+      value: results.proof.dropMerkleRoot ?? "Pending",
+    },
+    {
+      label: "Impact Certificate issued",
+      completed: false,
+      value: "Pending verified evidence acceptance",
+    },
+    {
+      label: "Solana Anchor created",
+      completed: false,
+      value: "Pending Impact Certificate",
+    },
+  ];
 
   return (
     <main className="mini-shell">
@@ -45,9 +87,17 @@ export default async function MiniRoundPage({ params }: { params: Promise<{ roun
         Dropin Earth
       </Link>
 
+      <div style={{ marginTop: 16 }}>
+        <MiniHeroEarthOrb
+          ctaHref="#plant-and-enter"
+          ctaText="Create Payment Intent"
+          headline={round.title}
+          subline="TON / USDC testnet draw. Plant & Enter through Payment Intent, then track deterministic roots and Proof-of-Planting status."
+        />
+      </div>
+
       <section style={{ marginTop: 18 }}>
         <p className="mini-kicker">Tree Lotto / TON Entry</p>
-        <h1 style={{ fontSize: 30, lineHeight: 1.08, margin: "8px 0" }}>{round.title}</h1>
         <p style={{ color: "#AFC2D1", lineHeight: 1.55, margin: 0 }}>
           Phase 9 uses Payment Intents with mock/manual/TON testnet placeholders. No live TON
           mainnet transfer is executed here.
@@ -56,66 +106,61 @@ export default async function MiniRoundPage({ params }: { params: Promise<{ roun
 
       <section className="mini-card" style={{ display: "grid", gap: 12, marginTop: 16 }}>
         <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr" }}>
-          <Metric label="Status" value={round.status} />
-          <Metric label="Ticket" value={`${round.ticketPriceAmount} ${round.ticketPriceSymbol}`} />
-          <Metric label="Entries" value={String(round.entryCount)} />
-          <Metric label="Total" value={`${round.totalAmount} ${round.ticketPriceSymbol}`} />
+          <MiniMetricsCard label="Status" value={round.status} color="#00E5FF" />
+          <MiniMetricsCard label="Ticket" value={`${round.ticketPriceAmount} ${round.ticketPriceSymbol}`} />
+          <MiniMetricsCard label="Entries" value={String(round.entryCount)} />
+          <MiniMetricsCard label="Total" value={`${round.totalAmount} ${round.ticketPriceSymbol}`} color="#D4AF37" />
+          <MiniMetricsCard label="Leaf Points" value={String(campaignMe.leafPointsAccount?.balance ?? 0)} color="#D4AF37" />
         </div>
       </section>
 
+      <section style={{ marginTop: 14 }}>
+        <MiniRoundEconomicsCard
+          operations={10}
+          reforestation={20}
+          title="Funding Flow"
+          tokenPool={{ TON: round.ticketPriceSymbol === "TON" ? round.totalAmount : 1, USDC: round.ticketPriceSymbol === "USDC" ? round.totalAmount : 1000 }}
+          winner={70}
+        />
+      </section>
       <section className="mini-card" style={{ display: "grid", gap: 12, marginTop: 14 }}>
-        <h2 style={{ margin: 0, fontSize: 20 }}>Funding Flow</h2>
-        <Allocation label="Winner" value="70%" tone="#D4AF37" />
-        <Allocation label="Verified Reforestation" value="20%" tone="#00C853" />
-        <Allocation label="Dropin Operations" value="10%" tone="#00E5FF" />
         <p style={{ color: "#F2DCA0", lineHeight: 1.5, margin: 0 }}>
           Premium climate-impact draw. No casino spinner, no mainnet funds, no guaranteed yield.
         </p>
       </section>
 
-      <MiniRoundEntry
-        amount={round.ticketPriceAmount}
-        currency={round.ticketPriceSymbol}
-        regionId={round.regionId}
-        roundId={round.id}
-      />
+      <section style={{ marginTop: 14 }}>
+        <MiniStatusCard
+          badge="Campaign"
+          detail="Round -> Campaign linkage stays explicit so every Ticket Seed can be traced back to the Great Green Wall testnet campaign."
+          label="Campaign backlink"
+          tone="green"
+          value="Great Green Wall Testnet Campaign"
+        >
+          <Link className="mini-button secondary" href={`/campaign/${campaignId}`}>
+            Back to Campaign
+          </Link>
+        </MiniStatusCard>
+      </section>
 
-      <section className="mini-card" style={{ display: "grid", gap: 10, marginTop: 14 }}>
-        <h2 style={{ margin: 0, fontSize: 20 }}>Proof Status</h2>
-        <ProofRow label="Entry root" value={round.entryMerkleRoot ?? "Waiting for round close"} />
-        <ProofRow label="Randomness certificate" value={results.proof.randomnessCertificateId ?? "Pending"} />
-        <ProofRow label="Winner root" value={results.proof.winnerMerkleRoot ?? "Pending"} />
-        <ProofRow label="Drop root" value={results.proof.dropMerkleRoot ?? "Pending"} />
+      <div id="plant-and-enter">
+        <MiniRoundEntry
+          amount={round.ticketPriceAmount}
+          currency={round.ticketPriceSymbol}
+          regionId={round.regionId}
+          roundId={round.id}
+        />
+      </div>
+
+      <section style={{ marginTop: 14 }}>
+        <MiniProofTimeline
+          steps={proofSteps}
+          subtitle="Proof Layer Online: round roots and randomness evidence are displayed only when returned by the Dropin API."
+          title="Proof Layer / Anchor"
+        />
       </section>
 
       <FeedbackCta page={`/round/${round.id}`} roundId={round.id} />
     </main>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="mini-label">{label}</div>
-      <div style={{ marginTop: 4, overflowWrap: "anywhere", fontSize: 17, fontWeight: 800 }}>{value}</div>
-    </div>
-  );
-}
-
-function Allocation({ label, value, tone }: { label: string; value: string; tone: string }) {
-  return (
-    <div className="mini-row">
-      <span>{label}</span>
-      <strong style={{ color: tone }}>{value}</strong>
-    </div>
-  );
-}
-
-function ProofRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ border: "1px solid rgb(255 255 255 / 10%)", padding: 10 }}>
-      <div className="mini-label">{label}</div>
-      <div style={{ marginTop: 5, overflowWrap: "anywhere", color: "#D8E8F2", fontSize: 12 }}>{value}</div>
-    </div>
   );
 }

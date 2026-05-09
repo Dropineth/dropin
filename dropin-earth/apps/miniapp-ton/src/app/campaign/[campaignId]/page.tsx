@@ -1,4 +1,11 @@
 import Link from "next/link";
+import {
+  MiniCTAButton,
+  MiniHeroEarthOrb,
+  MiniLeaderboardCard,
+  MiniMetricsCard,
+  MiniRoundEconomicsCard,
+} from "@/components/ui";
 import { getApi } from "@/lib/api";
 import { FeedbackCta } from "../../feedback-cta";
 
@@ -35,13 +42,16 @@ export default async function MiniCampaignPage({ params }: { params: Promise<{ c
       <Link style={{ color: "#00E5FF", fontSize: 13, fontWeight: 800 }} href="/">
         Dropin Earth
       </Link>
-      <section className="seed-orb" style={{ marginTop: 16 }} aria-label="Earth Seed campaign hero" />
+      <div style={{ marginTop: 16 }}>
+        <MiniHeroEarthOrb
+          ctaHref={campaign.roundId ? `/round/${campaign.roundId}` : undefined}
+          ctaText="Plant & Enter"
+          headline={campaign.title}
+          subline="Join testnet climate-impact pools. Track every tree through proof. 70% Winner, 20% Verified Reforestation, 10% Dropin Operations. TON / USDC testnet only."
+        />
+      </div>
       <section style={{ marginTop: 18 }}>
-        <div style={{ border: "1px solid rgb(0 200 83 / 40%)", color: "#8EF5B2", display: "inline-flex", fontSize: 11, fontWeight: 900, letterSpacing: "0.12em", padding: "5px 8px", textTransform: "uppercase" }}>
-          Testnet only
-        </div>
         <p className="mini-kicker" style={{ marginTop: 12 }}>Climate Impact Lottery</p>
-        <h1 style={{ fontSize: 32, lineHeight: 1.05, margin: "8px 0" }}>{campaign.title}</h1>
         <p style={{ color: "#AFC2D1", lineHeight: 1.55, margin: 0 }}>
           Co-Plant into a testnet round, earn non-transferable Leaf Points, and follow Proof-of-Planting impact.
         </p>
@@ -56,19 +66,28 @@ export default async function MiniCampaignPage({ params }: { params: Promise<{ c
 
       <section className="mini-card" style={{ display: "grid", gap: 10, marginTop: 14 }}>
         <div style={{ display: "grid", gap: 10, gridTemplateColumns: "1fr 1fr" }}>
-          <Metric label="Status" value={campaign.status} />
-          <Metric label="Leaf Points" value={String(me.leafPointsAccount?.balance ?? 0)} />
-          <Metric label="Participants" value={String(detail.participantCount)} />
-          <Metric label="Tree goal" value={campaign.treeGoal.toLocaleString()} />
+          <MiniMetricsCard label="Status" value={campaign.status} color="#00E5FF" />
+          <MiniMetricsCard label="Leaf Points" value={String(me.leafPointsAccount?.balance ?? 0)} color="#D4AF37" />
+          <MiniMetricsCard label="Participants" value={String(detail.participantCount)} />
+          <MiniMetricsCard label="Tree goal" value={campaign.treeGoal.toLocaleString()} />
         </div>
         {campaign.roundId ? (
-          <Link className="mini-button" href={`/round/${campaign.roundId}`}>
+          <MiniCTAButton href={`/round/${campaign.roundId}`}>
             Plant & Enter
-          </Link>
+          </MiniCTAButton>
         ) : null}
-        <Link className="mini-button secondary" href={campaign.roundId ? `/share/ticket_v1_ggw_demo?roundId=${campaign.roundId}` : "/"}>
+        <MiniCTAButton href={campaign.roundId ? `/share/ticket_v1_ggw_demo?roundId=${campaign.roundId}` : "/"} variant="secondary">
           Co-Plant Invite
-        </Link>
+        </MiniCTAButton>
+      </section>
+
+      <section style={{ marginTop: 14 }}>
+        <MiniRoundEconomicsCard
+          operations={10}
+          reforestation={20}
+          tokenPool={{ TON: 1, USDC: campaign.fundingGoalCurrency === "USDC" ? campaign.fundingGoalAmount : 1000 }}
+          winner={70}
+        />
       </section>
 
       <section className="mini-card" style={{ display: "grid", gap: 8, marginTop: 14 }}>
@@ -79,26 +98,11 @@ export default async function MiniCampaignPage({ params }: { params: Promise<{ c
         </p>
       </section>
 
-      <section className="mini-card" style={{ display: "grid", gap: 10, marginTop: 14 }}>
-        <h2 style={{ margin: 0, fontSize: 20 }}>Leaderboard</h2>
-        {detail.leaderboard.slice(0, 8).map((entry) => (
-          <div className="mini-row" key={`${entry.rank}:${entry.userId}`}>
-            <span>#{entry.rank} {entry.userId}</span>
-            <strong>{entry.leafPoints} LP</strong>
-          </div>
-        ))}
+      <section style={{ marginTop: 14 }}>
+        <MiniLeaderboardCard entries={detail.leaderboard} />
       </section>
 
       <FeedbackCta campaignId={campaign.id} page={`/campaign/${campaign.id}`} roundId={campaign.roundId} />
     </main>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="mini-label">{label}</div>
-      <div style={{ marginTop: 4, overflowWrap: "anywhere", fontSize: 18, fontWeight: 900 }}>{value}</div>
-    </div>
   );
 }
