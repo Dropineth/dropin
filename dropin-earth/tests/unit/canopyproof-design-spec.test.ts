@@ -39,6 +39,44 @@ test("Figma structure includes required public, mini app, and admin screens", ()
   assert.ok(figma.constraints.some((constraint) => constraint.includes("testnet-only limitations")));
 });
 
+test("Figma document template is handoff-ready for design and engineering", () => {
+  const figma = JSON.parse(read("docs/design/canopyproof-figma-document.json")) as {
+    document: {
+      type: string;
+      children: Array<{ name: string; children: Array<{ name: string; type: string; route?: string; children?: unknown[] }> }>;
+    };
+    components: Record<string, unknown>;
+    designTokens: {
+      allocation: { winnerPercent: number; verifiedReforestationPercent: number; operationsPercent: number };
+      colors: Record<string, string>;
+    };
+    interactions: Record<string, string>;
+    safety: { requiredNotices: string[]; forbiddenFraming: string[] };
+    metadata: { designBenchmark: string; productPositioning: string };
+  };
+
+  const pagesCanvas = figma.document.children.find((child) => child.name === "Pages");
+  assert.equal(figma.document.type, "DOCUMENT");
+  assert.ok(pagesCanvas);
+
+  const frames = pagesCanvas.children.map((frame) => frame.name);
+  assert.ok(frames.includes("Landing / Home"));
+  assert.ok(frames.includes("Connect Wallet"));
+  assert.ok(frames.includes("Active Draw / Pre-draw"));
+  assert.ok(frames.includes("Impact Proof"));
+  assert.ok(frames.includes("Admin Launch Readiness"));
+  assert.ok(figma.components.PrizePoolCard);
+  assert.equal(figma.designTokens.allocation.winnerPercent, 70);
+  assert.equal(figma.designTokens.allocation.verifiedReforestationPercent, 20);
+  assert.equal(figma.designTokens.allocation.operationsPercent, 10);
+  assert.equal(figma.designTokens.colors.canopyGreen, "#00C853");
+  assert.equal(figma.interactions.loading, "skeleton");
+  assert.ok(figma.safety.requiredNotices.includes("Impact Certificate is not a certified carbon credit."));
+  assert.ok(figma.safety.forbiddenFraming.includes("casino UI"));
+  assert.match(figma.metadata.designBenchmark, /Apple Wallet/);
+  assert.match(figma.metadata.productPositioning, /Proof-of-Planting/);
+});
+
 test("UIUX spec preserves proof and compliance safety boundaries", () => {
   const spec = read("docs/design/canopyproof-uiux-spec.md");
 

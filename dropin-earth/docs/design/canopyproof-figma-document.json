@@ -1,0 +1,615 @@
+{
+  "document": {
+    "id": "0:0",
+    "name": "CanopyProof UI System",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "1:0",
+        "name": "Pages",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "1:1",
+            "name": "Landing / Home",
+            "type": "FRAME",
+            "route": "/",
+            "layout": {
+              "width": 1440,
+              "height": 1800,
+              "grid": "12-column desktop with mobile-first 430px reference"
+            },
+            "children": [
+              {
+                "id": "1:1:1",
+                "name": "HeroEarthOrb",
+                "type": "COMPONENT",
+                "style": {
+                  "fill": "#081827",
+                  "accent": "#00C853",
+                  "opacity": 1
+                },
+                "effects": [
+                  {
+                    "type": "DROP_SHADOW",
+                    "color": "#00C85333",
+                    "radius": 40
+                  }
+                ],
+                "copy": {
+                  "headline": "Join climate-impact prize pools. Track every tree through proof.",
+                  "subcopy": "Each Tree Lotto round allocates 70% to the winner, 20% to verified reforestation, and 10% to Dropin operations."
+                }
+              },
+              {
+                "id": "1:1:2",
+                "name": "PrizePoolCard",
+                "type": "COMPONENT",
+                "style": {
+                  "fill": "#FFFFFF14",
+                  "radius": 24,
+                  "shadow": "glass"
+                },
+                "fields": {
+                  "poolSize": "Live prize pool",
+                  "joinPrice": "1 TON / USDC Join Draw",
+                  "winnerAllocation": "70% Winner",
+                  "reforestationAllocation": "20% Verified Reforestation",
+                  "operationsAllocation": "10% Dropin Operations"
+                },
+                "interactions": [
+                  {
+                    "type": "click",
+                    "action": "openActiveDraw"
+                  }
+                ]
+              },
+              {
+                "id": "1:1:3",
+                "name": "ImpactMetricRail",
+                "type": "COMPONENT_SET",
+                "children": [
+                  {
+                    "id": "1:1:3:1",
+                    "name": "Verified Trees Planted",
+                    "type": "COMPONENT"
+                  },
+                  {
+                    "id": "1:1:3:2",
+                    "name": "CO2 Estimated",
+                    "type": "COMPONENT"
+                  },
+                  {
+                    "id": "1:1:3:3",
+                    "name": "Verified Sites",
+                    "type": "COMPONENT"
+                  },
+                  {
+                    "id": "1:1:3:4",
+                    "name": "Proof Status",
+                    "type": "COMPONENT"
+                  }
+                ]
+              },
+              {
+                "id": "1:1:4",
+                "name": "CTAButtonGroup",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "1:1:4:1",
+                    "name": "Join Active Draw",
+                    "type": "INSTANCE",
+                    "component": "Button/Primary",
+                    "interactions": [
+                      {
+                        "type": "click",
+                        "action": "navigate:/lottery/round_v1_ggw_demo"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "1:1:4:2",
+                    "name": "View Impact Proof",
+                    "type": "INSTANCE",
+                    "component": "Button/Secondary",
+                    "interactions": [
+                      {
+                        "type": "click",
+                        "action": "navigate:/certificates/cert_v1_ggw_demo"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "1:1:5",
+                "name": "SafetyNotice",
+                "type": "COMPONENT",
+                "text": "Testnet only. No mainnet funds. Leaf Points are non-transferable. Impact Certificate is not a certified carbon credit. RWA Fragment is not guaranteed yield."
+              }
+            ]
+          },
+          {
+            "id": "1:2",
+            "name": "Connect Wallet",
+            "type": "FRAME",
+            "route": "/lottery/round_v1_ggw_demo#connect",
+            "layout": {
+              "width": 430,
+              "height": 932,
+              "device": "iPhone 15 Pro"
+            },
+            "children": [
+              {
+                "id": "1:2:1",
+                "name": "WalletConnectCard",
+                "type": "COMPONENT",
+                "states": ["disconnected", "connecting", "connected", "unsupported", "error"],
+                "copy": {
+                  "security": "Dropin never asks for private keys.",
+                  "testnet": "Payment Intent may use TON testnet or manual confirmation in this launch phase."
+                }
+              }
+            ]
+          },
+          {
+            "id": "1:3",
+            "name": "Active Draw / Pre-draw",
+            "type": "FRAME",
+            "route": "/lottery/round_v1_ggw_demo",
+            "layout": {
+              "width": 430,
+              "height": 1200,
+              "device": "iPhone 15 Pro"
+            },
+            "children": [
+              {
+                "id": "1:3:1",
+                "name": "PrizePoolCard",
+                "type": "INSTANCE",
+                "component": "PrizePoolCard"
+              },
+              {
+                "id": "1:3:2",
+                "name": "AllocationBreakdown",
+                "type": "COMPONENT",
+                "segments": [
+                  {
+                    "label": "Winner",
+                    "percent": 70,
+                    "color": "#D4AF37"
+                  },
+                  {
+                    "label": "Verified Reforestation",
+                    "percent": 20,
+                    "color": "#00C853"
+                  },
+                  {
+                    "label": "Dropin Operations",
+                    "percent": 10,
+                    "color": "#1E88E5"
+                  }
+                ]
+              },
+              {
+                "id": "1:3:3",
+                "name": "DrawCountdown",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "1:3:4",
+                "name": "PaymentIntentPanel",
+                "type": "COMPONENT",
+                "states": ["idle", "created", "submitted", "confirming", "confirmed", "failed"]
+              },
+              {
+                "id": "1:3:5",
+                "name": "PlantAndEnterButton",
+                "type": "INSTANCE",
+                "component": "Button/Primary",
+                "text": "Plant & Enter"
+              }
+            ]
+          },
+          {
+            "id": "1:4",
+            "name": "Drawing In Progress",
+            "type": "FRAME",
+            "route": "/lottery/round_v1_ggw_demo?state=drawing",
+            "children": [
+              {
+                "id": "1:4:1",
+                "name": "DrawProgress",
+                "type": "COMPONENT",
+                "steps": [
+                  "Entries frozen",
+                  "Randomness certificate generated",
+                  "Winners computed",
+                  "Drop roots computed",
+                  "Fund allocation created",
+                  "Proof anchor pending"
+                ],
+                "motion": "data-orbit progression, no casino spinner"
+              }
+            ]
+          },
+          {
+            "id": "1:5",
+            "name": "Won / Result",
+            "type": "FRAME",
+            "route": "/lottery/round_v1_ggw_demo?state=result",
+            "children": [
+              {
+                "id": "1:5:1",
+                "name": "WinnerResultCard",
+                "type": "COMPONENT",
+                "style": {
+                  "fill": "#D4AF37",
+                  "text": "#05070A",
+                  "radius": 24
+                },
+                "fields": ["prizeResult", "impactAllocation", "ticketSeed", "proofRoots", "earthResponse"]
+              },
+              {
+                "id": "1:5:2",
+                "name": "ClaimReward",
+                "type": "INSTANCE",
+                "component": "Button/Primary"
+              },
+              {
+                "id": "1:5:3",
+                "name": "ViewProof",
+                "type": "INSTANCE",
+                "component": "Button/Secondary"
+              }
+            ]
+          },
+          {
+            "id": "1:6",
+            "name": "My Participated",
+            "type": "FRAME",
+            "route": "/me/forest",
+            "children": [
+              {
+                "id": "1:6:1",
+                "name": "ParticipationHistory",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "1:6:1:1",
+                    "name": "TicketCard",
+                    "type": "COMPONENT",
+                    "statuses": ["entered", "drawing", "finalized", "won", "impact allocated", "proof anchored"]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "1:7",
+            "name": "Pool Detail",
+            "type": "FRAME",
+            "route": "/campaigns/campaign_v1_ggw_testnet",
+            "children": [
+              {
+                "id": "1:7:1",
+                "name": "CampaignHero",
+                "type": "COMPONENT",
+                "copy": "Dropin Earth Great Green Wall Testnet Campaign"
+              },
+              {
+                "id": "1:7:2",
+                "name": "LeaderboardPreview",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "1:7:3",
+                "name": "PublicReportPreview",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "1:7:4",
+                "name": "ChallengeCTA",
+                "type": "COMPONENT"
+              }
+            ]
+          },
+          {
+            "id": "1:8",
+            "name": "Impact Proof",
+            "type": "FRAME",
+            "route": "/certificates/cert_v1_ggw_demo",
+            "children": [
+              {
+                "id": "1:8:1",
+                "name": "ProofTimeline",
+                "type": "COMPONENT",
+                "steps": ["Evidence uploaded", "Evidence accepted", "Evidence root generated", "Impact Certificate issued", "Solana anchor created", "Challenge window open"]
+              },
+              {
+                "id": "1:8:2",
+                "name": "ProofCard",
+                "type": "COMPONENT",
+                "fields": ["certificateId", "projectId", "evidenceRoot", "verifiedTreeCount", "survivalRateEstimate", "estimatedCO2eRange", "methodologyVersion", "status"]
+              },
+              {
+                "id": "1:8:3",
+                "name": "CarbonCreditDisclaimer",
+                "type": "COMPONENT",
+                "text": "Impact Certificate is not a certified carbon credit."
+              }
+            ]
+          },
+          {
+            "id": "1:9",
+            "name": "About / How It Works",
+            "type": "FRAME",
+            "route": "/about",
+            "children": [
+              {
+                "id": "1:9:1",
+                "name": "VerificationFlow",
+                "type": "COMPONENT",
+                "steps": ["Donation", "NGO", "Planting", "Satellite / Oracle", "On-chain proof"]
+              },
+              {
+                "id": "1:9:2",
+                "name": "CanopyProofSection",
+                "type": "COMPONENT",
+                "copy": "CanopyProof is the proof layer for verified climate action."
+              }
+            ]
+          },
+          {
+            "id": "1:10",
+            "name": "Status",
+            "type": "FRAME",
+            "route": "/status",
+            "children": [
+              {
+                "id": "1:10:1",
+                "name": "SystemStatusDashboard",
+                "type": "COMPONENT",
+                "fields": ["apiReadiness", "repositoryMode", "paymentMode", "tonTestnet", "campaignLiveCount", "openRiskEvents", "openChallenges", "lastReconciliation"]
+              }
+            ]
+          },
+          {
+            "id": "1:11",
+            "name": "Feedback",
+            "type": "FRAME",
+            "route": "/feedback",
+            "children": [
+              {
+                "id": "1:11:1",
+                "name": "FeedbackForm",
+                "type": "COMPONENT",
+                "categories": ["bug", "payment", "referral", "UI", "proof", "risk", "other"],
+                "states": ["idle", "submitting", "success", "error"]
+              }
+            ]
+          },
+          {
+            "id": "1:12",
+            "name": "Admin Launch Readiness",
+            "type": "FRAME",
+            "route": "/admin/launch",
+            "children": [
+              {
+                "id": "1:12:1",
+                "name": "AdminReadinessPanel",
+                "type": "COMPONENT",
+                "states": ["pass", "warn", "fail"],
+                "fields": ["readinessChecklist", "launchGateDecision", "riskAnomalies", "challengeQueue", "paymentAnomalies", "runbookLinks"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "2:0",
+        "name": "Components",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "2:1",
+            "name": "Buttons",
+            "type": "COMPONENT_SET",
+            "variants": ["primary", "secondary", "ghost", "disabled"]
+          },
+          {
+            "id": "2:2",
+            "name": "Cards",
+            "type": "COMPONENT_SET",
+            "variants": ["PrizePoolCard", "ImpactMetricCard", "ProofCard", "TicketCard", "WinnerResultCard"]
+          },
+          {
+            "id": "2:3",
+            "name": "TrustLayer",
+            "type": "COMPONENT_SET",
+            "variants": ["StatusBadge", "SafetyNotice", "ChallengeWarning", "ProofTimeline"]
+          }
+        ]
+      }
+    ]
+  },
+  "components": {
+    "AppShell": {
+      "regions": ["topNavigation", "content", "bottomNavigation", "trustFooter"],
+      "responsive": true
+    },
+    "MobileFrame": {
+      "device": "iPhone 15 Pro",
+      "width": 430,
+      "height": 932,
+      "safeArea": true
+    },
+    "HeroEarthOrb": {
+      "type": "dynamic-3d-orb",
+      "animations": ["rotate", "pulse", "traceOrbit"],
+      "fallback": "CSS radial forest orb"
+    },
+    "WalletConnectCard": {
+      "states": ["disconnected", "connecting", "connected", "unsupported", "error"],
+      "securityCopyRequired": true
+    },
+    "PrizePoolCard": {
+      "fields": ["poolSize", "joinPrice", "winnerAllocation", "reforestationAllocation", "operationsAllocation", "proofStatus"],
+      "allocationModel": "70/20/10"
+    },
+    "ImpactMetricCard": {
+      "fields": ["title", "value", "unit", "verificationStatus"],
+      "animation": "countUp",
+      "claimLabelRequired": true
+    },
+    "DrawCountdown": {
+      "fields": ["closesAt", "timeRemaining", "roundStatus"]
+    },
+    "DrawProgress": {
+      "steps": ["entriesFrozen", "randomnessCertificate", "winnerRoot", "dropRoot", "fundAllocation", "anchorStatus"]
+    },
+    "WinnerResultCard": {
+      "fields": ["result", "reward", "ticketSeed", "earthResponse", "proofLink"]
+    },
+    "TicketCard": {
+      "fields": ["round", "status", "reward", "impactProof", "ticketSeed"]
+    },
+    "ParticipationHistory": {
+      "fields": ["tickets", "pools", "won", "pending", "leafPoints"]
+    },
+    "ProofTimeline": {
+      "fields": ["paymentIntent", "ticketSeed", "entryRoot", "randomnessCertificate", "impactCertificate", "anchor"],
+      "interactive": true
+    },
+    "AllocationBreakdown": {
+      "segments": [
+        {
+          "label": "Winner",
+          "percent": 70
+        },
+        {
+          "label": "Verified Reforestation",
+          "percent": 20
+        },
+        {
+          "label": "Dropin Operations",
+          "percent": 10
+        }
+      ]
+    },
+    "StatusBadge": {
+      "states": ["pass", "warn", "fail", "pending", "challenged", "verified"]
+    },
+    "FeedbackForm": {
+      "categories": ["bug", "payment", "referral", "UI", "proof", "risk", "other"],
+      "states": ["idle", "submitting", "success", "error"]
+    },
+    "AdminReadinessPanel": {
+      "states": ["pass", "warn", "fail"],
+      "operationalPrecisionRequired": true
+    }
+  },
+  "designTokens": {
+    "colors": {
+      "deepSpace": "#05070A",
+      "earthNavy": "#081827",
+      "climateBlue": "#1E88E5",
+      "canopyGreen": "#00C853",
+      "mossGreen": "#2E7D32",
+      "carbonGold": "#D4AF37",
+      "mistWhite": "#F5F7FA",
+      "softGray": "#AAB4C0",
+      "alertRed": "#FF4D4F",
+      "warningAmber": "#F6A609",
+      "cyanTrace": "#53F5FF"
+    },
+    "typography": {
+      "title1": {
+        "size": 64,
+        "weight": "Bold",
+        "lineHeight": 1.02
+      },
+      "title2": {
+        "size": 48,
+        "weight": "SemiBold",
+        "lineHeight": 1.08
+      },
+      "header": {
+        "size": 36,
+        "weight": "Medium",
+        "lineHeight": 1.12
+      },
+      "body": {
+        "size": 18,
+        "weight": "Regular",
+        "lineHeight": 1.55
+      },
+      "caption": {
+        "size": 14,
+        "weight": "Regular",
+        "lineHeight": 1.45,
+        "opacity": 0.72
+      }
+    },
+    "radius": {
+      "default": 16,
+      "card": 24,
+      "button": 999,
+      "mobileFrame": 34
+    },
+    "shadows": {
+      "soft": "0px 12px 36px rgba(0,0,0,0.24)",
+      "glass": "0px 24px 80px rgba(0,200,83,0.16)",
+      "proof": "0px 0px 36px rgba(83,245,255,0.18)"
+    },
+    "allocation": {
+      "winnerPercent": 70,
+      "verifiedReforestationPercent": 20,
+      "operationsPercent": 10
+    }
+  },
+  "interactions": {
+    "hover": "lift",
+    "click": "actionTrigger",
+    "loading": "skeleton",
+    "success": "proofTraceGlow",
+    "countUp": "metricAnimate",
+    "timeline": "interactivePanZoom",
+    "drawProgress": "deterministicProofSteps",
+    "walletConnection": "statefulCardTransition",
+    "feedbackSubmit": "optimisticDisableThenServerResult"
+  },
+  "accessibility": {
+    "contrast": "WCAG AA minimum; primary CTAs target AAA on dark backgrounds",
+    "keyboard": "All CTAs, links, forms, and admin actions must be keyboard reachable",
+    "motion": "Respect prefers-reduced-motion with static Earth Orb fallback",
+    "semantics": "Use real buttons for actions and links for navigation"
+  },
+  "safety": {
+    "requiredNotices": [
+      "Testnet only.",
+      "No mainnet funds.",
+      "Leaf Points are non-transferable.",
+      "Impact Certificate is not a certified carbon credit.",
+      "RWA Fragment is not guaranteed yield.",
+      "$CANOPY does not offset carbon tax."
+    ],
+    "forbiddenFraming": [
+      "casino UI",
+      "slot machine language",
+      "guaranteed yield",
+      "certified carbon credit",
+      "carbon tax offset"
+    ]
+  },
+  "metadata": {
+    "author": "CanopyProof UX Team",
+    "version": "1.0.0",
+    "platform": "Web + Mobile + Admin",
+    "theme": "Dark Mode Default",
+    "language": "LTR English",
+    "productPositioning": "Climate Impact Lottery + Proof-of-Planting Impact Dashboard",
+    "designBenchmark": "Apple Wallet + Robinhood + Patagonia Impact Report + premium Web3 climate dashboard"
+  }
+}
