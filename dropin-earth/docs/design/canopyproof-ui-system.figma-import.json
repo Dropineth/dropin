@@ -1,0 +1,164 @@
+{
+  "document": {
+    "id": "0:0",
+    "name": "CanopyProof UI System",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "1:0",
+        "name": "Pages",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "1:1",
+            "name": "Landing Page",
+            "type": "FRAME",
+            "absoluteBoundingBox": {
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 1024
+            },
+            "children": [
+              {
+                "id": "1:1:1",
+                "name": "HeroEarthOrb",
+                "type": "COMPONENT",
+                "absoluteBoundingBox": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 600
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 0,
+                      "g": 0.478,
+                      "b": 0.369
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "1:1:2",
+                "name": "MetricsCard",
+                "type": "COMPONENT",
+                "absoluteBoundingBox": {
+                  "x": 60,
+                  "y": 620,
+                  "width": 320,
+                  "height": 180
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 1,
+                      "g": 1,
+                      "b": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "1:1:3",
+                "name": "CTAButton",
+                "type": "COMPONENT",
+                "absoluteBoundingBox": {
+                  "x": 60,
+                  "y": 820,
+                  "width": 200,
+                  "height": 60
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 0,
+                      "g": 0.69,
+                      "b": 0.49
+                    }
+                  }
+                ],
+                "cornerRadius": 16
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "components": {
+    "HeroEarthOrb": {
+      "type": "dynamic-3d-orb",
+      "animations": [
+        "rotate",
+        "pulse"
+      ]
+    },
+    "MetricsCard": {
+      "fields": [
+        "title",
+        "value",
+        "unit"
+      ],
+      "animation": "countUp"
+    },
+    "CTAButton": {
+      "states": [
+        "default",
+        "hover",
+        "active",
+        "disabled"
+      ]
+    }
+  },
+  "designTokens": {
+    "colors": {
+      "primary": "#007A5E",
+      "secondary": "#00B07D",
+      "accent": "#FFBE0B",
+      "textDark": "#0F0F0F",
+      "textLight": "#FFFFFF",
+      "neutralLight": "#F4F4F4",
+      "neutralDark": "#2E2E2E"
+    },
+    "typography": {
+      "title1": {
+        "size": 64,
+        "weight": "Bold"
+      },
+      "title2": {
+        "size": 48,
+        "weight": "SemiBold"
+      },
+      "header": {
+        "size": 36,
+        "weight": "Medium"
+      },
+      "body": {
+        "size": 18,
+        "weight": "Regular"
+      },
+      "caption": {
+        "size": 14,
+        "weight": "Regular",
+        "opacity": 0.6
+      }
+    }
+  },
+  "interactions": {
+    "hover": "lift",
+    "click": "actionTrigger",
+    "loading": "skeleton",
+    "countUp": "metricAnimate"
+  },
+  "metadata": {
+    "author": "CanopyProof UX Team",
+    "version": "1.0.0",
+    "platform": "Web + Mobile",
+    "theme": "Dark Mode Default"
+  }
+}

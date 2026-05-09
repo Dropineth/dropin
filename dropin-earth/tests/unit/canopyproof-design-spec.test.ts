@@ -77,6 +77,47 @@ test("Figma document template is handoff-ready for design and engineering", () =
   assert.match(figma.metadata.productPositioning, /Proof-of-Planting/);
 });
 
+test("Downloaded Figma UI system import keeps API-shaped nodes and tokens parseable", () => {
+  const figma = JSON.parse(read("docs/design/canopyproof-ui-system.figma-import.json")) as {
+    document: {
+      type: string;
+      children: Array<{
+        name: string;
+        type: string;
+        children: Array<{
+          name: string;
+          type: string;
+          absoluteBoundingBox?: { width: number; height: number };
+          children?: Array<{ name: string; type: string; fills?: Array<{ type: string }> }>;
+        }>;
+      }>;
+    };
+    components: Record<string, { states?: string[]; animation?: string; animations?: string[] }>;
+    designTokens: { colors: Record<string, string>; typography: Record<string, { size: number; weight: string }> };
+    interactions: Record<string, string>;
+    metadata: { author: string; platform: string; theme: string };
+  };
+
+  const pages = figma.document.children.find((child) => child.name === "Pages");
+  const landing = pages?.children.find((frame) => frame.name === "Landing Page");
+  const childNames = landing?.children?.map((node) => node.name) ?? [];
+
+  assert.equal(figma.document.type, "DOCUMENT");
+  assert.equal(pages?.type, "CANVAS");
+  assert.equal(landing?.type, "FRAME");
+  assert.equal(landing?.absoluteBoundingBox?.width, 1440);
+  assert.ok(childNames.includes("HeroEarthOrb"));
+  assert.ok(childNames.includes("MetricsCard"));
+  assert.ok(childNames.includes("CTAButton"));
+  assert.deepEqual(figma.components.CTAButton.states, ["default", "hover", "active", "disabled"]);
+  assert.equal(figma.components.MetricsCard.animation, "countUp");
+  assert.equal(figma.designTokens.colors.primary, "#007A5E");
+  assert.equal(figma.designTokens.typography.title1.size, 64);
+  assert.equal(figma.interactions.loading, "skeleton");
+  assert.equal(figma.metadata.author, "CanopyProof UX Team");
+  assert.equal(figma.metadata.platform, "Web + Mobile");
+});
+
 test("UIUX spec preserves proof and compliance safety boundaries", () => {
   const spec = read("docs/design/canopyproof-uiux-spec.md");
 
