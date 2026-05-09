@@ -1,0 +1,112 @@
+.orbShell {
+  position: relative;
+  min-height: var(--orb-height, 600px);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 18% 14%, rgb(83 245 255 / 16%), transparent 32%),
+    radial-gradient(circle at 78% 18%, rgb(0 200 83 / 14%), transparent 34%),
+    #081827;
+  box-shadow: 0 24px 90px rgb(0 0 0 / 32%);
+}
+
+.compact {
+  --orb-height: 300px;
+}
+
+.orbShell::before {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 999px;
+  background:
+    linear-gradient(110deg, transparent 18%, rgb(255 255 255 / 12%) 19%, transparent 23%),
+    radial-gradient(circle at 30% 44%, rgb(0 200 83 / 62%), transparent 0 12%, transparent 22%),
+    radial-gradient(circle at 66% 56%, rgb(0 200 83 / 48%), transparent 0 15%, transparent 28%),
+    radial-gradient(circle at 50% 50%, #1e88e5, #0a3552 62%, #04111b 74%);
+  box-shadow: 0 0 90px rgb(30 136 229 / 48%);
+  animation: canopyproof-orbit 18s linear infinite;
+}
+
+.orbShell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 58% 42%, rgb(0 200 83 / 55%), transparent 0 2%, transparent 3%),
+    radial-gradient(circle at 42% 68%, rgb(212 175 55 / 52%), transparent 0 1.2%, transparent 2%),
+    radial-gradient(circle at 72% 58%, rgb(83 245 255 / 45%), transparent 0 1.4%, transparent 2.4%),
+    radial-gradient(circle, rgb(255 255 255 / 54%) 0 1px, transparent 1.2px);
+  background-size:
+    auto,
+    auto,
+    auto,
+    118px 118px;
+  opacity: 0.8;
+  animation: canopyproof-pulse 6s ease-in-out infinite;
+}
+
+.trace {
+  position: absolute;
+  inset: 8%;
+  border: 1px solid rgb(83 245 255 / 22%);
+  border-radius: 999px;
+  transform: rotate(-18deg) scaleY(0.36);
+}
+
+.caption {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 20px;
+  background: rgb(0 0 0 / 34%);
+  padding: 16px;
+  color: #f5f7fa;
+  backdrop-filter: blur(16px);
+}
+
+.eyebrow {
+  color: #53f5ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.body {
+  margin: 8px 0 0;
+  color: rgb(226 232 240 / 92%);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@keyframes canopyproof-orbit {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(360deg) scale(1.04);
+  }
+}
+
+@keyframes canopyproof-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orbShell::before,
+  .orbShell::after {
+    animation: none;
+  }
+}

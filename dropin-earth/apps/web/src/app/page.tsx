@@ -3,7 +3,6 @@ import {
   AppShell,
   ButtonLink,
   ClimateDrawPass,
-  HeroEarthOrb,
   ImpactTickerStrip,
   ImpactMetricCard,
   MobileFrame,
@@ -13,6 +12,7 @@ import {
   StatusBadge,
 } from "@dropin/ui";
 import { seedRegions } from "@dropin/schemas";
+import { CTAButton, HeroEarthOrb, MetricsCard } from "@/components/ui";
 
 const activeRound = {
   id: "round_v1_ggw_demo",
@@ -54,10 +54,10 @@ export default function Home() {
             framing, no mainnet funds in testnet, and every proof object can be challenged.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="/lottery/round_v1_ggw_demo">Join Active Draw</ButtonLink>
-            <ButtonLink href="/certificates/cert_v1_ggw_demo" variant="secondary">
+            <CTAButton href="/lottery/round_v1_ggw_demo">Join Active Draw</CTAButton>
+            <CTAButton href="/certificates/cert_v1_ggw_demo" variant="secondary">
               View Impact Proof
-            </ButtonLink>
+            </CTAButton>
             <ButtonLink href="/feedback" variant="ghost">
               Send Feedback
             </ButtonLink>
@@ -87,6 +87,27 @@ export default function Home() {
             </div>
           </MobileFrame>
         </div>
+      </section>
+
+      <section className="grid gap-4 pb-10 md:grid-cols-3">
+        <MetricsCard
+          caption="Count-up motion comes from the imported CanopyProof MetricsCard spec."
+          title="Trees Planted"
+          unit="+"
+          value={ggw?.verifiedTrees ?? 0}
+        />
+        <MetricsCard
+          caption="Estimated impact only; never displayed as verified carbon."
+          title="CO2 Estimated"
+          unit="t"
+          value={420}
+          verificationStatus="estimated"
+        />
+        <MetricsCard
+          caption="Challengeable proof objects stay visible before trust is finalized."
+          title="Proofs Issued"
+          value={18}
+        />
       </section>
 
       <section className="pb-10">
