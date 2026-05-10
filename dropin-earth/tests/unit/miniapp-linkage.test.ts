@@ -37,8 +37,9 @@ test("Mini App round renders production-safe payment, ticket, and proof state", 
   assert.match(source, /Leaf Points/);
   assert.match(entry, /Payment Intent Status/);
   assert.match(entry, /Ticket Seed/);
-  assert.match(entry, /\/payments\/intents/);
-  assert.match(entry, /\/lottery\/rounds\/\$\{roundId\}\/enter/);
+  assert.match(entry, /miniappApi\.createPaymentIntent/);
+  assert.match(entry, /miniappApi\.verifyPaymentIntent/);
+  assert.match(entry, /miniappApi\.enterRound/);
   assert.doesNotMatch(source, /Math\.random/);
   assert.doesNotMatch(source, /setInterval/);
   assert.doesNotMatch(entry, /Math\.random/);

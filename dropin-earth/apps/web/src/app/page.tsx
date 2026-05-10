@@ -10,7 +10,18 @@ import {
   StatusBadge,
 } from "@dropin/ui";
 import { seedRegions } from "@dropin/schemas";
-import { CTAButton, HeroEarthOrb, MetricsCard, ProofTimeline, RoundEconomicsCard } from "@/components/ui";
+import {
+  CTAButton,
+  ChallengeSurface,
+  HeroEarthOrb,
+  LeaderboardCard,
+  MetricsCard,
+  ProofTimeline,
+  RegionImpactMap,
+  RoundEconomicsCard,
+  WalletRailCard,
+} from "@/components/ui";
+import { dropinApi } from "@/lib/api";
 
 const activeRound = {
   id: "round_v1_ggw_demo",
@@ -22,8 +33,19 @@ const activeRound = {
   participants: 128,
 };
 
-export default function Home() {
+export default async function Home() {
   const ggw = seedRegions.find((region) => region.id === "region_ggw_sahel") ?? seedRegions[0];
+  const campaign = await dropinApi.campaign("campaign_v1_ggw_testnet").catch(() => undefined);
+  const report = await dropinApi.campaignReport("campaign_v1_ggw_testnet").catch(() => undefined);
+  const leaderboard = campaign?.leaderboard.length
+    ? campaign.leaderboard
+    : [
+        { rank: 1, userId: "demo-user", leafPoints: 1250 },
+        { rank: 2, userId: "co-plant-team", leafPoints: 940 },
+        { rank: 3, userId: "red-team-reviewer", leafPoints: 620 },
+      ];
+  const openChallengeCount = report?.challengeCount ?? 0;
+  const riskEventCount = report?.riskEventCount ?? 0;
 
   return (
     <AppShell
@@ -119,6 +141,20 @@ export default function Home() {
         />
       </section>
 
+      <section className="grid gap-6 pb-14 lg:grid-cols-[1.05fr_0.95fr]">
+        <RegionImpactMap regions={seedRegions} selectedRegionId={ggw?.id} />
+        <div className="grid gap-6">
+          <LeaderboardCard entries={leaderboard} />
+          <WalletRailCard
+            rails={[
+              { chain: "TON", label: "TON Connect / Mini App", status: "testnet" },
+              { chain: "Ethereum", label: "WalletConnect / USDC", status: "mock" },
+              { chain: "Solana", label: "Anchor proof verification", status: "testnet" },
+            ]}
+          />
+        </div>
+      </section>
+
       <section className="grid gap-6 pb-14 lg:grid-cols-[1fr_0.9fr]">
         <PrizePoolCard
           entries="Open to testers"
@@ -128,6 +164,10 @@ export default function Home() {
           title="Active Draw / Pre-draw"
         />
         <RoundEconomicsCard operations={10} reforestation={20} title="Every public pool uses 70/20/10" winner={70} />
+      </section>
+
+      <section className="pb-14">
+        <ChallengeSurface openChallengeCount={openChallengeCount} riskEventCount={riskEventCount} />
       </section>
 
       <section className="grid gap-6 pb-14 lg:grid-cols-3">

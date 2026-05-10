@@ -1019,6 +1019,118 @@ export const auditLogSchema = z.object({
   createdAt: z.string().datetime(),
 });
 
+export const apiResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
+  z.union([
+    z.object({
+      ok: z.literal(true),
+      data: dataSchema,
+    }),
+    z.object({
+      ok: z.literal(false),
+      error: z.string().min(1),
+    }),
+  ]);
+
+export const leaderboardEntrySchema = z.object({
+  rank: z.number().int().positive(),
+  userId: z.string().min(1),
+  leafPoints: z.number().int().nonnegative(),
+});
+
+export const campaignDetailSchema = z.object({
+  campaign: campaignSchema,
+  participantCount: z.number().int().nonnegative(),
+  leaderboard: z.array(leaderboardEntrySchema),
+});
+
+export const campaignMeSchema = z.object({
+  participant: campaignParticipantSchema.optional(),
+  leafPointsAccount: leafPointsAccountSchema.optional(),
+  tickets: z.array(lotteryTicketSchema).default([]),
+  drops: z.array(dropResultSchema).default([]),
+  rwaFragments: z.array(rwaFragmentSchema).default([]),
+});
+
+export const lotteryRoundDetailSchema = z.object({
+  round: lotteryRoundSchema,
+  entries: z.array(lotteryEntrySchema),
+  tickets: z.array(lotteryTicketSchema),
+});
+
+export const lotteryRoundResultsSchema = z.object({
+  proof: z.object({
+    entryMerkleRoot: z.string().optional(),
+    randomnessCertificateId: z.string().optional(),
+    finalSeed: z.string().optional(),
+    winnerMerkleRoot: z.string().optional(),
+    dropMerkleRoot: z.string().optional(),
+    scriptHash: z.string().optional(),
+  }),
+  winners: z.array(winnerResultSchema),
+  drops: z.array(dropResultSchema),
+  rwaFragments: z.array(
+    rwaFragmentSchema.extend({
+      disclosure: z.string().min(1).optional(),
+    }),
+  ),
+});
+
+export const paymentInstructionSchema = z.object({
+  paymentIntentId: z.string().min(1),
+  chain: z.enum(chainIds),
+  network: z.string().min(1).optional(),
+  currency: z.enum(currencies),
+  amount: z.string().min(1),
+  recipient: z.string().min(1),
+  memo: z.string().optional(),
+  paymentNonce: z.string().optional(),
+  expiresAt: z.string().datetime(),
+});
+
+export const poccAhinEvidenceSourceSchema = z.object({
+  id: z.string().min(1),
+  kind: z.enum(["payment", "ticket", "fund", "evidence", "certificate", "anchor", "challenge", "oracle"]),
+  hash: z.string().min(1),
+  weight: z.number().int().min(1).max(100),
+  signer: z.string().min(1),
+});
+
+export const poccAhinConsensusReceiptSchema = z.object({
+  id: z.string().min(1),
+  subjectType: z.enum(["round", "campaign", "tree", "certificate", "anchor", "payment"]),
+  subjectId: z.string().min(1),
+  evidenceRoot: z.string().min(1),
+  quorumWeight: z.number().int().nonnegative(),
+  requiredWeight: z.number().int().positive(),
+  accepted: z.boolean(),
+  sources: z.array(poccAhinEvidenceSourceSchema),
+  warnings: z.array(z.string()),
+  createdAt: z.string().datetime(),
+});
+
+export const anchorVerificationReceiptSchema = z.object({
+  id: z.string().min(1),
+  chain: z.enum(chainIds),
+  subjectId: z.string().min(1),
+  localRoot: z.string().min(1),
+  anchoredRoot: z.string().min(1).optional(),
+  status: z.enum(["verified", "pending", "mismatch", "unavailable"]),
+  txHash: z.string().optional(),
+  verifier: z.string().min(1),
+  checkedAt: z.string().datetime(),
+});
+
+export const notificationEventSchema = z.object({
+  id: z.string().min(1),
+  channel: z.enum(["slack", "telegram", "operator_log"]),
+  eventType: z.enum(["payment_confirmed", "ticket_issued", "challenge_submitted", "anchor_verified", "deployment_smoke"]),
+  severity: z.enum(["info", "warn", "critical"]),
+  message: z.string().min(1),
+  targetUrl: z.string().url().optional(),
+  redactedPayload: z.record(z.string(), z.unknown()).default({}),
+  createdAt: z.string().datetime(),
+});
+
 export const seedRegions = [
   {
     id: "region_ggw_sahel",
@@ -1135,3 +1247,14 @@ export type SystemStatusSnapshot = z.infer<typeof systemStatusSnapshotSchema>;
 export type AuditLog = z.infer<typeof auditLogSchema>;
 export type Region = z.infer<typeof regionSchema>;
 export type Species = z.infer<typeof speciesSchema>;
+export type ApiResponse<T> = { ok: true; data: T } | { ok: false; error: string };
+export type LeaderboardEntry = z.infer<typeof leaderboardEntrySchema>;
+export type CampaignDetail = z.infer<typeof campaignDetailSchema>;
+export type CampaignMe = z.infer<typeof campaignMeSchema>;
+export type LotteryRoundDetail = z.infer<typeof lotteryRoundDetailSchema>;
+export type LotteryRoundResults = z.infer<typeof lotteryRoundResultsSchema>;
+export type PaymentInstruction = z.infer<typeof paymentInstructionSchema>;
+export type PoccAhinEvidenceSource = z.infer<typeof poccAhinEvidenceSourceSchema>;
+export type PoccAhinConsensusReceipt = z.infer<typeof poccAhinConsensusReceiptSchema>;
+export type AnchorVerificationReceipt = z.infer<typeof anchorVerificationReceiptSchema>;
+export type NotificationEvent = z.infer<typeof notificationEventSchema>;

@@ -26,6 +26,10 @@ test("CanopyProof imported UI components exist as web-local adapters", () => {
   const button = file("apps/web/src/components/ui/CTAButton.tsx");
   const economics = file("apps/web/src/components/ui/RoundEconomicsCard.tsx");
   const proofTimeline = file("apps/web/src/components/ui/ProofTimeline.tsx");
+  const regionMap = file("apps/web/src/components/ui/RegionImpactMap.tsx");
+  const leaderboard = file("apps/web/src/components/ui/LeaderboardCard.tsx");
+  const challenge = file("apps/web/src/components/ui/ChallengeSurface.tsx");
+  const walletRails = file("apps/web/src/components/ui/WalletRailCard.tsx");
   const index = file("apps/web/src/components/ui/index.ts");
 
   assert.match(hero, /CanopyProof rotating Earth and forest orb/);
@@ -39,11 +43,20 @@ test("CanopyProof imported UI components exist as web-local adapters", () => {
   assert.match(economics, /70\/20\/10/);
   assert.match(proofTimeline, /Impact proof timeline/);
   assert.match(proofTimeline, /Challengeable/);
+  assert.match(regionMap, /Global Map \/ Area Selection/);
+  assert.match(regionMap, /Interactive 3D Earth orb region selector/);
+  assert.match(leaderboard, /Global \/ Regional Leaderboard/);
+  assert.match(challenge, /Payment, randomness, evidence, Impact Certificate/);
+  assert.match(walletRails, /TON \/ Ethereum \/ Solana ready/);
   assert.match(index, /HeroEarthOrb/);
   assert.match(index, /MetricsCard/);
   assert.match(index, /CTAButton/);
   assert.match(index, /RoundEconomicsCard/);
   assert.match(index, /ProofTimeline/);
+  assert.match(index, /RegionImpactMap/);
+  assert.match(index, /LeaderboardCard/);
+  assert.match(index, /ChallengeSurface/);
+  assert.match(index, /WalletRailCard/);
 });
 
 test("Active Draw renders prize pool and Plant & Enter CTA", () => {
@@ -53,6 +66,11 @@ test("Active Draw renders prize pool and Plant & Enter CTA", () => {
   assert.match(source, /ClimateDrawPass/);
   assert.match(source, /ParticipantAvatars/);
   assert.match(source, /Plant & Enter/);
+  const home = file("apps/web/src/app/page.tsx");
+  assert.match(home, /RegionImpactMap/);
+  assert.match(home, /LeaderboardCard/);
+  assert.match(home, /WalletRailCard/);
+  assert.match(home, /ChallengeSurface/);
 });
 
 test("Impact Proof includes no certified carbon credit safety copy", () => {
@@ -94,6 +112,7 @@ test("Mini App campaign includes testnet-only and Leaf Points non-transferable n
   const source = file("apps/miniapp-ton/src/app/campaign/[campaignId]/page.tsx");
   const index = file("apps/miniapp-ton/src/components/ui/index.ts");
   const hero = file("apps/miniapp-ton/src/components/ui/MiniHeroEarthOrb.tsx");
+  const region = file("apps/miniapp-ton/src/components/ui/MiniImpactRegionCard.tsx");
   const economics = file("apps/miniapp-ton/src/components/ui/MiniRoundEconomicsCard.tsx");
   const leaderboard = file("apps/miniapp-ton/src/components/ui/MiniLeaderboardCard.tsx");
 
@@ -112,7 +131,10 @@ test("Mini App campaign includes testnet-only and Leaf Points non-transferable n
   assert.match(index, /MiniCTAButton/);
   assert.match(index, /MiniRoundEconomicsCard/);
   assert.match(index, /MiniLeaderboardCard/);
+  assert.match(index, /MiniImpactRegionCard/);
   assert.match(hero, /TON \/ USDC testnet only/);
+  assert.match(region, /Mini 3D Earth orb region selector/);
+  assert.match(region, /Carbon Claim/);
   assert.match(economics, /Verified Reforestation/);
   assert.match(economics, /70\/20\/10/);
   assert.match(leaderboard, /Leaderboard/);

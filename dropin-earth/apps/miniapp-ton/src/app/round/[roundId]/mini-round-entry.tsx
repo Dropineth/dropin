@@ -1,20 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { PaymentIntent } from "@dropin/schemas";
 import { MiniStatusCard } from "@/components/ui";
-import { apiBaseUrl, type ApiResponse } from "@/lib/api";
-
-type PaymentIntent = {
-  id: string;
-  status: string;
-  amount: string;
-  currency: string;
-  expectedMemo?: string;
-  paymentNonce?: string;
-  confirmedTxHash?: string;
-  confirmedRawPayloadHash?: string;
-  verificationSource?: string;
-};
+import { miniappApi, postApi } from "@/lib/api";
 
 type TicketSeed = {
   entry: { id: string; paymentIntentId?: string };
@@ -68,7 +57,7 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
     setInstructions(undefined);
     setTicket(undefined);
     try {
-      const created = await post<{ intent: PaymentIntent }>("/payments/intents", {
+      const created = await miniappApi.createPaymentIntent({
         userId: "demo-user",
         wallet,
         purpose: "lottery_entry",
@@ -81,17 +70,17 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
       });
       setIntent(created.intent);
       if (isTonTestnet) {
-        const paymentInstructions = await get<PaymentInstructions>(`/payments/intents/${created.intent.id}/instructions`);
+        const paymentInstructions = await miniappApi.paymentInstructions(created.intent.id) as PaymentInstructions;
         setInstructions(paymentInstructions);
         setSubmittedTxHash(txHash);
       } else {
-        await post<PaymentIntent>(`/payments/intents/${created.intent.id}/submit`, {
+        await miniappApi.submitPaymentIntent(created.intent.id, {
           txHash,
           observedAmount: paymentAmount,
           observedCurrency: selectedCurrency,
           submittedBy: "telegram-miniapp",
         });
-        const confirmed = await post<PaymentIntent>(`/admin/payments/${created.intent.id}/confirm`, {
+        const confirmed = await postApi<PaymentIntent>(`/admin/payments/${created.intent.id}/confirm`, {
           actor: "telegram-miniapp-mock",
           confirmedTxHash: txHash,
           observedAmount: paymentAmount,
@@ -111,10 +100,10 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
     setBusy(true);
     setMessage("");
     try {
-      const result = await post<VerifyResult>(`/payments/intents/${intent.id}/verify`, {
+      const result = await miniappApi.verifyPaymentIntent(intent.id, {
         txHash: submittedTxHash,
         actor: "telegram-miniapp-ton-testnet",
-      });
+      }) as VerifyResult;
       setIntent(result.intent);
       if (result.verification.status !== "confirmed") {
         setMessage(result.verification.failureReason ?? `TON verification ${result.verification.status}`);
@@ -131,7 +120,7 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
     setBusy(true);
     setMessage("");
     try {
-      const result = await post<TicketSeed>(`/lottery/rounds/${roundId}/enter`, {
+      const result = await miniappApi.enterRound(roundId, {
         userId: "demo-user",
         wallet,
         amount: paymentAmount,
@@ -140,7 +129,7 @@ export function MiniRoundEntry({ roundId, regionId, amount, currency }: { roundI
         paymentIntentId: intent.id,
         antiSybilScore: 72,
         idempotencyKey: entryKey,
-      });
+      }) as TicketSeed;
       setTicket(result);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Plant & Enter failed");
@@ -234,24 +223,6 @@ function statusTone(status: string): "green" | "blue" | "gold" | "red" | "muted"
   if (status === "pending" || status === "generating") return "gold";
   if (status === "not_created") return "muted";
   return "blue";
-}
-
-async function get<T>(path: string) {
-  const response = await fetch(`${apiBaseUrl}${path}`);
-  const payload = (await response.json()) as ApiResponse<T>;
-  if (!payload.ok) throw new Error(payload.error);
-  return payload.data;
-}
-
-async function post<T>(path: string, body: unknown) {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const payload = (await response.json()) as ApiResponse<T>;
-  if (!payload.ok) throw new Error(payload.error);
-  return payload.data;
 }
 
 function CopyLine({ label, value }: { label: string; value: string }) {

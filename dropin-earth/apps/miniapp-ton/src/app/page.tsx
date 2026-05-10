@@ -1,4 +1,4 @@
-import { MiniCTAButton, MiniHeroEarthOrb, MiniMetricsCard, MiniRoundEconomicsCard } from "@/components/ui";
+import { MiniCTAButton, MiniHeroEarthOrb, MiniImpactRegionCard, MiniMetricsCard, MiniRoundEconomicsCard } from "@/components/ui";
 import { getApi } from "@/lib/api";
 
 type Round = {
@@ -14,6 +14,8 @@ type Round = {
 };
 
 type Region = {
+  name: string;
+  restorationPriority: "low" | "medium" | "high" | "critical";
   verifiedTrees: number;
   estimatedCo2eTonnes: number;
   survivalRateEstimate: number;
@@ -61,6 +63,8 @@ export default async function MiniHome() {
           winner={70}
         />
       </section>
+
+      <MiniImpactRegionCard region={region} />
 
       <section className="mini-card" style={{ display: "grid", gap: 10, marginTop: 14 }}>
         <h2 style={{ margin: 0, fontSize: 20 }}>Global Impact Pulse</h2>

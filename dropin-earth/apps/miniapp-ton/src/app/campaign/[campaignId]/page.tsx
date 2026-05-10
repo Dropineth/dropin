@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   MiniCTAButton,
   MiniHeroEarthOrb,
+  MiniImpactRegionCard,
   MiniLeaderboardCard,
   MiniMetricsCard,
   MiniRoundEconomicsCard,
@@ -14,6 +15,7 @@ type CampaignDetail = {
     id: string;
     title: string;
     status: string;
+    regionId: string;
     fundingGoalAmount: string;
     fundingGoalCurrency: string;
     treeGoal: number;
@@ -29,6 +31,14 @@ type CampaignMe = {
   };
 };
 
+type Region = {
+  name: string;
+  restorationPriority: "low" | "medium" | "high" | "critical";
+  verifiedTrees: number;
+  estimatedCo2eTonnes: number;
+  survivalRateEstimate: number;
+};
+
 export default async function MiniCampaignPage({ params }: { params: Promise<{ campaignId: string }> }) {
   const { campaignId } = await params;
   const [detail, me] = await Promise.all([
@@ -36,6 +46,7 @@ export default async function MiniCampaignPage({ params }: { params: Promise<{ c
     getApi<CampaignMe>(`/campaigns/${campaignId}/me?userId=demo-user`),
   ]);
   const { campaign } = detail;
+  const region = await getApi<Region>(`/regions/${campaign.regionId}`).catch(() => undefined);
 
   return (
     <main className="mini-shell">
@@ -89,6 +100,8 @@ export default async function MiniCampaignPage({ params }: { params: Promise<{ c
           winner={70}
         />
       </section>
+
+      {region ? <MiniImpactRegionCard region={region} /> : null}
 
       <section className="mini-card" style={{ display: "grid", gap: 8, marginTop: 14 }}>
         <h2 style={{ margin: 0, fontSize: 20 }}>Safety</h2>

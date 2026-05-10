@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { StatusBadge, WalletConnectCard } from "@dropin/ui";
-import { apiBaseUrl, type ApiResponse } from "@/lib/api";
+import { postApi } from "@/lib/api";
 
 type TicketSeed = {
   entry: {
@@ -49,28 +49,18 @@ export function LotteryEntryPanel({ roundId, regionId }: { roundId: string; regi
     setState("pending");
     setMessage("");
     try {
-      const response = await fetch(`${apiBaseUrl}/payments/intents`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "demo-user",
-          wallet,
-          purpose: "lottery_entry",
-          purposeId: roundId,
-          chain: "manual",
-          amount,
-          currency,
-          idempotencyKey: paymentIdempotencyKey,
-          metadata: { source: "web_lottery_panel", phase: "phase_8_mock_intent" },
-        }),
+      const payload = await postApi<{ intent: PaymentIntent; idempotent: boolean }>("/payments/intents", {
+        userId: "demo-user",
+        wallet,
+        purpose: "lottery_entry",
+        purposeId: roundId,
+        chain: "manual",
+        amount,
+        currency,
+        idempotencyKey: paymentIdempotencyKey,
+        metadata: { source: "web_lottery_panel", phase: "phase_8_mock_intent" },
       });
-      const payload = (await response.json()) as ApiResponse<{ intent: PaymentIntent; idempotent: boolean }>;
-      if (!payload.ok) {
-        throw new Error(payload.error);
-      }
-      setPaymentIntent(payload.data.intent);
+      setPaymentIntent(payload.intent);
       setState("idle");
     } catch (error) {
       setState("error");
@@ -83,14 +73,13 @@ export function LotteryEntryPanel({ roundId, regionId }: { roundId: string; regi
     setState("pending");
     setMessage("");
     try {
-      const response = await fetch(`${apiBaseUrl}/payments/intents/${paymentIntent.id}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ txHash, observedAmount: amount, observedCurrency: currency, submittedBy: "demo-user" }),
+      const payload = await postApi<PaymentIntent>(`/payments/intents/${paymentIntent.id}/submit`, {
+        txHash,
+        observedAmount: amount,
+        observedCurrency: currency,
+        submittedBy: "demo-user",
       });
-      const payload = (await response.json()) as ApiResponse<PaymentIntent>;
-      if (!payload.ok) throw new Error(payload.error);
-      setPaymentIntent(payload.data);
+      setPaymentIntent(payload);
       setState("idle");
     } catch (error) {
       setState("error");
@@ -103,14 +92,13 @@ export function LotteryEntryPanel({ roundId, regionId }: { roundId: string; regi
     setState("pending");
     setMessage("");
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/payments/${paymentIntent.id}/confirm`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ actor: "web-mock-admin", confirmedTxHash: txHash, observedAmount: amount, observedCurrency: currency }),
+      const payload = await postApi<PaymentIntent>(`/admin/payments/${paymentIntent.id}/confirm`, {
+        actor: "web-mock-admin",
+        confirmedTxHash: txHash,
+        observedAmount: amount,
+        observedCurrency: currency,
       });
-      const payload = (await response.json()) as ApiResponse<PaymentIntent>;
-      if (!payload.ok) throw new Error(payload.error);
-      setPaymentIntent(payload.data);
+      setPaymentIntent(payload);
       setState("idle");
     } catch (error) {
       setState("error");
@@ -122,27 +110,17 @@ export function LotteryEntryPanel({ roundId, regionId }: { roundId: string; regi
     setState("pending");
     setMessage("");
     try {
-      const response = await fetch(`${apiBaseUrl}/lottery/rounds/${roundId}/enter`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "demo-user",
-          wallet,
-          amount,
-          currency,
-          regionId,
-          paymentIntentId: paymentIntent?.id,
-          antiSybilScore: 72,
-          idempotencyKey,
-        }),
+      const payload = await postApi<TicketSeed>(`/lottery/rounds/${roundId}/enter`, {
+        userId: "demo-user",
+        wallet,
+        amount,
+        currency,
+        regionId,
+        paymentIntentId: paymentIntent?.id,
+        antiSybilScore: 72,
+        idempotencyKey,
       });
-      const payload = (await response.json()) as ApiResponse<TicketSeed>;
-      if (!payload.ok) {
-        throw new Error(payload.error);
-      }
-      setTicketSeed(payload.data);
+      setTicketSeed(payload);
       setState("success");
     } catch (error) {
       setState("error");

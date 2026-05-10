@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { AllocationBreakdown, Card, ClimateDrawPass, HeroEarthOrb, ImpactTickerStrip, SafetyNotice, StatusBadge } from "@dropin/ui";
+import { seedRegions } from "@dropin/schemas";
+import { ChallengeSurface, LeaderboardCard, RegionImpactMap } from "@/components/ui";
 import { getApi } from "@/lib/api";
 
 type CampaignDetail = {
@@ -115,6 +117,14 @@ export default async function CampaignPage({ params }: { params: Promise<{ campa
               { label: "Proof Status", value: readiness.decision, status: readiness.decision },
             ]}
           />
+        </section>
+
+        <section className="grid gap-6 pb-6 lg:grid-cols-[1.05fr_0.95fr]">
+          <RegionImpactMap regions={seedRegions} selectedRegionId={campaign.regionId} />
+          <div className="grid gap-6">
+            <LeaderboardCard entries={detail.leaderboard} title="Campaign Leaderboard" />
+            <ChallengeSurface openChallengeCount={report.challengeCount} riskEventCount={report.riskEventCount} />
+          </div>
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">

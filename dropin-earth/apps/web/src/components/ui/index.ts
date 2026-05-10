@@ -1,5 +1,9 @@
 export { CTAButton } from "./CTAButton";
+export { ChallengeSurface } from "./ChallengeSurface";
 export { HeroEarthOrb } from "./HeroEarthOrb";
+export { LeaderboardCard } from "./LeaderboardCard";
 export { MetricsCard } from "./MetricsCard";
 export { ProofTimeline } from "./ProofTimeline";
+export { RegionImpactMap } from "./RegionImpactMap";
 export { RoundEconomicsCard } from "./RoundEconomicsCard";
+export { WalletRailCard } from "./WalletRailCard";
