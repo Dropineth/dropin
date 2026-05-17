@@ -141,70 +141,77 @@ jobs:
       - name: Run Worker preview HTTP checks
         run: |
           set -euo pipefail
-          node <<'NODE'
+          node --input-type=commonjs <<'NODE'
           const fs = require("node:fs");
 
-          const baseUrl = `http://127.0.0.1:${process.env.PREVIEW_PORT || "8788"}`;
-          const checks = [
-            { path: "/", expected: [200] },
-            { path: "/robots.txt", expected: [200] },
-            { path: "/sitemap.xml", expected: [200] },
-            { path: "/icon.svg", expected: [200] },
-            { path: "/api/ready", expected: [200] },
-            { path: "/api/admin/launch/readiness", protected: true },
-          ];
+          async function main() {
+            const baseUrl = `http://127.0.0.1:${process.env.PREVIEW_PORT || "8788"}`;
+            const checks = [
+              { path: "/", expected: [200] },
+              { path: "/robots.txt", expected: [200] },
+              { path: "/sitemap.xml", expected: [200] },
+              { path: "/icon.svg", expected: [200] },
+              { path: "/api/ready", expected: [200] },
+              { path: "/api/admin/launch/readiness", protected: true },
+            ];
 
-          const results = [];
-          let failed = false;
+            const results = [];
+            let failed = false;
 
-          for (const check of checks) {
-            const startedAt = Date.now();
-            let status = 0;
-            let ok = false;
-            let error = null;
-            let contentType = null;
+            for (const check of checks) {
+              const startedAt = Date.now();
+              let status = 0;
+              let ok = false;
+              let error = null;
+              let contentType = null;
 
-            try {
-              const response = await fetch(`${baseUrl}${check.path}`, {
-                redirect: "manual",
-                headers: { "user-agent": "phase16-8-worker-preview/1.0" },
+              try {
+                const response = await fetch(`${baseUrl}${check.path}`, {
+                  redirect: "manual",
+                  headers: { "user-agent": "phase16-8-worker-preview/1.0" },
+                });
+                status = response.status;
+                contentType = response.headers.get("content-type");
+                ok = check.protected
+                  ? status !== 200 && status >= 400
+                  : check.expected.includes(status);
+              } catch (err) {
+                error = err instanceof Error ? err.message : String(err);
+              }
+
+              if (!ok) failed = true;
+              results.push({
+                path: check.path,
+                status,
+                ok,
+                expected: check.protected ? "protected-not-public-200" : check.expected,
+                contentType,
+                durationMs: Date.now() - startedAt,
+                error,
               });
-              status = response.status;
-              contentType = response.headers.get("content-type");
-              ok = check.protected
-                ? status !== 200 && status >= 400
-                : check.expected.includes(status);
-            } catch (err) {
-              error = err instanceof Error ? err.message : String(err);
             }
 
-            if (!ok) failed = true;
-            results.push({
-              path: check.path,
-              status,
-              ok,
-              expected: check.protected ? "protected-not-public-200" : check.expected,
-              contentType,
-              durationMs: Date.now() - startedAt,
-              error,
-            });
+            const payload = {
+              generatedAt: new Date().toISOString(),
+              baseUrl,
+              productionDeployExecuted: false,
+              results,
+              pass: !failed,
+            };
+
+            fs.writeFileSync(
+              "reports/phase16-8-worker-preview-http.json",
+              `${JSON.stringify(payload, null, 2)}\n`,
+            );
+
+            console.log(JSON.stringify(payload, null, 2));
+            if (failed) process.exit(1);
           }
 
-          const payload = {
-            generatedAt: new Date().toISOString(),
-            baseUrl,
-            productionDeployExecuted: false,
-            results,
-            pass: !failed,
-          };
-
-          fs.writeFileSync(
-            "reports/phase16-8-worker-preview-http.json",
-            `${JSON.stringify(payload, null, 2)}\n`,
-          );
-
-          console.log(JSON.stringify(payload, null, 2));
-          if (failed) process.exit(1);
+          main().catch((err) => {
+            console.error(err);
+            process.exit(1);
+          });
           NODE
 
       - name: Stop OpenNext Worker preview
