@@ -1,0 +1,96 @@
+name: Phase 16.6 OpenNext Build Only
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: dropin-earth
+
+jobs:
+  opennext-build-only:
+    name: Build CanopyProof OpenNext Worker artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DROPIN_CANOPYPROOF_MODE: production
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED: "false"
+      DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Prepare report directory
+        run: mkdir -p reports
+
+      - name: Runtime diagnostics
+        run: |
+          set -o pipefail
+          {
+            echo "## Runtime diagnostics"
+            echo "$ node -v"
+            node -v
+            echo "$ npm -v"
+            npm -v
+            echo "$ uname -a"
+            uname -a
+            echo "$ node process metadata"
+            node -e "console.log(JSON.stringify({ version: process.version, platform: process.platform, arch: process.arch, modules: process.versions.modules }, null, 2))"
+          } 2>&1 | tee reports/phase16-7-ci-runtime.log
+
+      - name: Install dependencies with native optional packages
+        run: |
+          set -o pipefail
+          npm ci --include=optional 2>&1 | tee reports/phase16-7-ci-npm-ci.log
+
+      - name: Verify native ast-grep binding
+        run: |
+          set -o pipefail
+          timeout 60s node -e "console.time('ast-grep'); const mod = require('@ast-grep/napi'); console.timeEnd('ast-grep'); console.log(JSON.stringify({ node: process.version, platform: process.platform, arch: process.arch, keys: Object.keys(mod).slice(0, 12) }, null, 2));" \
+            2>&1 | tee reports/phase16-7-ci-ast-grep-probe.log
+
+      - name: Build Next app
+        run: |
+          set -o pipefail
+          npm --workspace apps/web run build 2>&1 | tee reports/phase16-7-ci-next-build.log
+
+      - name: Build OpenNext Worker
+        run: |
+          set -o pipefail
+          npm --workspace apps/web run cf:build 2>&1 | tee reports/phase16-7-ci-cf-build.log
+
+      - name: Verify OpenNext artifact shape
+        run: |
+          set -o pipefail
+          {
+            echo "## OpenNext artifact shape"
+            echo "$ test -f apps/web/.open-next/worker.js"
+            test -f apps/web/.open-next/worker.js
+            echo "$ test -d apps/web/.open-next/assets"
+            test -d apps/web/.open-next/assets
+            echo "$ find apps/web/.open-next -maxdepth 2 -type f | sort | sed -n '1,120p'"
+            find apps/web/.open-next -maxdepth 2 -type f | sort | sed -n '1,120p'
+          } 2>&1 | tee reports/phase16-7-ci-opennext-artifact-check.log
+
+      - name: Upload build-only logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase16-7-opennext-build-only-logs
+          path: |
+            dropin-earth/reports/phase16-7-ci-*.log
+          if-no-files-found: warn
+          retention-days: 7
