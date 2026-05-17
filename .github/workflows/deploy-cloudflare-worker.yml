@@ -1,0 +1,85 @@
+name: CanopyProof OpenNext Worker Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_confirm:
+        description: "Type canopyproof.org to confirm the production Worker deploy."
+        required: true
+        type: string
+      phase_confirm:
+        description: "Type mainnet-production to confirm the Phase 16 production deploy gate."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canopyproof-opennext-worker-production
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+    working-directory: dropin-earth
+
+jobs:
+  deploy-web-worker:
+    name: Deploy CanopyProof Web OpenNext Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: canopyproof-production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      DROPIN_CANOPYPROOF_MODE: production
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED: "false"
+      DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify manual production confirmations
+        run: |
+          set -euo pipefail
+          test "${{ inputs.deploy_confirm }}" = "canopyproof.org"
+          test "${{ inputs.phase_confirm }}" = "mainnet-production"
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          echo "Manual deploy confirmations accepted."
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Install dependencies with native optional packages
+        run: npm ci --include=optional
+
+      - name: Typecheck web app
+        run: npm --workspace apps/web run typecheck
+
+      - name: Run CanopyProof unit tests
+        run: node --test --import tsx tests/unit/canopyproof-site.test.ts
+
+      - name: Lint web app
+        run: npm --workspace apps/web run lint
+
+      - name: Build Next app
+        run: npm --workspace apps/web run build
+
+      - name: Build OpenNext Worker
+        run: npm --workspace apps/web run cf:build
+
+      - name: Verify OpenNext artifact shape
+        run: |
+          test -f apps/web/.open-next/worker.js
+          test -d apps/web/.open-next/assets
+
+      - name: Deploy OpenNext Worker
+        run: npm --workspace apps/web run cf:deploy

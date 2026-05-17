@@ -1,9 +1,6 @@
-name: CanopyProof Production Deploy
+name: CanopyProof Production Deploy (Manual Gate)
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       deploy_mode:
@@ -15,14 +12,12 @@ on:
           - dry-run
           - live
       frontend_deploy_mode:
-        description: "Frontend deploy path. Use skip when Cloudflare Pages Git integration owns the web deploy."
+        description: "Frontend deploy path. Production UI deploy must use the OpenNext Worker path."
         required: true
-        default: "skip"
+        default: "opennext"
         type: choice
         options:
           - skip
-          - auto
-          - pages-static
           - opennext
 
 concurrency:
@@ -50,18 +45,18 @@ jobs:
       WORKER_NAME: canopyproof-api-proxy
       WORKER_ROUTE: canopyproof.org/api/*
       WORKER_ZONE_NAME: canopyproof.org
-      DROPIN_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'live' }}
-      DROPIN_FRONTEND_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.frontend_deploy_mode || 'skip' }}
+      DROPIN_DEPLOY_MODE: ${{ inputs.deploy_mode }}
+      DROPIN_FRONTEND_DEPLOY_MODE: ${{ inputs.frontend_deploy_mode }}
       DROPIN_CANOPYPROOF_MODE: production
       DROPIN_ALLOWED_ORIGINS: https://canopyproof.org,https://www.canopyproof.org
       DROPIN_ALLOW_ADMIN_PROXY: "false"
       DROPIN_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}
-      CF_API_TOKEN_PROD: ${{ secrets.CF_API_TOKEN_PROD }}
-      CF_ACCOUNT_ID_PROD: ${{ secrets.CF_ACCOUNT_ID_PROD }}
+      CF_API_TOKEN_PROD: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID_PROD: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       WORKER_ZONE_ID_PROD: ${{ secrets.WORKER_ZONE_ID_PROD }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN_PROD }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID_PROD }}
-      DROPIN_OPENNEXT_DEPLOY_COMMAND: ${{ secrets.DROPIN_OPENNEXT_DEPLOY_COMMAND }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      DROPIN_OPENNEXT_DEPLOY_COMMAND: npm --workspace apps/web run cf:deploy
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
@@ -86,7 +81,7 @@ jobs:
               ;;
           esac
 
-          REQUIRED_VARS=(CF_API_TOKEN_PROD CF_ACCOUNT_ID_PROD WORKER_ZONE_ID_PROD)
+          REQUIRED_VARS=(CF_API_TOKEN_PROD CF_ACCOUNT_ID_PROD)
           if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
             REQUIRED_VARS+=(DROPIN_API_ORIGIN)
           fi
@@ -117,7 +112,7 @@ jobs:
           cache-dependency-path: dropin-earth/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=optional
 
       - name: Generate Prisma client
         run: npm run db:generate
@@ -136,8 +131,10 @@ jobs:
           test "$DROPIN_CANOPYPROOF_MODE" = "production"
           test "$DROPIN_ALLOW_ADMIN_PROXY" = "false"
           test "$DROPIN_DEPLOY_MODE" = "dry-run" || test "${DROPIN_CLOUDFLARE_DEPLOY_CONFIRM:-}" = "canopyproof.org"
+          test "$DROPIN_FRONTEND_DEPLOY_MODE" = "skip" || test "$DROPIN_FRONTEND_DEPLOY_MODE" = "opennext"
+          test "$DROPIN_OPENNEXT_DEPLOY_COMMAND" = "npm --workspace apps/web run cf:deploy"
 
-      - name: Deploy Pages and Worker
+      - name: Deploy OpenNext frontend and API Worker
         run: ./deploy-canopyproof-auto.sh
 
       - name: Smoke test production

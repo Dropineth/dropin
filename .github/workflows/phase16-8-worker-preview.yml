@@ -1,0 +1,227 @@
+name: Phase 16.8 OpenNext Worker Preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: dropin-earth
+
+jobs:
+  worker-preview:
+    name: Build and preview CanopyProof OpenNext Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      DROPIN_CANOPYPROOF_MODE: production
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED: "false"
+      DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
+      PREVIEW_PORT: "8788"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Prepare report directory
+        run: mkdir -p reports
+
+      - name: Runtime diagnostics
+        run: |
+          set -o pipefail
+          {
+            echo "## Runtime diagnostics"
+            echo "$ node -v"
+            node -v
+            echo "$ npm -v"
+            npm -v
+            echo "$ uname -a"
+            uname -a
+            echo "$ node process metadata"
+            node -e "console.log(JSON.stringify({ version: process.version, platform: process.platform, arch: process.arch, modules: process.versions.modules }, null, 2))"
+          } 2>&1 | tee reports/phase16-8-ci-runtime.log
+
+      - name: Install dependencies with native optional packages
+        run: |
+          set -o pipefail
+          npm ci --include=optional 2>&1 | tee reports/phase16-8-ci-npm-ci.log
+
+      - name: Verify native ast-grep binding
+        run: |
+          set -o pipefail
+          {
+            echo "$ npm --workspace apps/web ls @opennextjs/cloudflare @ast-grep/napi"
+            npm --workspace apps/web ls @opennextjs/cloudflare @ast-grep/napi || true
+            echo "$ find node_modules apps/web/node_modules -path '*@ast-grep*' -maxdepth 5"
+            { find node_modules apps/web/node_modules -path '*@ast-grep*' -maxdepth 5 2>/dev/null || true; } | sort | sed -n '1,120p'
+            echo "$ cd apps/web && require('@ast-grep/napi')"
+            cd apps/web
+            timeout 60s node -e "console.time('ast-grep'); const mod = require('@ast-grep/napi'); console.timeEnd('ast-grep'); console.log(JSON.stringify({ node: process.version, platform: process.platform, arch: process.arch, keys: Object.keys(mod).slice(0, 12) }, null, 2));"
+          } 2>&1 | tee reports/phase16-8-ci-ast-grep-probe.log
+
+      - name: Typecheck web app
+        run: |
+          set -o pipefail
+          npm --workspace apps/web run typecheck 2>&1 | tee reports/phase16-8-ci-typecheck.log
+
+      - name: Run CanopyProof unit tests
+        run: |
+          set -o pipefail
+          node --test --import tsx tests/unit/canopyproof-site.test.ts 2>&1 | tee reports/phase16-8-ci-unit-test.log
+
+      - name: Lint web app
+        run: |
+          set -o pipefail
+          npm --workspace apps/web run lint 2>&1 | tee reports/phase16-8-ci-lint.log
+
+      - name: Build Next app
+        run: |
+          set -o pipefail
+          npm --workspace apps/web run build 2>&1 | tee reports/phase16-8-ci-next-build.log
+
+      - name: Build OpenNext Worker
+        run: |
+          set -o pipefail
+          npm --workspace apps/web run cf:build 2>&1 | tee reports/phase16-8-ci-cf-build.log
+
+      - name: Verify OpenNext artifact shape
+        run: |
+          set -o pipefail
+          {
+            echo "## OpenNext artifact shape"
+            echo "$ test -f apps/web/.open-next/worker.js"
+            test -f apps/web/.open-next/worker.js
+            echo "$ test -d apps/web/.open-next/assets"
+            test -d apps/web/.open-next/assets
+            echo "$ find apps/web/.open-next -maxdepth 2 -type f | sort | sed -n '1,120p'"
+            find apps/web/.open-next -maxdepth 2 -type f | sort | sed -n '1,120p'
+          } 2>&1 | tee reports/phase16-8-ci-opennext-artifact-check.log
+
+      - name: Start OpenNext Worker preview
+        run: |
+          set -euo pipefail
+          npm --workspace apps/web run cf:preview -- --port "$PREVIEW_PORT" > reports/phase16-8-worker-preview.log 2>&1 &
+          echo "$!" > reports/phase16-8-worker-preview.pid
+
+          ready=false
+          for _ in $(seq 1 90); do
+            if curl -fsS "http://127.0.0.1:${PREVIEW_PORT}/" >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+
+            if ! kill -0 "$(cat reports/phase16-8-worker-preview.pid)" >/dev/null 2>&1; then
+              echo "::error::OpenNext Worker preview exited before readiness."
+              tail -n 120 reports/phase16-8-worker-preview.log || true
+              exit 1
+            fi
+
+            sleep 2
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "::error::OpenNext Worker preview did not become ready on port ${PREVIEW_PORT}."
+            tail -n 120 reports/phase16-8-worker-preview.log || true
+            exit 1
+          fi
+
+          echo "OpenNext Worker preview ready on http://127.0.0.1:${PREVIEW_PORT}"
+
+      - name: Run Worker preview HTTP checks
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("node:fs");
+
+          const baseUrl = `http://127.0.0.1:${process.env.PREVIEW_PORT || "8788"}`;
+          const checks = [
+            { path: "/", expected: [200] },
+            { path: "/robots.txt", expected: [200] },
+            { path: "/sitemap.xml", expected: [200] },
+            { path: "/icon.svg", expected: [200] },
+            { path: "/api/ready", expected: [200] },
+            { path: "/api/admin/launch/readiness", protected: true },
+          ];
+
+          const results = [];
+          let failed = false;
+
+          for (const check of checks) {
+            const startedAt = Date.now();
+            let status = 0;
+            let ok = false;
+            let error = null;
+            let contentType = null;
+
+            try {
+              const response = await fetch(`${baseUrl}${check.path}`, {
+                redirect: "manual",
+                headers: { "user-agent": "phase16-8-worker-preview/1.0" },
+              });
+              status = response.status;
+              contentType = response.headers.get("content-type");
+              ok = check.protected
+                ? status !== 200 && status >= 400
+                : check.expected.includes(status);
+            } catch (err) {
+              error = err instanceof Error ? err.message : String(err);
+            }
+
+            if (!ok) failed = true;
+            results.push({
+              path: check.path,
+              status,
+              ok,
+              expected: check.protected ? "protected-not-public-200" : check.expected,
+              contentType,
+              durationMs: Date.now() - startedAt,
+              error,
+            });
+          }
+
+          const payload = {
+            generatedAt: new Date().toISOString(),
+            baseUrl,
+            productionDeployExecuted: false,
+            results,
+            pass: !failed,
+          };
+
+          fs.writeFileSync(
+            "reports/phase16-8-worker-preview-http.json",
+            `${JSON.stringify(payload, null, 2)}\n`,
+          );
+
+          console.log(JSON.stringify(payload, null, 2));
+          if (failed) process.exit(1);
+          NODE
+
+      - name: Stop OpenNext Worker preview
+        if: always()
+        run: |
+          if [ -f reports/phase16-8-worker-preview.pid ]; then
+            kill "$(cat reports/phase16-8-worker-preview.pid)" >/dev/null 2>&1 || true
+          fi
+
+      - name: Upload preview logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase16-8-worker-preview-logs
+          path: |
+            dropin-earth/reports/phase16-8-ci-*.log
+            dropin-earth/reports/phase16-8-worker-preview.log
+            dropin-earth/reports/phase16-8-worker-preview-http.json
+          if-no-files-found: warn
+          retention-days: 7
