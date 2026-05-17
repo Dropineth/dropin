@@ -9,6 +9,17 @@ function read(relativePath: string): string {
   return readFileSync(join(root, relativePath), "utf8");
 }
 
+function readFirstExisting(relativePaths: string[]): string {
+  for (const relativePath of relativePaths) {
+    const absolutePath = join(root, relativePath);
+    if (existsSync(absolutePath)) {
+      return readFileSync(absolutePath, "utf8");
+    }
+  }
+
+  throw new Error(`None of these files exist: ${relativePaths.join(", ")}`);
+}
+
 test("CanopyProof homepage exposes the required public narrative", () => {
   const page = read("apps/web/src/components/canopyproof/CanopyProofLanding.tsx");
   const content = read("apps/web/src/data/siteContent.ts");
@@ -64,7 +75,10 @@ test("CanopyProof visual system includes reduced motion support and reusable mar
 
 test("Cloudflare deployment docs and workflow preserve the existing OpenNext path", () => {
   const docs = read("docs/deploy-cloudflare.md");
-  const workflow = read(".github/workflows/deploy-cloudflare-worker.yml");
+  const workflow = readFirstExisting([
+    ".github/workflows/deploy-cloudflare-worker.yml",
+    "../.github/workflows/deploy-cloudflare-worker.yml",
+  ]);
 
   assert.match(docs, /npm run deploy:web:cloudflare/);
   assert.match(docs, /npm --workspace apps\/web run cf:build/);
