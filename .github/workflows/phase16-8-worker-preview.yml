@@ -111,7 +111,7 @@ jobs:
       - name: Start OpenNext Worker preview
         run: |
           set -euo pipefail
-          npm --workspace apps/web run cf:preview -- --port "$PREVIEW_PORT" > reports/phase16-8-worker-preview.log 2>&1 &
+          npm --workspace apps/web exec -- opennextjs-cloudflare preview --port "$PREVIEW_PORT" > reports/phase16-8-worker-preview.log 2>&1 &
           echo "$!" > reports/phase16-8-worker-preview.pid
 
           ready=false
