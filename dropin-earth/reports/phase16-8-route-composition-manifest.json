@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "phase16.8-r1.route-composition.v1",
+  "generatedFor": "CanopyProof production route composition preview gate",
+  "productionDeployExecuted": false,
+  "workers": {
+    "web": {
+      "name": "canopyproof-web",
+      "source": "apps/web",
+      "kind": "OpenNext Cloudflare Worker",
+      "wranglerConfig": "apps/web/wrangler.jsonc"
+    },
+    "apiProxy": {
+      "name": "canopyproof-api-proxy",
+      "source": "infra/cloudflare/canopyproof-api-proxy.ts",
+      "kind": "Cloudflare Worker API proxy",
+      "generatedWranglerConfig": "infra/cloudflare/canopyproof-api-proxy.generated.wrangler.toml"
+    }
+  },
+  "expectedHostnames": [
+    "canopyproof.org",
+    "www.canopyproof.org"
+  ],
+  "expectedRoutes": [
+    {
+      "pattern": "canopyproof.org/api/*",
+      "owner": "api-proxy",
+      "worker": "canopyproof-api-proxy",
+      "specificity": "more-specific-than-web-catchall"
+    },
+    {
+      "pattern": "www.canopyproof.org/api/*",
+      "owner": "api-proxy",
+      "worker": "canopyproof-api-proxy",
+      "specificity": "more-specific-than-web-catchall"
+    },
+    {
+      "pattern": "canopyproof.org/*",
+      "owner": "web",
+      "worker": "canopyproof-web",
+      "specificity": "catchall-after-api"
+    },
+    {
+      "pattern": "www.canopyproof.org/*",
+      "owner": "web",
+      "worker": "canopyproof-web",
+      "specificity": "catchall-after-api"
+    }
+  ],
+  "routeSpecificityBehavior": {
+    "rule": "The /api/* Worker route must take precedence over the web catchall route for the same hostname.",
+    "apiRouteOwner": "api-proxy",
+    "nonApiRouteOwner": "web"
+  },
+  "expectedEndpointOwners": {
+    "/": {
+      "owner": "web",
+      "expectedStatus": 200
+    },
+    "/robots.txt": {
+      "owner": "web",
+      "expectedStatus": 200
+    },
+    "/sitemap.xml": {
+      "owner": "web",
+      "expectedStatus": 200
+    },
+    "/icon.svg": {
+      "owner": "web",
+      "expectedStatus": 200
+    },
+    "/api/ready": {
+      "owner": "api-proxy",
+      "upstreamPath": "/ready",
+      "expectedStatus": 200
+    },
+    "/api/admin/launch/readiness": {
+      "owner": "api-proxy",
+      "upstreamPath": "/admin/launch/readiness",
+      "expectedStatus": "403-or-404-never-public-200",
+      "protected": true
+    }
+  },
+  "safetyBoundaries": {
+    "webWorkerMustNotServeApiReady": true,
+    "webWorkerMustNotExposeAdminReadiness": true,
+    "apiProxyAdminProxyDefault": "disabled",
+    "productionProtocolWrites": "blocked",
+    "automaticCanopyDistribution": "prohibited"
+  }
+}

@@ -1,0 +1,305 @@
+name: Phase 16.8-R1 Route Composition Preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+    working-directory: dropin-earth
+
+jobs:
+  route-composition-preview:
+    name: Preview CanopyProof web plus API proxy route composition
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED: "false"
+      DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
+      WEB_PREVIEW_PORT: "8788"
+      API_ORIGIN_PORT: "8787"
+      API_PROXY_PREVIEW_PORT: "8789"
+      ROUTE_COMPOSITION_PREVIEW_PORT: "8790"
+      WEB_PREVIEW_ORIGIN: "http://127.0.0.1:8788"
+      API_PROXY_PREVIEW_ORIGIN: "http://127.0.0.1:8789"
+      DROPIN_API_ORIGIN: "http://127.0.0.1:8787"
+      DROPIN_CANOPYPROOF_MODE: "testnet"
+      DROPIN_ALLOWED_ORIGINS: "http://127.0.0.1:8790,http://127.0.0.1:8788,https://canopyproof.org,https://www.canopyproof.org"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Prepare report directory
+        run: mkdir -p reports
+
+      - name: Runtime diagnostics
+        run: |
+          set -o pipefail
+          {
+            echo "## Runtime diagnostics"
+            echo "$ node -v"
+            node -v
+            echo "$ npm -v"
+            npm -v
+            echo "$ uname -a"
+            uname -a
+            echo "$ node process metadata"
+            node -e "console.log(JSON.stringify({ version: process.version, platform: process.platform, arch: process.arch, modules: process.versions.modules }, null, 2))"
+          } 2>&1 | tee reports/phase16-8-r1-runtime.log
+
+      - name: Install dependencies with native optional packages
+        run: |
+          set -o pipefail
+          npm ci --include=optional 2>&1 | tee reports/phase16-8-r1-npm-ci.log
+
+      - name: Verify native ast-grep binding
+        run: |
+          set -o pipefail
+          {
+            echo "$ cd apps/web && require('@ast-grep/napi')"
+            cd apps/web
+            node -e "console.time('ast-grep'); require('@ast-grep/napi'); console.timeEnd('ast-grep')"
+          } 2>&1 | tee reports/phase16-8-r1-ast-grep-probe.log
+
+      - name: Run web gates
+        run: |
+          set -o pipefail
+          {
+            npm --workspace apps/web run typecheck
+            node --test --import tsx tests/unit/canopyproof-site.test.ts
+            npm --workspace apps/web run lint
+            npm --workspace apps/web run build
+            npm --workspace apps/web run cf:build
+            test -f apps/web/.open-next/worker.js
+            test -d apps/web/.open-next/assets
+          } 2>&1 | tee reports/phase16-8-r1-web-gates.log
+
+      - name: Start API origin
+        run: |
+          set -euo pipefail
+          PORT="$API_ORIGIN_PORT" npm --workspace services/api run start > reports/phase16-8-r1-api-origin.log 2>&1 &
+          echo "$!" > reports/phase16-8-r1-api-origin.pid
+
+          ready=false
+          for _ in $(seq 1 90); do
+            if curl -fsS "http://127.0.0.1:${API_ORIGIN_PORT}/ready" >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            if ! kill -0 "$(cat reports/phase16-8-r1-api-origin.pid)" >/dev/null 2>&1; then
+              echo "::error::API origin exited before readiness."
+              tail -n 120 reports/phase16-8-r1-api-origin.log || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "::error::API origin did not become ready on port ${API_ORIGIN_PORT}."
+            tail -n 120 reports/phase16-8-r1-api-origin.log || true
+            exit 1
+          fi
+
+      - name: Start web OpenNext preview
+        run: |
+          set -euo pipefail
+          npm --workspace apps/web exec -- opennextjs-cloudflare preview --port "$WEB_PREVIEW_PORT" > reports/phase16-8-r1-web-preview.log 2>&1 &
+          echo "$!" > reports/phase16-8-r1-web-preview.pid
+
+          ready=false
+          for _ in $(seq 1 90); do
+            if curl -fsS "http://127.0.0.1:${WEB_PREVIEW_PORT}/" >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            if ! kill -0 "$(cat reports/phase16-8-r1-web-preview.pid)" >/dev/null 2>&1; then
+              echo "::error::Web OpenNext preview exited before readiness."
+              tail -n 120 reports/phase16-8-r1-web-preview.log || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "::error::Web OpenNext preview did not become ready on port ${WEB_PREVIEW_PORT}."
+            tail -n 120 reports/phase16-8-r1-web-preview.log || true
+            exit 1
+          fi
+
+      - name: Start existing API proxy preview
+        run: |
+          set -euo pipefail
+          npx tsx scripts/phase16-8-api-proxy-preview.ts > reports/phase16-8-r1-api-proxy-preview.log 2>&1 &
+          echo "$!" > reports/phase16-8-r1-api-proxy-preview.pid
+
+          ready=false
+          for _ in $(seq 1 90); do
+            if curl -fsS "http://127.0.0.1:${API_PROXY_PREVIEW_PORT}/api/ready" >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            if ! kill -0 "$(cat reports/phase16-8-r1-api-proxy-preview.pid)" >/dev/null 2>&1; then
+              echo "::error::API proxy preview exited before readiness."
+              tail -n 120 reports/phase16-8-r1-api-proxy-preview.log || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "::error::API proxy preview did not become ready on port ${API_PROXY_PREVIEW_PORT}."
+            tail -n 120 reports/phase16-8-r1-api-proxy-preview.log || true
+            exit 1
+          fi
+
+      - name: Start route composition router
+        run: |
+          set -euo pipefail
+          node scripts/phase16-8-route-composition-preview.mjs > reports/phase16-8-r1-route-composition-preview.log 2>&1 &
+          echo "$!" > reports/phase16-8-r1-route-composition-preview.pid
+
+          ready=false
+          for _ in $(seq 1 90); do
+            if curl -fsS "http://127.0.0.1:${ROUTE_COMPOSITION_PREVIEW_PORT}/" >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            if ! kill -0 "$(cat reports/phase16-8-r1-route-composition-preview.pid)" >/dev/null 2>&1; then
+              echo "::error::Route composition preview exited before readiness."
+              tail -n 120 reports/phase16-8-r1-route-composition-preview.log || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "::error::Route composition preview did not become ready on port ${ROUTE_COMPOSITION_PREVIEW_PORT}."
+            tail -n 120 reports/phase16-8-r1-route-composition-preview.log || true
+            exit 1
+          fi
+
+      - name: Run route composition HTTP checks
+        run: |
+          set -euo pipefail
+          node --input-type=commonjs <<'NODE'
+          const fs = require("node:fs");
+
+          async function main() {
+            const baseUrl = `http://127.0.0.1:${process.env.ROUTE_COMPOSITION_PREVIEW_PORT || "8790"}`;
+            const checks = [
+              { path: "/", expected: [200], owner: "web" },
+              { path: "/robots.txt", expected: [200], owner: "web" },
+              { path: "/sitemap.xml", expected: [200], owner: "web" },
+              { path: "/icon.svg", expected: [200], owner: "web" },
+              { path: "/api/ready", expected: [200], owner: "api-proxy" },
+              { path: "/api/admin/launch/readiness", protected: true, owner: "api-proxy" },
+            ];
+
+            const results = [];
+            let failed = false;
+
+            for (const check of checks) {
+              const startedAt = Date.now();
+              let status = 0;
+              let ok = false;
+              let error = null;
+              let contentType = null;
+              let routeOwner = null;
+              let previewRouter = null;
+              let edgeHeader = null;
+
+              try {
+                const response = await fetch(`${baseUrl}${check.path}`, {
+                  redirect: "manual",
+                  headers: { "user-agent": "phase16-8-r1-route-composition/1.0" },
+                });
+                status = response.status;
+                contentType = response.headers.get("content-type");
+                routeOwner = response.headers.get("x-canopyproof-preview-route-owner");
+                previewRouter = response.headers.get("x-canopyproof-preview-router");
+                edgeHeader = response.headers.get("x-dropin-edge");
+                ok = check.protected
+                  ? status !== 200 && status >= 400
+                  : check.expected.includes(status);
+                if (check.owner && routeOwner !== check.owner) ok = false;
+              } catch (err) {
+                error = err instanceof Error ? err.message : String(err);
+              }
+
+              if (!ok) failed = true;
+              results.push({
+                path: check.path,
+                expected: check.protected ? "protected-not-public-200" : check.expected,
+                expectedOwner: check.owner,
+                status,
+                ok,
+                routeOwner,
+                previewRouter,
+                edgeHeader,
+                contentType,
+                durationMs: Date.now() - startedAt,
+                error,
+              });
+            }
+
+            const payload = {
+              generatedAt: new Date().toISOString(),
+              baseUrl,
+              productionDeployExecuted: false,
+              manifest: "reports/phase16-8-route-composition-manifest.json",
+              results,
+              pass: !failed,
+            };
+
+            fs.writeFileSync(
+              "reports/phase16-8-r1-route-composition-http.json",
+              `${JSON.stringify(payload, null, 2)}\n`,
+            );
+
+            console.log(JSON.stringify(payload, null, 2));
+            if (failed) process.exit(1);
+          }
+
+          main().catch((err) => {
+            console.error(err);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Stop preview processes
+        if: always()
+        run: |
+          for pid_file in \
+            reports/phase16-8-r1-route-composition-preview.pid \
+            reports/phase16-8-r1-api-proxy-preview.pid \
+            reports/phase16-8-r1-web-preview.pid \
+            reports/phase16-8-r1-api-origin.pid
+          do
+            if [ -f "$pid_file" ]; then
+              kill "$(cat "$pid_file")" >/dev/null 2>&1 || true
+            fi
+          done
+
+      - name: Upload route composition preview logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase16-8-r1-route-composition-preview-logs
+          path: |
+            dropin-earth/reports/phase16-8-route-composition-manifest.json
+            dropin-earth/reports/phase16-8-r1-*.log
+            dropin-earth/reports/phase16-8-r1-route-composition-http.json
+          if-no-files-found: warn
+          retention-days: 7

@@ -138,7 +138,7 @@ jobs:
 
           echo "OpenNext Worker preview ready on http://127.0.0.1:${PREVIEW_PORT}"
 
-      - name: Run Worker preview HTTP checks
+      - name: Run web-only Worker preview HTTP checks
         run: |
           set -euo pipefail
           node --input-type=commonjs <<'NODE'
@@ -151,7 +151,7 @@ jobs:
               { path: "/robots.txt", expected: [200] },
               { path: "/sitemap.xml", expected: [200] },
               { path: "/icon.svg", expected: [200] },
-              { path: "/api/ready", expected: [200] },
+              { path: "/api/ready", expected: [404], owner: "api-proxy-not-web" },
               { path: "/api/admin/launch/readiness", protected: true },
             ];
 
@@ -185,6 +185,7 @@ jobs:
                 status,
                 ok,
                 expected: check.protected ? "protected-not-public-200" : check.expected,
+                owner: check.owner || (check.path.startsWith("/api/") ? "api-proxy" : "web"),
                 contentType,
                 durationMs: Date.now() - startedAt,
                 error,
