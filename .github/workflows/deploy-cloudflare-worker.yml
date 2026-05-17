@@ -65,7 +65,7 @@ jobs:
         run: npm --workspace apps/web run typecheck
 
       - name: Run CanopyProof unit tests
-        run: node --test --import tsx ../tests/unit/canopyproof-site.test.ts
+        run: node --test --import tsx tests/unit/canopyproof-site.test.ts
 
       - name: Lint web app
         run: npm --workspace apps/web run lint

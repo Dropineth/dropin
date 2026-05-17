@@ -78,7 +78,7 @@ jobs:
       - name: Run CanopyProof unit tests
         run: |
           set -o pipefail
-          node --test --import tsx ../tests/unit/canopyproof-site.test.ts 2>&1 | tee reports/phase16-8-ci-unit-test.log
+          node --test --import tsx tests/unit/canopyproof-site.test.ts 2>&1 | tee reports/phase16-8-ci-unit-test.log
 
       - name: Lint web app
         run: |

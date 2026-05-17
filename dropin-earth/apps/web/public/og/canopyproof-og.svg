@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">CanopyProof by Dropin</title>
+  <desc id="desc">Environmental accountability for ecological restoration.</desc>
+  <defs>
+    <radialGradient id="earth" cx="62%" cy="46%" r="54%">
+      <stop offset="0" stop-color="#24D6C3" stop-opacity="0.88"/>
+      <stop offset="0.45" stop-color="#0B3554"/>
+      <stop offset="1" stop-color="#04111F"/>
+    </radialGradient>
+    <linearGradient id="mark" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#6EE787"/>
+      <stop offset="0.55" stop-color="#24D6C3"/>
+      <stop offset="1" stop-color="#0B3554"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#04111F"/>
+  <circle cx="825" cy="320" r="245" fill="url(#earth)" opacity="0.92"/>
+  <path d="M1030 330c-80 84-214 102-300 37" fill="none" stroke="#39DDF2" stroke-width="2" opacity="0.42"/>
+  <path d="M688 250c92-62 226-36 296 50" fill="none" stroke="#24D6C3" stroke-width="2" opacity="0.34"/>
+  <g transform="translate(82 78)">
+    <circle cx="54" cy="54" r="54" fill="#06243A"/>
+    <path d="M94 57c-4 25-23 43-45 43-23 0-41-17-41-40 0-10 4-20 11-29-6 12-3 25 7 35 16 15 45 11 66-10z" fill="url(#mark)"/>
+    <path d="M21 72c29-2 46-15 62-41-4 24-20 43-40 48-9 3-17 1-22-7z" fill="#6EE787"/>
+    <circle cx="56" cy="28" r="11" fill="#39DDF2" opacity="0.7"/>
+  </g>
+  <text x="82" y="240" fill="#F6F1E7" font-family="Inter, system-ui, sans-serif" font-size="78" font-weight="700">CanopyProof</text>
+  <text x="86" y="304" fill="#24D6C3" font-family="Inter, system-ui, sans-serif" font-size="34" font-weight="600">by Dropin</text>
+  <text x="86" y="382" fill="#F6F1E7" font-family="Inter, system-ui, sans-serif" font-size="40" font-weight="600">Environmental accountability.</text>
+  <text x="86" y="434" fill="#9FB7C2" font-family="Inter, system-ui, sans-serif" font-size="28">Verified. Transparent. Restored.</text>
+  <text x="86" y="538" fill="#9FB7C2" font-family="Inter, system-ui, sans-serif" font-size="22">Public-interest climate infrastructure for people and planet.</text>
+</svg>
