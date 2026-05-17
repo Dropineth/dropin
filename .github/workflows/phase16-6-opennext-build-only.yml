@@ -63,7 +63,7 @@ jobs:
             echo "$ npm --workspace apps/web ls @opennextjs/cloudflare @ast-grep/napi"
             npm --workspace apps/web ls @opennextjs/cloudflare @ast-grep/napi || true
             echo "$ find node_modules apps/web/node_modules -path '*@ast-grep*' -maxdepth 5"
-            find node_modules apps/web/node_modules -path '*@ast-grep*' -maxdepth 5 2>/dev/null | sort | sed -n '1,120p'
+            { find node_modules apps/web/node_modules -path '*@ast-grep*' -maxdepth 5 2>/dev/null || true; } | sort | sed -n '1,120p'
             echo "$ cd apps/web && require('@ast-grep/napi')"
             cd apps/web
             timeout 60s node -e "console.time('ast-grep'); const mod = require('@ast-grep/napi'); console.timeEnd('ast-grep'); console.log(JSON.stringify({ node: process.version, platform: process.platform, arch: process.arch, keys: Object.keys(mod).slice(0, 12) }, null, 2));"
