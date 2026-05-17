@@ -83,3 +83,24 @@ jobs:
 
       - name: Deploy OpenNext Worker
         run: npm --workspace apps/web run cf:deploy
+
+      - name: Post-deploy route composition smoke
+        run: |
+          set -euo pipefail
+
+          check_status() {
+            local label="$1"
+            local url="$2"
+            local expected="$3"
+            local status
+            status="$(curl -sS -L --max-time 25 -o /dev/null -w '%{http_code}' "$url")"
+            echo "$label $status $url"
+            test "$status" = "$expected"
+          }
+
+          check_status "root" "https://canopyproof.org/" "200"
+          check_status "robots" "https://canopyproof.org/robots.txt" "200"
+          check_status "sitemap" "https://canopyproof.org/sitemap.xml" "200"
+          check_status "icon" "https://canopyproof.org/icon.svg" "200"
+          check_status "api-ready" "https://canopyproof.org/api/ready" "200"
+          check_status "admin-blocked" "https://canopyproof.org/api/admin/launch/readiness" "403"
