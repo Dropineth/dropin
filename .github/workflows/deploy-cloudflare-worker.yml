@@ -99,6 +99,7 @@ jobs:
           }
 
           check_status "root" "https://canopyproof.org/" "200"
+          check_status "www-root" "https://www.canopyproof.org/" "200"
           check_status "robots" "https://canopyproof.org/robots.txt" "200"
           check_status "sitemap" "https://canopyproof.org/sitemap.xml" "200"
           check_status "icon" "https://canopyproof.org/icon.svg" "200"
