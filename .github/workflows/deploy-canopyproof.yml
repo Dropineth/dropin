@@ -1,16 +1,15 @@
-name: CanopyProof Production Deploy (Manual Gate)
+name: CanopyProof Production Deploy (Dry Run Only)
 
 on:
   workflow_dispatch:
     inputs:
       deploy_mode:
-        description: "Run a dry-run validation or deploy to production."
+        description: "Run dry-run validation only. Legacy live production deploy is disabled; use deploy-cloudflare-worker.yml for production."
         required: true
         default: "dry-run"
         type: choice
         options:
           - dry-run
-          - live
       frontend_deploy_mode:
         description: "Frontend deploy path. Production UI deploy must use the OpenNext Worker path."
         required: true
@@ -28,7 +27,7 @@ jobs:
   deploy-production:
     name: Build, deploy, smoke test, and notify
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode == 'dry-run' && 'canopyproof-dry-run' || 'canopyproof-production' }}
+    environment: canopyproof-dry-run
     permissions:
       contents: read
 
@@ -71,20 +70,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Block legacy live production path
+        run: |
+          set -euo pipefail
+          if [ "$DROPIN_DEPLOY_MODE" != "dry-run" ]; then
+            echo "::error::Legacy live production deployment is disabled. Use deploy-cloudflare-worker.yml with target_sha, release-council approval evidence, and canopyproof-production required reviewers."
+            exit 1
+          fi
+          echo "Legacy workflow is restricted to dry-run validation only."
+
       - name: Fail-fast secret and mode checks
         run: |
           case "$DROPIN_DEPLOY_MODE" in
-            dry-run|live) ;;
+            dry-run) ;;
             *)
-              echo "::error::DROPIN_DEPLOY_MODE must be dry-run or live."
+              echo "::error::DROPIN_DEPLOY_MODE must be dry-run. Legacy live production deployment is disabled."
               exit 1
               ;;
           esac
 
           REQUIRED_VARS=(CF_API_TOKEN_PROD CF_ACCOUNT_ID_PROD)
-          if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
-            REQUIRED_VARS+=(DROPIN_API_ORIGIN)
-          fi
 
           for var in "${REQUIRED_VARS[@]}"; do
             if [ -z "${!var:-}" ]; then
@@ -96,10 +101,6 @@ jobs:
           if [ -n "${DROPIN_API_ORIGIN:-}" ] && [[ "$DROPIN_API_ORIGIN" != https://* ]]; then
             echo "::error::DROPIN_API_ORIGIN must be HTTPS for production deployment."
             exit 1
-          fi
-
-          if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
-            echo "DROPIN_CLOUDFLARE_DEPLOY_CONFIRM=canopyproof.org" >> "$GITHUB_ENV"
           fi
 
           echo "CanopyProof deployment preflight passed."

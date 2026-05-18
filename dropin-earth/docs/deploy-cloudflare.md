@@ -53,19 +53,38 @@ canopyproof.org/*      -> canopyproof-web
 www.canopyproof.org/*  -> canopyproof-web
 ```
 
-## Production Operator Command
+## Production Operator Path
 
-The release-council controlled path remains:
+Production deployment must use the protected GitHub Actions workflow:
 
-```bash
-DROPIN_CLOUDFLARE_DEPLOY_CONFIRM=canopyproof.org \
-DROPIN_PHASE16_DEPLOY_CONFIRM=mainnet-production \
-DROPIN_OPENNEXT_DEPLOY_COMMAND="npm run deploy:web:cloudflare" \
-npm run deploy:phase16-production -- --live
+```text
+.github/workflows/deploy-cloudflare-worker.yml
 ```
 
-If `gate:phase16-production` is not `go`, this command must stop. No manual
-override is allowed in this runbook.
+Manual workflow inputs:
+
+```text
+deploy_confirm=canopyproof.org
+phase_confirm=mainnet-production
+target_sha=<approved-deploy-commit-sha>
+```
+
+For the Phase 16.9 approval freeze, the recommended target is:
+
+```text
+83d3dd17de875fb97681e716b79dbe23e11a4a4e
+```
+
+Required human approval statement:
+
+```text
+I approve Phase 16.9 production deployment of the CanopyProof web Worker to canopyproof.org using the protected GitHub Actions workflow with target_sha 83d3dd17de875fb97681e716b79dbe23e11a4a4e. Preserve the existing canopyproof-api-proxy /api/* route. Do not modify API proxy routes. Do not deploy from the broken local macOS runtime.
+```
+
+The legacy `.github/workflows/deploy-canopyproof.yml` workflow is dry-run only.
+Its live production path is intentionally disabled so it cannot bypass
+`target_sha`, release-council approval evidence, or the protected
+`canopyproof-production` environment.
 
 ## Local Verification
 
