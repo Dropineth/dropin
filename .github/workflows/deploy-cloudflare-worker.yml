@@ -81,6 +81,9 @@ jobs:
           test -f apps/web/.open-next/worker.js
           test -d apps/web/.open-next/assets
 
+      - name: Verify release council approval evidence
+        run: node scripts/phase16-9-verify-release-approval.mjs
+
       - name: Deploy OpenNext Worker
         run: npm --workspace apps/web run cf:deploy
 
