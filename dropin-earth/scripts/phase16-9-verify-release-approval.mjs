@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const REQUIRED_PHASE = "16.9";
 const REQUIRED_TARGET = "canopyproof-production";
+const REQUIRED_APPROVAL_MODEL = "2-of-N release council";
 const REQUIRED_APPROVALS = 2;
 const approvalPath = resolve(
   process.cwd(),
@@ -26,19 +26,13 @@ function fail(code, details = {}) {
   process.exit(1);
 }
 
-function currentCommit() {
-  if (process.env.GITHUB_SHA) {
-    return process.env.GITHUB_SHA.trim();
+function cliValue(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) {
+    return "";
   }
 
-  try {
-    return execFileSync("git", ["rev-parse", "HEAD"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim();
-  } catch {
-    fail("DEPLOY_COMMIT_UNRESOLVED");
-  }
+  return process.argv[index + 1] ?? "";
 }
 
 if (!existsSync(approvalPath)) {
@@ -55,7 +49,15 @@ try {
   });
 }
 
-const expectedCommit = currentCommit();
+const targetDeploySha = (
+  cliValue("--target-sha") || process.env.TARGET_DEPLOY_SHA || ""
+).trim();
+
+if (!/^[0-9a-f]{40}$/i.test(targetDeploySha)) {
+  fail("TARGET_DEPLOY_SHA_REQUIRED", {
+    detail: "Pass --target-sha or TARGET_DEPLOY_SHA as a 40-character commit SHA.",
+  });
+}
 
 if (payload.phase !== REQUIRED_PHASE) {
   fail("RELEASE_COUNCIL_APPROVAL_WRONG_PHASE", {
@@ -71,10 +73,23 @@ if (payload.target !== REQUIRED_TARGET) {
   });
 }
 
-if (payload.commit !== expectedCommit) {
-  fail("RELEASE_COUNCIL_APPROVAL_COMMIT_MISMATCH", {
-    expected: expectedCommit,
-    actual: payload.commit,
+if (Object.hasOwn(payload, "commit")) {
+  fail("RELEASE_COUNCIL_APPROVAL_LEGACY_COMMIT_FIELD_PRESENT", {
+    detail: "Use target_commit to avoid self-referential approval evidence.",
+  });
+}
+
+if (payload.target_commit !== targetDeploySha) {
+  fail("RELEASE_COUNCIL_APPROVAL_TARGET_COMMIT_MISMATCH", {
+    expected: targetDeploySha,
+    actual: payload.target_commit,
+  });
+}
+
+if (payload.approval_model !== REQUIRED_APPROVAL_MODEL) {
+  fail("RELEASE_COUNCIL_APPROVAL_MODEL_INVALID", {
+    expected: REQUIRED_APPROVAL_MODEL,
+    actual: payload.approval_model,
   });
 }
 
@@ -147,7 +162,8 @@ console.log(
       ok: true,
       phase: REQUIRED_PHASE,
       target: REQUIRED_TARGET,
-      commit: expectedCommit,
+      target_commit: targetDeploySha,
+      approval_model: REQUIRED_APPROVAL_MODEL,
       requiredApprovals: REQUIRED_APPROVALS,
       observedApprovals: uniqueApprovals.size,
       reviewers: [...uniqueApprovals.keys()],

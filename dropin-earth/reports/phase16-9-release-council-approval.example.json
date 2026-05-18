@@ -1,0 +1,22 @@
+{
+  "phase": "16.9",
+  "target": "canopyproof-production",
+  "target_commit": "<40-character-deploy-commit-sha>",
+  "approval_model": "2-of-N release council",
+  "approvals": [
+    {
+      "reviewer": "<github_username_1>",
+      "role": "release-council",
+      "decision": "approve",
+      "timestamp": "<iso8601>",
+      "rationale": "<short approval rationale>"
+    },
+    {
+      "reviewer": "<github_username_2>",
+      "role": "release-council",
+      "decision": "approve",
+      "timestamp": "<iso8601>",
+      "rationale": "<short approval rationale>"
+    }
+  ]
+}

@@ -11,9 +11,14 @@ on:
         description: "Type mainnet-production to confirm the Phase 16 production deploy gate."
         required: true
         type: string
+      target_sha:
+        description: "Exact 40-character commit SHA to deploy after release-council approval evidence is verified."
+        required: true
+        type: string
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: canopyproof-opennext-worker-production
@@ -39,7 +44,7 @@ jobs:
       DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
 
     steps:
-      - name: Checkout repository
+      - name: Checkout governance ref
         uses: actions/checkout@v4
 
       - name: Verify manual production confirmations
@@ -47,11 +52,25 @@ jobs:
           set -euo pipefail
           test "${{ inputs.deploy_confirm }}" = "canopyproof.org"
           test "${{ inputs.phase_confirm }}" = "mainnet-production"
-          test -n "${CLOUDFLARE_API_TOKEN:-}"
-          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          [[ "${{ inputs.target_sha }}" =~ ^[0-9a-fA-F]{40}$ ]]
           echo "Manual deploy confirmations accepted."
 
-      - name: Setup Node.js
+      - name: Setup Node.js for approval verification
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify release council approval evidence
+        env:
+          TARGET_DEPLOY_SHA: ${{ inputs.target_sha }}
+        run: node scripts/phase16-9-verify-release-approval.mjs
+
+      - name: Checkout target deploy SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_sha }}
+
+      - name: Setup Node.js for build
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -81,8 +100,38 @@ jobs:
           test -f apps/web/.open-next/worker.js
           test -d apps/web/.open-next/assets
 
-      - name: Verify release council approval evidence
-        run: node scripts/phase16-9-verify-release-approval.mjs
+      - name: Verify production environment reviewer protection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/environments/canopyproof-production" > /tmp/canopyproof-production-environment.json
+          python3 - <<'PY'
+          import json
+          import sys
+
+          with open("/tmp/canopyproof-production-environment.json", "r", encoding="utf-8") as handle:
+              environment = json.load(handle)
+
+          rules = environment.get("protection_rules") or []
+          has_required_reviewers = any(
+              rule.get("type") == "required_reviewers" and (rule.get("reviewers") or [])
+              for rule in rules
+          )
+
+          if not has_required_reviewers:
+              print("PRODUCTION_ENVIRONMENT_REVIEWERS_NOT_ENFORCED")
+              sys.exit(1)
+
+          print("GitHub Environment required reviewers are enforced.")
+          PY
+
+      - name: Verify Cloudflare deployment secrets are configured
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          echo "Cloudflare deployment secrets are configured."
 
       - name: Deploy OpenNext Worker
         run: npm --workspace apps/web run cf:deploy
