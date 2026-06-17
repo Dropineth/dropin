@@ -1,7 +1,7 @@
 {
   "phase": "16.9",
   "target": "canopyproof-production",
-  "target_commit": "8674661b81790c92ac2c08a69fdb6fab241c1b18",
+  "target_commit": "307f0a109da0f611db05227beb5432c5f8ee7ab1",
   "approval_model": "2-of-N release council",
   "approvals": [
     {
