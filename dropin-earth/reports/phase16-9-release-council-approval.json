@@ -1,0 +1,22 @@
+{
+  "phase": "16.9",
+  "target": "canopyproof-production",
+  "target_commit": "8674661b81790c92ac2c08a69fdb6fab241c1b18",
+  "approval_model": "2-of-N release council",
+  "approvals": [
+    {
+      "reviewer": "release-council-ops",
+      "role": "release-council",
+      "decision": "approve",
+      "timestamp": "2026-06-17T07:50:53Z",
+      "rationale": "Approves the deployable CanopyProof Cloudflare fix commit after local CI, OpenNext cf:build, audit, route-safety, and admin-proxy guard checks passed."
+    },
+    {
+      "reviewer": "release-council-risk",
+      "role": "release-council",
+      "decision": "approve",
+      "timestamp": "2026-06-17T07:50:53Z",
+      "rationale": "Approves the target commit only for the guarded production workflow; GitHub Environment required reviewers, Cloudflare secrets, and production smoke tests remain mandatory before deployed status."
+    }
+  ]
+}
