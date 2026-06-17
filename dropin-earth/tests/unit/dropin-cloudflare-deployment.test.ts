@@ -147,17 +147,22 @@ test("CanopyProof production metadata assets are present for OpenNext", () => {
   assert.equal(statSync(join(process.cwd(), "apps/web/src/app/sitemap.ts")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/sitemap.xml")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/icon.jpg")).isFile(), true);
+  assert.equal(statSync(join(process.cwd(), "apps/web/public/apple-touch-icon.jpg")).isFile(), true);
 
   const sitemapRoute = readFileSync(join(process.cwd(), "apps/web/src/app/sitemap.ts"), "utf8");
   const publicSitemap = readFileSync(join(process.cwd(), "apps/web/public/sitemap.xml"), "utf8");
-  const icon = readFileSync(join(process.cwd(), "apps/web/public/icon.jpg"), "utf8");
+  const icon = readFileSync(join(process.cwd(), "apps/web/public/icon.jpg"));
+  const appleIcon = readFileSync(join(process.cwd(), "apps/web/public/apple-touch-icon.jpg"));
 
   assert.match(sitemapRoute, /MetadataRoute\.Sitemap/);
   assert.match(sitemapRoute, /https:\/\/canopyproof\.org/);
   assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/<\/loc>/);
   assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/status<\/loc>/);
-  assert.match(icon, /<svg[^>]+viewBox="0 0 128 128"/);
-  assert.match(icon, /CanopyProof mark/);
+  assert.ok(icon.length > 1024, "icon.jpg must be a non-empty production logo image");
+  assert.equal(icon[0], 0xff, "icon.jpg must start with JPEG SOI byte 0xff");
+  assert.equal(icon[1], 0xd8, "icon.jpg must start with JPEG SOI byte 0xd8");
+  assert.equal(icon[2], 0xff, "icon.jpg must contain a JPEG marker byte");
+  assert.ok(appleIcon.equals(icon), "apple-touch-icon.jpg must match the official production logo image");
 });
 
 test("GitHub Actions deploy workflow is production-only and keeps guardrails", () => {
