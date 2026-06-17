@@ -32,8 +32,10 @@ import {
   waterRestorationSeries,
   workflowSteps,
 } from "@/data/siteContent";
+import { SectionBoundary } from "@/components/system/SectionBoundary";
 import { CanopyProofLogo } from "./CanopyProofLogo";
 import { EarthOrb } from "./EarthOrb";
+import { MetricsStripFallback, TelemetryFallback } from "./fallbacks";
 import { GlassCard } from "./GlassCard";
 
 const jsonLd = {
@@ -59,7 +61,9 @@ export function CanopyProofLanding() {
       />
       <Navbar />
       <HeroSection />
-      <InstitutionalMetricsStrip metrics={institutionalMetrics} />
+      <SectionBoundary label="metrics" fallback={<MetricsStripFallback />}>
+        <InstitutionalMetricsStrip metrics={institutionalMetrics} />
+      </SectionBoundary>
       <TransparencyGapSection stages={ingestionPipeline} />
       <FieldRealitySection />
       <SolutionSection steps={workflowSteps} />
@@ -67,7 +71,9 @@ export function CanopyProofLanding() {
       <VerificationPipeline />
       <ExplorerPreview metrics={explorerMetrics} records={proofRecords} />
       <ImpactCertificateSection />
-      <TerraProofTelemetry series={waterRestorationSeries} layers={telemetryLayers} risks={riskIndicators} />
+      <SectionBoundary label="telemetry" fallback={<TelemetryFallback />}>
+        <TerraProofTelemetry series={waterRestorationSeries} layers={telemetryLayers} risks={riskIndicators} />
+      </SectionBoundary>
       <EcosystemNetwork />
       <InfraStackSection layers={infraStack} />
       <ClosingCTA />
