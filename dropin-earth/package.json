@@ -13,7 +13,23 @@
     "dev:web": "npm --workspace apps/web run dev",
     "dev:admin": "npm --workspace apps/admin run dev",
     "dev:miniapp-ton": "npm --workspace apps/miniapp-ton run dev",
+    "dev:miniapp-ton-expo": "npm --workspace apps/miniapp-ton-expo run start",
+    "dev:dropin-dashboard": "npm --workspace apps/dropin-dashboard run dev",
+    "dev:dropin-desktop": "npm --workspace apps/dropin-desktop run dev",
+    "dev:ahin": "npm --workspace services/ahin-collector run dev",
+    "dev:all": "bash scripts/start-phase16-local-dashboard.sh dual",
     "dev:api": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} npm --workspace services/api run dev",
+    "build:web": "npm --workspace apps/web run build",
+    "build:miniapp-ton": "npm --workspace apps/miniapp-ton run build",
+    "start:dev": "bash scripts/start-dev.sh",
+    "start:testnet": "bash scripts/start-testnet.sh",
+    "start:prod": "bash scripts/start-prod.sh",
+    "start:phase16": "bash scripts/start-phase16-local.sh",
+    "start:phase16:full": "bash scripts/start-phase16-full.sh",
+    "start:phase16:cron": "bash scripts/start-phase16-cron.sh",
+    "start:phase16:dashboard": "bash scripts/start-phase16-local-dashboard.sh",
+    "seed:testdata": "tsx scripts/seed-testdata.ts",
+    "seed:phase16": "tsx scripts/seed-phase16-data.ts",
     "db:generate": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema services/api/prisma/schema.prisma",
     "db:push": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma db push --schema services/api/prisma/schema.prisma",
     "seed": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} npm --workspace services/api run seed",
@@ -22,30 +38,103 @@
     "anchor:devnet:e2e": "tsx scripts/solana-anchor-devnet-e2e.ts",
     "dry-run:operator": "tsx scripts/operator-dry-run.ts",
     "dry-run:failure": "tsx scripts/failure-injection.ts",
+    "e2e:demo": "tsx scripts/e2e-demo.ts",
+    "e2e:dual-track": "tsx scripts/e2e-dual-track.ts",
+    "smoke:local": "tsx scripts/smoke-test.ts",
+    "pocc:check": "tsx scripts/check-pocc-ahin.ts",
+    "phase17:sprint1:check": "npm --workspace packages/life-plus-plus run typecheck && npm --workspace services/ahin-collector run typecheck",
+    "notify:local": "tsx scripts/notify-slack-telegram.ts",
+    "cron:local": "bash scripts/cron-local.sh",
+    "e2e:production": "tsx tests/e2e/e2e-runner.ts",
+    "gate:production": "tsx scripts/production-launch-gate.ts",
+    "gate:phase16-production": "tsx scripts/phase16-production-readiness.ts",
+    "gate:phase17-production": "tsx scripts/phase17-production-readiness.ts",
+    "monitor:atomic": "tsx scripts/atomic-workflow-monitor.ts",
+    "monitor:randomness": "tsx scripts/randomness-sybil-monitor.ts",
+    "realtime:mock": "tsx packages/dropin-realtime/src/cli.ts start-mock",
+    "realtime:report": "tsx packages/dropin-realtime/src/cli.ts generate-report",
+    "memory:ingest": "tsx packages/dropin-memory/src/cli.ts ingest",
+    "memory:report": "tsx packages/dropin-memory/src/cli.ts generate-report",
+    "growth:plan": "tsx packages/dropin-growth/src/cli.ts export-plan",
+    "growth:report": "tsx packages/dropin-growth/src/cli.ts treasury-report",
+    "deploy:phase16-production": "tsx scripts/deploy-production.ts",
+    "ops:phase16-ui-proof": "tsx scripts/phase16-ui-proof-deploy-ops.ts",
+    "attest:phase16-final": "tsx scripts/final-launch-attestation.ts",
+    "deploy:canopyproof": "bash scripts/deploy-canopyproof.sh",
+    "build:web:cloudflare": "npm --workspace apps/web run build:cloudflare",
+    "deploy:web:cloudflare": "npm --workspace apps/web run deploy:cloudflare",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "test": "node --test --import tsx tests/unit/*.test.ts",
-    "audit": "npm audit --audit-level=moderate",
+    "audit": "node scripts/npm-audit-moderate.mjs",
     "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run audit"
   },
   "devDependencies": {
-    "@coral-xyz/anchor": "^0.31.1",
+    "@babel/core": "8.0.0",
+    "@coral-xyz/anchor": "0.32.1",
     "@eslint/js": "^9.39.4",
+    "@opennextjs/cloudflare": "1.19.11",
     "@prisma/client": "^6.19.3",
     "@types/node": "^20.19.25",
-    "concurrently": "^9.2.1",
+    "concurrently": "10.0.3",
+    "esbuild": "0.28.1",
     "eslint": "^9.39.4",
+    "form-data": "4.0.6",
     "postcss": "8.5.14",
     "prisma": "^6.19.3",
-    "tsx": "^4.21.0",
+    "tar": "7.5.16",
+    "tsx": "4.22.4",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.49.0"
+    "typescript-eslint": "^8.49.0",
+    "wrangler": "4.101.0",
+    "ws": "8.21.0"
   },
   "overrides": {
     "postcss": "8.5.14",
-    "next@15.5.15": {
+    "next": {
       "postcss": "8.5.14"
+    },
+    "esbuild": "0.28.1",
+    "@opennextjs/aws": {
+      "esbuild": "0.28.1"
+    },
+    "wrangler": {
+      "esbuild": "0.28.1"
+    },
+    "ws": "8.21.0",
+    "miniflare": {
+      "ws": "8.21.0"
+    },
+    "@expo/cli": {
+      "ws": "8.21.0"
+    },
+    "@react-native/dev-middleware": {
+      "ws": "8.21.0"
+    },
+    "metro": {
+      "ws": "8.21.0"
+    },
+    "react-native": {
+      "ws": "8.21.0"
+    },
+    "react-devtools-core": {
+      "ws": "8.21.0"
+    },
+    "shell-quote": "1.8.4",
+    "js-yaml": "4.2.0",
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "4.2.0"
+    },
+    "uuid": "11.1.1",
+    "xcode": {
+      "uuid": "11.1.1"
+    },
+    "@expo/metro-config": {
+      "postcss": "8.5.14"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "brace-expansion": "5.0.6"
     }
   }
 }
