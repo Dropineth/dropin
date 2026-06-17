@@ -146,11 +146,11 @@ test("Wrangler templates separate API proxy from OpenNext web worker safely", ()
 test("CanopyProof production metadata assets are present for OpenNext", () => {
   assert.equal(statSync(join(process.cwd(), "apps/web/src/app/sitemap.ts")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/sitemap.xml")).isFile(), true);
-  assert.equal(statSync(join(process.cwd(), "apps/web/public/icon.svg")).isFile(), true);
+  assert.equal(statSync(join(process.cwd(), "apps/web/public/icon.jpg")).isFile(), true);
 
   const sitemapRoute = readFileSync(join(process.cwd(), "apps/web/src/app/sitemap.ts"), "utf8");
   const publicSitemap = readFileSync(join(process.cwd(), "apps/web/public/sitemap.xml"), "utf8");
-  const icon = readFileSync(join(process.cwd(), "apps/web/public/icon.svg"), "utf8");
+  const icon = readFileSync(join(process.cwd(), "apps/web/public/icon.jpg"), "utf8");
 
   assert.match(sitemapRoute, /MetadataRoute\.Sitemap/);
   assert.match(sitemapRoute, /https:\/\/canopyproof\.org/);
