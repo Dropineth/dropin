@@ -4,18 +4,12 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: [
-      "**/dist/**",
-      "**/.next/**",
-      "**/.open-next/**",
-      "**/node_modules/**",
-      "**/next-env.d.ts",
-    ],
+    ignores: [".next/**", ".open-next/**", "node_modules/**", "next-env.d.ts"],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["apps/web/**/*.{js,jsx,ts,tsx}"],
+    files: ["**/*.{js,jsx,ts,tsx}"],
     plugins: {
       "@next/next": nextPlugin,
     },
@@ -24,16 +18,6 @@ export default tseslint.config(
       ...nextPlugin.configs["core-web-vitals"].rules,
       "@next/next/no-html-link-for-pages": "off",
       "@next/next/no-img-element": "off",
-    },
-    settings: {
-      next: {
-        rootDir: "apps/web/",
-      },
-    },
-  },
-  {
-    files: ["**/*.{ts,tsx}"],
-    rules: {
       "no-restricted-syntax": [
         "error",
         {
@@ -42,6 +26,11 @@ export default tseslint.config(
         },
       ],
       "@typescript-eslint/no-explicit-any": "error",
+    },
+    settings: {
+      next: {
+        rootDir: ".",
+      },
     },
   }
 );

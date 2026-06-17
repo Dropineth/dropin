@@ -18,7 +18,7 @@ export function RoundEconomicsCard({
   const rows = [
     { label: "Winner", value: winner, tone: styles.winner },
     { label: "Verified Reforestation", value: reforestation, tone: styles.reforestation },
-    { label: "Dropin Operations", value: operations, tone: styles.operations },
+    { label: "CanopyProof Operations", value: operations, tone: styles.operations },
   ];
 
   return (

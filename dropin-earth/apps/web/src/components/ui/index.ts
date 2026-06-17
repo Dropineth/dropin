@@ -1,9 +1,14 @@
 export { CTAButton } from "./CTAButton";
 export { ChallengeSurface } from "./ChallengeSurface";
+export { GlobalMap } from "./GlobalMap";
 export { HeroEarthOrb } from "./HeroEarthOrb";
+export { LeafPointsDashboard } from "./LeafPointsDashboard";
 export { LeaderboardCard } from "./LeaderboardCard";
+export { Leaderboard } from "./Leaderboard";
 export { MetricsCard } from "./MetricsCard";
 export { ProofTimeline } from "./ProofTimeline";
 export { RegionImpactMap } from "./RegionImpactMap";
 export { RoundEconomicsCard } from "./RoundEconomicsCard";
+export { TicketCard } from "./TicketCard";
+export { UxInteractionCollector } from "./UxInteractionCollector";
 export { WalletRailCard } from "./WalletRailCard";

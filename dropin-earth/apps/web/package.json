@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "next dev --port 3001",
     "build": "next build",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
     "opennext:build": "opennextjs-cloudflare build",
     "opennext:preview": "opennextjs-cloudflare preview",
     "opennext:deploy": "opennextjs-cloudflare deploy",
@@ -17,21 +15,46 @@
     "cf:deploy": "npm run opennext:deploy",
     "cf:upload": "npm run opennext:upload",
     "build:cloudflare": "npm run cf:build",
-    "deploy:cloudflare": "npm run cf:deploy"
+    "deploy:cloudflare": "npm run cf:deploy",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
+    "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
+    "@dropin/hooks": "file:../../packages/hooks",
     "@dropin/schemas": "file:../../packages/schemas",
     "@dropin/ui": "file:../../packages/ui",
-    "next": "15.5.15",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
+    "leaflet": "^1.9.4",
+    "next": "15.5.19",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-leaflet": "^5.0.0",
+    "three": "^0.181.2"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^20.19.25",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "typescript": "^5.9.3",
-    "@opennextjs/cloudflare": "1.19.0",
-    "wrangler": "4.90.0"
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.1",
+    "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.14"
+    },
+    "@opennextjs/aws": {
+      "esbuild": "0.28.1"
+    },
+    "wrangler": {
+      "esbuild": "0.28.1"
+    },
+    "miniflare": {
+      "ws": "8.21.0"
+    }
   }
 }

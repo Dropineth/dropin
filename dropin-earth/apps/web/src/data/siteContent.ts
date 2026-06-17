@@ -23,11 +23,98 @@ export type RiskIndicator = {
   level: "Normal" | "Watch" | "Elevated";
 };
 
+export type StatusSignal = {
+  label: string;
+  state: string;
+  tone: "ok" | "watch";
+};
+
+export type InstitutionalMetric = {
+  label: string;
+  value: string;
+  delta: string;
+  window: string;
+};
+
+export type IngestionStage = {
+  index: string;
+  title: string;
+  detail: string;
+};
+
+export type CertificateField = {
+  label: string;
+  value: string;
+};
+
+export type CertificateCheckpoint = {
+  phase: string;
+  note: string;
+  state: "done" | "active";
+};
+
+export type SampleCertificate = {
+  tag: string;
+  title: string;
+  recordId: string;
+  verifiedOn: string;
+  fields: CertificateField[];
+  timeline: CertificateCheckpoint[];
+  survival: { label: string; value: string; note: string };
+};
+
+export type TelemetryPoint = {
+  period: string;
+  km: number;
+};
+
+export type TelemetryLayer = {
+  label: string;
+  value: string;
+  active: boolean;
+};
+
+export type StackLayer = {
+  index: string;
+  name: string;
+  items: string[];
+};
+
 export const prototypeDemo = {
   label: "Watch 2-minute prototype demo",
   href: "https://www.youtube.com/",
   externalLabel: "Opens the CanopyProof prototype demo video in a new tab",
 } as const;
+
+// Clearly-labeled interface-preview status (not a real-time operational feed).
+export const systemStatusSignals: StatusSignal[] = [
+  { label: "Routing protocol", state: "All systems operational", tone: "ok" },
+  { label: "Satellite feed", state: "Reference layer", tone: "ok" },
+  { label: "AI verification", state: "Assistive · human-reviewed", tone: "ok" },
+];
+
+// Illustrative figures for interface preview — not audited production totals.
+export const institutionalMetrics: InstitutionalMetric[] = [
+  { label: "Trees restored", value: "24.7M", delta: "+18.2%", window: "vs last 30 days" },
+  { label: "CO₂e sequestered", value: "812,534 t", delta: "+22.1%", window: "vs last 30 days" },
+  { label: "Projects verified", value: "248", delta: "+16.4%", window: "across 23 countries" },
+];
+
+export const transparencyBefore = [
+  "Opaque funding flows",
+  "Disconnected spreadsheets",
+  "Paper field notes",
+  "Email attachments",
+  "Unverified claims",
+  "No shared source of truth",
+] as const;
+
+export const ingestionPipeline: IngestionStage[] = [
+  { index: "01", title: "Evidence capture", detail: "Field photo, GPS, notes, community sign-off." },
+  { index: "02", title: "Metadata / EXIF ingestion", detail: "Time, location, and device integrity extracted." },
+  { index: "03", title: "AI verification engine", detail: "Cross-checked against satellite layers and ecological models." },
+  { index: "04", title: "Immutable open ledger", detail: "Accepted evidence written to an append-only proof root." },
+];
 
 export const problemCards = [
   {
@@ -138,6 +225,51 @@ export const proofRecords: ProofRecord[] = [
   },
 ];
 
+// Sample certificate. Intentionally NOT bound to a real, named place: a fixed
+// certificate ID + "verified on" date attached to a real ecosystem would assert
+// a verification that has not occurred. Swap in approved project data to publish.
+export const sampleCertificate: SampleCertificate = {
+  tag: "Sample certificate · demo data",
+  title: "Watershed Restoration Proof",
+  recordId: "CPR-SAMPLE-0001847",
+  verifiedOn: "May 18, 2026 (sample record)",
+  fields: [
+    { label: "Project type", value: "Watershed restoration" },
+    { label: "Location", value: "Community watershed corridor (sample)" },
+    { label: "Area", value: "1,245 ha (sample)" },
+    { label: "Trees planted", value: "128,450 (sample)" },
+    { label: "Evidence sources", value: "Mobile report, GPS/EXIF, satellite cross-check" },
+    { label: "Verified status", value: "Verified with monitoring" },
+  ],
+  timeline: [
+    { phase: "Baseline verification", note: "Evidence root recorded", state: "done" },
+    { phase: "Field monitoring", note: "Community + GPS resubmission", state: "done" },
+    { phase: "Satellite cross-check", note: "NDVI delta confirmed", state: "done" },
+    { phase: "AI survival check", note: "Human-reviewed survival estimate", state: "active" },
+  ],
+  survival: {
+    label: "AI survival check",
+    value: "81%",
+    note: "Sample baseline · assistive estimate, human-reviewed",
+  },
+};
+
+// Sample telemetry series for the water-restoration index (demo data).
+export const waterRestorationSeries: TelemetryPoint[] = [
+  { period: "Jan 2023", km: 5.0 },
+  { period: "May 2023", km: 9.4 },
+  { period: "Sep 2023", km: 14.1 },
+  { period: "Jan 2024", km: 19.6 },
+  { period: "May 2024", km: 24.8 },
+];
+
+export const telemetryLayers: TelemetryLayer[] = [
+  { label: "Satellite imagery", value: "True-color", active: true },
+  { label: "Forest health", value: "NDVI 0.78", active: true },
+  { label: "Carbon density", value: "Modeled", active: false },
+  { label: "Land cover change", value: "2019–2024", active: false },
+];
+
 export const riskIndicators: RiskIndicator[] = [
   { label: "Drought risk", value: "Watch", level: "Watch" },
   { label: "Wildfire risk", value: "Elevated", level: "Elevated" },
@@ -159,6 +291,18 @@ export const ecosystemNodes = [
   "Funders",
   "Restoration projects",
 ] as const;
+
+export const infraStack: StackLayer[] = [
+  { index: "01", name: "Data sources", items: ["Satellite", "In-situ IoT", "Community mobile data"] },
+  { index: "02", name: "Ingestion layer", items: ["Connectors", "Validation engine", "Schema check"] },
+  {
+    index: "03",
+    name: "Protocol layer",
+    items: ["Open Climate Protocol ocp://", "Impact Accounting OIP", "Verification OVP"],
+  },
+  { index: "04", name: "Verification layer", items: ["Cross-validation", "Decentralized attestation", "Consensus"] },
+  { index: "05", name: "Application layer", items: ["Impact dashboards", "Carbon accounting", "Early warning"] },
+];
 
 export const openInfrastructureCards = [
   "Open standards",

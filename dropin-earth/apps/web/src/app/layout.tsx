@@ -1,26 +1,31 @@
 import type { Metadata } from "next";
+import { CANOPYPROOF_LOGO_SRC } from "@/components/canopyproof/logo";
+import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
+const siteUrl = "https://canopyproof.org";
+const siteTitle = "CanopyProof — Environmental Accountability for Ecological Restoration";
+const siteDescription =
+  "CanopyProof by Dropin turns restoration evidence into transparent environmental records, impact certificates, and traceable proof workflows.";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://canopyproof.org"),
-  title: "CanopyProof — Environmental Accountability for Ecological Restoration",
-  description:
-    "CanopyProof by Dropin turns restoration evidence into transparent environmental records, impact certificates, and traceable proof workflows.",
+  metadataBase: new URL(siteUrl),
+  title: siteTitle,
+  description: siteDescription,
   alternates: {
     canonical: "https://canopyproof.org",
   },
   openGraph: {
-    title: "CanopyProof — Environmental Accountability for Ecological Restoration",
-    description:
-      "CanopyProof by Dropin turns restoration evidence into transparent environmental records, impact certificates, and traceable proof workflows.",
-    url: "https://canopyproof.org",
+    title: siteTitle,
+    description: siteDescription,
+    url: siteUrl,
     siteName: "CanopyProof",
     images: [
       {
-        url: "/og/canopyproof-og.svg",
-        width: 1200,
-        height: 630,
-        alt: "CanopyProof by Dropin environmental accountability interface",
+        url: CANOPYPROOF_LOGO_SRC,
+        width: 400,
+        height: 400,
+        alt: "CanopyProof by Dropin logo",
       },
     ],
     locale: "en_US",
@@ -28,15 +33,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "CanopyProof — Environmental Accountability for Ecological Restoration",
-    description:
-      "CanopyProof by Dropin turns restoration evidence into transparent environmental records, impact certificates, and traceable proof workflows.",
-    images: ["/og/canopyproof-og.svg"],
+    title: siteTitle,
+    description: siteDescription,
+    images: [CANOPYPROOF_LOGO_SRC],
   },
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [{ url: CANOPYPROOF_LOGO_SRC, sizes: "400x400", type: "image/jpeg" }],
+    shortcut: [{ url: CANOPYPROOF_LOGO_SRC, sizes: "400x400", type: "image/jpeg" }],
+    apple: [{ url: CANOPYPROOF_LOGO_SRC, sizes: "400x400", type: "image/jpeg" }],
   },
   robots: {
     index: true,

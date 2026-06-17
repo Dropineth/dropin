@@ -10,9 +10,12 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
+    "@dropin/hooks": "file:../../packages/hooks",
     "@dropin/schemas": "file:../../packages/schemas",
     "@dropin/ui": "file:../../packages/ui",
-    "next": "15.5.15",
+    "next": "15.5.19",
+    "postcss": "8.5.14",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -21,5 +24,10 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.14"
+    }
   }
 }
