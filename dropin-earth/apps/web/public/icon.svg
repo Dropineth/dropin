@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="CanopyProof mark">
+  <defs>
+    <linearGradient id="cp-ring" x1="21" x2="111" y1="21" y2="109" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5EDCD0"/>
+      <stop offset="0.46" stop-color="#42C8B7"/>
+      <stop offset="1" stop-color="#214D62"/>
+    </linearGradient>
+    <linearGradient id="cp-shadow" x1="24" x2="98" y1="30" y2="105" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8CE7D5"/>
+      <stop offset="0.45" stop-color="#4FCAB9"/>
+      <stop offset="1" stop-color="#244D61"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="18" fill="#F4EDDC"/>
+  <path d="M111.5 63.3c0 27-21.9 48.9-48.9 48.9-19.2 0-35.8-11.1-43.8-27.2 10.6 6.9 24.5 10.3 39.2 8.4 29.9-3.9 52.5-27.9 53.5-56.5a48.5 48.5 0 0 1 0 26.4Z" fill="url(#cp-shadow)"/>
+  <path d="M113 62.4c0 28-22.7 50.7-50.7 50.7-19.6 0-36.6-11.1-45-27.4 11.8 8.1 27.8 12.1 44.7 9.2 27.6-4.8 48.3-27.4 49.8-53.7.8 3.4 1.2 7 1.2 10.8Z" fill="#28566B" opacity=".42"/>
+  <path d="M101.9 38.3C95.5 56.8 78.5 72.4 56.4 76.4c-15.8 2.9-31 .1-42.3-6.6C14.1 39.4 38.7 14.8 69 14.8c13.2 0 25.3 4.6 34.8 12.4a54.4 54.4 0 0 0-1.9 11.1Z" fill="url(#cp-ring)"/>
+  <path d="M26.2 70.7c16.5 4.4 35.3.3 48.8-12.2 7.7-7.1 12.5-15.9 14.5-25.1 2.2 21-6.7 43.1-25 55.1-15.1-.4-28.7-7.1-38.3-17.8Z" fill="#F4EDDC"/>
+  <circle cx="66" cy="38" r="11.8" fill="#28566B"/>
+</svg>

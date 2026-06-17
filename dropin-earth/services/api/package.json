@@ -7,23 +7,28 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "generate": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema prisma/schema.prisma",
+    "prebuild": "npm run generate",
     "seed": "tsx prisma/seed.ts",
+    "seed:testdata": "tsx src/scripts/seed-testdata.ts",
     "build": "tsc --noEmit",
+    "pretypecheck": "npm run generate",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
   "dependencies": {
     "@dropin/crypto": "file:../../packages/crypto",
+    "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
     "@dropin/schemas": "file:../../packages/schemas",
     "@hono/node-server": "^2.0.1",
     "@prisma/client": "^6.19.3",
-    "hono": "^4.11.2",
+    "hono": "4.12.25",
     "pino": "^10.1.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.19.25",
-    "tsx": "^4.21.0",
+    "tsx": "4.22.4",
     "typescript": "^5.9.3"
   }
 }
