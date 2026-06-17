@@ -1,6 +1,5 @@
-// Keep this config dependency-free so CI can run it with:
-// npx @opennextjs/cloudflare@1.19.0 build
-// without requiring the adapter to be checked into the app package.
+// Keep this config dependency-free so the local OpenNext Cloudflare CLI can
+// compile it without pulling application-only runtime state into the adapter.
 export default {
   default: {
     override: {
@@ -13,6 +12,38 @@ export default {
       cdnInvalidation: "dummy",
     },
     routePreloadingBehavior: "none",
+  },
+  functions: {
+    canopyproofHome: {
+      runtime: "edge",
+      placement: "global",
+      routes: ["app/page"],
+      patterns: ["/"],
+      override: {
+        wrapper: "cloudflare-edge",
+        converter: "edge",
+        proxyExternalRequest: "fetch",
+        incrementalCache: "dummy",
+        tagCache: "dummy",
+        queue: "dummy",
+      },
+      routePreloadingBehavior: "none",
+    },
+    canopyproofDraw: {
+      runtime: "edge",
+      placement: "global",
+      routes: ["app/draw/page"],
+      patterns: ["/draw"],
+      override: {
+        wrapper: "cloudflare-edge",
+        converter: "edge",
+        proxyExternalRequest: "fetch",
+        incrementalCache: "dummy",
+        tagCache: "dummy",
+        queue: "dummy",
+      },
+      routePreloadingBehavior: "none",
+    },
   },
   edgeExternals: ["node:crypto"],
   cloudflare: {
