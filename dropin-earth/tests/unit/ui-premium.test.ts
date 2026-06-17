@@ -6,12 +6,12 @@ function file(path: string) {
   return readFileSync(path, "utf8");
 }
 
-test("Landing/Home includes 70% winner, 20% verified reforestation, 10% operations", () => {
-  const source = file("apps/web/src/app/page.tsx");
+test("Draw surface includes 70% winner, 20% verified reforestation, 10% operations", () => {
+  const source = file("apps/web/src/app/draw/page.tsx");
 
   assert.match(source, /70% Winner/);
   assert.match(source, /20% Verified Reforestation/);
-  assert.match(source, /10% Dropin Operations/);
+  assert.match(source, /10% CanopyProof Operations/);
   assert.match(source, /Join climate-impact prize pools\. Track every tree through proof\./);
   assert.match(source, /1 TON \/ USDC Join Draw/);
   assert.match(source, /ClimateDrawPass/);
@@ -67,10 +67,12 @@ test("Active Draw renders prize pool and Plant & Enter CTA", () => {
   assert.match(source, /ParticipantAvatars/);
   assert.match(source, /Plant & Enter/);
   const home = file("apps/web/src/app/page.tsx");
-  assert.match(home, /RegionImpactMap/);
-  assert.match(home, /LeaderboardCard/);
-  assert.match(home, /WalletRailCard/);
-  assert.match(home, /ChallengeSurface/);
+  const draw = file("apps/web/src/app/draw/page.tsx");
+  assert.match(home, /CanopyProofLanding/);
+  assert.match(draw, /RegionImpactMap/);
+  assert.match(draw, /LeaderboardCard/);
+  assert.match(draw, /WalletRailCard/);
+  assert.match(draw, /ChallengeSurface/);
 });
 
 test("Impact Proof includes no certified carbon credit safety copy", () => {

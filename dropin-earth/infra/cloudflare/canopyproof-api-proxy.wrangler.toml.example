@@ -1,0 +1,33 @@
+name = "canopyproof-api-proxy"
+main = "../../packages/dropin-cloudflare/src/canopyproof-api-proxy.ts"
+compatibility_date = "2026-05-10"
+workers_dev = false
+
+# Copy this file to canopyproof-api-proxy.wrangler.toml and replace the placeholder values.
+# Keep production routes disabled until Cloudflare DNS, SSL mode, WAF, and readiness gates are confirmed.
+# This Worker only proxies public API traffic. Dynamic Next.js frontend deployment uses
+# canopyproof-web-opennext.wrangler.toml.example or Cloudflare Git/OpenNext integration.
+routes = [
+  { pattern = "canopyproof.org/api/*", zone_name = "canopyproof.org" }
+]
+
+[vars]
+DROPIN_CANONICAL_HOST = "canopyproof.org"
+DROPIN_CANOPYPROOF_MODE = "testnet"
+DROPIN_ALLOWED_ORIGINS = "https://canopyproof.org,https://www.canopyproof.org"
+DROPIN_ALLOW_ADMIN_PROXY = "false"
+DROPIN_API_ORIGIN = "https://replace-with-api-origin.example.com"
+
+[env.testnet.vars]
+DROPIN_CANONICAL_HOST = "canopyproof.org"
+DROPIN_CANOPYPROOF_MODE = "testnet"
+DROPIN_ALLOWED_ORIGINS = "https://canopyproof.org,https://www.canopyproof.org"
+DROPIN_ALLOW_ADMIN_PROXY = "false"
+DROPIN_API_ORIGIN = "https://replace-with-testnet-api-origin.example.com"
+
+[env.production.vars]
+DROPIN_CANONICAL_HOST = "canopyproof.org"
+DROPIN_CANOPYPROOF_MODE = "production"
+DROPIN_ALLOWED_ORIGINS = "https://canopyproof.org,https://www.canopyproof.org"
+DROPIN_ALLOW_ADMIN_PROXY = "false"
+DROPIN_API_ORIGIN = "https://replace-with-production-api-origin.example.com"

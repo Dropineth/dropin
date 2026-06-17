@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "next dev --port 3001",
     "build": "next build",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
     "opennext:build": "opennextjs-cloudflare build",
     "opennext:preview": "opennextjs-cloudflare preview",
     "opennext:deploy": "opennextjs-cloudflare deploy",
@@ -17,7 +15,9 @@
     "cf:deploy": "npm run opennext:deploy",
     "cf:upload": "npm run opennext:upload",
     "build:cloudflare": "npm run cf:build",
-    "deploy:cloudflare": "npm run cf:deploy"
+    "deploy:cloudflare": "npm run cf:deploy",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
@@ -34,7 +34,6 @@
     "three": "^0.181.2"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "1.19.0",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20.19.25",
@@ -42,8 +41,7 @@
     "@types/react-dom": "^19.2.3",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
-    "typescript": "^5.9.3",
-    "wrangler": "4.90.0"
+    "typescript": "^5.9.3"
   },
   "overrides": {
     "next": {

@@ -603,3 +603,196 @@ export function AdminReadinessPanel({
     </Card>
   );
 }
+
+export type GlobalRegion = {
+  id: string;
+  name: string;
+  country?: string;
+  restorationType?: string;
+  restorationPriority?: string;
+  verifiedTrees?: number;
+  estimatedCo2eTonnes?: number;
+  survivalRateEstimate?: number;
+};
+
+export function GlobalRegionMap({
+  regions,
+  selectedRegionId,
+  basePath = "/campaigns",
+}: {
+  regions: readonly GlobalRegion[];
+  selectedRegionId?: string;
+  basePath?: string;
+}) {
+  return (
+    <Card tone="dark" className="border-emerald-300/20">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+            Global Map / Area Selection
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">Interactive 3D Earth orb region selector</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            Select a restoration region to review verified trees, survival estimates, and challengeable proof routes.
+          </p>
+        </div>
+        <StatusBadge status="ready">ready</StatusBadge>
+      </div>
+      <div className="mt-5 grid gap-3">
+        {regions.map((region) => {
+          const isSelected = region.id === selectedRegionId;
+          return (
+            <a
+              className={`rounded-[18px] border p-4 transition ${
+                isSelected
+                  ? "border-emerald-300/45 bg-emerald-300/10"
+                  : "border-white/10 bg-[#05070A] hover:border-sky-300/35"
+              }`}
+              href={`${basePath}#${region.id}`}
+              key={region.id}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-white">{region.name}</h3>
+                  <p className="mt-1 text-sm text-slate-400">
+                    {[region.country, region.restorationType].filter(Boolean).join(" / ")}
+                  </p>
+                </div>
+                {region.restorationPriority ? (
+                  <StatusBadge status={region.restorationPriority}>{region.restorationPriority}</StatusBadge>
+                ) : null}
+              </div>
+              <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+                <Metric label="Verified Trees" value={(region.verifiedTrees ?? 0).toLocaleString()} />
+                <Metric label="Estimated tCO2e" value={(region.estimatedCo2eTonnes ?? 0).toLocaleString()} />
+                <Metric
+                  label="Survival"
+                  value={`${Math.round((region.survivalRateEstimate ?? 0) * 100)}%`}
+                />
+              </dl>
+            </a>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+export type SharedLeaderboardEntry = {
+  rank: number;
+  userId: string;
+  leafPoints: number;
+};
+
+export function Leaderboard({
+  entries,
+  title = "Global / Regional Leaderboard",
+}: {
+  entries: readonly SharedLeaderboardEntry[];
+  title?: string;
+}) {
+  return (
+    <Card tone="dark" className="border-amber-300/20">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-200">Leaderboard</p>
+          <h2 className="mt-2 text-2xl font-semibold">{title}</h2>
+        </div>
+        <StatusBadge status="open">open</StatusBadge>
+      </div>
+      <ol className="mt-5 grid gap-3">
+        {entries.map((entry) => (
+          <li
+            className="flex items-center justify-between gap-4 rounded-[18px] border border-white/10 bg-[#05070A] p-4"
+            key={`${entry.rank}-${entry.userId}`}
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-amber-200 text-sm font-black text-[#05070A]">
+                {entry.rank}
+              </span>
+              <span className="truncate font-semibold text-white">{entry.userId}</span>
+            </span>
+            <strong className="shrink-0 text-emerald-200">{entry.leafPoints.toLocaleString()} LP</strong>
+          </li>
+        ))}
+      </ol>
+    </Card>
+  );
+}
+
+export type LeafPointsActivity = {
+  label: string;
+  amount: number;
+  source: string;
+  createdAt: string;
+};
+
+export type PoccAhinActivity = {
+  agentId: string;
+  eventType: string;
+  status: string;
+};
+
+export function LeafPointsDashboard({
+  userId = "anonymous",
+  leafPoints,
+  rwaTokens,
+  rank,
+  activities = [],
+  poccEvents = [],
+  title = "LeafPointsDashboard",
+}: {
+  userId?: string;
+  leafPoints: number;
+  rwaTokens: number;
+  rank?: number;
+  activities?: readonly LeafPointsActivity[];
+  poccEvents?: readonly PoccAhinActivity[];
+  title?: string;
+}) {
+  return (
+    <Card tone="dark" className="border-emerald-300/20">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">{title}</p>
+          <h2 className="mt-2 text-3xl font-semibold">{leafPoints.toLocaleString()} Leaf Points</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            {userId} · rank {rank ? `#${rank}` : "pending"} · RWA fragments {rwaTokens.toLocaleString()}
+          </p>
+        </div>
+        <StatusBadge status="testnet">testnet</StatusBadge>
+      </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div>
+          <h3 className="text-sm font-semibold text-white">Recent activity</h3>
+          <ul className="mt-3 grid gap-2">
+            {activities.map((activity) => (
+              <li className="rounded-[16px] border border-white/10 bg-[#05070A] p-3" key={`${activity.label}-${activity.createdAt}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-white">{activity.label}</span>
+                  <strong className="text-emerald-200">+{activity.amount}</strong>
+                </div>
+                <p className="mt-1 text-xs text-slate-400">
+                  {activity.source} · {new Date(activity.createdAt).toISOString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-white">PoCC/AHIN events</h3>
+          <ul className="mt-3 grid gap-2">
+            {poccEvents.map((event) => (
+              <li className="rounded-[16px] border border-white/10 bg-[#05070A] p-3" key={`${event.agentId}-${event.eventType}`}>
+                <div className="text-sm font-semibold text-white">{event.eventType}</div>
+                <p className="mt-1 text-xs text-slate-400">
+                  {event.agentId} · {event.status}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Card>
+  );
+}

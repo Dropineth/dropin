@@ -15,6 +15,14 @@
   --orb-height: 300px;
 }
 
+.impact_first {
+  --orb-height: 340px;
+}
+
+.proof_first {
+  border-color: rgb(83 245 255 / 28%);
+}
+
 .orbShell::before {
   content: "";
   position: absolute;

@@ -1,0 +1,246 @@
+name: Dropin Production CI/CD
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*-production"
+  workflow_dispatch:
+    inputs:
+      deploy_mode:
+        description: "Use dry-run for validation or live for production deployment."
+        required: true
+        default: "dry-run"
+        type: choice
+        options:
+          - dry-run
+          - live
+      frontend_deploy_mode:
+        description: "Frontend deployment mode. auto detects static export vs dynamic Next.js."
+        required: true
+        default: "auto"
+        type: choice
+        options:
+          - skip
+          - auto
+          - pages-static
+          - opennext
+
+concurrency:
+  group: canopyproof-production-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-canopyproof:
+    name: Build, test, deploy, smoke test, and notify
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode == 'dry-run' && 'canopyproof-dry-run' || 'canopyproof-production' }}
+    permissions:
+      contents: read
+
+    env:
+      DROPIN_ENV: production
+      DOMAIN: canopyproof.org
+      PROJECT_DIR: ${{ github.workspace }}
+      CANOPYPROOF_DOMAIN: canopyproof.org
+      CANOPYPROOF_ZONE_NAME: canopyproof.org
+      CF_PROJECT_NAME: canopyproof
+      CF_BRANCH: ${{ github.ref_name }}
+      WORKER_NAME: canopyproof-api-proxy
+      WORKER_ROUTE: canopyproof.org/api/*
+      WORKER_ZONE_NAME: canopyproof.org
+      DROPIN_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'live' }}
+      DROPIN_FRONTEND_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.frontend_deploy_mode || 'auto' }}
+      DROPIN_CANOPYPROOF_MODE: production
+      DROPIN_CLOUDFLARE_DEPLOY_CONFIRM: ${{ github.event_name != 'workflow_dispatch' && 'canopyproof.org' || inputs.deploy_mode == 'live' && 'canopyproof.org' || '' }}
+      DROPIN_ALLOWED_ORIGINS: https://canopyproof.org,https://www.canopyproof.org
+      DROPIN_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_API_TOKEN_PROD: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID_PROD: ${{ secrets.CF_ACCOUNT_ID_PROD }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID_PROD }}
+      WORKER_ZONE_ID_PROD: ${{ secrets.WORKER_ZONE_ID_PROD }}
+      DROPIN_OPENNEXT_DEPLOY_COMMAND: npm run deploy:web:cloudflare
+      DROPIN_PHASE16_DEPLOY_CONFIRM: ${{ github.event_name != 'workflow_dispatch' && 'mainnet-production' || inputs.deploy_mode == 'live' && 'mainnet-production' || '' }}
+      DROPIN_PAYMENT_MODE: ${{ secrets.DROPIN_PAYMENT_MODE }}
+      DROPIN_REAL_MONEY_ENABLED: ${{ secrets.DROPIN_REAL_MONEY_ENABLED }}
+      DROPIN_REAL_MONEY_LOTTERY_ENABLED: ${{ secrets.DROPIN_REAL_MONEY_LOTTERY_ENABLED }}
+      DROPIN_MAINNET_TRANSFERS_ENABLED: ${{ secrets.DROPIN_MAINNET_TRANSFERS_ENABLED }}
+      DROPIN_PRODUCTION_ASSETS_JSON: ${{ secrets.DROPIN_PRODUCTION_ASSETS_JSON }}
+      DROPIN_LOTTERY_PERMIT_ID: ${{ secrets.DROPIN_LOTTERY_PERMIT_ID }}
+      DROPIN_COUNSEL_SIGNOFF_ID: ${{ secrets.DROPIN_COUNSEL_SIGNOFF_ID }}
+      DROPIN_JURISDICTION_ALLOWLIST: ${{ secrets.DROPIN_JURISDICTION_ALLOWLIST }}
+      DROPIN_GEO_BLOCKING_ENABLED: ${{ secrets.DROPIN_GEO_BLOCKING_ENABLED }}
+      DROPIN_KYC_PROVIDER_ENABLED: ${{ secrets.DROPIN_KYC_PROVIDER_ENABLED }}
+      DROPIN_AML_PROVIDER_ENABLED: ${{ secrets.DROPIN_AML_PROVIDER_ENABLED }}
+      DROPIN_SANCTIONS_SCREENING_ENABLED: ${{ secrets.DROPIN_SANCTIONS_SCREENING_ENABLED }}
+      DROPIN_RESPONSIBLE_GAMING_COPY_ENABLED: ${{ secrets.DROPIN_RESPONSIBLE_GAMING_COPY_ENABLED }}
+      DROPIN_TREASURY_MULTISIG_CONFIGURED: ${{ secrets.DROPIN_TREASURY_MULTISIG_CONFIGURED }}
+      DROPIN_TREASURY_TIMELOCK_CONFIGURED: ${{ secrets.DROPIN_TREASURY_TIMELOCK_CONFIGURED }}
+      DROPIN_PHASE16_CONTRACT_AUDIT_COMPLETED: ${{ secrets.DROPIN_PHASE16_CONTRACT_AUDIT_COMPLETED }}
+      DROPIN_PHASE16_TREE_NFT_MAINNET_DEPLOYED: ${{ secrets.DROPIN_PHASE16_TREE_NFT_MAINNET_DEPLOYED }}
+      DROPIN_PHASE16_FOREST_RANGER_NFT_MAINNET_DEPLOYED: ${{ secrets.DROPIN_PHASE16_FOREST_RANGER_NFT_MAINNET_DEPLOYED }}
+      DROPIN_PHASE16_RWA_TOKEN_MAINNET_DEPLOYED: ${{ secrets.DROPIN_PHASE16_RWA_TOKEN_MAINNET_DEPLOYED }}
+      DROPIN_PHASE16_LOTTO_MAINNET_DEPLOYED: ${{ secrets.DROPIN_PHASE16_LOTTO_MAINNET_DEPLOYED }}
+      DROPIN_PHASE16_OPEN_CAMPUS_ID_MAINNET_DEPLOYED: ${{ secrets.DROPIN_PHASE16_OPEN_CAMPUS_ID_MAINNET_DEPLOYED }}
+      DROPIN_PHASE16_IMPACT_CERTIFICATE_ANCHOR_ENABLED: ${{ secrets.DROPIN_PHASE16_IMPACT_CERTIFICATE_ANCHOR_ENABLED }}
+      DROPIN_PHASE16_PROOF_OF_PLANTING_HOOK_ENABLED: ${{ secrets.DROPIN_PHASE16_PROOF_OF_PLANTING_HOOK_ENABLED }}
+      DROPIN_PHASE16_UPGRADE_AUTHORITY_MULTISIG: ${{ secrets.DROPIN_PHASE16_UPGRADE_AUTHORITY_MULTISIG }}
+      DROPIN_PHASE16_UPGRADE_TIMELOCK: ${{ secrets.DROPIN_PHASE16_UPGRADE_TIMELOCK }}
+      DROPIN_PHASE16_TON_MAINNET_VERIFIER_ENABLED: ${{ secrets.DROPIN_PHASE16_TON_MAINNET_VERIFIER_ENABLED }}
+      DROPIN_PHASE16_USDC_MAINNET_VERIFIER_ENABLED: ${{ secrets.DROPIN_PHASE16_USDC_MAINNET_VERIFIER_ENABLED }}
+      DROPIN_PHASE16_NO_MOCK_PAYMENT_INTENTS: ${{ secrets.DROPIN_PHASE16_NO_MOCK_PAYMENT_INTENTS }}
+      DROPIN_PHASE16_SETTLEMENT_RECONCILIATION_ENABLED: ${{ secrets.DROPIN_PHASE16_SETTLEMENT_RECONCILIATION_ENABLED }}
+      DROPIN_PHASE16_POCC_AHIN_NODE_COUNT: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_NODE_COUNT }}
+      DROPIN_PHASE16_POCC_AHIN_REGION_COUNT: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_REGION_COUNT }}
+      DROPIN_PHASE16_POCC_AHIN_CONSENSUS_LATENCY_P95_MS: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_CONSENSUS_LATENCY_P95_MS }}
+      DROPIN_PHASE16_POCC_AHIN_CONFLICT_RATE: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_CONFLICT_RATE }}
+      DROPIN_PHASE16_POCC_AHIN_ED25519_ENABLED: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_ED25519_ENABLED }}
+      DROPIN_PHASE16_POCC_AHIN_MERKLE_ENABLED: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_MERKLE_ENABLED }}
+      DROPIN_PHASE16_POCC_AHIN_ANCHOR_ENABLED: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_ANCHOR_ENABLED }}
+      DROPIN_PHASE16_POCC_AHIN_REPLAY_PROTECTION_ENABLED: ${{ secrets.DROPIN_PHASE16_POCC_AHIN_REPLAY_PROTECTION_ENABLED }}
+      DROPIN_PHASE16_HITL_IMPACT_CERTIFICATE_APPROVAL_REQUIRED: ${{ secrets.DROPIN_PHASE16_HITL_IMPACT_CERTIFICATE_APPROVAL_REQUIRED }}
+      DROPIN_PHASE16_HITL_RWA_ALLOCATION_APPROVAL_REQUIRED: ${{ secrets.DROPIN_PHASE16_HITL_RWA_ALLOCATION_APPROVAL_REQUIRED }}
+      DROPIN_PHASE16_HITL_MULTISIG_EXECUTION_ENABLED: ${{ secrets.DROPIN_PHASE16_HITL_MULTISIG_EXECUTION_ENABLED }}
+      DROPIN_PHASE16_HITL_RED_TEAM_ALERTS_ENABLED: ${{ secrets.DROPIN_PHASE16_HITL_RED_TEAM_ALERTS_ENABLED }}
+      DROPIN_PHASE16_HITL_CIRCUIT_BREAKER_ENABLED: ${{ secrets.DROPIN_PHASE16_HITL_CIRCUIT_BREAKER_ENABLED }}
+      DROPIN_PHASE16_HITL_CHALLENGE_BOARD_ENABLED: ${{ secrets.DROPIN_PHASE16_HITL_CHALLENGE_BOARD_ENABLED }}
+      DROPIN_PHASE16_HITL_OPERATOR_IDENTITY_AUDIT_ENABLED: ${{ secrets.DROPIN_PHASE16_HITL_OPERATOR_IDENTITY_AUDIT_ENABLED }}
+      DROPIN_PHASE16_WEB_PRODUCTION_DEPLOYED: ${{ secrets.DROPIN_PHASE16_WEB_PRODUCTION_DEPLOYED }}
+      DROPIN_PHASE16_MINI_APP_PRODUCTION_DEPLOYED: ${{ secrets.DROPIN_PHASE16_MINI_APP_PRODUCTION_DEPLOYED }}
+      DROPIN_PHASE16_API_PRODUCTION_DEPLOYED: ${{ secrets.DROPIN_PHASE16_API_PRODUCTION_DEPLOYED }}
+      DROPIN_PHASE16_CLOUDFLARE_PAGES_READY: ${{ secrets.DROPIN_PHASE16_CLOUDFLARE_PAGES_READY }}
+      DROPIN_PHASE16_CLOUDFLARE_WORKERS_READY: ${{ secrets.DROPIN_PHASE16_CLOUDFLARE_WORKERS_READY }}
+      DROPIN_PHASE16_CDN_CACHE_CONFIGURED: ${{ secrets.DROPIN_PHASE16_CDN_CACHE_CONFIGURED }}
+      DROPIN_PHASE16_OBSERVABILITY_DASHBOARDS_ENABLED: ${{ secrets.DROPIN_PHASE16_OBSERVABILITY_DASHBOARDS_ENABLED }}
+      DROPIN_PHASE16_GLOBAL_MAP_READ_ONLY_DEFAULT: ${{ secrets.DROPIN_PHASE16_GLOBAL_MAP_READ_ONLY_DEFAULT }}
+      DROPIN_PHASE16_READY_SMOKE_PASSING: ${{ secrets.DROPIN_PHASE16_READY_SMOKE_PASSING }}
+      DROPIN_PHASE16_ADMIN_403_SMOKE_PASSING: ${{ secrets.DROPIN_PHASE16_ADMIN_403_SMOKE_PASSING }}
+      DROPIN_PHASE16_DUAL_TRACK_E2E_PASSING: ${{ secrets.DROPIN_PHASE16_DUAL_TRACK_E2E_PASSING }}
+      DROPIN_PHASE16_TESTNET_REPORT_ARCHIVED: ${{ secrets.DROPIN_PHASE16_TESTNET_REPORT_ARCHIVED }}
+      DROPIN_PHASE16_PRODUCTION_REPORT_ARCHIVED: ${{ secrets.DROPIN_PHASE16_PRODUCTION_REPORT_ARCHIVED }}
+      DROPIN_PHASE16_PROOF_TIMELINE_VALIDATED: ${{ secrets.DROPIN_PHASE16_PROOF_TIMELINE_VALIDATED }}
+      DROPIN_PHASE16_LEAF_POINTS_RWA_RECONCILIATION_PASSING: ${{ secrets.DROPIN_PHASE16_LEAF_POINTS_RWA_RECONCILIATION_PASSING }}
+      DROPIN_PHASE16_AUDIT_TRAIL_IMMUTABLE: ${{ secrets.DROPIN_PHASE16_AUDIT_TRAIL_IMMUTABLE }}
+      DROPIN_PHASE16_ROLLBACK_RUNBOOK_EXERCISED: ${{ secrets.DROPIN_PHASE16_ROLLBACK_RUNBOOK_EXERCISED }}
+      DROPIN_PHASE16_IMPACT_CERTIFICATE_DISCLAIMER_ENABLED: ${{ secrets.DROPIN_PHASE16_IMPACT_CERTIFICATE_DISCLAIMER_ENABLED }}
+      DROPIN_PHASE16_RWA_YIELD_DISCLAIMER_ENABLED: ${{ secrets.DROPIN_PHASE16_RWA_YIELD_DISCLAIMER_ENABLED }}
+      DROPIN_PHASE16_LEAF_POINTS_DISCLAIMER_ENABLED: ${{ secrets.DROPIN_PHASE16_LEAF_POINTS_DISCLAIMER_ENABLED }}
+      DROPIN_PHASE16_LEGAL_TERMS_PUBLISHED: ${{ secrets.DROPIN_PHASE16_LEGAL_TERMS_PUBLISHED }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_SKIP_CI: "true"
+      DROPIN_RUN_ANCHOR_TEST: "false"
+      DROPIN_RUN_SMOKE: "false"
+      DROPIN_SMOKE_BASE_URL: https://canopyproof.org
+      DROPIN_NOTIFY_DEPLOYMENT: "false"
+      DROPIN_NOTIFY_DRY_RUN: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare production deployment environment
+        run: |
+          if [ -z "${DROPIN_API_ORIGIN:-}" ]; then
+            if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
+              echo "::error::DROPIN_API_ORIGIN secret is required for production deployment."
+              exit 1
+            fi
+
+            echo "DROPIN_API_ORIGIN=https://dropin-api.production.invalid" >> "$GITHUB_ENV"
+            echo "Using dry-run DROPIN_API_ORIGIN placeholder."
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build Web, Mini App, and API
+        run: |
+          npm --workspace apps/web run build
+          npm --workspace apps/miniapp-ton run build
+          npm --workspace services/api run build
+
+      - name: Audit dependencies
+        run: npm run audit
+
+      - name: Verify production deployment guardrails
+        run: |
+          test "$CANOPYPROOF_DOMAIN" = "canopyproof.org"
+          test "$WORKER_ROUTE" = "canopyproof.org/api/*"
+          test "$WORKER_ZONE_NAME" = "canopyproof.org"
+          test "$DROPIN_CANOPYPROOF_MODE" = "production"
+          test "$DROPIN_ALLOW_ADMIN_PROXY" = "false"
+          test "$DROPIN_DEPLOY_MODE" = "dry-run" || test "$DROPIN_CLOUDFLARE_DEPLOY_CONFIRM" = "canopyproof.org"
+
+      - name: Deploy Pages and Worker through Phase16 business gate
+        run: |
+          if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
+            npm run deploy:phase16-production -- --live --output reports/phase16-production-deploy-plan.json
+          else
+            npm run deploy:phase16-production -- --output reports/phase16-production-deploy-plan.json
+          fi
+
+      - name: Upload Phase16 deployment plan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase16-canopyproof-deployment-plan
+          path: reports/phase16-production-deploy-plan.json
+          if-no-files-found: warn
+
+      - name: Smoke test production
+        if: env.DROPIN_DEPLOY_MODE == 'live'
+        run: |
+          python3 scripts/check-canopyproof.py \
+            --domain canopyproof.org \
+            --www-domain www.canopyproof.org \
+            --require-www \
+            --api-ready-path /api/ready \
+            --admin-path /api/admin/launch/readiness \
+            --json-report canopyproof-smoke-report.json
+
+      - name: Notify Slack and Telegram
+        if: always()
+        run: |
+          if [ "$DROPIN_DEPLOY_MODE" != "live" ] && [ "${DROPIN_NOTIFY_DRY_RUN:-false}" != "true" ]; then
+            echo "Skipping external deployment notifications outside live mode."
+            exit 0
+          fi
+
+          python3 scripts/deploy-notify.py \
+            --slack "${SLACK_WEBHOOK_URL:-}" \
+            --telegram-token "${TELEGRAM_BOT_TOKEN:-}" \
+            --telegram-chat "${TELEGRAM_CHAT_ID:-}" \
+            --domain "$DOMAIN" \
+            --sha "$GITHUB_SHA" \
+            --status "${{ job.status }}" \
+            --environment "$DROPIN_ENV" \
+            --run-url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "domain=$CANOPYPROOF_DOMAIN"
+          echo "deploy_mode=$DROPIN_DEPLOY_MODE"
+          echo "frontend_deploy_mode=$DROPIN_FRONTEND_DEPLOY_MODE"
+          echo "canopyproof_mode=$DROPIN_CANOPYPROOF_MODE"
+          echo "admin_proxy=$DROPIN_ALLOW_ADMIN_PROXY"
