@@ -225,7 +225,7 @@ test("GitHub Actions deploy workflow is production-only and keeps guardrails", (
   assert.match(rootPackage, /deploy:web:cloudflare/);
   assert.equal(webPackageJson.scripts?.["build:cloudflare"], "npm run cf:build");
   assert.equal(rootPackageJson.devDependencies?.["@opennextjs/cloudflare"], "1.19.11");
-  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.101.0");
+  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.107.0");
 
   assert.match(webWorkerWorkflow, /deploy_confirm:/);
   assert.match(webWorkerWorkflow, /phase_confirm:/);

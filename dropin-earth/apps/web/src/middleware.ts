@@ -19,8 +19,6 @@ import { NextResponse, type NextRequest } from "next/server";
  *    `content-security-policy-report-only` and add a `report-to` directive.
  */
 
-const ASSET_IMAGE_ALLOWLIST = ["https://pbs.twimg.com"] as const;
-
 function buildContentSecurityPolicy(nonce: string): string {
   return [
     "default-src 'self'",
@@ -29,8 +27,9 @@ function buildContentSecurityPolicy(nonce: string): string {
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
     // Inline style attributes (aspect ratios, chart heights) require this.
     "style-src 'self' 'unsafe-inline'",
-    // Official logo origin is explicit; `https:` keeps map tiles/remote art working.
-    `img-src 'self' ${ASSET_IMAGE_ALLOWLIST.join(" ")} https: data: blob:`,
+    // Local metadata/logo assets come from `self`; `https:` keeps map tiles and
+    // remote campaign media working until those origins are pinned explicitly.
+    "img-src 'self' https: data: blob:",
     "font-src 'self' data:",
     "connect-src 'self' https:",
     "frame-src 'none'",

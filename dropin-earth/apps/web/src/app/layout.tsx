@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { CANOPYPROOF_LOGO_SRC } from "@/components/canopyproof/logo";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
 const siteUrl = "https://canopyproof.org";
+const iconUrl = "/icon.jpg";
+const appleTouchIconUrl = "/apple-touch-icon.jpg";
 const siteTitle = "CanopyProof — Environmental Accountability for Ecological Restoration";
 const siteDescription =
   "CanopyProof by Dropin turns restoration evidence into transparent environmental records, impact certificates, and traceable proof workflows.";
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     siteName: "CanopyProof",
     images: [
       {
-        url: CANOPYPROOF_LOGO_SRC,
+        url: iconUrl,
         width: 400,
         height: 400,
         alt: "CanopyProof by Dropin logo",
@@ -35,12 +36,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
-    images: [CANOPYPROOF_LOGO_SRC],
+    images: [iconUrl],
   },
   icons: {
-    icon: [{ url: CANOPYPROOF_LOGO_SRC, sizes: "400x400", type: "image/jpeg" }],
-    shortcut: [{ url: CANOPYPROOF_LOGO_SRC, sizes: "400x400", type: "image/jpeg" }],
-    apple: [{ url: CANOPYPROOF_LOGO_SRC, sizes: "400x400", type: "image/jpeg" }],
+    icon: [{ url: iconUrl, sizes: "400x400", type: "image/jpeg" }],
+    shortcut: [{ url: iconUrl, sizes: "400x400", type: "image/jpeg" }],
+    apple: [{ url: appleTouchIconUrl, sizes: "400x400", type: "image/jpeg" }],
   },
   robots: {
     index: true,
@@ -64,7 +65,7 @@ const structuredData = {
       "@id": `${siteUrl}/#organization`,
       name: "CanopyProof",
       url: siteUrl,
-      logo: CANOPYPROOF_LOGO_SRC,
+      logo: `${siteUrl}${iconUrl}`,
       description:
         "Open, public-interest environmental accountability infrastructure by Dropin: transparent, auditable proof records for ecological restoration.",
       parentOrganization: { "@type": "Organization", name: "Dropin" },

@@ -88,7 +88,7 @@
     "tsx": "4.22.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.49.0",
-    "wrangler": "4.101.0",
+    "wrangler": "4.107.0",
     "ws": "8.21.0"
   },
   "overrides": {
