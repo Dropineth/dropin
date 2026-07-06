@@ -1,0 +1,221 @@
+# CanopyProof Industrial Production Runbook
+
+This runbook governs the CanopyProof production deployment loop for
+`https://canopyproof.org` and `https://www.canopyproof.org`.
+
+The production path is Cloudflare Workers + OpenNext. Do not deploy a static
+`.next` directory to Cloudflare Pages.
+
+## Safety Boundaries
+
+- `DROPIN_ALLOW_ADMIN_PROXY=false` must remain set for production.
+- Do not enable mainnet funds.
+- Do not enable automatic CANOPY distribution.
+- Do not claim certified carbon credits.
+- Do not claim carbon-tax offsets.
+- Do not promise or imply guaranteed RWA yield.
+- Do not restore `apps/web/public/icon.svg`.
+- The official production logo is JPG-only:
+  - `apps/web/public/icon.jpg`
+  - `apps/web/public/apple-touch-icon.jpg`
+- Do not hotlink Twitter/X logo assets.
+- Do not merge API and Web Workers into one unsafe Worker.
+- Never patch production by bypassing the release approval artifact.
+- Never delete append-only ledger rows.
+
+## Cloudflare Route Separation
+
+Production uses two route surfaces:
+
+- `canopyproof.org/api/*` is served by the API proxy Worker.
+- `canopyproof.org/*` is served by the OpenNext web Worker.
+- `www.canopyproof.org/*` is served by the OpenNext web Worker.
+
+The `/api/*` route must keep higher precedence than the web route. If
+`/api/ready` fails while the homepage works, inspect the API proxy route,
+`DROPIN_API_ORIGIN`, Cloudflare route precedence, and Worker logs before
+rolling back the web Worker.
+
+## Local Validation
+
+Run from `dropin-earth`:
+
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run audit
+npm run ci
+npm --workspace apps/web run typecheck
+npm --workspace apps/web run lint
+npm --workspace apps/web run build
+npm --workspace apps/web run cf:build
+test -f apps/web/.open-next/worker.js
+test -d apps/web/.open-next/assets
+test -f apps/web/public/sitemap.xml
+test -f apps/web/public/icon.jpg
+test -f apps/web/public/apple-touch-icon.jpg
+```
+
+Focused deployment tests:
+
+```bash
+node --test --import tsx tests/unit/dropin-cloudflare-deployment.test.ts
+node --test --import tsx tests/unit/canopyproof-production-smoke.test.ts
+```
+
+## Release Approval
+
+Before triggering production, verify:
+
+```bash
+grep target_commit reports/phase16-9-release-council-approval.json
+git branch -r --contains 1557bf27dc68c73b4e91445235c13c215d702a2c
+```
+
+The approval artifact must bind the exact deployable target SHA. If a rebase
+changes the deployable SHA, recompute the target and update the approval artifact
+before triggering the workflow.
+
+## Workflow Trigger
+
+Trigger only after local validation and approval binding pass:
+
+```bash
+gh workflow run deploy-cloudflare-worker.yml \
+  --repo Dropineth/dropin \
+  --ref main \
+  -f deploy_confirm=canopyproof.org \
+  -f phase_confirm=mainnet-production \
+  -f target_sha=1557bf27dc68c73b4e91445235c13c215d702a2c
+```
+
+If local GitHub API calls fail with transient EOF or 503 errors, retry through
+the approved local proxy path without printing tokens.
+
+## GitHub Environment Approval
+
+The workflow uses the `canopyproof-production` GitHub Environment. Required
+reviewers must approve in the Actions UI before production secrets are exposed.
+
+Automation must never approve its own deployment or bypass this gate. If the
+watcher prints `WAITING_FOR_ENVIRONMENT_APPROVAL`, the next human action is to
+approve the pending `canopyproof-production` environment deployment in GitHub.
+
+## Deployment Watcher
+
+After triggering:
+
+```bash
+GITHUB_RUN_ID=<run_id> npm run deploy:watch
+```
+
+The watcher:
+
+- prints `WAITING_FOR_ENVIRONMENT_APPROVAL` when the run is blocked on the
+  GitHub Environment gate;
+- writes `reports/canopyproof-deployment-watch.md`;
+- runs production smoke only after a successful workflow;
+- updates the production report to `DEPLOYED` only if smoke passes;
+- writes `NOT DEPLOYED / SMOKE FAILED` or `NOT DEPLOYED / WORKFLOW FAILED` when
+  appropriate.
+
+## Production Smoke Tests
+
+Run manually after a successful workflow, or let the watcher run them:
+
+```bash
+npm run smoke:production
+```
+
+Required checks:
+
+- `https://canopyproof.org/` returns 200.
+- `https://www.canopyproof.org/` returns 200 or redirects cleanly to 200.
+- `https://canopyproof.org/robots.txt` returns 200.
+- `https://canopyproof.org/sitemap.xml` returns 200 and includes:
+  - `https://canopyproof.org/`
+  - `https://canopyproof.org/status`
+- `https://canopyproof.org/icon.jpg` returns 200 with `image/*` content.
+- `https://canopyproof.org/api/ready` returns 200.
+- `https://canopyproof.org/api/admin/launch/readiness` returns 403.
+- Homepage copy does not contain unsafe claims about certified carbon credits,
+  tax offsets, guaranteed yield, automatic CANOPY distribution, or live mainnet
+  funds.
+
+Smoke artifacts:
+
+- `reports/canopyproof-production-smoke.json`
+- `reports/canopyproof-production-smoke.md`
+
+## Report Update
+
+The production report is generated by:
+
+```bash
+DEPLOY_TARGET_SHA=<sha> \
+GITHUB_RUN_URL=<workflow-run-url> \
+DEPLOY_STATUS=<status> \
+npm run report:production
+```
+
+`DEPLOY_STATUS=DEPLOYED` is refused unless
+`reports/canopyproof-production-smoke.json` exists and all checks pass.
+
+## Rollback
+
+- If homepage root fails after deployment, rollback the web OpenNext Worker to
+  the previous successful deployment.
+- If `/api/ready` fails but the web root passes, do not rollback web blindly.
+  Inspect the API proxy Worker, `DROPIN_API_ORIGIN`, and Cloudflare route
+  precedence.
+- If `/api/admin/*` returns 200, treat it as a critical incident:
+  1. Disable any unsafe admin proxy route exposure or force
+     `DROPIN_ALLOW_ADMIN_PROXY=false`.
+  2. Re-run production smoke.
+  3. Record an incident report.
+- If unsafe carbon-credit, tax-offset, automatic token distribution, mainnet
+  funds, or guaranteed yield language appears, rollback or patch immediately.
+- Never delete append-only ledger rows.
+- Never patch production by bypassing release approval artifacts.
+
+## Failed `/api/ready`
+
+1. Confirm Cloudflare route precedence keeps `canopyproof.org/api/*` on the API
+   proxy Worker.
+2. Confirm `DROPIN_API_ORIGIN` is configured, HTTPS, and not localhost.
+3. Check API proxy Worker logs.
+4. Check upstream API `/ready` directly from a controlled environment.
+5. Do not mark production deployed until `/api/ready` returns 200.
+
+## Failed Admin Block
+
+If `/api/admin/launch/readiness` returns anything other than 403:
+
+1. Treat it as a production security incident.
+2. Confirm `DROPIN_ALLOW_ADMIN_PROXY=false`.
+3. Disable or redeploy the API proxy route if needed.
+4. Re-run `npm run smoke:production`.
+5. Record the incident before any deployed status update.
+
+## Avoiding `icon.svg` Regression
+
+- Production smoke checks `/icon.jpg`, never `/icon.svg`.
+- Unit tests validate JPG magic bytes for `icon.jpg`.
+- `apple-touch-icon.jpg` must match the official production JPG.
+- Do not generate, redraw, vectorize, or approximate the logo.
+
+## Avoiding Unsafe Claims
+
+Any copy that says or implies the following blocks release:
+
+- certified carbon credit
+- tax offset
+- guaranteed yield
+- automatic CANOPY distribution
+- mainnet funds live
+
+Safe language may describe testnet operation, proof-first workflows, transparent
+records, and impact certificates that are explicitly not certified carbon
+credits.
