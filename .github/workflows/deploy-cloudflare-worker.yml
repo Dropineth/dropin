@@ -1,0 +1,127 @@
+name: CanopyProof OpenNext Worker Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_confirm:
+        description: "Must equal canopyproof.org for production deploy."
+        required: true
+        type: string
+      phase_confirm:
+        description: "Must equal mainnet-production for production deploy."
+        required: true
+        type: string
+      target_sha:
+        description: "Full 40-character deployable commit SHA approved by release council."
+        required: true
+        type: string
+
+concurrency:
+  group: canopyproof-web-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-web:
+    name: Build and deploy CanopyProof web
+    runs-on: ubuntu-latest
+    environment: canopyproof-production
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: dropin-earth
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      DROPIN_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}
+      DROPIN_CANOPYPROOF_MODE: production
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      REQUESTED_TARGET_SHA: ${{ inputs.target_sha }}
+
+    steps:
+      - name: Checkout governance ref
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Verify production dispatch and release approval artifact
+        run: |
+          set -euo pipefail
+
+          test "${{ inputs.deploy_confirm }}" = "canopyproof.org"
+          test "${{ inputs.phase_confirm }}" = "mainnet-production"
+
+          case "$REQUESTED_TARGET_SHA" in
+            [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
+            *)
+              echo "::error::target_sha must be a full 40-character lowercase commit SHA."
+              exit 1
+              ;;
+          esac
+
+          node scripts/phase16-9-verify-release-approval.mjs \
+            --target canopyproof-production \
+            --target-sha "$REQUESTED_TARGET_SHA" \
+            --approval reports/phase16-9-release-council-approval.json
+
+          cp reports/phase16-9-release-council-approval.json "$RUNNER_TEMP/phase16-9-release-council-approval.json"
+
+      - name: Checkout approved target commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.REQUESTED_TARGET_SHA }}
+
+      - name: Verify checked out target commit
+        run: |
+          set -euo pipefail
+
+          actual_sha="$(git rev-parse HEAD)"
+          if [ "$actual_sha" != "$REQUESTED_TARGET_SHA" ]; then
+            echo "::error::Checked out SHA $actual_sha does not match requested target $REQUESTED_TARGET_SHA."
+            exit 1
+          fi
+
+          node scripts/phase16-9-verify-release-approval.mjs \
+            --target canopyproof-production \
+            --target-sha "$REQUESTED_TARGET_SHA" \
+            --approval "$RUNNER_TEMP/phase16-9-release-council-approval.json"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint web app
+        run: npm --workspace apps/web run lint
+
+      - name: Typecheck web app
+        run: npm --workspace apps/web run typecheck
+
+      - name: Run deployment safety tests
+        run: node --test --import tsx tests/unit/dropin-cloudflare-deployment.test.ts
+
+      - name: Build web app
+        run: npm --workspace apps/web run build
+
+      - name: Build OpenNext Worker artifact
+        run: npm --workspace apps/web run cf:build
+
+      - name: Deploy OpenNext Worker
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error::Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID."
+            exit 1
+          fi
+
+          if [ "$DROPIN_ALLOW_ADMIN_PROXY" != "false" ]; then
+            echo "::error::DROPIN_ALLOW_ADMIN_PROXY must remain false."
+            exit 1
+          fi
+
+          npm --workspace apps/web run cf:deploy
