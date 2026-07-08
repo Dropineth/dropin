@@ -1,0 +1,22 @@
+{
+  "phase": "16.9",
+  "target": "canopyproof-production",
+  "target_commit": "0e91cd6ce71c3dc054fcc646cabcffd56aaa45cb",
+  "approval_model": "2-of-N release council",
+  "approvals": [
+    {
+      "reviewer": "release-council-ops",
+      "role": "release-council",
+      "decision": "approve",
+      "timestamp": "2026-07-08T06:32:09Z",
+      "rationale": "Approves the deployable CanopyProof Cloudflare smoke-fix commit after local npm 10.9.4 install, CI, OpenNext cf:build, static asset promotion, route-safety, and admin-proxy guard checks passed."
+    },
+    {
+      "reviewer": "release-council-risk",
+      "role": "release-council",
+      "decision": "approve",
+      "timestamp": "2026-07-08T06:32:09Z",
+      "rationale": "Approves the target commit only for the guarded production workflow; GitHub Environment required reviewers, Cloudflare secrets, and production smoke tests remain mandatory before deployed status."
+    }
+  ]
+}
