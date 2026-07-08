@@ -603,3 +603,220 @@ export function AdminReadinessPanel({
     </Card>
   );
 }
+
+export type GlobalRegion = {
+  id: string;
+  name: string;
+  country: string;
+  restorationType: string;
+  restorationPriority: "low" | "medium" | "high" | "critical";
+  requiredTreesLow: number;
+  requiredTreesHigh: number;
+  verifiedTrees: number;
+  estimatedCo2eTonnes: number;
+  survivalRateEstimate: number;
+};
+
+export function GlobalRegionMap({
+  regions,
+  selectedRegionId,
+  basePath = "/campaigns",
+}: {
+  regions: readonly GlobalRegion[];
+  selectedRegionId?: string;
+  basePath?: string;
+}) {
+  const priorityTone: Record<GlobalRegion["restorationPriority"], string> = {
+    low: "border-sky-300/30 bg-sky-300/10",
+    medium: "border-emerald-300/30 bg-emerald-300/10",
+    high: "border-amber-300/35 bg-amber-300/10",
+    critical: "border-red-300/35 bg-red-400/10",
+  };
+
+  return (
+    <Card tone="dark" className="overflow-hidden border-cyan-300/20">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">Global restoration map</p>
+          <h2 className="mt-2 text-2xl font-semibold">Regional proof surface</h2>
+        </div>
+        <StatusBadge status="ready">{regions.length.toLocaleString()} regions</StatusBadge>
+      </div>
+      <div className="mt-5 grid gap-3 md:grid-cols-2">
+        {regions.map((region) => {
+          const isSelected = region.id === selectedRegionId;
+          return (
+            <a
+              className={`rounded-[18px] border p-4 transition hover:bg-white/[0.07] ${priorityTone[region.restorationPriority]} ${
+                isSelected ? "ring-2 ring-cyan-200/70" : ""
+              }`}
+              href={`${basePath}?region=${encodeURIComponent(region.id)}`}
+              key={region.id}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="font-semibold text-white">{region.name}</div>
+                  <div className="mt-1 text-sm text-slate-300">{region.country}</div>
+                </div>
+                <StatusBadge status={region.restorationPriority}>{region.restorationPriority}</StatusBadge>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <Metric label="Verified" value={region.verifiedTrees.toLocaleString()} detail="trees" />
+                <Metric label="CO2e" value={region.estimatedCo2eTonnes.toLocaleString()} detail="estimated tonnes" />
+                <Metric label="Survival" value={`${Math.round(region.survivalRateEstimate * 100)}%`} detail={region.restorationType} />
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+export function Leaderboard({
+  title = "Global / Regional Leaderboard",
+  entries,
+}: {
+  title?: string;
+  entries: ReadonlyArray<{ rank: number; userId: string; leafPoints: number; region?: string }>;
+}) {
+  return (
+    <Card tone="dark">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">Leaderboard</p>
+          <h2 className="mt-2 text-xl font-semibold">{title}</h2>
+        </div>
+        <StatusBadge status="testnet">Leaf Points</StatusBadge>
+      </div>
+      <div className="mt-5 grid gap-3">
+        {entries.length ? (
+          entries.map((entry) => (
+            <div
+              className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-[18px] border border-white/10 bg-[#05070A] p-4"
+              key={`${entry.rank}:${entry.userId}`}
+            >
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-300 text-sm font-black text-[#05070A]">
+                {entry.rank}
+              </span>
+              <div>
+                <div className="font-semibold">{entry.userId}</div>
+                {entry.region ? <div className="mt-1 text-xs text-slate-400">{entry.region}</div> : null}
+              </div>
+              <strong className="text-amber-100">{entry.leafPoints.toLocaleString()} LP</strong>
+            </div>
+          ))
+        ) : (
+          <div className="rounded-[18px] border border-white/10 bg-[#05070A] p-4 text-sm text-slate-300">
+            No Leaf Points yet. Join a testnet round to appear here.
+          </div>
+        )}
+      </div>
+      <p className="mt-4 text-xs leading-5 text-slate-400">
+        Leaf Points are non-transferable testnet engagement points and are not certified carbon credits.
+      </p>
+    </Card>
+  );
+}
+
+export type LeafPointsActivity = {
+  label: string;
+  amount: number;
+  source?: string;
+  createdAt?: string;
+};
+
+export type PoccAhinActivity = {
+  agentId: string;
+  eventType: string;
+  status?: string;
+  timestamp?: number | string;
+};
+
+export function LeafPointsDashboard({
+  userId,
+  leafPoints,
+  rwaTokens,
+  rank,
+  activities = [],
+  poccEvents = [],
+  title = "Leaf Points Dashboard",
+}: {
+  userId?: string;
+  leafPoints: number;
+  rwaTokens: number;
+  rank?: number;
+  activities?: readonly LeafPointsActivity[];
+  poccEvents?: readonly PoccAhinActivity[];
+  title?: string;
+}) {
+  return (
+    <Card tone="dark" className="border-amber-200/20">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-100">Leaf Points / RWA</p>
+          <h2 className="mt-2 text-xl font-semibold">{title}</h2>
+          {userId ? <p className="mt-1 break-all text-sm text-slate-400">{userId}</p> : null}
+        </div>
+        <StatusBadge status="testnet">Non-transferable</StatusBadge>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <Metric label="Leaf Points" value={leafPoints.toLocaleString()} detail="Growth and learning points" />
+        <Metric label="RWA Records" value={rwaTokens.toLocaleString()} detail="Allocation records only" />
+        <Metric label="Rank" value={rank ? `#${rank}` : "Pending"} detail="Campaign leaderboard" />
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-[18px] border border-white/10 bg-[#05070A] p-4">
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Recent activity</div>
+          <div className="mt-3 grid gap-2">
+            {activities.length ? (
+              activities.slice(0, 5).map((activity) => (
+                <div className="flex items-start justify-between gap-3 text-sm" key={`${activity.label}:${activity.amount}:${activity.createdAt ?? ""}`}>
+                  <div>
+                    <div className="font-semibold text-white">{activity.label}</div>
+                    {activity.source ? <div className="mt-1 text-xs text-slate-400">{activity.source}</div> : null}
+                  </div>
+                  <strong className={activity.amount >= 0 ? "text-emerald-200" : "text-red-100"}>
+                    {activity.amount >= 0 ? "+" : ""}
+                    {activity.amount.toLocaleString()} LP
+                  </strong>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm leading-6 text-slate-300">
+                No Leaf Points activity yet. Join a testnet draw or complete a Ranger lesson.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-[18px] border border-white/10 bg-[#05070A] p-4">
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">PoCC/AHIN events</div>
+          <div className="mt-3 grid gap-2">
+            {poccEvents.length ? (
+              poccEvents.slice(0, 4).map((event) => (
+                <div className="grid grid-cols-[1fr_auto] items-start gap-3 text-sm" key={`${event.agentId}:${event.eventType}:${event.timestamp ?? ""}`}>
+                  <div>
+                    <div className="font-semibold text-white">{event.eventType}</div>
+                    <div className="mt-1 text-xs text-slate-400">{event.agentId}</div>
+                  </div>
+                  <StatusBadge status={event.status ?? "verified"}>{event.status ?? "verified"}</StatusBadge>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm leading-6 text-slate-300">
+                Consensus events appear here after agent verification commits.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <p className="mt-5 text-xs leading-5 text-slate-400">
+        Leaf Points are non-transferable testnet engagement points. RWA records are not guaranteed yield and are not certified carbon credits.
+      </p>
+    </Card>
+  );
+}
