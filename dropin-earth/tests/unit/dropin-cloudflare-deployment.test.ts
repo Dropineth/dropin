@@ -161,12 +161,14 @@ test("Wrangler templates separate API proxy from OpenNext web worker safely", ()
 test("CanopyProof production metadata assets are present for OpenNext", () => {
   assert.equal(statSync(join(process.cwd(), "apps/web/src/app/sitemap.ts")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/sitemap.xml")).isFile(), true);
+  assert.equal(statSync(join(process.cwd(), "apps/web/public/robots.txt")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/icon.jpg")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/apple-touch-icon.jpg")).isFile(), true);
   assert.equal(existsSync(join(process.cwd(), "apps/web/public/icon.svg")), false);
 
   const sitemapRoute = readFileSync(join(process.cwd(), "apps/web/src/app/sitemap.ts"), "utf8");
   const publicSitemap = readFileSync(join(process.cwd(), "apps/web/public/sitemap.xml"), "utf8");
+  const robots = readFileSync(join(process.cwd(), "apps/web/public/robots.txt"), "utf8");
   const icon = readFileSync(join(process.cwd(), "apps/web/public/icon.jpg"));
   const appleIcon = readFileSync(join(process.cwd(), "apps/web/public/apple-touch-icon.jpg"));
 
@@ -174,11 +176,30 @@ test("CanopyProof production metadata assets are present for OpenNext", () => {
   assert.match(sitemapRoute, /https:\/\/canopyproof\.org/);
   assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/<\/loc>/);
   assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/status<\/loc>/);
+  assert.match(robots, /Sitemap: https:\/\/canopyproof\.org\/sitemap\.xml/);
   assert.ok(icon.length > 1024, "icon.jpg must be a non-empty production logo image");
   assert.equal(icon[0], 0xff, "icon.jpg must start with JPEG SOI byte 0xff");
   assert.equal(icon[1], 0xd8, "icon.jpg must start with JPEG SOI byte 0xd8");
   assert.equal(icon[2], 0xff, "icon.jpg must contain a JPEG marker byte");
   assert.ok(appleIcon.equals(icon), "apple-touch-icon.jpg must match the official production logo image");
+});
+
+test("CanopyProof static smoke routes bypass the OpenNext server function path", () => {
+  const page = readFileSync(join(process.cwd(), "apps/web/src/app/page.tsx"), "utf8");
+  const middleware = readFileSync(join(process.cwd(), "apps/web/src/middleware.ts"), "utf8");
+  const webPackage = JSON.parse(readFileSync(join(process.cwd(), "apps/web/package.json"), "utf8")) as {
+    scripts?: Record<string, string>;
+  };
+  const promoteScript = readFileSync(join(process.cwd(), "apps/web/scripts/promote-static-homepage.mjs"), "utf8");
+
+  assert.match(page, /export const dynamic = "force-static"/);
+  assert.doesNotMatch(page, /export const runtime = "edge"/);
+  assert.match(middleware, /\(\?!\$[^"]*robots\.txt[^"]*sitemap\.xml[^"]*icon\.jpg/);
+  assert.match(middleware, /apple-touch-icon\.jpg/);
+  assert.match(webPackage.scripts?.["opennext:build"] ?? "", /promote-static-homepage\.mjs/);
+  assert.match(promoteScript, /\.next", "server", "app"/);
+  assert.match(promoteScript, /\.open-next", "assets"/);
+  assert.match(promoteScript, /index\.html/);
 });
 
 test("CanopyProof OpenNext worker workflow installs deterministically from dropin-earth", () => {

@@ -1,6 +1,6 @@
 import { CanopyProofLanding } from "@/components/canopyproof/CanopyProofLanding";
 
-export const runtime = "edge";
+export const dynamic = "force-static";
 
 export default function Home() {
   return <CanopyProofLanding />;
