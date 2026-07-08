@@ -1,8 +1,6 @@
 name: CanopyProof OpenNext Worker Deploy
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       deploy_confirm:
@@ -29,14 +27,17 @@ jobs:
     environment: canopyproof-production
     permissions:
       contents: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: dropin-earth
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CF_ACCOUNT_ID_PROD: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       DROPIN_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}
       DROPIN_CANOPYPROOF_MODE: production
       DROPIN_ALLOW_ADMIN_PROXY: "false"
-      REQUESTED_TARGET_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.target_sha || github.sha }}
+      REQUESTED_TARGET_SHA: ${{ inputs.target_sha }}
 
     steps:
       - name: Checkout governance ref
@@ -47,16 +48,21 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Pin npm for deterministic Cloudflare install
+        working-directory: dropin-earth
+        run: |
+          npm install -g npm@10.9.4
+          npm --version
 
       - name: Verify production dispatch and release approval artifact
+        working-directory: dropin-earth
         run: |
           set -euo pipefail
 
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            test "${{ inputs.deploy_confirm }}" = "canopyproof.org"
-            test "${{ inputs.phase_confirm }}" = "mainnet-production"
-          fi
+          test "${{ inputs.deploy_confirm }}" = "canopyproof.org"
+          test "${{ inputs.phase_confirm }}" = "mainnet-production"
 
           case "$REQUESTED_TARGET_SHA" in
             [0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]) ;;
@@ -65,9 +71,6 @@ jobs:
               exit 1
               ;;
           esac
-
-          actual_sha="$(git rev-parse HEAD)"
-          echo "Governance ref SHA: $actual_sha"
 
           node scripts/phase16-9-verify-release-approval.mjs \
             --target canopyproof-production \
@@ -82,6 +85,7 @@ jobs:
           ref: ${{ env.REQUESTED_TARGET_SHA }}
 
       - name: Verify checked out target commit
+        working-directory: dropin-earth
         run: |
           set -euo pipefail
 
@@ -97,25 +101,34 @@ jobs:
             --approval "$RUNNER_TEMP/phase16-9-release-council-approval.json"
 
       - name: Install dependencies
-        run: npm ci
+        working-directory: dropin-earth
+        run: npm ci --include=optional
 
       - name: Lint web app
+        working-directory: dropin-earth
         run: npm --workspace apps/web run lint
 
       - name: Typecheck web app
+        working-directory: dropin-earth
         run: npm --workspace apps/web run typecheck
 
-      - name: Run CanopyProof site tests
-        run: node --test --import tsx tests/unit/canopyproof-site.test.ts
+      - name: Run deployment safety tests
+        working-directory: dropin-earth
+        run: node --test --import tsx tests/unit/dropin-cloudflare-deployment.test.ts
 
       - name: Build web app
+        working-directory: dropin-earth
         run: npm --workspace apps/web run build
 
       - name: Build OpenNext Worker artifact
+        working-directory: dropin-earth
         run: npm --workspace apps/web run cf:build
 
       - name: Deploy OpenNext Worker
+        working-directory: dropin-earth
         run: |
+          set -euo pipefail
+
           if [ -z "${CLOUDFLARE_API_TOKEN:-}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
             echo "::error::Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID."
             exit 1

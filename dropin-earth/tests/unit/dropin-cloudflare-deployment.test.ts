@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 import {
@@ -15,6 +15,21 @@ const env = {
   DROPIN_CANONICAL_HOST: "canopyproof.org",
   DROPIN_ALLOW_ADMIN_PROXY: "false",
 };
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function workflowStepBlock(workflow: string, stepName: string) {
+  const match = workflow.match(new RegExp(`\\n\\s+- name: ${escapeRegExp(stepName)}\\n[\\s\\S]*?(?=\\n\\s+- name: |\\n\\s*$)`));
+  assert.ok(match, `workflow step "${stepName}" must exist`);
+  return match[0];
+}
+
+function assertStepRunsInDropinEarth(workflow: string, stepName: string) {
+  const block = workflowStepBlock(workflow, stepName);
+  assert.match(block, /working-directory:\s*dropin-earth/, `${stepName} must run from dropin-earth`);
+}
 
 test("Cloudflare config requires HTTPS API origin in production", () => {
   const result = validateCanopyproofCloudflareConfig({
@@ -148,6 +163,7 @@ test("CanopyProof production metadata assets are present for OpenNext", () => {
   assert.equal(statSync(join(process.cwd(), "apps/web/public/sitemap.xml")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/icon.jpg")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/apple-touch-icon.jpg")).isFile(), true);
+  assert.equal(existsSync(join(process.cwd(), "apps/web/public/icon.svg")), false);
 
   const sitemapRoute = readFileSync(join(process.cwd(), "apps/web/src/app/sitemap.ts"), "utf8");
   const publicSitemap = readFileSync(join(process.cwd(), "apps/web/public/sitemap.xml"), "utf8");
@@ -163,6 +179,59 @@ test("CanopyProof production metadata assets are present for OpenNext", () => {
   assert.equal(icon[1], 0xd8, "icon.jpg must start with JPEG SOI byte 0xd8");
   assert.equal(icon[2], 0xff, "icon.jpg must contain a JPEG marker byte");
   assert.ok(appleIcon.equals(icon), "apple-touch-icon.jpg must match the official production logo image");
+});
+
+test("CanopyProof OpenNext worker workflow installs deterministically from dropin-earth", () => {
+  const workflows = [
+    readFileSync(join(process.cwd(), "..", ".github/workflows/deploy-cloudflare-worker.yml"), "utf8"),
+    readFileSync(join(process.cwd(), ".github/workflows/deploy-cloudflare-worker.yml"), "utf8"),
+  ];
+
+  for (const workflow of workflows) {
+    assert.match(workflow, /Pin npm for deterministic Cloudflare install/);
+    assert.match(workflow, /npm install -g npm@10\.9\.4/);
+    assert.match(workflow, /cache-dependency-path: dropin-earth\/package-lock\.json/);
+    assert.match(workflow, /working-directory: dropin-earth/);
+    assert.match(workflowStepBlock(workflow, "Install dependencies"), /npm ci --include=optional/);
+    assert.doesNotMatch(workflowStepBlock(workflow, "Install dependencies"), /run:\s*npm ci\s*$/m);
+
+    for (const stepName of [
+      "Install dependencies",
+      "Lint web app",
+      "Typecheck web app",
+      "Run deployment safety tests",
+      "Build web app",
+      "Build OpenNext Worker artifact",
+      "Deploy OpenNext Worker",
+    ]) {
+      assertStepRunsInDropinEarth(workflow, stepName);
+    }
+
+    assert.match(workflow, /phase16-9-verify-release-approval\.mjs/);
+    assert.match(workflow, /Checked out SHA \$actual_sha does not match requested target/);
+    assert.match(workflow, /npm --workspace apps\/web run cf:deploy/);
+    assert.doesNotMatch(workflow, /wrangler pages deploy/);
+  }
+});
+
+test("CanopyProof package metadata keeps npm ci PostCSS resolution locked", () => {
+  const rootPackage = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as {
+    devDependencies?: Record<string, string>;
+    overrides?: Record<string, unknown>;
+  };
+  const webPackage = JSON.parse(readFileSync(join(process.cwd(), "apps/web/package.json"), "utf8")) as {
+    devDependencies?: Record<string, string>;
+  };
+  const lockfile = JSON.parse(readFileSync(join(process.cwd(), "package-lock.json"), "utf8")) as {
+    packages?: Record<string, { version?: string; devDependencies?: Record<string, string> }>;
+  };
+
+  assert.equal(rootPackage.devDependencies?.postcss, "8.5.14");
+  assert.equal(rootPackage.overrides?.postcss, "8.5.14");
+  assert.equal(webPackage.devDependencies?.postcss, "8.5.14");
+  assert.equal(lockfile.packages?.[""]?.devDependencies?.postcss, "8.5.14");
+  assert.equal(lockfile.packages?.["apps/web"]?.devDependencies?.postcss, "8.5.14");
+  assert.equal(lockfile.packages?.["node_modules/postcss"]?.version, "8.5.14");
 });
 
 test("GitHub Actions deploy workflow is production-only and keeps guardrails", () => {

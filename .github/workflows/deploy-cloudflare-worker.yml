@@ -50,7 +50,14 @@ jobs:
           cache: npm
           cache-dependency-path: dropin-earth/package-lock.json
 
+      - name: Pin npm for deterministic Cloudflare install
+        working-directory: dropin-earth
+        run: |
+          npm install -g npm@10.9.4
+          npm --version
+
       - name: Verify production dispatch and release approval artifact
+        working-directory: dropin-earth
         run: |
           set -euo pipefail
 
@@ -78,6 +85,7 @@ jobs:
           ref: ${{ env.REQUESTED_TARGET_SHA }}
 
       - name: Verify checked out target commit
+        working-directory: dropin-earth
         run: |
           set -euo pipefail
 
@@ -93,24 +101,31 @@ jobs:
             --approval "$RUNNER_TEMP/phase16-9-release-council-approval.json"
 
       - name: Install dependencies
-        run: npm ci
+        working-directory: dropin-earth
+        run: npm ci --include=optional
 
       - name: Lint web app
+        working-directory: dropin-earth
         run: npm --workspace apps/web run lint
 
       - name: Typecheck web app
+        working-directory: dropin-earth
         run: npm --workspace apps/web run typecheck
 
       - name: Run deployment safety tests
+        working-directory: dropin-earth
         run: node --test --import tsx tests/unit/dropin-cloudflare-deployment.test.ts
 
       - name: Build web app
+        working-directory: dropin-earth
         run: npm --workspace apps/web run build
 
       - name: Build OpenNext Worker artifact
+        working-directory: dropin-earth
         run: npm --workspace apps/web run cf:build
 
       - name: Deploy OpenNext Worker
+        working-directory: dropin-earth
         run: |
           set -euo pipefail
 
