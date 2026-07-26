@@ -7,3 +7,12 @@ coverage
 *.log
 *.tsbuildinfo
 artifacts
+.open-next
+.wrangler
+test-results
+.DS_Store
+.mypy_cache
+.ruff_cache
+infra/cloudflare/*.generated.wrangler.toml
+reports
+packages/dropin-protocol/logs
