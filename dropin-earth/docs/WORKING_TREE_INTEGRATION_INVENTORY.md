@@ -211,11 +211,11 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | include | D mobile-evidence-vault | 6 |
 | include | E mobile-sync-authority | 19 |
 | include | F verify-only-security | 10 |
-| include | G evidence-orchestration | 80 |
+| include | G evidence-orchestration | 82 |
 | include | H trust-kernel-postgres | 116 |
-| include | I validation-coverage | 79 |
+| include | I validation-coverage | 76 |
 | include | R0 recovery-evidence | 7 |
-| include | S shared-build-plumbing | 4 |
+| include | S shared-build-plumbing | 5 |
 
 ## Duplicate Logical Paths
 
@@ -316,9 +316,17 @@ wholesale.
   may mount only approved, fail-closed CanopyProof routes.
 - `services/api/src/domain/canopyproof/trust-registry.ts` is a cross-authority
   composition root and is integrated only after H, G, D, E, C, F, and B pass.
-- Root/service/schema manifests and the lockfile are shared build plumbing.
+- The shared institutional OS page and its route data compose H, G, and D
+  surfaces, so they remain in I rather than contaminating a foundational slice.
+- Two narrow legacy-domain edits remain in H because they enforce mandatory
+  append-only upload auditing and non-financial certificate disclosures.
+- Root, web, service, and schema manifests plus the lockfile are shared build
+  plumbing.
   Each feature commit may add only its required dependency or export, and the
   lockfile must be regenerated with npm 10.9.4 in the clean tree.
+- Device-attestation and metadata-request SQL contracts belong to G because
+  downstream E migrations require them; only adapters importing the final
+  trust-registry composition root remain in I.
 - The new `dropin-protocol` package is reduced to the deterministic canopy
   state machine. Unrelated AHIN, settlement, CLI, and security prototypes are
   excluded.
