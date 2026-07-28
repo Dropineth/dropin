@@ -207,13 +207,13 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X unrelated-test | 35 |
 | include | A architecture-RFC | 51 |
 | include | B satellite-proof | 19 |
-| include | C global-command-center | 30 |
+| include | C global-command-center | 29 |
 | include | D mobile-evidence-vault | 5 |
 | include | E mobile-sync-authority | 19 |
 | include | F verify-only-security | 10 |
 | include | G evidence-orchestration | 82 |
 | include | H trust-kernel-postgres | 116 |
-| include | I validation-coverage | 77 |
+| include | I validation-coverage | 78 |
 | include | R0 recovery-evidence | 7 |
 | include | S shared-build-plumbing | 6 |
 
