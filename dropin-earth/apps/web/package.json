@@ -24,7 +24,6 @@
     "@deck.gl/layers": "^9.2.11",
     "@deck.gl/mapbox": "^9.2.11",
     "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
-    "@dropin/hooks": "file:../../packages/hooks",
     "@dropin/schemas": "file:../../packages/schemas",
     "@dropin/ui": "file:../../packages/ui",
     "@react-three/drei": "^10.7.6",

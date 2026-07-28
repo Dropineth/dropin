@@ -7,7 +7,9 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./canopyproof-mobile-evidence": "./src/canopyproof-mobile-evidence.schema.ts"
+    "./canopyproof-global-command-center": "./src/canopyproof-global-command-center.schema.ts",
+    "./canopyproof-mobile-evidence": "./src/canopyproof-mobile-evidence.schema.ts",
+    "./canopyproof-public-explorer": "./src/canopyproof-public-explorer.schema.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
