@@ -190,11 +190,11 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X duplicate-linked-worktree | 3 |
 | exclude | X generated-artifact | 12 |
 | exclude | X legacy-api-domain | 19 |
-| exclude | X legacy-or-product-documentation | 63 |
+| exclude | X legacy-or-product-documentation | 62 |
 | exclude | X legacy-production-automation | 28 |
 | exclude | X mixed-legacy-product-entrypoint | 3 |
 | exclude | X non-R0-dropin-package | 153 |
-| exclude | X non-R0-product-surface | 166 |
+| exclude | X non-R0-product-surface | 162 |
 | exclude | X non-R0-protocol-surface | 10 |
 | exclude | X non-R0-service | 10 |
 | exclude | X outside-intended-root | 95 |
@@ -204,7 +204,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X seed-or-legacy-coordination | 4 |
 | exclude | X unapproved-local-infrastructure | 1 |
 | exclude | X unapproved-or-unclassified | 4 |
-| exclude | X unrelated-test | 35 |
+| exclude | X unrelated-test | 36 |
 | include | A architecture-RFC | 51 |
 | include | B satellite-proof | 19 |
 | include | C global-command-center | 29 |
@@ -213,7 +213,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | include | F verify-only-security | 15 |
 | include | G evidence-orchestration | 82 |
 | include | H trust-kernel-postgres | 116 |
-| include | I validation-coverage | 78 |
+| include | I validation-coverage | 83 |
 | include | R0 recovery-evidence | 7 |
 | include | S shared-build-plumbing | 6 |
 
