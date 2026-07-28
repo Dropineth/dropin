@@ -31,10 +31,18 @@ export class EvidenceService {
       status: parsed.contentHash ? "uploaded" : "hashed",
     };
 
-    return this.repo.createEvidence({
+    const created = await this.repo.createEvidence({
       ...evidence,
       status: evidence.status,
     });
+    await this.repo.createAuditLog({
+      actor: parsed.submittedBy,
+      action: "evidence.upload",
+      entityType: "evidence_object",
+      entityId: created.id,
+      afterState: created,
+    });
+    return created;
   }
 
   async getEvidence(evidenceId: string) {

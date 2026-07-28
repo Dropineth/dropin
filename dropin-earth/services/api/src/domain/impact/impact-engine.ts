@@ -54,6 +54,6 @@ export function certificateDisclosure(certificate: ImpactCertificate) {
     ...certificate,
     certificateHash: computeCertificateHash(certificate),
     claimBoundary:
-      "This is an Impact Certificate, not a certified carbon credit. Estimated CO2e is estimated impact only and cannot support offset or tax claims.",
+      "This is an Environmental Proof Record / Impact Certificate, not a certified carbon credit, financial asset, carbon-tax offset, guaranteed yield instrument, or automatic CANOPY distribution claim. Estimated CO2e is estimated impact only and cannot support offset or tax claims.",
   };
 }
