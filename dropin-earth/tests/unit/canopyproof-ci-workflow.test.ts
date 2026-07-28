@@ -13,7 +13,7 @@ test("repository-root CanopyProof CI is a non-deploying trust gate", () => {
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /permissions:\n\s+contents: read/);
   assert.match(workflow, /working-directory: dropin-earth/);
-  assert.match(workflow, /node-version: 22/);
+  assert.match(workflow, /node-version: 22\.22\.3/);
   assert.match(workflow, /npm install --global npm@10\.9\.4/);
   assert.match(workflow, /npm ci --include=optional/);
   assert.match(workflow, /npm run ci/);
@@ -29,6 +29,19 @@ test("repository-root CanopyProof CI is a non-deploying trust gate", () => {
   assert.match(workflow, /test -d apps\/web\/\.open-next\/assets/);
   assert.match(workflow, /CANOPYPROOF_NATIVE_TEST_CONFIRM: confirm-disposable-test-database/);
   assert.match(workflow, /canopyproof_ci_test/);
+  assert.match(
+    workflow,
+    /DATABASE_URL="\$connection_url" \\\n\s+CANOPYPROOF_NATIVE_DATABASE_URL="\$connection_url" \\\n\s+npm run db:verify:canopyproof:native/,
+  );
+  assert.match(workflow, /id: coverage/);
+  assert.match(workflow, /steps\.coverage\.outcome != 'skipped'/);
+
+  const jobEnvironment = workflow.match(
+    /\n[ ]{4}env:\n(?<contents>[\s\S]*?)\n\n[ ]{4}steps:/,
+  )?.groups?.contents;
+  assert.ok(jobEnvironment, "the trust-gate job environment must be explicit");
+  assert.doesNotMatch(jobEnvironment, /(?:^|\n)\s+(?:DATABASE_URL|CANOPYPROOF_NATIVE_DATABASE_URL):/);
+  assert.doesNotMatch(workflow, />> "\$GITHUB_ENV"/);
 
   for (const boundary of [
     "CANOPYPROOF_LEGACY_EVIDENCE_NETWORK_ENABLED",

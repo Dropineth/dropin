@@ -57,18 +57,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure disposable database connection
-        run: |
-          connection_url="${CANOPYPROOF_CI_DB_SCHEME}://${CANOPYPROOF_CI_DB_USER}:${CANOPYPROOF_CI_DB_PASSWORD}@${CANOPYPROOF_CI_DB_HOST}/${CANOPYPROOF_CI_DB_NAME}"
-          {
-            echo "DATABASE_URL=${connection_url}"
-            echo "CANOPYPROOF_NATIVE_DATABASE_URL=${connection_url}"
-          } >> "$GITHUB_ENV"
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.22.3
           cache: npm
           cache-dependency-path: dropin-earth/package-lock.json
 
@@ -82,9 +74,14 @@ jobs:
         run: npm run ci
 
       - name: Verify native PostgreSQL authority paths
-        run: npm run db:verify:canopyproof:native
+        run: |
+          connection_url="${CANOPYPROOF_CI_DB_SCHEME}://${CANOPYPROOF_CI_DB_USER}:${CANOPYPROOF_CI_DB_PASSWORD}@${CANOPYPROOF_CI_DB_HOST}/${CANOPYPROOF_CI_DB_NAME}"
+          DATABASE_URL="$connection_url" \
+          CANOPYPROOF_NATIVE_DATABASE_URL="$connection_url" \
+            npm run db:verify:canopyproof:native
 
       - name: Enforce repository source coverage ratchet
+        id: coverage
         run: |
           set -o pipefail
           mkdir -p reports/ci
@@ -110,7 +107,7 @@ jobs:
           test -d apps/web/.open-next/assets
 
       - name: Preserve coverage evidence
-        if: always()
+        if: ${{ always() && steps.coverage.outcome != 'skipped' }}
         uses: actions/upload-artifact@v4
         with:
           name: canopyproof-coverage-${{ github.run_id }}
