@@ -940,7 +940,7 @@ dropin-earth/tests/unit/canopyproof-visual-evidence-intelligence.test.ts,untrack
 dropin-earth/tests/unit/carbon-accounting-agent.test.ts,untracked,X unrelated-test,exclude,test covers a separate Dropin or legacy product subsystem,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/tests/unit/community-engagement-agent.test.ts,untracked,X unrelated-test,exclude,test covers a separate Dropin or legacy product subsystem,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/tests/unit/content-education-agent.test.ts,untracked,X unrelated-test,exclude,test covers a separate Dropin or legacy product subsystem,EXCLUDED,path_and_boundary_reviewed
-dropin-earth/tests/unit/dropin-cloudflare-deployment.test.ts,tracked_modified,X unrelated-test,exclude,test covers a separate Dropin or legacy product subsystem,EXCLUDED,path_and_boundary_reviewed
+dropin-earth/tests/unit/dropin-cloudflare-deployment.test.ts,tracked_modified,I validation-coverage,include,final clean replay must enforce the manual approved OpenNext workflow while excluding legacy auto-deploy artifacts,PENDING_I_VALIDATION_COVERAGE,pending_clean_replay
 dropin-earth/tests/unit/dropin-cognition.test.ts,untracked,X unrelated-test,exclude,test covers a separate Dropin or legacy product subsystem,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/tests/unit/dropin-dashboard.test.ts,untracked,X unrelated-test,exclude,test covers a separate Dropin or legacy product subsystem,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/tests/unit/dropin-growth.test.ts,untracked,X unrelated-test,exclude,test covers a separate Dropin or legacy product subsystem,EXCLUDED,path_and_boundary_reviewed

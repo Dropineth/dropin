@@ -204,7 +204,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X seed-or-legacy-coordination | 4 |
 | exclude | X unapproved-local-infrastructure | 1 |
 | exclude | X unapproved-or-unclassified | 4 |
-| exclude | X unrelated-test | 36 |
+| exclude | X unrelated-test | 35 |
 | include | A architecture-RFC | 51 |
 | include | B satellite-proof | 19 |
 | include | C global-command-center | 29 |
@@ -213,7 +213,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | include | F verify-only-security | 15 |
 | include | G evidence-orchestration | 82 |
 | include | H trust-kernel-postgres | 116 |
-| include | I validation-coverage | 82 |
+| include | I validation-coverage | 83 |
 | include | R0 recovery-evidence | 7 |
 | include | S shared-build-plumbing | 6 |
 

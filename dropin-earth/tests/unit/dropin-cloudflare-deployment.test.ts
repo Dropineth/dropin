@@ -86,15 +86,17 @@ test("Cloudflare proxy blocks admin routes by default", async () => {
   assert.equal(body.error, "admin_proxy_disabled");
 });
 
-test("Cloudflare deployment docs preserve safe Next.js and production launch guidance", () => {
-  const text = readFileSync(join(process.cwd(), "docs/deployment-cloudflare-canopyproof.md"), "utf8");
+test("Cloudflare deployment docs preserve the separated guarded OpenNext path", () => {
+  const text = readFileSync(join(process.cwd(), "docs/deploy-cloudflare.md"), "utf8");
 
-  assert.match(text, /Do not treat `\.next` as a static Pages output directory/);
-  assert.match(text, /NEXT_PUBLIC_DROPIN_API_URL=https:\/\/canopyproof\.org\/api/);
-  assert.match(text, /Full \(strict\)/);
-  assert.match(text, /HSTS carefully/);
-  assert.match(text, /Impact Certificate is not a certified carbon credit/);
-  assert.match(text, /RWA Fragment is not guaranteed yield/);
+  assert.match(text, /API proxy remains a separate Worker/);
+  assert.match(text, /Public `\/api\/admin\/\*` access must return `403`/);
+  assert.match(text, /Do not deploy `\.next` directly as a static artifact/);
+  assert.match(text, /release-council controlled path remains/);
+  assert.match(text, /No manual\s+override is allowed/);
+  assert.match(text, /SSL\/TLS `Full \(strict\)`/);
+  assert.match(text, /Impact Certificates remain proof records, not certified carbon credits/);
+  assert.doesNotMatch(text, /wrangler pages deploy/);
 });
 
 test("CanopyProof deploy script keeps secrets in env and refuses unsafe Pages output", () => {
@@ -124,17 +126,8 @@ test("CanopyProof deploy script keeps secrets in env and refuses unsafe Pages ou
   assert.doesNotMatch(text, /wrangler pages publish "\$NEXT_BUILD_DIR"/);
 });
 
-test("Deployment notification script supports Slack and Telegram without third-party dependencies", () => {
-  const text = readFileSync(join(process.cwd(), "scripts/deploy-notify.py"), "utf8");
-
-  assert.match(text, /Notify Slack and Telegram/);
-  assert.match(text, /urllib\.request/);
-  assert.match(text, /SLACK_WEBHOOK_URL is empty/);
-  assert.match(text, /TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is empty/);
-  assert.match(text, /API Ready/);
-  assert.match(text, /Admin Launch Readiness/);
-  assert.doesNotMatch(text, /import requests/);
-  assert.equal(Boolean(statSync(join(process.cwd(), "scripts/deploy-notify.py")).mode & 0o111), true);
+test("R0 baseline excludes legacy deployment notification automation", () => {
+  assert.equal(existsSync(join(process.cwd(), "scripts/deploy-notify.py")), false);
 });
 
 test("Wrangler templates separate API proxy from OpenNext web worker safely", () => {
@@ -234,53 +227,27 @@ test("CanopyProof package metadata keeps npm ci PostCSS resolution locked", () =
   assert.equal(lockfile.packages?.["node_modules/postcss"]?.version, "8.5.14");
 });
 
-test("GitHub Actions deploy workflow is production-only and keeps guardrails", () => {
-  const workflow = readFileSync(join(process.cwd(), ".github/workflows/deploy-canopyproof.yml"), "utf8");
+test("GitHub Actions deploy workflow is manual, approved, and keeps guardrails", () => {
+  const legacyWorkflowPath = join(process.cwd(), ".github/workflows/deploy-canopyproof.yml");
   const webWorkerWorkflow = readFileSync(join(process.cwd(), ".github/workflows/deploy-cloudflare-worker.yml"), "utf8");
   const rootPackage = readFileSync(join(process.cwd(), "package.json"), "utf8");
   const webPackage = readFileSync(join(process.cwd(), "apps/web/package.json"), "utf8");
 
-  assert.match(workflow, /Dropin Production CI\/CD/);
-  assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /default: "dry-run"/);
-  assert.match(workflow, /canopyproof-production/);
-  assert.match(workflow, /CANOPYPROOF_DOMAIN: canopyproof\.org/);
-  assert.match(workflow, /WORKER_ROUTE: canopyproof\.org\/api\/\*/);
-  assert.match(workflow, /DROPIN_CANOPYPROOF_MODE: production/);
-  assert.match(workflow, /DROPIN_CLOUDFLARE_DEPLOY_CONFIRM/);
-  assert.match(workflow, /DROPIN_PHASE16_DEPLOY_CONFIRM/);
-  assert.match(workflow, /DROPIN_ALLOW_ADMIN_PROXY: "false"/);
-  assert.match(workflow, /WORKER_ZONE_NAME: canopyproof\.org/);
-  assert.match(workflow, /CF_ACCOUNT_ID_PROD/);
-  assert.match(workflow, /WORKER_ZONE_ID_PROD/);
-  assert.match(workflow, /DROPIN_SKIP_CI: "true"/);
-  assert.match(workflow, /npm run typecheck/);
-  assert.match(workflow, /npm run lint/);
-  assert.match(workflow, /npm run test/);
-  assert.match(workflow, /npm --workspace apps\/web run build/);
-  assert.match(workflow, /npm --workspace apps\/miniapp-ton run build/);
-  assert.match(workflow, /npm --workspace services\/api run build/);
-  assert.match(workflow, /npm run audit/);
-  assert.match(workflow, /Deploy Pages and Worker through Phase16 business gate/);
-  assert.match(workflow, /npm run deploy:phase16-production -- --live --output reports\/phase16-production-deploy-plan\.json/);
-  assert.match(workflow, /reports\/phase16-production-deploy-plan\.json/);
-  assert.match(workflow, /CLOUDFLARE_API_TOKEN/);
-  assert.match(workflow, /DROPIN_OPENNEXT_DEPLOY_COMMAND: npm run deploy:web:cloudflare/);
-  assert.match(workflow, /DROPIN_PAYMENT_MODE/);
-  assert.match(workflow, /DROPIN_PRODUCTION_ASSETS_JSON/);
-  assert.match(workflow, /DROPIN_KYC_PROVIDER_ENABLED/);
-  assert.match(workflow, /DROPIN_TREASURY_MULTISIG_CONFIGURED/);
-  assert.match(workflow, /SLACK_WEBHOOK_URL/);
-  assert.match(workflow, /TELEGRAM_BOT_TOKEN/);
-  assert.match(workflow, /TELEGRAM_CHAT_ID/);
-  assert.match(workflow, /python3 scripts\/deploy-notify\.py/);
-  assert.match(workflow, /DROPIN_NOTIFY_DEPLOYMENT: "false"/);
-  assert.match(workflow, /DROPIN_NOTIFY_DRY_RUN: "false"/);
-  assert.match(workflow, /dropin-api\.production\.invalid/);
-  assert.doesNotMatch(workflow, /CF_API_TOKEN: YOUR/);
-  assert.doesNotMatch(workflow, /target_environment:/);
-  assert.doesNotMatch(workflow, /testnet\.canopyproof\.org/);
-  assert.doesNotMatch(workflow, /matrix:/);
+  assert.equal(existsSync(legacyWorkflowPath), false);
+  assert.match(webWorkerWorkflow, /workflow_dispatch:/);
+  assert.doesNotMatch(webWorkerWorkflow, /\n\s*push:/);
+  assert.match(webWorkerWorkflow, /environment: canopyproof-production/);
+  assert.match(webWorkerWorkflow, /deploy_confirm:/);
+  assert.match(webWorkerWorkflow, /phase_confirm:/);
+  assert.match(webWorkerWorkflow, /target_sha:/);
+  assert.match(webWorkerWorkflow, /CLOUDFLARE_API_TOKEN/);
+  assert.match(webWorkerWorkflow, /CLOUDFLARE_ACCOUNT_ID/);
+  assert.match(webWorkerWorkflow, /DROPIN_ALLOW_ADMIN_PROXY: "false"/);
+  assert.doesNotMatch(webWorkerWorkflow, /DROPIN_ALLOW_ADMIN_PROXY: "true"/);
+  assert.match(webWorkerWorkflow, /phase16-9-verify-release-approval\.mjs/);
+  assert.match(webWorkerWorkflow, /reports\/phase16-9-release-council-approval\.json/);
+  assert.match(webWorkerWorkflow, /npm --workspace apps\/web run cf:deploy/);
+  assert.doesNotMatch(webWorkerWorkflow, /wrangler pages deploy/);
 
   const webPackageJson = JSON.parse(webPackage) as {
     scripts?: Record<string, string>;
@@ -296,16 +263,6 @@ test("GitHub Actions deploy workflow is production-only and keeps guardrails", (
   assert.equal(rootPackageJson.devDependencies?.["@opennextjs/cloudflare"], "1.19.11");
   assert.equal(rootPackageJson.devDependencies?.wrangler, "4.107.0");
 
-  assert.match(webWorkerWorkflow, /deploy_confirm:/);
-  assert.match(webWorkerWorkflow, /phase_confirm:/);
-  assert.match(webWorkerWorkflow, /target_sha:/);
-  assert.match(webWorkerWorkflow, /canopyproof-production/);
-  assert.match(webWorkerWorkflow, /CLOUDFLARE_API_TOKEN/);
-  assert.match(webWorkerWorkflow, /CLOUDFLARE_ACCOUNT_ID/);
-  assert.match(webWorkerWorkflow, /DROPIN_ALLOW_ADMIN_PROXY: "false"/);
-  assert.match(webWorkerWorkflow, /phase16-9-verify-release-approval\.mjs/);
-  assert.match(webWorkerWorkflow, /reports\/phase16-9-release-council-approval\.json/);
-  assert.doesNotMatch(webWorkerWorkflow, /wrangler pages deploy/);
 });
 
 test("CanopyProof auto deploy wrapper is production-only and delegates to the safe deploy script", () => {
