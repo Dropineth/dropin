@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "thresholds": {
+    "statements": 95,
+    "branches": 95,
+    "functions": 95,
+    "lines": 95
+  },
+  "maxCoverageAgeSeconds": 900,
+  "rawCoverageFile": "coverage/critical/coverage-raw.json",
+  "coverageFile": "coverage/critical/coverage-final.json",
+  "provenanceFile": "coverage/critical/provenance.json",
+  "jsonReport": "reports/canopyproof-critical-coverage.json",
+  "markdownReport": "reports/canopyproof-critical-coverage.md",
+  "testFiles": [
+    "tests/unit/canopy-state-machine-critical.test.ts",
+    "tests/unit/canopy-state-machine.test.ts",
+    "tests/unit/canopyproof-authorization-binding.test.ts",
+    "tests/unit/canopyproof-authorization-security-critical.test.ts",
+    "tests/unit/canopyproof-aws-kms-managed-signature-verifier.test.ts",
+    "tests/unit/canopyproof-challenge-cases.test.ts",
+    "tests/unit/canopyproof-critical-coverage-gate.test.ts",
+    "tests/unit/canopyproof-critical-coverage-normalizer.test.ts",
+    "tests/unit/canopyproof-database-audit-transparency.test.ts",
+    "tests/unit/canopyproof-environmental-proof-authority.test.ts",
+    "tests/unit/canopyproof-environmental-proof-lifecycle-authority.test.ts",
+    "tests/unit/canopyproof-evidence-media-authority.test.ts",
+    "tests/unit/canopyproof-evidence-media-provider-runtime.test.ts",
+    "tests/unit/canopyproof-evidence-metadata-extractor-adapter.test.ts",
+    "tests/unit/canopyproof-global-command-center-spatial-disclosure-critical.test.ts",
+    "tests/unit/canopyproof-global-command-center-spatial-disclosure-authority.test.ts",
+    "tests/unit/canopyproof-mobile-evidence-sync.test.ts",
+    "tests/unit/canopyproof-mobile-evidence-vault-critical.test.ts",
+    "tests/unit/canopyproof-mobile-evidence-vault.test.ts",
+    "tests/unit/canopyproof-mobile-sync-admission.test.ts",
+    "tests/unit/canopyproof-satellite-schema-adapters-critical.test.ts",
+    "tests/unit/canopyproof-satellite-proof.test.ts",
+    "tests/unit/canopyproof-security-policy.test.ts"
+  ],
+  "modules": [
+    {
+      "id": "satellite-state-machine",
+      "files": [
+        "packages/dropin-protocol/src/canopy-state-machine.ts"
+      ]
+    },
+    {
+      "id": "satellite-schema-root",
+      "files": [
+        "packages/schemas/src/satellite-proof.schema.ts",
+        "services/satellite-ingestor/src/root-builder.ts"
+      ]
+    },
+    {
+      "id": "satellite-deterministic-adapters",
+      "files": [
+        "services/satellite-ingestor/src/adapters/audit-adapter.ts",
+        "services/satellite-ingestor/src/adapters/landsat-adapter.ts",
+        "services/satellite-ingestor/src/adapters/planet-adapter.ts",
+        "services/satellite-ingestor/src/adapters/sar-adapter.ts",
+        "services/satellite-ingestor/src/adapters/sentinel-adapter.ts"
+      ]
+    },
+    {
+      "id": "mobile-evidence-vault",
+      "files": [
+        "apps/web/src/lib/canopyproof-mobile-evidence-vault.ts"
+      ]
+    },
+    {
+      "id": "mobile-sync-authority",
+      "files": [
+        "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+        "services/api/src/domain/canopyproof/mobile-evidence-sync-authority.ts"
+      ]
+    },
+    {
+      "id": "security-authorization",
+      "files": [
+        "services/api/src/domain/canopyproof/authorization-binding.ts",
+        "services/api/src/domain/canopyproof/security-policy.ts"
+      ]
+    },
+    {
+      "id": "kms-verify-only",
+      "files": [
+        "services/api/src/domain/canopyproof/aws-kms-managed-signature-verifier.ts"
+      ]
+    },
+    {
+      "id": "metadata-extraction",
+      "files": [
+        "services/api/src/domain/canopyproof/fixed-http-metadata-extractor-provider.ts",
+        "services/api/src/domain/canopyproof/metadata-extractor-adapter.ts"
+      ]
+    },
+    {
+      "id": "effective-media-orchestration",
+      "files": [
+        "services/api/src/domain/canopyproof/evidence-metadata-orchestration-authority.ts",
+        "services/api/src/domain/canopyproof/evidence-metadata-orchestrator.ts"
+      ]
+    },
+    {
+      "id": "audit-challenge-invariants",
+      "files": [
+        "services/api/src/domain/canopyproof/challenge-cases.ts",
+        "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "services/api/src/domain/canopyproof/environmental-proof-challenge-authority.ts"
+      ]
+    },
+    {
+      "id": "global-spatial-disclosure",
+      "files": [
+        "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts"
+      ]
+    }
+  ]
+}

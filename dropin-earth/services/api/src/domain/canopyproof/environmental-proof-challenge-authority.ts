@@ -321,37 +321,48 @@ export class CanopyProofEnvironmentalProofChallengeAuthorityService {
       }
       factIds.add(fact.id);
     }
-    for (const challenge of [...snapshot.challenges].sort(
-      (left, right) => left.recordSequence - right.recordSequence || left.id.localeCompare(right.id),
-    )) {
-      const risk = snapshot.riskSignals.find((item) => item.challengeId === challenge.id);
-      if (!risk) throw new Error(`CanopyProof Environmental Proof challenge risk signal is missing: ${challenge.id}`);
-      service.replayChallengeBundle(challenge, risk);
-    }
-    if (service.riskSignalsById.size !== snapshot.riskSignals.length) {
-      throw new Error("CanopyProof Environmental Proof challenge snapshot contains an orphan risk signal.");
-    }
-    for (const review of [...snapshot.reviews].sort(
-      (left, right) => left.recordSequence - right.recordSequence || left.id.localeCompare(right.id),
-    )) {
-      const replayed = service.reviewChallenge(
-        review.challengeId,
-        {
-          id: review.id,
-          decision: review.decision,
-          rationale: review.rationale,
-          conflictDisclosure: review.conflictDisclosure,
-          limitations: review.limitations,
-          sourceEventRoots: review.sourceEventRoots,
-          reviewedAt: review.reviewedAt,
-        },
-        review.reviewer,
-      );
-      assertFactReplay(replayed, review, `challenge review ${review.id}`);
-    }
-    for (const resolution of [...snapshot.resolutions].sort(
-      (left, right) => left.recordSequence - right.recordSequence || left.id.localeCompare(right.id),
-    )) {
+    const replayCommands = [
+      ...snapshot.challenges.map((fact) => ({ kind: "challenge" as const, fact })),
+      ...snapshot.reviews.map((fact) => ({ kind: "review" as const, fact })),
+      ...snapshot.resolutions.map((fact) => ({ kind: "resolution" as const, fact })),
+    ].sort(
+      (left, right) =>
+        left.fact.recordSequence - right.fact.recordSequence ||
+        left.fact.id.localeCompare(right.fact.id),
+    );
+    for (const command of replayCommands) {
+      if (command.kind === "challenge") {
+        const challenge = command.fact;
+        const risk = snapshot.riskSignals.find(
+          (item) => item.challengeId === challenge.id,
+        );
+        if (!risk) {
+          throw new Error(
+            `CanopyProof Environmental Proof challenge risk signal is missing: ${challenge.id}`,
+          );
+        }
+        service.replayChallengeBundle(challenge, risk);
+        continue;
+      }
+      if (command.kind === "review") {
+        const review = command.fact;
+        const replayed = service.reviewChallenge(
+          review.challengeId,
+          {
+            id: review.id,
+            decision: review.decision,
+            rationale: review.rationale,
+            conflictDisclosure: review.conflictDisclosure,
+            limitations: review.limitations,
+            sourceEventRoots: review.sourceEventRoots,
+            reviewedAt: review.reviewedAt,
+          },
+          review.reviewer,
+        );
+        assertFactReplay(replayed, review, `challenge review ${review.id}`);
+        continue;
+      }
+      const resolution = command.fact;
       const replayed = service.resolveChallenge(
         resolution.challengeId,
         {
@@ -366,6 +377,11 @@ export class CanopyProofEnvironmentalProofChallengeAuthorityService {
         resolution.resolver,
       );
       assertFactReplay(replayed, resolution, `challenge resolution ${resolution.id}`);
+    }
+    if (service.riskSignalsById.size !== snapshot.riskSignals.length) {
+      throw new Error(
+        "CanopyProof Environmental Proof challenge snapshot contains an orphan risk signal.",
+      );
     }
     return service;
   }

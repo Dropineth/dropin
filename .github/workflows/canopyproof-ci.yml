@@ -92,6 +92,9 @@ jobs:
           test -s reports/ci/canopyproof-coverage.txt
           test -s coverage/coverage-summary.json
 
+      - name: Enforce critical CanopyProof module coverage
+        run: npm run coverage:critical
+
       - name: Build OpenNext Cloudflare artifact
         run: npm --workspace apps/web run cf:build
 

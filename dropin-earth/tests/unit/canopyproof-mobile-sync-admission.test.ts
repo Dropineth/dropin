@@ -69,6 +69,11 @@ test("mobile sync admission uses strict greater-than limits and validates decisi
     organizationCount: 301n,
     policy,
   }), "actor_and_organization_limits_exceeded");
+  assert.equal(canopyProofMobileEvidenceSyncAdmissionDenialReason({
+    actorCount: 30n,
+    organizationCount: 301n,
+    policy,
+  }), "organization_limit_exceeded");
 
   assert.throws(() => canopyProofMobileEvidenceSyncAdmissionDecisionSchema.parse({
     allowed: false,
@@ -87,4 +92,55 @@ test("mobile sync admission uses strict greater-than limits and validates decisi
     resetAt: "2026-07-17T03:01:00.000Z",
     abuseEventRoot: "a".repeat(64),
   }));
+  assert.throws(() => canopyProofMobileEvidenceSyncAdmissionDecisionSchema.parse({
+    allowed: true,
+    policyVersion: "canopyproof.mobile-sync-admission/v1",
+    command: "binding",
+    limit: 30,
+    remaining: 31,
+    resetAt: "2026-07-17T03:01:00.000Z",
+  }));
+});
+
+test("mobile sync denial facts reject invalid windows, timestamps, and substituted reasons", () => {
+  const window = canopyProofMobileEvidenceSyncAdmissionWindow("2026-07-17T03:00:30.000Z");
+  const base = {
+    organizationId: "cp_mobile_sync_admission_org",
+    actorId: "cp_mobile_sync_admission_actor",
+    command: "binding" as const,
+    ...window,
+    actorCount: 31n,
+    organizationCount: 300n,
+    reason: "actor_limit_exceeded" as const,
+    createdAt: "2026-07-17T03:00:30.000Z",
+  };
+  assert.throws(
+    () => buildCanopyProofMobileEvidenceSyncAdmissionDenialFact({
+      ...base,
+      resetAt: "2026-07-17T03:00:59.000Z",
+    }),
+    /WINDOW_INVALID/,
+  );
+  assert.throws(
+    () => buildCanopyProofMobileEvidenceSyncAdmissionDenialFact({
+      ...base,
+      createdAt: "2026-07-17T03:01:00.000Z",
+    }),
+    /WINDOW_INVALID/,
+  );
+  assert.throws(
+    () => buildCanopyProofMobileEvidenceSyncAdmissionDenialFact({
+      ...base,
+      reason: "organization_limit_exceeded",
+    }),
+    /REASON_INVALID/,
+  );
+  assert.throws(
+    () => buildCanopyProofMobileEvidenceSyncAdmissionDenialFact({
+      ...base,
+      actorCount: 30n,
+      reason: "actor_limit_exceeded",
+    }),
+    /REASON_INVALID/,
+  );
 });

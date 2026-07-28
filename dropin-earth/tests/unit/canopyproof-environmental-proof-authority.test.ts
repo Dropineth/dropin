@@ -4,7 +4,11 @@ import {
   CanopyProofEnvironmentalProofAuthorityService,
   type CanopyProofEnvironmentalProofAuthoritySources,
 } from "../../services/api/src/domain/canopyproof/environmental-proof-authority.js";
-import { CanopyProofEnvironmentalProofChallengeAuthorityService } from "../../services/api/src/domain/canopyproof/environmental-proof-challenge-authority.js";
+import {
+  canopyProofEnvironmentalProofChallengeSafetyBoundary,
+  CanopyProofEnvironmentalProofChallengeAuthorityService,
+  verifyCanopyProofEnvironmentalProofChallengedRecordProjection,
+} from "../../services/api/src/domain/canopyproof/environmental-proof-challenge-authority.js";
 import { CanopyProofEvidenceRegistryService } from "../../services/api/src/domain/canopyproof/evidence-registry.js";
 import { CanopyProofEvidenceVerificationAuthorityService } from "../../services/api/src/domain/canopyproof/evidence-verification-authority.js";
 import { CanopyProofMethodologyGovernanceAuthorityService } from "../../services/api/src/domain/canopyproof/methodology-governance-authority.js";
@@ -393,6 +397,66 @@ function buildIssuedProof() {
     fixture.sources(),
   );
   return { fixture, proof, candidate, approvals, record };
+}
+
+function openCriticalChallenge(
+  issued: ReturnType<typeof buildIssuedProof>,
+  service: CanopyProofEnvironmentalProofChallengeAuthorityService,
+  label: string,
+  challenger = actor(
+    `cp_challenge_${label}_challenger`,
+    "human",
+    "researcher",
+  ),
+  overrides: Readonly<Record<string, unknown>> = {},
+) {
+  return service.openChallenge(
+    issued.record.id,
+    {
+      reason: "evidence_integrity",
+      severity: "high",
+      rationale: `Independent ${label} evidence requires a governed challenge review of the immutable record.`,
+      supportingArtifactHashes: [
+        hashFor(issued.record.id, `${label}-artifact`),
+      ],
+      sourceEventRoots: [issued.record.auditEvent.eventRoot],
+      openedAt: "2026-07-12T01:40:00.000Z",
+      ...overrides,
+    },
+    challenger,
+    issued.fixture.sources(),
+  );
+}
+
+function reviewCriticalChallenge(
+  service: CanopyProofEnvironmentalProofChallengeAuthorityService,
+  challengeId: string,
+  reviewer: ReturnType<typeof actor>,
+  decision: "uphold" | "reject" | "needs_more_evidence",
+  reviewedAt: string,
+  overrides: Readonly<Record<string, unknown>> = {},
+) {
+  const bundle = service.getChallengeBundle(challengeId);
+  const priorReviews = service.listReviews(challengeId);
+  return service.reviewChallenge(
+    challengeId,
+    {
+      decision,
+      rationale:
+        "Independent human reviewer evaluates the complete challenge authority and records a bounded decision.",
+      conflictDisclosure:
+        "No source, issuer, challenger, approver, financial, familial, employment, or operational conflict is known.",
+      limitations: ["Review is limited to this immutable challenge."],
+      sourceEventRoots: [
+        bundle.challenge.auditEvent.eventRoot,
+        bundle.riskSignal.auditEvent.eventRoot,
+        ...priorReviews.map((review) => review.auditEvent.eventRoot),
+      ],
+      reviewedAt,
+      ...overrides,
+    },
+    reviewer,
+  );
 }
 
 test("CanopyProof derives and replays an immutable current-verified Environmental Proof Record", () => {
@@ -844,5 +908,723 @@ test("CanopyProof Environmental Proof challenge rejects AI, conflicts, mixed quo
         },
       ),
     /challenge risk.*lineage is invalid/i,
+  );
+});
+
+test("Environmental Proof challenge projection verifier rejects partial or tampered authority", () => {
+  const issued = buildIssuedProof();
+  const service = new CanopyProofEnvironmentalProofChallengeAuthorityService(
+    issued.proof.getAuthoritySnapshot(),
+  );
+  const base = service.projectRecordStatus(
+    issued.record.id,
+    issued.fixture.sources(),
+  );
+
+  assert.equal(base.state, "issued");
+  assert.equal(
+    verifyCanopyProofEnvironmentalProofChallengedRecordProjection(base),
+    true,
+  );
+  assert.deepEqual(
+    base.safety,
+    canopyProofEnvironmentalProofChallengeSafetyBoundary(),
+  );
+  assert.equal(
+    verifyCanopyProofEnvironmentalProofChallengedRecordProjection({
+      ...base,
+      challengeState: "open",
+    }),
+    false,
+  );
+  assert.equal(
+    verifyCanopyProofEnvironmentalProofChallengedRecordProjection({
+      ...base,
+      challengeId: "cp_challenge_without_state",
+      challengeRoot: hashFor("cp_challenge_without_state", "root"),
+    }),
+    false,
+  );
+  assert.equal(
+    verifyCanopyProofEnvironmentalProofChallengedRecordProjection({
+      ...base,
+      resolutionId: "cp_resolution_without_challenge",
+      resolutionRoot: hashFor("cp_resolution_without_challenge", "root"),
+    }),
+    false,
+  );
+  assert.equal(
+    verifyCanopyProofEnvironmentalProofChallengedRecordProjection({
+      ...base,
+      projectionRoot: hashFor(base.recordId, "tampered-projection"),
+    }),
+    false,
+  );
+  assert.equal(
+    verifyCanopyProofEnvironmentalProofChallengedRecordProjection({
+      ...base,
+      safety: {
+        ...base.safety,
+        noMainnetFunds: false,
+      } as never,
+    }),
+    false,
+  );
+
+  assert.throws(() => service.getChallenge("missing"), /challenge not found/);
+  assert.throws(() => service.getRiskSignal("missing"), /risk signal not found/);
+  assert.throws(() => service.getReview("missing"), /review not found/);
+  assert.throws(() => service.getResolution("missing"), /resolution not found/);
+});
+
+test("Environmental Proof challenge snapshots reject duplicate, missing, orphaned, and tampered facts", () => {
+  const issued = buildIssuedProof();
+  const service = new CanopyProofEnvironmentalProofChallengeAuthorityService(
+    issued.proof.getAuthoritySnapshot(),
+  );
+  const bundle = openCriticalChallenge(issued, service, "snapshot");
+  const snapshot = service.getAuthoritySnapshot();
+  const risk = snapshot.riskSignals[0];
+  assert.ok(risk);
+
+  assert.throws(
+    () =>
+      CanopyProofEnvironmentalProofChallengeAuthorityService.fromAuthoritySnapshot(
+        issued.proof.getAuthoritySnapshot(),
+        {
+          ...snapshot,
+          riskSignals: [{ ...risk, id: bundle.challenge.id }],
+        },
+      ),
+    /duplicate fact id/,
+  );
+  assert.throws(
+    () =>
+      CanopyProofEnvironmentalProofChallengeAuthorityService.fromAuthoritySnapshot(
+        issued.proof.getAuthoritySnapshot(),
+        { ...snapshot, riskSignals: [] },
+      ),
+    /risk signal is missing/,
+  );
+  assert.throws(
+    () =>
+      CanopyProofEnvironmentalProofChallengeAuthorityService.fromAuthoritySnapshot(
+        issued.proof.getAuthoritySnapshot(),
+        {
+          ...snapshot,
+          riskSignals: [
+            risk,
+            {
+              ...risk,
+              id: "cp_orphan_challenge_risk",
+              challengeId: "cp_orphan_challenge",
+            },
+          ],
+        },
+      ),
+    /orphan risk signal/,
+  );
+  assert.throws(
+    () =>
+      CanopyProofEnvironmentalProofChallengeAuthorityService.fromAuthoritySnapshot(
+        issued.proof.getAuthoritySnapshot(),
+        {
+          ...snapshot,
+          challenges: [
+            {
+              ...bundle.challenge,
+              severity: "low",
+            },
+          ],
+        },
+      ),
+    /challenge .*lineage is invalid/i,
+  );
+});
+
+test("Environmental Proof challenge opening rejects foreign, stale, duplicate, and noncanonical commands", () => {
+  const issued = buildIssuedProof();
+  const service = new CanopyProofEnvironmentalProofChallengeAuthorityService(
+    issued.proof.getAuthoritySnapshot(),
+  );
+  const baseInput = {
+    reason: "evidence_integrity",
+    severity: "high",
+    rationale:
+      "Independent opening evidence requires governed review of the immutable record authority.",
+    supportingArtifactHashes: [
+      hashFor(issued.record.id, "opening-artifact"),
+    ],
+    sourceEventRoots: [issued.record.auditEvent.eventRoot],
+    openedAt: "2026-07-12T01:40:00.000Z",
+  } as const;
+
+  assert.throws(
+    () =>
+      service.openChallenge(
+        issued.record.id,
+        { ...baseInput, id: "cp_noncanonical_challenge_id" },
+        actor("cp_opening_id_challenger", "human", "researcher"),
+        issued.fixture.sources(),
+      ),
+    /id does not match/,
+  );
+  assert.throws(
+    () =>
+      service.openChallenge(
+        issued.record.id,
+        {
+          ...baseInput,
+          sourceEventRoots: [hashFor("foreign-event", "root")],
+        },
+        actor("cp_opening_foreign_challenger", "human", "researcher"),
+        issued.fixture.sources(),
+      ),
+    /missing or foreign/,
+  );
+  assert.throws(
+    () =>
+      service.openChallenge(
+        issued.record.id,
+        {
+          ...baseInput,
+          sourceEventRoots: [issued.candidate.auditEvent.eventRoot],
+        },
+        actor("cp_opening_record_event_challenger", "human", "researcher"),
+        issued.fixture.sources(),
+      ),
+    /must bind the record event/,
+  );
+  assert.throws(
+    () =>
+      service.openChallenge(
+        issued.record.id,
+        {
+          ...baseInput,
+          openedAt: "2026-07-12T01:00:00.000Z",
+        },
+        actor("cp_opening_time_challenger", "human", "researcher"),
+        issued.fixture.sources(),
+      ),
+    /time must be monotonic/,
+  );
+  assert.throws(
+    () =>
+      service.openChallenge(
+        issued.record.id,
+        baseInput,
+        actor("cp_opening_authority_challenger", "human", "researcher", {
+          authorityRoot: hashFor("wrong-actor-authority", "root"),
+        }),
+        issued.fixture.sources(),
+      ),
+    /actor authority root is invalid/,
+  );
+
+  const opened = service.openChallenge(
+    issued.record.id,
+    baseInput,
+    actor("cp_opening_valid_challenger", "human", "researcher"),
+    issued.fixture.sources(),
+  );
+  assert.throws(
+    () =>
+      service.openChallenge(
+        issued.record.id,
+        {
+          ...baseInput,
+          rationale:
+            "A second unresolved challenge must not replace the existing append-only governance fact.",
+          supportingArtifactHashes: [
+            hashFor(issued.record.id, "second-opening-artifact"),
+          ],
+          openedAt: "2026-07-12T01:41:00.000Z",
+        },
+        actor("cp_opening_second_challenger", "human", "researcher"),
+        issued.fixture.sources(),
+      ),
+    /already has an unresolved challenge/,
+  );
+  assert.equal(service.listChallenges(issued.record.id).length, 1);
+  const replayed = service.getChallengeBundle(opened.challenge.id);
+  assert.deepEqual(replayed, opened);
+  assert.equal(replayed?.challenge.challengeRoot, opened.challenge.challengeRoot);
+  assert.equal(replayed?.riskSignal.riskRoot, opened.riskSignal.riskRoot);
+});
+
+test("Environmental Proof rejected resolution permits only a lineage-bound successor challenge", () => {
+  const issued = buildIssuedProof();
+  const service = new CanopyProofEnvironmentalProofChallengeAuthorityService(
+    issued.proof.getAuthoritySnapshot(),
+  );
+  const first = openCriticalChallenge(issued, service, "successor");
+  const verifierReview = reviewCriticalChallenge(
+    service,
+    first.challenge.id,
+    accreditedVerifier("cp_successor_verifier"),
+    "reject",
+    "2026-07-12T01:50:00.000Z",
+  );
+  const ownerReview = reviewCriticalChallenge(
+    service,
+    first.challenge.id,
+    actor("cp_successor_owner", "human", "owner"),
+    "reject",
+    "2026-07-12T02:00:00.000Z",
+  );
+  const resolution = service.resolveChallenge(
+    first.challenge.id,
+    {
+      reviewIds: [verifierReview.id, ownerReview.id],
+      decision: "reject",
+      rationale:
+        "Independent resolver rejects the first challenge after complete unanimous governance review.",
+      sourceEventRoots: [
+        first.challenge.auditEvent.eventRoot,
+        first.riskSignal.auditEvent.eventRoot,
+        verifierReview.auditEvent.eventRoot,
+        ownerReview.auditEvent.eventRoot,
+      ],
+      resolvedAt: "2026-07-12T02:10:00.000Z",
+    },
+    actor("cp_successor_resolver", "human", "admin"),
+  );
+
+  assert.throws(
+    () =>
+      openCriticalChallenge(issued, service, "successor-missing-lineage", undefined, {
+        sourceEventRoots: [issued.record.auditEvent.eventRoot],
+        openedAt: "2026-07-12T02:20:00.000Z",
+      }),
+    /must bind the prior resolution event/,
+  );
+  const successor = openCriticalChallenge(
+    issued,
+    service,
+    "successor-lineage",
+    actor("cp_successor_second_challenger", "human", "researcher"),
+    {
+      sourceEventRoots: [
+        issued.record.auditEvent.eventRoot,
+        resolution.auditEvent.eventRoot,
+      ],
+      openedAt: "2026-07-12T02:20:00.000Z",
+    },
+  );
+  assert.equal(successor.challenge.priorChallengeId, first.challenge.id);
+  assert.equal(successor.challenge.priorResolutionId, resolution.id);
+  assert.equal(
+    successor.challenge.priorResolutionRoot,
+    resolution.resolutionRoot,
+  );
+  const replayed = CanopyProofEnvironmentalProofChallengeAuthorityService.fromAuthoritySnapshot(
+    issued.proof.getAuthoritySnapshot(),
+    service.getAuthoritySnapshot(),
+  );
+  assert.deepEqual(
+    replayed.getChallenge(successor.challenge.id),
+    successor.challenge,
+  );
+});
+
+test("Environmental Proof challenge review enforces accreditation, independence, event lineage, and canonical identity", () => {
+  const issued = buildIssuedProof();
+  const service = new CanopyProofEnvironmentalProofChallengeAuthorityService(
+    issued.proof.getAuthoritySnapshot(),
+  );
+  const challenger = accreditedVerifier("cp_review_challenger");
+  const bundle = openCriticalChallenge(
+    issued,
+    service,
+    "review",
+    challenger,
+  );
+  const reviewInput = {
+    decision: "uphold",
+    rationale:
+      "Independent accredited review evaluates the complete challenge authority graph.",
+    conflictDisclosure:
+      "No source, issuer, challenger, approver, financial, familial, employment, or operational conflict is known.",
+    limitations: ["Review remains bounded to the immutable record."],
+    sourceEventRoots: [
+      bundle.challenge.auditEvent.eventRoot,
+      bundle.riskSignal.auditEvent.eventRoot,
+    ],
+    reviewedAt: "2026-07-12T01:50:00.000Z",
+  } as const;
+
+  for (const verifier of [
+    actor("cp_review_pending_verifier", "human", "verifier", {
+      accreditationId: "cp_review_pending_accreditation",
+      accreditationStatus: "pending",
+      accreditationRoot: hashFor("cp_review_pending_verifier", "accreditation"),
+    }),
+    actor("cp_review_missing_id_verifier", "human", "verifier", {
+      accreditationStatus: "approved",
+      accreditationRoot: hashFor(
+        "cp_review_missing_id_verifier",
+        "accreditation",
+      ),
+    }),
+    actor("cp_review_missing_root_verifier", "human", "verifier", {
+      accreditationId: "cp_review_missing_root_accreditation",
+      accreditationStatus: "approved",
+    }),
+  ]) {
+    assert.throws(
+      () => service.reviewChallenge(bundle.challenge.id, reviewInput, verifier),
+      /requires current approved accreditation/,
+    );
+  }
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        reviewInput,
+        challenger,
+      ),
+    /independent human reviewer/,
+  );
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        reviewInput,
+        issued.approvals.verifier,
+      ),
+    /independent human reviewer/,
+  );
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        {
+          ...reviewInput,
+          id: "cp_noncanonical_review",
+        },
+        accreditedVerifier("cp_review_id_verifier"),
+      ),
+    /review id does not match/,
+  );
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        {
+          ...reviewInput,
+          sourceEventRoots: [bundle.challenge.auditEvent.eventRoot],
+        },
+        accreditedVerifier("cp_review_missing_risk_verifier"),
+      ),
+    /omits required authority event/,
+  );
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        {
+          ...reviewInput,
+          reviewedAt: "2026-07-12T01:39:59.000Z",
+        },
+        accreditedVerifier("cp_review_time_verifier"),
+      ),
+    /time must be monotonic/,
+  );
+  const firstReviewer = accreditedVerifier("cp_review_first_verifier");
+  const firstInput = {
+    ...reviewInput,
+    decision: "needs_more_evidence" as const,
+  };
+  const first = service.reviewChallenge(
+    bundle.challenge.id,
+    firstInput,
+    firstReviewer,
+  );
+  assert.equal(first.decision, "needs_more_evidence");
+  assert.equal(
+    service.reviewChallenge(
+      bundle.challenge.id,
+      { ...firstInput, id: first.id },
+      firstReviewer,
+    ),
+    first,
+  );
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        {
+          ...reviewInput,
+          decision: "reject",
+          sourceEventRoots: [
+            bundle.challenge.auditEvent.eventRoot,
+            bundle.riskSignal.auditEvent.eventRoot,
+            first.auditEvent.eventRoot,
+          ],
+          reviewedAt: "2026-07-12T01:51:00.000Z",
+        },
+        first.reviewer,
+      ),
+    /unique independent reviewer/,
+  );
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        {
+          ...reviewInput,
+          decision: "uphold",
+          reviewedAt: "2026-07-12T02:00:00.000Z",
+        },
+        actor("cp_review_second_owner", "human", "owner"),
+      ),
+    /omits required authority event/,
+  );
+  assert.equal(service.getReview(first.id), first);
+});
+
+test("Environmental Proof resolution enforces complete human quorum and immutable terminal authority", () => {
+  const issued = buildIssuedProof();
+  const service = new CanopyProofEnvironmentalProofChallengeAuthorityService(
+    issued.proof.getAuthoritySnapshot(),
+  );
+  const bundle = openCriticalChallenge(issued, service, "resolution");
+  const verifierReview = reviewCriticalChallenge(
+    service,
+    bundle.challenge.id,
+    accreditedVerifier("cp_resolution_verifier"),
+    "uphold",
+    "2026-07-12T01:50:00.000Z",
+  );
+  const ownerReview = reviewCriticalChallenge(
+    service,
+    bundle.challenge.id,
+    actor("cp_resolution_owner", "human", "owner"),
+    "uphold",
+    "2026-07-12T02:00:00.000Z",
+  );
+  const sourceEventRoots = [
+    bundle.challenge.auditEvent.eventRoot,
+    bundle.riskSignal.auditEvent.eventRoot,
+    verifierReview.auditEvent.eventRoot,
+    ownerReview.auditEvent.eventRoot,
+  ];
+  const input = {
+    reviewIds: [verifierReview.id, ownerReview.id],
+    decision: "uphold",
+    rationale:
+      "Independent resolver records the complete unanimous human governance quorum.",
+    limitations: ["Resolution preserves every prior immutable fact."],
+    sourceEventRoots,
+    resolvedAt: "2026-07-12T02:10:00.000Z",
+  } as const;
+
+  assert.throws(
+    () =>
+      service.resolveChallenge(
+        bundle.challenge.id,
+        { ...input, reviewIds: [verifierReview.id, "cp_missing_review"] },
+        actor("cp_resolution_incomplete_resolver", "human", "admin"),
+      ),
+    /complete review set/,
+  );
+  assert.throws(
+    () =>
+      service.resolveChallenge(
+        bundle.challenge.id,
+        { ...input, id: "cp_noncanonical_resolution" },
+        actor("cp_resolution_id_resolver", "human", "admin"),
+      ),
+    /resolution id does not match/,
+  );
+  assert.throws(
+    () =>
+      service.resolveChallenge(
+        bundle.challenge.id,
+        { ...input, sourceEventRoots: sourceEventRoots.slice(0, -1) },
+        actor("cp_resolution_missing_event_resolver", "human", "admin"),
+      ),
+    /omits authority event/,
+  );
+  assert.throws(
+    () =>
+      service.resolveChallenge(
+        bundle.challenge.id,
+        input,
+        ownerReview.reviewer,
+      ),
+    /independent human resolver/,
+  );
+  assert.throws(
+    () =>
+      service.resolveChallenge(
+        bundle.challenge.id,
+        { ...input, resolvedAt: "2026-07-12T01:59:59.000Z" },
+        actor("cp_resolution_time_resolver", "human", "admin"),
+      ),
+    /time must be monotonic/,
+  );
+
+  const resolution = service.resolveChallenge(
+    bundle.challenge.id,
+    input,
+    actor("cp_resolution_valid_resolver", "human", "admin"),
+  );
+  assert.equal(service.getResolution(resolution.id), resolution);
+  assert.throws(
+    () =>
+      openCriticalChallenge(
+        issued,
+        service,
+        "revoked-successor",
+        actor("cp_revoked_successor_challenger", "human", "researcher"),
+        {
+          sourceEventRoots: [
+            issued.record.auditEvent.eventRoot,
+            resolution.auditEvent.eventRoot,
+          ],
+          openedAt: "2026-07-12T02:20:00.000Z",
+        },
+      ),
+    /revoked record cannot accept another challenge/,
+  );
+  const snapshot = service.getAuthoritySnapshot();
+  assert.throws(
+    () =>
+      CanopyProofEnvironmentalProofChallengeAuthorityService.fromAuthoritySnapshot(
+        issued.proof.getAuthoritySnapshot(),
+        {
+          ...snapshot,
+          reviews: snapshot.reviews.map((review) =>
+            review.id === ownerReview.id
+              ? { ...review, recordSequence: verifierReview.recordSequence }
+              : review,
+          ),
+        },
+      ),
+    /lineage is invalid|previous event root|record sequence|missing or foreign/i,
+  );
+  assert.throws(
+    () =>
+      service.reviewChallenge(
+        bundle.challenge.id,
+        {
+          decision: "uphold",
+          rationale:
+            "No review may be appended after terminal challenge resolution.",
+          conflictDisclosure:
+            "No source, issuer, challenger, approver, financial, familial, employment, or operational conflict is known.",
+          sourceEventRoots,
+          reviewedAt: "2026-07-12T02:20:00.000Z",
+        },
+        accreditedVerifier("cp_resolution_late_verifier"),
+      ),
+    /already resolved/,
+  );
+  assert.throws(
+    () =>
+      service.resolveChallenge(
+        bundle.challenge.id,
+        {
+          ...input,
+          rationale:
+            "A conflicting second terminal resolution must not replace committed authority.",
+        },
+        actor("cp_resolution_valid_resolver", "human", "admin"),
+      ),
+    /conflicting terminal resolution/,
+  );
+});
+
+test("Environmental Proof resolution quorum requires both verifier and owner authority", () => {
+  const issuedWithoutVerifier = buildIssuedProof();
+  const ownerOnly = new CanopyProofEnvironmentalProofChallengeAuthorityService(
+    issuedWithoutVerifier.proof.getAuthoritySnapshot(),
+  );
+  const ownerBundle = openCriticalChallenge(
+    issuedWithoutVerifier,
+    ownerOnly,
+    "owner-only",
+  );
+  const ownerA = reviewCriticalChallenge(
+    ownerOnly,
+    ownerBundle.challenge.id,
+    actor("cp_owner_only_a", "human", "owner"),
+    "uphold",
+    "2026-07-12T01:50:00.000Z",
+  );
+  const ownerB = reviewCriticalChallenge(
+    ownerOnly,
+    ownerBundle.challenge.id,
+    actor("cp_owner_only_b", "human", "admin"),
+    "uphold",
+    "2026-07-12T02:00:00.000Z",
+  );
+  assert.throws(
+    () =>
+      ownerOnly.resolveChallenge(
+        ownerBundle.challenge.id,
+        {
+          reviewIds: [ownerA.id, ownerB.id],
+          decision: "uphold",
+          rationale:
+            "Owner-only quorum cannot substitute for accredited verification.",
+          sourceEventRoots: [
+            ownerBundle.challenge.auditEvent.eventRoot,
+            ownerBundle.riskSignal.auditEvent.eventRoot,
+            ownerA.auditEvent.eventRoot,
+            ownerB.auditEvent.eventRoot,
+          ],
+          resolvedAt: "2026-07-12T02:10:00.000Z",
+        },
+        actor("cp_owner_only_resolver", "human", "admin"),
+      ),
+    /requires an accredited verifier/,
+  );
+
+  const issuedWithoutOwner = buildIssuedProof();
+  const verifierOnly =
+    new CanopyProofEnvironmentalProofChallengeAuthorityService(
+      issuedWithoutOwner.proof.getAuthoritySnapshot(),
+    );
+  const verifierBundle = openCriticalChallenge(
+    issuedWithoutOwner,
+    verifierOnly,
+    "verifier-only",
+  );
+  const verifierA = reviewCriticalChallenge(
+    verifierOnly,
+    verifierBundle.challenge.id,
+    accreditedVerifier("cp_verifier_only_a"),
+    "uphold",
+    "2026-07-12T01:50:00.000Z",
+  );
+  const verifierB = reviewCriticalChallenge(
+    verifierOnly,
+    verifierBundle.challenge.id,
+    accreditedVerifier("cp_verifier_only_b"),
+    "uphold",
+    "2026-07-12T02:00:00.000Z",
+  );
+  assert.throws(
+    () =>
+      verifierOnly.resolveChallenge(
+        verifierBundle.challenge.id,
+        {
+          reviewIds: [verifierA.id, verifierB.id],
+          decision: "uphold",
+          rationale:
+            "Verifier-only quorum cannot substitute for owner or administrator governance.",
+          sourceEventRoots: [
+            verifierBundle.challenge.auditEvent.eventRoot,
+            verifierBundle.riskSignal.auditEvent.eventRoot,
+            verifierA.auditEvent.eventRoot,
+            verifierB.auditEvent.eventRoot,
+          ],
+          resolvedAt: "2026-07-12T02:10:00.000Z",
+        },
+        actor("cp_verifier_only_resolver", "human", "admin"),
+      ),
+    /requires an owner or admin/,
   );
 });

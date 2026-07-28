@@ -106,6 +106,16 @@ test("CanopyProof database audit transparency detects mutation, gaps, duplicates
     afterStateHash: stateTwoHash,
   });
   const mixed = verifyCanopyProofDatabaseAuditStream({ entries: [entries[0], otherStreamEvent] });
+  const invalidStreamKeyEntries = [
+    {
+      ...entries[0],
+      streamKey: `organizations.organizations:${"f".repeat(64)}`,
+    },
+    entries[1],
+  ] as const;
+  const invalidStreamKey = verifyCanopyProofDatabaseAuditStream({
+    entries: invalidStreamKeyEntries,
+  });
   const forgedCheckpoint = verifyCanopyProofDatabaseAuditStream({
     entries,
     checkpoint: { ...checkpoint, eventRoot: "f".repeat(64) },
@@ -121,6 +131,19 @@ test("CanopyProof database audit transparency detects mutation, gaps, duplicates
   assert.ok(duplicate.issues.some((issue) => issue.code === "duplicate_event_hash"));
   assert.equal(mixed.valid, false);
   assert.ok(mixed.issues.some((issue) => issue.code === "mixed_stream"));
+  assert.equal(invalidStreamKey.valid, false);
+  assert.ok(
+    invalidStreamKey.issues.some((issue) => issue.code === "invalid_stream_key"),
+  );
+  assert.throws(
+    () =>
+      buildCanopyProofDatabaseAuditCheckpoint(
+        invalidStreamKeyEntries,
+        "auditor_invalid_stream",
+        "1783644000000002",
+      ),
+    /requires a valid full stream/,
+  );
   assert.equal(forgedCheckpoint.valid, false);
   assert.equal(forgedCheckpoint.checkpointValid, false);
   assert.ok(forgedCheckpoint.issues.some((issue) => issue.code === "checkpoint_event_root_mismatch"));

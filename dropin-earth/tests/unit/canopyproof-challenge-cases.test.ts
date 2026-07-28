@@ -121,6 +121,182 @@ test("CanopyProof challenge cases reject unsupported evidence and unsafe claims"
   assert.equal(resolved.auditHistory.at(-1)?.entityType, "challenge_case");
 });
 
+test("CanopyProof challenge cases enforce deterministic defaults, evidence policy, and terminal immutability", () => {
+  const emptyService = new CanopyProofChallengeCaseService();
+  assert.equal(emptyService.getStatus().challengeCaseCount, 0);
+  assert.match(emptyService.getStatus().challengeRoot, /^[a-f0-9]{64}$/);
+  assert.throws(
+    () => emptyService.getChallengeCase("cp_challenge_case_missing"),
+    /challenge case not found/,
+  );
+
+  const defaultedInput = {
+    subjectType: "evidence",
+    subjectId: "cp_evidence_defaulted_001",
+    reason: "fake_evidence",
+    severity: "medium",
+    title: "Content hash requires independent review",
+    description:
+      "No certified carbon credit authority is asserted; the content-addressed evidence requires human review.",
+    evidence: [
+      {
+        evidenceType: "media_hash",
+        contentHash: `sha256:${"A".repeat(64)}`,
+        description:
+          "Normalized media hash supplied without caller-controlled identity or timestamp fields.",
+      },
+    ],
+    relatedAuditRoots: [`sha256:${"B".repeat(64)}`, "b".repeat(64)],
+  };
+  const service = new CanopyProofChallengeCaseService();
+  const opened = service.openChallengeCase(defaultedInput, "researcher_default_case");
+
+  assert.match(opened.id, /^cp_challenge_case_[a-f0-9]{24}$/);
+  assert.equal(opened.openedAt, "1970-01-01T00:00:00.000Z");
+  assert.deepEqual(opened.relatedAuditRoots, ["b".repeat(64)]);
+  assert.match(opened.evidence[0]?.id ?? "", /^cp_challenge_evidence_[a-f0-9]{24}$/);
+  assert.equal(opened.evidence[0]?.contentHash, "a".repeat(64));
+  assert.equal(opened.evidence[0]?.submittedAt, opened.openedAt);
+  assert.equal("sourceId" in (opened.evidence[0] ?? {}), false);
+  assert.throws(
+    () => service.openChallengeCase(defaultedInput, "researcher_default_case"),
+    /challenge case already exists/,
+  );
+
+  assert.deepEqual(service.listChallengeCases({ subjectType: "project" }), []);
+  assert.deepEqual(service.listChallengeCases({ subjectId: "cp_other_subject" }), []);
+  assert.deepEqual(service.listChallengeCases({ status: "accepted" }), []);
+  assert.deepEqual(service.listChallengeCases({ reason: "audit_gap" }), []);
+  assert.equal(
+    service.listChallengeCases({
+      subjectType: "evidence",
+      subjectId: opened.subjectId,
+      status: "open",
+      reason: "fake_evidence",
+    })[0]?.id,
+    opened.id,
+  );
+
+  const rejected = service.resolveChallengeCase(
+    opened.id,
+    {
+      decision: "reject",
+      rationale:
+        "Independent human review found the submitted challenge evidence insufficient for acceptance.",
+      publicOutcome: "Challenge rejected after accountable evidence review.",
+    },
+    "verifier_default_case",
+  );
+  assert.equal(rejected.status, "rejected");
+  assert.equal(rejected.resolution?.resolvedAt, "1970-01-01T00:00:00.000Z");
+  assert.throws(
+    () =>
+      service.resolveChallengeCase(
+        opened.id,
+        {
+          decision: "accept",
+          rationale:
+            "A terminal challenge cannot be overwritten by a second resolution decision.",
+          publicOutcome: "Second resolution is rejected as immutable.",
+        },
+        "verifier_second_resolution",
+      ),
+    /already resolved/,
+  );
+
+  const withdrawnService = new CanopyProofChallengeCaseService();
+  const withdrawnOpen = withdrawnService.openChallengeCase(
+    {
+      ...challengeCasePayload("cp_challenge_case_withdrawn_001"),
+      reason: "audit_gap",
+      evidence: [
+        {
+          evidenceType: "audit_root",
+          contentHash: "f".repeat(64),
+          description:
+            "Append-only audit root supplied for accountable withdrawal review.",
+        },
+      ],
+      relatedAuditRoots: [],
+    },
+    "researcher_withdrawn_case",
+  );
+  const withdrawn = withdrawnService.resolveChallengeCase(
+    withdrawnOpen.id,
+    {
+      decision: "withdraw",
+      rationale:
+        "The challenger withdrew the case after independent audit reconciliation resolved the discrepancy.",
+      publicOutcome: "Challenge withdrawn with its history retained.",
+      resolutionEvidence: [
+        {
+          evidenceType: "audit_root",
+          contentHash: "1".repeat(64),
+          description:
+            "Reconciliation audit root retained with the terminal withdrawal decision.",
+        },
+      ],
+    },
+    "researcher_withdrawn_case",
+  );
+  assert.equal(withdrawn.status, "withdrawn");
+  assert.equal(withdrawn.evidence.length, 2);
+
+  for (const [input, message] of [
+    [
+      {
+        ...challengeCasePayload("cp_challenge_case_missing_satellite_001"),
+        evidence: [
+          {
+            evidenceType: "media_hash",
+            contentHash: "2".repeat(64),
+            description: "Media hash does not satisfy satellite-scene authority.",
+          },
+        ],
+      },
+      /requires satellite scene evidence/,
+    ],
+    [
+      {
+        ...challengeCasePayload("cp_challenge_case_missing_duplicate_gps_001"),
+        reason: "duplicate_planting",
+        evidence: [
+          {
+            evidenceType: "media_hash",
+            contentHash: "3".repeat(64),
+            description: "Media hash does not satisfy duplicate-planting GPS authority.",
+          },
+        ],
+      },
+      /requires GPS hash evidence/,
+    ],
+    [
+      {
+        ...challengeCasePayload("cp_challenge_case_missing_audit_001"),
+        reason: "audit_gap",
+        evidence: [
+          {
+            evidenceType: "media_hash",
+            contentHash: "4".repeat(64),
+            description: "Media hash does not satisfy append-only audit authority.",
+          },
+        ],
+        relatedAuditRoots: [],
+      },
+      /requires audit-root evidence/,
+    ],
+  ] as const) {
+    assert.throws(
+      () =>
+        new CanopyProofChallengeCaseService().openChallengeCase(
+          input,
+          "researcher_invalid_evidence_case",
+        ),
+      message,
+    );
+  }
+});
+
 test("CanopyProof challenge case API enforces RBAC, safe reads, and human resolution", async () => {
   const observerDenied = await app.request("/canopyproof/verification/challenge-cases", {
     method: "POST",

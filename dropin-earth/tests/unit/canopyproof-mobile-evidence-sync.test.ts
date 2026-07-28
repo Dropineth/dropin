@@ -1057,4 +1057,297 @@ function assertAuthorityError(error: unknown, code: string, status: number) {
   return true;
 }
 
+test("mobile sync bind rejects forged hashes, client batch identities, idempotency metadata, and invalid clocks", async () => {
+  const fixture = createAuthorityFixture();
+  const { request, idempotencyKey } = await createBindingRequest(fixture);
+  await assert.rejects(
+    fixture.service.bindDraft(
+      { ...request, clientBatchId: `cp_mobile_evidence_batch_${"f".repeat(32)}` },
+      actor,
+      idempotencyKey,
+    ),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_HASH_MISMATCH", 422),
+  );
+  await assert.rejects(
+    fixture.service.bindDraft(
+      { ...request, syncPayloadHash: "f".repeat(64) },
+      actor,
+      idempotencyKey,
+    ),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_HASH_MISMATCH", 422),
+  );
+  for (const key of ["short", " cp_mobile_sync_key_with_space "]) {
+    await assert.rejects(
+      fixture.service.bindDraft(request, actor, key),
+      (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_HASH_MISMATCH", 422),
+    );
+  }
+  const invalidClock = new CanopyProofMobileEvidenceSyncAuthorityService(
+    fixture.source,
+    fixture.repository,
+    () => new Date("invalid"),
+  );
+  await assert.rejects(
+    invalidClock.bindDraft(request, actor, idempotencyKey),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_HASH_MISMATCH", 422),
+  );
+
+  const defaultClock = new CanopyProofMobileEvidenceSyncAuthorityService(
+    createAuthorityFixture().source,
+    new FakeOfflineRepository(),
+  );
+  assert.equal(
+    (await defaultClock.bindDraft(request, actor, idempotencyKey)).finalVerification,
+    false,
+  );
+});
+
+test("mobile sync bind revalidates committed audit, registration, consent, and device facts", async (context) => {
+  await context.test("missing audit event", async () => {
+    const fixture = createAuthorityFixture();
+    const { request, idempotencyKey } = await createBindingRequest(fixture);
+    const original = fixture.source.registerMobileEvidenceWithAuthority.bind(fixture.source);
+    const source = sourceWith(fixture.source, {
+      async registerMobileEvidenceWithAuthority(input, requirements, idempotencyKey) {
+        const result = await original(input, requirements, idempotencyKey);
+        return {
+          ...result,
+          registration: {
+            ...result.registration,
+            evidence: { ...result.registration.evidence, audit_history: [] },
+          },
+        };
+      },
+    });
+    const service = new CanopyProofMobileEvidenceSyncAuthorityService(
+      source,
+      fixture.repository,
+      () => fixedNow,
+    );
+    await assert.rejects(
+      service.bindDraft(request, actor, idempotencyKey),
+      (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+    );
+  });
+
+  await context.test("substituted committed consent", async () => {
+    const fixture = createAuthorityFixture();
+    const { request, idempotencyKey } = await createBindingRequest(fixture);
+    const original = fixture.source.registerMobileEvidenceWithAuthority.bind(fixture.source);
+    const source = sourceWith(fixture.source, {
+      async registerMobileEvidenceWithAuthority(input, requirements, idempotencyKey) {
+        const result = await original(input, requirements, idempotencyKey);
+        return { ...result, consent: { ...result.consent, subjectId: "substituted_actor" } };
+      },
+    });
+    await assert.rejects(
+      new CanopyProofMobileEvidenceSyncAuthorityService(source, fixture.repository, () => fixedNow)
+        .bindDraft(request, actor, idempotencyKey),
+      (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+    );
+  });
+
+  await context.test("substituted registration", async () => {
+    const fixture = createAuthorityFixture();
+    const { request, idempotencyKey } = await createBindingRequest(fixture);
+    const original = fixture.source.registerMobileEvidenceWithAuthority.bind(fixture.source);
+    const source = sourceWith(fixture.source, {
+      async registerMobileEvidenceWithAuthority(input, requirements, idempotencyKey) {
+        const result = await original(input, requirements, idempotencyKey);
+        return {
+          ...result,
+          registration: {
+            ...result.registration,
+            evidence: { ...result.registration.evidence, media_hash: "f".repeat(64) },
+          },
+        };
+      },
+    });
+    await assert.rejects(
+      new CanopyProofMobileEvidenceSyncAuthorityService(source, fixture.repository, () => fixedNow)
+        .bindDraft(request, actor, idempotencyKey),
+      (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+    );
+  });
+});
+
+test("mobile sync public binding authority rejects cross-tenant, purpose, fingerprint, and device-state substitution", async () => {
+  const fixture = createAuthorityFixture();
+  const evaluatedAt = fixedNow.toISOString();
+  const consentProjection = await fixture.source.getEvidenceConsentProjection(
+    fixture.source.consent.id,
+    organizationId,
+    evaluatedAt,
+  );
+  const deviceProjection = await fixture.source.getEvidenceEffectiveDeviceAttestationProjection(
+    fixture.device.id,
+    organizationId,
+    evaluatedAt,
+  );
+  const snapshot = {
+    actor: fixture.source.actorAuthority,
+    project: projectProfile(),
+    consent: fixture.source.consent,
+    consentProjection,
+    device: fixture.device,
+    deviceProjection,
+  };
+  const requirements: CanopyProofMobileEvidenceBindingAuthorityRequirements = {
+    actor,
+    projectId,
+    consentReceiptId: fixture.source.consent.id,
+    deviceAttestationId: fixture.device.id,
+    deviceFingerprintHash: hashB,
+    evaluatedAt,
+  };
+
+  assert.throws(
+    () => assertCanopyProofMobileEvidenceBindingAuthority(
+      { ...snapshot, project: { ...snapshot.project, organizationId: "other_organization" } },
+      requirements,
+    ),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+  );
+  assert.throws(
+    () => assertCanopyProofMobileEvidenceBindingAuthority(
+      { ...snapshot, consent: { ...snapshot.consent, purposes: ["evidence_collection"] } },
+      requirements,
+    ),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_CONSENT_INACTIVE", 403),
+  );
+  assert.throws(
+    () => assertCanopyProofMobileEvidenceBindingAuthority(snapshot, {
+      ...requirements,
+      deviceFingerprintHash: hashC,
+    }),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+  );
+  assert.throws(
+    () => assertCanopyProofMobileEvidenceBindingAuthority(
+      { ...snapshot, deviceProjection: { ...deviceProjection, state: "expired" } },
+      requirements,
+    ),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_DEVICE_INACTIVE", 403),
+  );
+  assert.throws(
+    () => assertCanopyProofMobileEvidenceBindingAuthority(
+      { ...snapshot, actor: { ...snapshot.actor, role: "auditor" } },
+      requirements,
+    ),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+  );
+});
+
+test("mobile sync batch and recovery reject cross-tenant projects, missing registrations, and absent batches", async () => {
+  const fixture = createAuthorityFixture();
+  const { vault } = createVault();
+  const queued = await vault.queueCapture(capture);
+  const request = await buildMobileEvidenceBindingRequest(
+    globalThis.crypto,
+    queued,
+    fixture.prerequisites(),
+  );
+  const result = await fixture.service.bindDraft(request, actor, queued.idempotencyKey);
+  const bound = await vault.bindServerAuthority(queued.id, result.binding);
+  const batch = await buildMobileEvidenceBatchRequest(globalThis.crypto, bound, fixture.prerequisites());
+
+  const crossTenant = sourceWith(fixture.source, {
+    async getProject() {
+      return { ...projectProfile(), organizationId: "other_organization" };
+    },
+  });
+  const crossTenantService = new CanopyProofMobileEvidenceSyncAuthorityService(
+    crossTenant,
+    fixture.repository,
+    () => fixedNow,
+  );
+  await assert.rejects(
+    crossTenantService.commitBatch(batch, actor, "cp_mobile_sync_cross_tenant_batch"),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+  );
+  await assert.rejects(
+    crossTenantService.recoverBatch({
+      schemaVersion: "canopyproof.mobile-evidence-recovery-request/v1",
+      clientBatchId: batch.clientBatchId,
+      projectId,
+      deviceAttestationId: fixture.device.id,
+    }, actor),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+  );
+
+  const missingRegistration = sourceWith(fixture.source, {
+    async getEvidence() {
+      return undefined as never;
+    },
+  });
+  await assert.rejects(
+    new CanopyProofMobileEvidenceSyncAuthorityService(
+      missingRegistration,
+      fixture.repository,
+      () => fixedNow,
+    ).commitBatch(batch, actor, "cp_mobile_sync_missing_registration"),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_AUTHORITY_MISMATCH", 403),
+  );
+  await assert.rejects(
+    fixture.service.recoverBatch({
+      schemaVersion: "canopyproof.mobile-evidence-recovery-request/v1",
+      clientBatchId: `cp_mobile_evidence_batch_${"f".repeat(32)}`,
+      projectId,
+      deviceAttestationId: fixture.device.id,
+    }, actor),
+    (error) => assertAuthorityError(error, "CANOPYPROOF_MOBILE_SYNC_BATCH_NOT_FOUND", 404),
+  );
+});
+
+test("mobile sync evidence mapping covers water, soil, and absent EXIF without retaining raw notes", async () => {
+  for (const [evidenceType, index] of [["water", 1], ["soil", 2]] as const) {
+    const fixture = createAuthorityFixture();
+    const { vault } = createVault();
+    const queued = await vault.queueCapture({
+      ...capture,
+      evidenceType,
+      projectId,
+      exifHash: null,
+      notes: `private mapping note ${index}`,
+    });
+    const request = await buildMobileEvidenceBindingRequest(
+      globalThis.crypto,
+      queued,
+      fixture.prerequisites(),
+    );
+    const result = await fixture.service.bindDraft(
+      request,
+      actor,
+      queued.idempotencyKey,
+    );
+    const evidence = fixture.source.evidence.getEvidence(result.binding.evidenceId);
+    assert.equal(evidence.evidenceType, evidenceType === "water" ? "water_project" : "soil_regeneration");
+    assert.equal(evidence.exif_hash, undefined);
+  }
+});
+
+async function createBindingRequest(
+  fixture: ReturnType<typeof createAuthorityFixture>,
+): Promise<Readonly<{
+  request: CanopyProofMobileEvidenceBindingRequest;
+  idempotencyKey: string;
+}>> {
+  const { vault } = createVault();
+  const queued = await vault.queueCapture(capture);
+  return {
+    request: await buildMobileEvidenceBindingRequest(globalThis.crypto, queued, fixture.prerequisites()),
+    idempotencyKey: queued.idempotencyKey,
+  };
+}
+
+function sourceWith(
+  base: FakeAuthoritySource,
+  overrides: Partial<CanopyProofMobileEvidenceSyncAuthoritySource>,
+): CanopyProofMobileEvidenceSyncAuthoritySource {
+  return Object.assign(
+    Object.create(base) as CanopyProofMobileEvidenceSyncAuthoritySource,
+    overrides,
+  );
+}
+
 void CanopyProofMobileEvidenceVaultError;

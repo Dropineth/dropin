@@ -19,6 +19,10 @@ import {
   type CanopyProofEvidenceMediaAgentCapability,
   type CanopyProofEvidenceMediaAgentSnapshot,
 } from "../../services/api/src/domain/canopyproof/evidence-media-authority.js";
+import { projectCanopyProofEffectiveMediaObject } from
+  "../../services/api/src/domain/canopyproof/evidence-media-adapter-authority.js";
+import { canopyProofDeviceAttestationAdapterSafetyBoundary } from
+  "../../services/api/src/domain/canopyproof/evidence-device-attestation-adapter-authority.js";
 import {
   CanopyProofEvidenceMetadataRetentionAuthorityService,
   type CanopyProofEvidenceMetadataExtractionAuthority,
@@ -27,6 +31,8 @@ import {
   assertCanopyProofMetadataExtractionRequestFact,
   buildCanopyProofMetadataExtractionRequestFact,
 } from "../../services/api/src/domain/canopyproof/evidence-metadata-orchestration-authority.js";
+import { appendCanopyProofAuditEvent } from
+  "../../services/api/src/domain/canopyproof/proof-engine.js";
 import {
   CanopyProofMetadataExtractionOrchestrator,
   type CanopyProofMetadataExtractionOrchestrationDurablePort,
@@ -40,6 +46,7 @@ import {
   DisabledCanopyProofMetadataExtractorAdapter,
   isCanopyProofVerifiedMetadataExtractionReceipt,
   PolicyEnforcedCanopyProofMetadataExtractorAdapter,
+  validateCanopyProofMetadataExtractionReceipt,
   WebCryptoEd25519MetadataExtractorSignatureVerifier,
   type CanopyProofMetadataExtractionReceipt,
   type CanopyProofMetadataExtractorAdapterConfiguration,
@@ -689,6 +696,223 @@ test("E3d rechecks current authority and expiry before every external dispatch",
   ]);
 });
 
+test("E3d request facts bind prior audit roots and reject authority or actor substitution", () => {
+  const fixture = createFixture();
+  const adapter = new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+    adapterConfiguration(),
+    { async extractMetadata() { throw new Error("provider must not run"); } },
+    { async verify() { return false; } },
+  );
+  const policy = adapter.getPolicyDescriptor();
+  const idempotencyKeyHash = hashJson({ kind: "cp-e3d-critical-idempotency" });
+  const priorEvents = appendCanopyProofAuditEvent([], {
+    action: "ASSERT",
+    actor: fixture.subject.id,
+    entityType: "evidence",
+    entityId: fixture.object.evidenceId,
+    payload: { state: "prior" },
+    createdAt: "2026-07-17T10:02:30.000Z",
+    rationale: "Establish deterministic prior audit state.",
+  });
+  const fact = buildCanopyProofMetadataExtractionRequestFact({
+    authority: fixture.extractionAuthority,
+    policy,
+    idempotencyKeyHash,
+    streamEvents: priorEvents,
+    requestedAt: extractedAt,
+  });
+  assert.equal(
+    fact.previousEventRoot,
+    priorEvents.at(-1)?.eventRoot,
+  );
+  assert.equal(fact.evidenceSequence, 2);
+
+  assert.throws(
+    () =>
+      buildCanopyProofMetadataExtractionRequestFact({
+        authority: {
+          ...fixture.extractionAuthority,
+          object: {
+            ...fixture.extractionAuthority.object,
+            evidenceId: "cp_other_evidence",
+          },
+        },
+        policy,
+        idempotencyKeyHash,
+        streamEvents: [],
+        requestedAt: extractedAt,
+      }),
+    /REQUEST_AUTHORITY_INELIGIBLE/,
+  );
+  assert.throws(
+    () =>
+      buildCanopyProofMetadataExtractionRequestFact({
+        authority: {
+          ...fixture.extractionAuthority,
+          agent: {
+            ...fixture.extractionAuthority.agent,
+            capability: "malware_scan_result",
+          },
+        },
+        policy,
+        idempotencyKeyHash,
+        streamEvents: [],
+        requestedAt: extractedAt,
+      }),
+    /REQUEST_ACTOR_INVALID/,
+  );
+});
+
+test("E3d request stream validation rejects tampering and timestamp regression", () => {
+  const fixture = createFixture();
+  const policy = new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+    adapterConfiguration(),
+    { async extractMetadata() { throw new Error("provider must not run"); } },
+    { async verify() { return false; } },
+  ).getPolicyDescriptor();
+  const idempotencyKeyHash = hashJson({
+    kind: "cp-e3d-stream-critical-idempotency",
+  });
+  const prior = appendCanopyProofAuditEvent([], {
+    action: "ASSERT",
+    actor: fixture.subject.id,
+    entityType: "evidence",
+    entityId: fixture.object.evidenceId,
+    payload: { state: "prior" },
+    createdAt: "2026-07-17T10:02:30.000Z",
+    rationale: "Establish deterministic prior audit state.",
+  });
+  const terminal = prior.at(-1);
+  assert.ok(terminal);
+
+  assert.throws(
+    () =>
+      buildCanopyProofMetadataExtractionRequestFact({
+        authority: fixture.extractionAuthority,
+        policy,
+        idempotencyKeyHash,
+        streamEvents: [
+          {
+            ...terminal,
+            eventRoot: hashJson({ kind: "tampered-prior-event" }),
+          },
+        ],
+        requestedAt: extractedAt,
+      }),
+    /REQUEST_STREAM_INVALID/,
+  );
+
+  const future = appendCanopyProofAuditEvent([], {
+    action: "ASSERT",
+    actor: fixture.subject.id,
+    entityType: "evidence",
+    entityId: fixture.object.evidenceId,
+    payload: { state: "future" },
+    createdAt: "2026-07-17T10:03:01.000Z",
+    rationale: "Fixture for deterministic time-regression rejection.",
+  });
+  assert.throws(
+    () =>
+      buildCanopyProofMetadataExtractionRequestFact({
+        authority: fixture.extractionAuthority,
+        policy,
+        idempotencyKeyHash,
+        streamEvents: future,
+        requestedAt: extractedAt,
+      }),
+    /REQUEST_TIME_REGRESSION/,
+  );
+});
+
+test("E3d accepts an independently verified effective device projection", () => {
+  const fixture = createFixture();
+  const deviceSafety = canopyProofDeviceAttestationAdapterSafetyBoundary();
+  const deviceSeed = {
+    attestationId: fixture.device.id,
+    attestationRoot: fixture.device.attestationRoot,
+    organizationId: fixture.object.organizationId,
+    subjectId: fixture.device.subjectId,
+    consentReceiptId: fixture.consent.id,
+    state: "current" as const,
+    issueCodes: [] as const,
+    evaluatedAt: extractedAt,
+    consentProjectionRoot:
+      fixture.extractionAuthority.consentProjection.projectionRoot,
+    verificationFactId: "cp_device_verification_critical",
+    verificationRoot: hashJson({
+      kind: "cp-device-verification-critical",
+    }),
+    safety: deviceSafety,
+  };
+  const deviceProjection = {
+    ...deviceSeed,
+    projectionRoot: hashJson({
+      kind: "canopyproof-effective-device-attestation-projection-v1",
+      ...deviceSeed,
+    }),
+  };
+  const mediaProjection = projectCanopyProofEffectiveMediaObject({
+    baseProjection: fixture.extractionAuthority.baseMediaProjection,
+    adapterTrustProjection:
+      fixture.extractionAuthority.mediaAdapterTrustProjection,
+    deviceTrustProjection: deviceProjection,
+  });
+  const authority = {
+    ...fixture.extractionAuthority,
+    deviceProjection,
+    mediaProjection,
+  };
+  const policy = new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+    adapterConfiguration(),
+    { async extractMetadata() { throw new Error("provider must not run"); } },
+    { async verify() { return false; } },
+  ).getPolicyDescriptor();
+
+  const fact = buildCanopyProofMetadataExtractionRequestFact({
+    authority,
+    policy,
+    idempotencyKeyHash: hashJson({
+      kind: "cp-e3d-effective-device-idempotency",
+    }),
+    streamEvents: [],
+    requestedAt: extractedAt,
+  });
+  assert.equal(fact.deviceProjectionRoot, deviceProjection.projectionRoot);
+  assert.equal(fact.mediaProjectionRoot, mediaProjection.projectionRoot);
+});
+
+test("E3d default clock is exercised and dispatch remains fail-closed", async () => {
+  const fixture = createFixture();
+  const signing = await signingFixture();
+  const receipt = await signedReceipt(
+    fixture.extractionAuthority,
+    signing.keyPair.privateKey,
+  );
+  const durable = new InMemoryMetadataExtractionDurablePort(
+    fixture.extractionAuthority,
+  );
+  const adapter = new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+    adapterConfiguration(),
+    { async extractMetadata() { return receipt; } },
+    { async verify() { return true; } },
+  );
+  const orchestrator = new CanopyProofMetadataExtractionOrchestrator(
+    durable,
+    adapter,
+  );
+  await assert.rejects(
+    orchestrator.extractMetadata({
+      organizationId,
+      objectId: fixture.object.id,
+      requesterAgentId: fixture.extractionAuthority.agent.id,
+      verifierAgentId: agent("verified_metadata_extraction_receipt").id,
+      idempotencyKey: "cp-e3d-default-clock",
+      requestedAt: extractedAt,
+    }),
+    /DISPATCH_EXPIRED/,
+  );
+});
+
 test("E3c verifies a minimized signed receipt and projects acceptance without mutating E3b", async () => {
   const pipeline = await verifiedPipeline();
   assert.equal(isCanopyProofVerifiedMetadataExtractionReceipt(pipeline.verified), true);
@@ -1036,6 +1260,666 @@ test("fixed metadata extractor transport rejects endpoint and response abuse wit
       { timeoutMilliseconds: 100 },
     ).extractMetadata(request),
     /CANOPYPROOF_METADATA_EXTRACTOR_TIMEOUT/,
+  );
+});
+
+test("fixed metadata extractor validates configuration, request, and endpoint boundaries", async (context) => {
+  const invalidAuthorizations = [
+    "short",
+    "x".repeat(4_097),
+    "Bearer valid-prefix\rInjected: value",
+  ];
+  for (const authorizationHeader of invalidAuthorizations) {
+    assert.throws(
+      () =>
+        new FixedEndpointCanopyProofMetadataExtractorPort({
+          endpoint:
+            "https://extractor.nonproduction.example/v1/metadata-receipts",
+          authorizationHeader,
+        }),
+      /CONFIGURATION_INVALID/,
+    );
+  }
+
+  const invalidBounds = [
+    { timeoutMilliseconds: 100.5 },
+    { timeoutMilliseconds: 99 },
+    { timeoutMilliseconds: 30_001 },
+    { maximumResponseBytes: 1_024.5 },
+    { maximumResponseBytes: 1_023 },
+    { maximumResponseBytes: 128 * 1_024 + 1 },
+  ];
+  for (const bounds of invalidBounds) {
+    assert.throws(
+      () =>
+        new FixedEndpointCanopyProofMetadataExtractorPort({
+          endpoint:
+            "https://extractor.nonproduction.example/v1/metadata-receipts",
+          ...bounds,
+        }),
+      /CONFIGURATION_INVALID/,
+    );
+  }
+
+  const invalidEndpoints = [
+    "https://user@extractor.example/v1/metadata",
+    "https://user:password@extractor.example/v1/metadata",
+    "https://extractor.example/v1/metadata#fragment",
+    "https://extractor.localhost/v1/metadata",
+    "https://extractor.local/v1/metadata",
+    "https://extractor/v1/metadata",
+    "https://extractor..example/v1/metadata",
+    "https://extractor.example/v1/%2Fmetadata",
+    "https://extractor.example/v1/%ZZ",
+  ];
+  for (const endpoint of invalidEndpoints) {
+    assert.throws(
+      () => new FixedEndpointCanopyProofMetadataExtractorPort({ endpoint }),
+      /CONFIGURATION_INVALID/,
+    );
+  }
+
+  assert.doesNotThrow(
+    () =>
+      new FixedEndpointCanopyProofMetadataExtractorPort({
+        endpoint:
+          "https://extractor.nonproduction.example/v1/metadata-receipts",
+      }),
+  );
+
+  const fixture = createFixture();
+  const request = {
+    objectId: fixture.object.id,
+    objectRoot: fixture.object.objectRoot,
+    storageProvider: fixture.object.storageProvider,
+    providerNamespace: fixture.object.providerNamespace,
+    objectKey: fixture.object.objectKey,
+    objectVersion: fixture.object.objectVersion,
+    storedObjectProviderReceiptHash: fixture.object.providerReceiptHash,
+    contentType: "image/jpeg" as const,
+    mediaProjectionRoot:
+      fixture.extractionAuthority.mediaProjection.projectionRoot,
+    consentReceiptId: fixture.consent.id,
+    consentReceiptRoot: fixture.consent.receiptRoot,
+    consentProjectionRoot:
+      fixture.extractionAuthority.consentProjection.projectionRoot,
+    deviceAttestationId: fixture.device.id,
+    deviceAttestationRoot: fixture.device.attestationRoot,
+    deviceProjectionRoot:
+      fixture.extractionAuthority.deviceProjection.projectionRoot,
+    registeredGpsHash: fixture.extractionAuthority.registeredGpsHash,
+    privacyMode: fixture.consent.privacyMode,
+    requestedAt: extractedAt,
+    correlationId: "cp-e3c-fixed-port-critical",
+  };
+  const port = new FixedEndpointCanopyProofMetadataExtractorPort({
+    endpoint:
+      "https://extractor.nonproduction.example/v1/metadata-receipts",
+    fetcher: async () => Response.json({ unreachable: true }),
+  });
+  await assert.rejects(
+    port.extractMetadata({
+      ...request,
+      objectRoot: "invalid",
+    }),
+    /REQUEST_INVALID/,
+  );
+
+  await context.test("explicit valid bounds", async () => {
+    const bounded = new FixedEndpointCanopyProofMetadataExtractorPort({
+      endpoint:
+        "https://extractor.nonproduction.example/v1/metadata-receipts",
+      timeoutMilliseconds: 100,
+      maximumResponseBytes: 1_024,
+      fetcher: async () => Response.json({ ok: true }),
+    });
+    assert.deepEqual(await bounded.extractMetadata(request), { ok: true });
+  });
+});
+
+test("fixed metadata extractor rejects malformed response framing and JSON", async (context) => {
+  const fixture = createFixture();
+  const request = {
+    objectId: fixture.object.id,
+    objectRoot: fixture.object.objectRoot,
+    storageProvider: fixture.object.storageProvider,
+    providerNamespace: fixture.object.providerNamespace,
+    objectKey: fixture.object.objectKey,
+    objectVersion: fixture.object.objectVersion,
+    storedObjectProviderReceiptHash: fixture.object.providerReceiptHash,
+    contentType: "image/jpeg" as const,
+    mediaProjectionRoot:
+      fixture.extractionAuthority.mediaProjection.projectionRoot,
+    consentReceiptId: fixture.consent.id,
+    consentReceiptRoot: fixture.consent.receiptRoot,
+    consentProjectionRoot:
+      fixture.extractionAuthority.consentProjection.projectionRoot,
+    deviceAttestationId: fixture.device.id,
+    deviceAttestationRoot: fixture.device.attestationRoot,
+    deviceProjectionRoot:
+      fixture.extractionAuthority.deviceProjection.projectionRoot,
+    registeredGpsHash: fixture.extractionAuthority.registeredGpsHash,
+    privacyMode: fixture.consent.privacyMode,
+    requestedAt: extractedAt,
+    correlationId: "cp-e3c-fixed-response-critical",
+  };
+  const jsonResponse = (
+    body: unknown,
+    headers: Readonly<Record<string, string>> = {},
+    status = 200,
+  ) => {
+    const text = JSON.stringify(body);
+    return new Response(text, {
+      status,
+      headers: {
+        "content-length": String(Buffer.byteLength(text)),
+        "content-type": "application/json",
+        ...headers,
+      },
+    });
+  };
+  const cases: ReadonlyArray<{
+    readonly name: string;
+    readonly response: Response;
+    readonly error: RegExp;
+  }> = [
+    {
+      name: "rejected status",
+      response: jsonResponse({ unavailable: true }, {}, 503),
+      error: /RESPONSE_REJECTED/,
+    },
+    {
+      name: "missing media type",
+      response: new Response("{}", { headers: { "content-length": "2" } }),
+      error: /CONTENT_TYPE_INVALID/,
+    },
+    {
+      name: "non-numeric length",
+      response: jsonResponse({}, { "content-length": "not-a-number" }),
+      error: /RESPONSE_TOO_LARGE/,
+    },
+    {
+      name: "zero length",
+      response: jsonResponse({}, { "content-length": "0" }),
+      error: /RESPONSE_TOO_LARGE/,
+    },
+    {
+      name: "declared overflow",
+      response: jsonResponse({}, { "content-length": "1025" }),
+      error: /RESPONSE_TOO_LARGE/,
+    },
+    {
+      name: "invalid UTF-8 JSON",
+      response: new Response(Uint8Array.of(0xff), {
+        headers: {
+          "content-length": "1",
+          "content-type": "application/json",
+        },
+      }),
+      error: /RESPONSE_JSON_INVALID/,
+    },
+    {
+      name: "array JSON",
+      response: jsonResponse([]),
+      error: /RESPONSE_JSON_INVALID/,
+    },
+    {
+      name: "null JSON",
+      response: jsonResponse(null),
+      error: /RESPONSE_JSON_INVALID/,
+    },
+    {
+      name: "missing body",
+      response: new Response(null, {
+        headers: { "content-type": "application/json" },
+      }),
+      error: /RESPONSE_EMPTY/,
+    },
+    {
+      name: "empty body",
+      response: new Response(new Uint8Array(), {
+        headers: { "content-type": "application/json" },
+      }),
+      error: /RESPONSE_EMPTY/,
+    },
+  ];
+
+  for (const entry of cases) {
+    await context.test(entry.name, async () => {
+      const port = new FixedEndpointCanopyProofMetadataExtractorPort({
+        endpoint:
+          "https://extractor.nonproduction.example/v1/metadata-receipts",
+        maximumResponseBytes: 1_024,
+        fetcher: async () => entry.response,
+      });
+      await assert.rejects(port.extractMetadata(request), entry.error);
+    });
+  }
+});
+
+test("metadata receipt schema enforces disclosure and privacy consistency", async (context) => {
+  const signing = await signingFixture();
+  const cases = [
+    {
+      name: "none with generalized hash",
+      fixture: createFixture(),
+      overrides: {
+        locationDisclosure: "none",
+        generalizedLocationHash: hashJson({ kind: "unexpected-location" }),
+      },
+    },
+    {
+      name: "region without generalized hash",
+      fixture: createFixture({ privacyMode: "precise" }),
+      overrides: { locationDisclosure: "region_hash" },
+    },
+    {
+      name: "restricted disclosure",
+      fixture: createFixture({ privacyMode: "restricted" }),
+      overrides: {
+        locationDisclosure: "region_hash",
+        generalizedLocationHash: hashJson({ kind: "restricted-location" }),
+      },
+    },
+    {
+      name: "masked coarse disclosure",
+      fixture: createFixture({ privacyMode: "masked" }),
+      overrides: {
+        locationDisclosure: "coarse_cell_hash",
+        generalizedLocationHash: hashJson({ kind: "masked-location" }),
+      },
+    },
+  ] as const;
+
+  for (const entry of cases) {
+    await context.test(entry.name, async () => {
+      const receipt = await signedReceipt(
+        entry.fixture.extractionAuthority,
+        signing.keyPair.privateKey,
+        entry.overrides,
+      );
+      assert.throws(
+        () =>
+          validateCanopyProofMetadataExtractionReceipt(
+            entry.fixture.extractionAuthority,
+            receipt,
+            {
+              now: extractedAt,
+              ...adapterConfiguration(),
+            },
+          ),
+        /location disclosure|restricted privacy|masked privacy/,
+      );
+    });
+  }
+
+  const preciseFixture = createFixture({ privacyMode: "precise" });
+  const preciseReceipt = await signedReceipt(
+    preciseFixture.extractionAuthority,
+    signing.keyPair.privateKey,
+    {
+      locationDisclosure: "coarse_cell_hash",
+      generalizedLocationHash: hashJson({ kind: "precise-generalized" }),
+    },
+  );
+  assert.equal(
+    validateCanopyProofMetadataExtractionReceipt(
+      preciseFixture.extractionAuthority,
+      preciseReceipt,
+      {
+        now: extractedAt,
+        ...adapterConfiguration(),
+      },
+    ).locationDisclosure,
+    "coarse_cell_hash",
+  );
+});
+
+test("metadata receipt validation rejects authority, policy, time, and material substitution", async (context) => {
+  const fixture = createFixture();
+  const signing = await signingFixture();
+  const policy = {
+    now: extractedAt,
+    ...adapterConfiguration(),
+  };
+  const authoritySubstitutions: ReadonlyArray<
+    [keyof CanopyProofMetadataExtractionReceipt, unknown]
+  > = [
+    ["objectId", "cp_other_object"],
+    ["storageProvider", "s3"],
+    ["providerNamespace", "cp-other-namespace"],
+    ["objectKey", "cp-other/object.jpg"],
+    ["objectVersion", "cp-other-version"],
+    [
+      "storedObjectProviderReceiptHash",
+      hashJson({ kind: "other-provider-receipt" }),
+    ],
+    ["consentReceiptId", "cp_other_consent"],
+    ["consentReceiptRoot", hashJson({ kind: "other-consent" })],
+    ["deviceAttestationId", "cp_other_device"],
+    ["deviceAttestationRoot", hashJson({ kind: "other-device" })],
+    ["registeredGpsHash", hashJson({ kind: "other-registered-gps" })],
+  ];
+  for (const [field, value] of authoritySubstitutions) {
+    await context.test(`authority ${field}`, async () => {
+      const receipt = await signedReceipt(
+        fixture.extractionAuthority,
+        signing.keyPair.privateKey,
+        { [field]: value },
+      );
+      assert.throws(
+        () =>
+          validateCanopyProofMetadataExtractionReceipt(
+            fixture.extractionAuthority,
+            receipt,
+            policy,
+          ),
+        /RECEIPT_AUTHORITY_MISMATCH/,
+      );
+    });
+  }
+
+  const policySubstitutions: ReadonlyArray<
+    [keyof CanopyProofMetadataExtractionReceipt, unknown]
+  > = [
+    ["extractorId", "cp-other-extractor"],
+    ["extractorName", "other-extractor"],
+    ["extractorVersion", "other-version"],
+    ["metadataSchemaVersion", "other-schema"],
+    ["signerKeyId", "cp-other-signer"],
+  ];
+  for (const [field, value] of policySubstitutions) {
+    await context.test(`policy ${field}`, async () => {
+      const receipt = await signedReceipt(
+        fixture.extractionAuthority,
+        signing.keyPair.privateKey,
+        { [field]: value },
+      );
+      assert.throws(
+        () =>
+          validateCanopyProofMetadataExtractionReceipt(
+            fixture.extractionAuthority,
+            receipt,
+            policy,
+          ),
+        /RECEIPT_POLICY_MISMATCH/,
+      );
+    });
+  }
+
+  for (const unsafeExtractorName of [
+    "https://unsafe.example",
+    "certified carbon credit",
+    "line\nbreak",
+  ]) {
+    const receipt = await signedReceipt(
+      fixture.extractionAuthority,
+      signing.keyPair.privateKey,
+      { extractorName: unsafeExtractorName },
+    );
+    assert.throws(
+      () =>
+        validateCanopyProofMetadataExtractionReceipt(
+          fixture.extractionAuthority,
+          receipt,
+          policy,
+        ),
+      /RECEIPT_MATERIAL_UNSAFE/,
+    );
+  }
+
+  const observedAfterExtraction = await signedReceipt(
+    fixture.extractionAuthority,
+    signing.keyPair.privateKey,
+    { observedAt: "2026-07-17T10:04:00.000Z" },
+  );
+  assert.throws(
+    () =>
+      validateCanopyProofMetadataExtractionReceipt(
+        fixture.extractionAuthority,
+        observedAfterExtraction,
+        policy,
+      ),
+    /RECEIPT_TIME_INVALID/,
+  );
+
+  const futureStoredAuthority = {
+    ...fixture.extractionAuthority,
+    object: {
+      ...fixture.extractionAuthority.object,
+      storedAt: "2026-07-17T10:04:00.000Z",
+    },
+  };
+  const beforeStorage = await signedReceipt(
+    futureStoredAuthority,
+    signing.keyPair.privateKey,
+  );
+  assert.throws(
+    () =>
+      validateCanopyProofMetadataExtractionReceipt(
+        futureStoredAuthority,
+        beforeStorage,
+        policy,
+      ),
+    /RECEIPT_TIME_INVALID/,
+  );
+
+  const staleObservation = await signedReceipt(
+    fixture.extractionAuthority,
+    signing.keyPair.privateKey,
+    { observedAt: "2026-07-15T10:00:00.000Z" },
+  );
+  assert.throws(
+    () =>
+      validateCanopyProofMetadataExtractionReceipt(
+        fixture.extractionAuthority,
+        staleObservation,
+        {
+          ...policy,
+          maximumObservationAgeSeconds: 86_400,
+        },
+      ),
+    /RECEIPT_TIME_INVALID/,
+  );
+
+  const validReceipt = await signedReceipt(
+    fixture.extractionAuthority,
+    signing.keyPair.privateKey,
+  );
+  assert.throws(
+    () =>
+      validateCanopyProofMetadataExtractionReceipt(
+        fixture.extractionAuthority,
+        { ...validReceipt, receiptHash: hashJson({ kind: "tampered-receipt" }) },
+        policy,
+      ),
+    /RECEIPT_HASH_INVALID/,
+  );
+});
+
+test("metadata extractor signer and observation policies are fail-closed", async (context) => {
+  const fixture = createFixture();
+  const signing = await signingFixture();
+  const validReceipt = await signedReceipt(
+    fixture.extractionAuthority,
+    signing.keyPair.privateKey,
+  );
+  const disabled = new DisabledCanopyProofMetadataExtractorAdapter();
+  assert.throws(() => disabled.getPolicyDescriptor(), /UNAVAILABLE/);
+
+  assert.throws(
+    () =>
+      new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+        { ...adapterConfiguration(), allowedSignerKeyIds: [] },
+        { async extractMetadata() { return validReceipt; } },
+        { async verify() { return true; } },
+      ),
+    /SIGNER_POLICY_EMPTY/,
+  );
+  for (const maximumObservationAgeSeconds of [
+    86_400.5,
+    86_399,
+    366 * 86_400 + 1,
+  ]) {
+    assert.throws(
+      () =>
+        new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+          {
+            ...adapterConfiguration(),
+            maximumObservationAgeSeconds,
+          },
+          { async extractMetadata() { return validReceipt; } },
+          { async verify() { return true; } },
+        ),
+      /OBSERVATION_WINDOW_INVALID/,
+    );
+  }
+  assert.doesNotThrow(
+    () =>
+      new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+        {
+          ...adapterConfiguration(),
+          maximumObservationAgeSeconds: 86_400,
+        },
+        { async extractMetadata() { return validReceipt; } },
+        { async verify() { return true; } },
+      ),
+  );
+
+  assert.throws(
+    () =>
+      validateCanopyProofMetadataExtractionReceipt(
+        fixture.extractionAuthority,
+        validReceipt,
+        { ...adapterConfiguration(), now: extractedAt, allowedSignerKeyIds: [] },
+      ),
+    /SIGNER_POLICY_EMPTY/,
+  );
+  for (const maximumObservationAgeSeconds of [
+    86_400.5,
+    86_399,
+    366 * 86_400 + 1,
+  ]) {
+    assert.throws(
+      () =>
+        validateCanopyProofMetadataExtractionReceipt(
+          fixture.extractionAuthority,
+          validReceipt,
+          {
+            ...adapterConfiguration(),
+            now: extractedAt,
+            maximumObservationAgeSeconds,
+          },
+        ),
+      /OBSERVATION_WINDOW_INVALID/,
+    );
+  }
+
+  await context.test("PNG and WebP are accepted image transports", async () => {
+    for (const contentType of ["image/png", "image/webp"] as const) {
+      const imageFixture = createFixture({ contentType });
+      const receipt = await signedReceipt(
+        imageFixture.extractionAuthority,
+        signing.keyPair.privateKey,
+      );
+      const adapter = new PolicyEnforcedCanopyProofMetadataExtractorAdapter(
+        adapterConfiguration(),
+        { async extractMetadata() { return receipt; } },
+        { async verify() { return true; } },
+      );
+      assert.equal(
+        (
+          await adapter.extractMetadata(imageFixture.extractionAuthority, {
+            now: extractedAt,
+            correlationId: `cp-e3c-${contentType.replace("/", "-")}`,
+          })
+        ).objectId,
+        imageFixture.object.id,
+      );
+    }
+  });
+});
+
+test("metadata extractor Ed25519 verifier rejects unsafe keys and malformed inputs", async () => {
+  const signing = await signingFixture();
+  assert.throws(
+    () => new WebCryptoEd25519MetadataExtractorSignatureVerifier({}),
+    /PUBLIC_KEY_REQUIRED/,
+  );
+  const invalidKeys: readonly JsonWebKey[] = [
+    { ...signing.publicKey, kty: "EC" },
+    { ...signing.publicKey, crv: "P-256" },
+    { ...signing.publicKey, x: undefined },
+    { ...signing.publicKey, x: "short" },
+    { ...signing.publicKey, d: "private-material" },
+    { ...signing.publicKey, key_ops: ["sign"] },
+    { ...signing.publicKey, use: "enc" },
+  ];
+  for (const publicKey of invalidKeys) {
+    assert.throws(
+      () =>
+        new WebCryptoEd25519MetadataExtractorSignatureVerifier({
+          [signerKeyId]: publicKey,
+        }),
+      /PUBLIC_KEY_INVALID/,
+    );
+  }
+
+  const verifier = new WebCryptoEd25519MetadataExtractorSignatureVerifier({
+    [signerKeyId]: signing.publicKey,
+  });
+  const validSignature = "A".repeat(86);
+  assert.equal(
+    await verifier.verify({
+      signerKeyId: "unknown-signer",
+      signatureAlgorithm: "ed25519",
+      receiptHash: hashJson({ kind: "metadata-verifier" }),
+      signature: validSignature,
+    }),
+    false,
+  );
+  assert.equal(
+    await verifier.verify({
+      signerKeyId,
+      signatureAlgorithm: "rsa" as never,
+      receiptHash: hashJson({ kind: "metadata-verifier" }),
+      signature: validSignature,
+    }),
+    false,
+  );
+  assert.equal(
+    await verifier.verify({
+      signerKeyId,
+      signatureAlgorithm: "ed25519",
+      receiptHash: "invalid",
+      signature: validSignature,
+    }),
+    false,
+  );
+  assert.equal(
+    await verifier.verify({
+      signerKeyId,
+      signatureAlgorithm: "ed25519",
+      receiptHash: hashJson({ kind: "metadata-verifier" }),
+      signature: "invalid",
+    }),
+    false,
+  );
+  assert.equal(
+    await verifier.verify({
+      signerKeyId,
+      signatureAlgorithm: "ed25519",
+      receiptHash: hashJson({ kind: "metadata-verifier" }),
+      signature: `${"A".repeat(85)}B`,
+    }),
+    false,
+  );
+
+  assert.equal(isCanopyProofVerifiedMetadataExtractionReceipt(null), false);
+  assert.equal(isCanopyProofVerifiedMetadataExtractionReceipt("receipt"), false);
+  assert.equal(
+    isCanopyProofVerifiedMetadataExtractionReceipt(Object.freeze({})),
+    false,
   );
 });
 

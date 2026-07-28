@@ -401,6 +401,341 @@ test("AWS KMS transport does not trust forged error names or expose dependency m
   );
 });
 
+test("AWS KMS configuration validates every runtime bound and optional credential branch", async (context) => {
+  const transport = queuedAwsTransport([publicKeyResponse()]);
+  const withSession = createVerifier(transport.fetcher, {
+    sessionToken: "session-token-value-for-test",
+  });
+  await withSession.verifyManagedKeyAttestation(managedKeyRequest());
+  assert.match(
+    transport.calls[0]?.authorization ?? "",
+    /^AWS4-HMAC-SHA256 /,
+  );
+
+  const invalidBounds: ReadonlyArray<
+    [
+      string,
+      Partial<AwsKmsManagedSignatureVerifierConfiguration>,
+    ]
+  > = [
+    ["fractional timeout", { timeoutMilliseconds: 100.5 }],
+    ["short timeout", { timeoutMilliseconds: 99 }],
+    ["long timeout", { timeoutMilliseconds: 30_001 }],
+    ["fractional response limit", { maximumResponseBytes: 1_024.5 }],
+    ["small response limit", { maximumResponseBytes: 1_023 }],
+    ["large response limit", { maximumResponseBytes: 256 * 1_024 + 1 }],
+    ["fractional skew", { maximumClockSkewMilliseconds: 0.5 }],
+    ["negative skew", { maximumClockSkewMilliseconds: -1 }],
+    [
+      "large skew",
+      { maximumClockSkewMilliseconds: 15 * 60 * 1_000 + 1 },
+    ],
+    ["invalid clock", { clock: "not-a-clock" as never }],
+    ["invalid fetcher", { fetcher: "not-a-fetcher" as never }],
+  ];
+  for (const [name, overrides] of invalidBounds) {
+    await context.test(name, () => {
+      assert.throws(
+        () => createVerifier(queuedAwsTransport([]).fetcher, overrides),
+        exactError("CANOPYPROOF_AWS_KMS_CONFIGURATION_INVALID"),
+      );
+    });
+  }
+
+  const defaultClockTransport = queuedAwsTransport([publicKeyResponse()]);
+  const now = new Date().toISOString();
+  const defaultClockVerifier = new AwsKmsManagedSignatureVerifier({
+    accountId: ACCOUNT_ID,
+    partition: "aws",
+    region: REGION,
+    keyArn: KEY_ARN,
+    keyVersion: KEY_VERSION,
+    organizationId: ORGANIZATION_ID,
+    algorithm: "ES256",
+    accessKeyId: ACCESS_KEY_ID,
+    secretAccessKey: SECRET_ACCESS_KEY,
+    fetcher: defaultClockTransport.fetcher,
+  });
+  await defaultClockVerifier.verifyManagedKeyAttestation(
+    managedKeyRequest({ requestedAt: now }),
+  );
+
+  assert.doesNotThrow(
+    () =>
+      new AwsKmsManagedSignatureVerifier({
+        accountId: ACCOUNT_ID,
+        partition: "aws",
+        region: REGION,
+        keyArn: KEY_ARN,
+        keyVersion: KEY_VERSION,
+        organizationId: ORGANIZATION_ID,
+        algorithm: "ES256",
+        accessKeyId: ACCESS_KEY_ID,
+        secretAccessKey: SECRET_ACCESS_KEY,
+        clock: () => new Date(NOW),
+      }),
+  );
+});
+
+test("AWS KMS clock and request validation fail closed before unsafe provider use", async (context) => {
+  await context.test("managed request schema", async () => {
+    const transport = queuedAwsTransport([]);
+    const verifier = createVerifier(transport.fetcher);
+    await assert.rejects(
+      verifier.verifyManagedKeyAttestation({
+        ...managedKeyRequest(),
+        purpose: "invalid-purpose",
+      } as never),
+      exactError("CANOPYPROOF_AWS_KMS_KEY_ATTESTATION_REQUEST_INVALID"),
+    );
+    assert.equal(transport.calls.length, 0);
+  });
+
+  await context.test("signature request schema", async () => {
+    const transport = queuedAwsTransport([]);
+    const verifier = createVerifier(transport.fetcher);
+    await assert.rejects(
+      verifier.verifyDetachedSignature({
+        ...detachedSignatureRequest(),
+        purpose: "invalid-purpose",
+      } as never),
+      exactError("CANOPYPROOF_AWS_KMS_SIGNATURE_REQUEST_INVALID"),
+    );
+    assert.equal(transport.calls.length, 0);
+  });
+
+  for (const [name, clock] of [
+    [
+      "throwing clock",
+      () => {
+        throw new Error("clock internals must not escape");
+      },
+    ],
+    ["invalid clock value", () => new Date(Number.NaN)],
+  ] as const) {
+    await context.test(name, async () => {
+      const transport = queuedAwsTransport([]);
+      const verifier = createVerifier(transport.fetcher, { clock });
+      await assert.rejects(
+        verifier.verifyManagedKeyAttestation(managedKeyRequest()),
+        exactError("CANOPYPROOF_AWS_KMS_CLOCK_INVALID"),
+      );
+      assert.equal(transport.calls.length, 0);
+    });
+  }
+
+  await context.test("attestation clock skew", async () => {
+    const transport = queuedAwsTransport([]);
+    const verifier = createVerifier(transport.fetcher, {
+      maximumClockSkewMilliseconds: 0,
+    });
+    await assert.rejects(
+      verifier.verifyManagedKeyAttestation(
+        managedKeyRequest({ requestedAt: "2026-07-17T07:59:59.000Z" }),
+      ),
+      exactError("CANOPYPROOF_AWS_KMS_ATTESTATION_TIME_OUT_OF_BOUNDS"),
+    );
+    assert.equal(transport.calls.length, 0);
+  });
+
+  await context.test("future signature clock skew", async () => {
+    const transport = queuedAwsTransport([]);
+    const verifier = createVerifier(transport.fetcher, {
+      maximumClockSkewMilliseconds: 0,
+    });
+    await assert.rejects(
+      verifier.verifyDetachedSignature(
+        detachedSignatureRequest({
+          signedAt: "2026-07-17T08:00:01.000Z",
+        }),
+      ),
+      exactError("CANOPYPROOF_AWS_KMS_SIGNATURE_TIME_OUT_OF_BOUNDS"),
+    );
+    assert.equal(transport.calls.length, 0);
+  });
+
+  await context.test("non-monotonic provider clock", async () => {
+    const transport = queuedAwsTransport([publicKeyResponse()]);
+    let invocation = 0;
+    const verifier = createVerifier(transport.fetcher, {
+      clock: () =>
+        new Date(
+          invocation++ === 0
+            ? NOW
+            : "2026-07-17T07:59:59.000Z",
+        ),
+    });
+    await assert.rejects(
+      verifier.verifyManagedKeyAttestation(managedKeyRequest()),
+      exactError("CANOPYPROOF_AWS_KMS_CLOCK_INVALID"),
+    );
+  });
+});
+
+test("AWS KMS rejects malformed public-key capabilities and canonical encodings", async (context) => {
+  const responseCases: ReadonlyArray<{
+    readonly name: string;
+    readonly body: Readonly<Record<string, unknown>>;
+    readonly error: string;
+  }> = [
+    {
+      name: "legacy key spec disagreement",
+      body: {
+        ...publicKeyResponseBody(),
+        CustomerMasterKeySpec: "RSA_2048",
+      },
+      error: "CANOPYPROOF_AWS_KMS_PUBLIC_KEY_BINDING_MISMATCH",
+    },
+    {
+      name: "sign capability unavailable",
+      body: publicKeyResponseBody({
+        signingAlgorithms: ["ECDSA_SHA_384"],
+      }),
+      error: "CANOPYPROOF_AWS_KMS_PUBLIC_KEY_BINDING_MISMATCH",
+    },
+    {
+      name: "non-canonical public key",
+      body: {
+        ...publicKeyResponseBody(),
+        PublicKey: "AB==",
+      },
+      error: "CANOPYPROOF_AWS_KMS_PUBLIC_KEY_ENCODING_INVALID",
+    },
+    {
+      name: "oversized public key",
+      body: {
+        ...publicKeyResponseBody(),
+        PublicKey: Buffer.alloc(8_193).toString("base64"),
+      },
+      error: "CANOPYPROOF_AWS_KMS_PUBLIC_KEY_ENCODING_INVALID",
+    },
+  ];
+
+  for (const entry of responseCases) {
+    await context.test(entry.name, async () => {
+      const transport = queuedAwsTransport([
+        awsJsonResponse(
+          entry.body,
+          GET_PUBLIC_KEY_REQUEST_ID,
+        ),
+      ]);
+      const verifier = createVerifier(transport.fetcher);
+      await assert.rejects(
+        verifier.verifyManagedKeyAttestation(managedKeyRequest()),
+        exactError(entry.error),
+      );
+    });
+  }
+
+  await context.test("non-canonical detached signature", async () => {
+    const transport = queuedAwsTransport([]);
+    const verifier = createVerifier(transport.fetcher);
+    await assert.rejects(
+      verifier.verifyDetachedSignature(
+        detachedSignatureRequest({ detachedSignature: "AB" }),
+      ),
+      exactError("CANOPYPROOF_AWS_KMS_SIGNATURE_ENCODING_INVALID"),
+    );
+    assert.equal(transport.calls.length, 0);
+  });
+});
+
+test("AWS KMS response framing rejects malformed lengths, JSON, and empty streams", async (context) => {
+  const framedCases: ReadonlyArray<{
+    readonly name: string;
+    readonly response: Response;
+    readonly error: string;
+  }> = [
+    {
+      name: "non-numeric declared length",
+      response: awsJsonResponse(
+        publicKeyResponseBody(),
+        GET_PUBLIC_KEY_REQUEST_ID,
+        200,
+        { "content-length": "not-a-number" },
+      ),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_TOO_LARGE",
+    },
+    {
+      name: "zero declared length",
+      response: awsJsonResponse(
+        publicKeyResponseBody(),
+        GET_PUBLIC_KEY_REQUEST_ID,
+        200,
+        { "content-length": "0" },
+      ),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_TOO_LARGE",
+    },
+    {
+      name: "declared overflow",
+      response: awsJsonResponse(
+        publicKeyResponseBody(),
+        GET_PUBLIC_KEY_REQUEST_ID,
+        200,
+        { "content-length": "1025" },
+      ),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_TOO_LARGE",
+    },
+    {
+      name: "invalid UTF-8 JSON",
+      response: new Response(Uint8Array.of(0xff), {
+        status: 200,
+        headers: {
+          "content-length": "1",
+          "content-type": "application/x-amz-json-1.1",
+          "x-amzn-requestid": GET_PUBLIC_KEY_REQUEST_ID,
+        },
+      }),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_JSON_INVALID",
+    },
+    {
+      name: "array JSON",
+      response: awsJsonResponse([], GET_PUBLIC_KEY_REQUEST_ID),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_JSON_INVALID",
+    },
+    {
+      name: "null JSON",
+      response: awsJsonResponse(null, GET_PUBLIC_KEY_REQUEST_ID),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_JSON_INVALID",
+    },
+    {
+      name: "missing body",
+      response: new Response(null, {
+        status: 200,
+        headers: {
+          "content-type": "application/x-amz-json-1.1",
+          "x-amzn-requestid": GET_PUBLIC_KEY_REQUEST_ID,
+        },
+      }),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_EMPTY",
+    },
+    {
+      name: "empty body",
+      response: new Response(new Uint8Array(), {
+        status: 200,
+        headers: {
+          "content-type": "application/x-amz-json-1.1",
+          "x-amzn-requestid": GET_PUBLIC_KEY_REQUEST_ID,
+        },
+      }),
+      error: "CANOPYPROOF_AWS_KMS_GET_PUBLIC_KEY_RESPONSE_EMPTY",
+    },
+  ];
+
+  for (const entry of framedCases) {
+    await context.test(entry.name, async () => {
+      const transport = queuedAwsTransport([entry.response]);
+      const verifier = createVerifier(transport.fetcher, {
+        maximumResponseBytes: 1_024,
+      });
+      await assert.rejects(
+        verifier.verifyManagedKeyAttestation(managedKeyRequest()),
+        exactError(entry.error),
+      );
+    });
+  }
+});
+
 test("AWS KMS configuration forbids aliases, cross-scope ARNs, and unsupported partitions", () => {
   const fetcher = queuedAwsTransport([]).fetcher;
   assert.throws(
@@ -417,6 +752,32 @@ test("AWS KMS configuration forbids aliases, cross-scope ARNs, and unsupported p
   assert.throws(
     () => createVerifier(fetcher, { region: "cn-north-1" }),
     exactError("CANOPYPROOF_AWS_KMS_CONFIGURATION_INVALID"),
+  );
+  assert.throws(
+    () =>
+      createVerifier(fetcher, {
+        keyArn: `arn:aws:kms:${REGION}:${ACCOUNT_ID}:key/not-a-supported-key-id`,
+      }),
+    exactError("CANOPYPROOF_AWS_KMS_CONFIGURATION_INVALID"),
+  );
+
+  const govRegion = "us-gov-west-1";
+  const govKeyArn = `arn:aws-us-gov:kms:${govRegion}:${ACCOUNT_ID}:key/12345678-1234-4234-8234-1234567890ab`;
+  assert.doesNotThrow(
+    () =>
+      new AwsKmsManagedSignatureVerifier({
+        accountId: ACCOUNT_ID,
+        partition: "aws-us-gov",
+        region: govRegion,
+        keyArn: govKeyArn,
+        keyVersion: KEY_VERSION,
+        organizationId: ORGANIZATION_ID,
+        algorithm: "ES256",
+        accessKeyId: ACCESS_KEY_ID,
+        secretAccessKey: SECRET_ACCESS_KEY,
+        clock: () => new Date(NOW),
+        fetcher,
+      }),
   );
 });
 
