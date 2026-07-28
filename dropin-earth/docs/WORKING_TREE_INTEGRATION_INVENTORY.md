@@ -189,11 +189,13 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X deployment-or-legacy-workflow | 8 |
 | exclude | X duplicate-linked-worktree | 3 |
 | exclude | X generated-artifact | 12 |
-| exclude | X legacy-api-domain | 21 |
+| exclude | X legacy-api-domain | 19 |
 | exclude | X legacy-or-product-documentation | 63 |
 | exclude | X legacy-production-automation | 28 |
+| exclude | X mixed-legacy-product-entrypoint | 3 |
 | exclude | X non-R0-dropin-package | 155 |
 | exclude | X non-R0-product-surface | 166 |
+| exclude | X non-R0-protocol-surface | 10 |
 | exclude | X non-R0-service | 10 |
 | exclude | X outside-intended-root | 95 |
 | exclude | X production-e2e | 12 |
@@ -204,15 +206,16 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X unapproved-or-unclassified | 4 |
 | exclude | X unrelated-test | 35 |
 | include | A architecture-RFC | 51 |
-| include | B satellite-proof | 17 |
-| include | C global-command-center | 33 |
-| include | D mobile-evidence-vault | 4 |
-| include | E mobile-sync-authority | 27 |
-| include | F verify-only-security | 6 |
-| include | G evidence-orchestration | 71 |
-| include | H trust-kernel-postgres | 130 |
-| include | I validation-coverage | 90 |
+| include | B satellite-proof | 19 |
+| include | C global-command-center | 34 |
+| include | D mobile-evidence-vault | 6 |
+| include | E mobile-sync-authority | 19 |
+| include | F verify-only-security | 10 |
+| include | G evidence-orchestration | 80 |
+| include | H trust-kernel-postgres | 116 |
+| include | I validation-coverage | 79 |
 | include | R0 recovery-evidence | 7 |
+| include | S shared-build-plumbing | 4 |
 
 ## Duplicate Logical Paths
 
@@ -299,6 +302,31 @@ They are individually excluded in the disposition CSV. Families include root
 workflows, linked worktrees, `dropin-main`, Gaia-Nexus, and root OS metadata.
 The sole allowlisted outside-root candidate is the non-deploying
 `.github/workflows/canopyproof-ci.yml`.
+
+## Mixed Shared-Entry Boundary
+
+Dependency inspection found that several tracked files combine approved
+CanopyProof authorities with unrelated Phase 16 product, payment, lottery,
+deployment, or protocol prototypes. Phase R0 must not copy those files
+wholesale.
+
+- `packages/schemas/src/index.ts`, `apps/web/src/lib/api.ts`, and the
+  production-workflow test retain their committed-base versions.
+- `services/api/src/app.ts` must be reconstructed from the committed base and
+  may mount only approved, fail-closed CanopyProof routes.
+- `services/api/src/domain/canopyproof/trust-registry.ts` is a cross-authority
+  composition root and is integrated only after H, G, D, E, C, F, and B pass.
+- Root/service/schema manifests and the lockfile are shared build plumbing.
+  Each feature commit may add only its required dependency or export, and the
+  lockfile must be regenerated with npm 10.9.4 in the clean tree.
+- The new `dropin-protocol` package is reduced to the deterministic canopy
+  state machine. Unrelated AHIN, settlement, CLI, and security prototypes are
+  excluded.
+
+This boundary removes the H/G/E dependency cycle: device attestation and
+effective-media authority are one G slice; mobile synchronization E depends on
+G and the encrypted vault D; the command center C depends on H and G; mounted
+routes and aggregate tests remain in I.
 
 ## Integration Rules
 
