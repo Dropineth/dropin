@@ -6,7 +6,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./canopyproof-mobile-evidence": "./src/canopyproof-mobile-evidence.schema.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
