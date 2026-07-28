@@ -1,0 +1,165 @@
+groups:
+  - name: canopyproof.production
+    rules:
+      - alert: CanopyProofApiDown
+        expr: canopyproof_observability_service_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: canopyproof-api
+        annotations:
+          summary: CanopyProof observability contract is not being served.
+          runbook: docs/OBSERVABILITY.md#canopyproofapidown
+      - alert: CanopyProofServiceHealthFailed
+        expr: canopyproof_service_health == 0
+        for: 5m
+        labels:
+          severity: high
+          service: canopyproof-api
+        annotations:
+          summary: A CanopyProof bounded context reports unhealthy telemetry.
+          runbook: docs/OBSERVABILITY.md#canopyproofservicehealthfailed
+      - alert: CanopyProofOtlpExporterInvalidConfiguration
+        expr: canopyproof_otel_exporter_enabled == 1 and canopyproof_otel_exporter_ready == 0
+        for: 2m
+        labels:
+          severity: high
+          service: canopyproof-api
+        annotations:
+          summary: CanopyProof OTLP export was requested but strict configuration is invalid.
+          runbook: docs/OBSERVABILITY.md#canopyproofotlpexporternotready
+      - alert: CanopyProofOtlpExporterDrop
+        expr: increase(canopyproof_otel_exporter_queue_full_drop_total[5m]) + increase(canopyproof_otel_exporter_oversized_drop_total[5m]) + increase(canopyproof_otel_exporter_failed_drop_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: high
+          service: canopyproof-api
+        annotations:
+          summary: CanopyProof OTLP spans are being dropped by a bounded or failed export path.
+          runbook: docs/OBSERVABILITY.md#canopyproofotlpexporternotready
+      - alert: CanopyProofAdminProxyExposure
+        expr: dropin_admin_proxy_enabled == 1
+        for: 1m
+        labels:
+          severity: critical
+          service: canopyproof-api-proxy
+        annotations:
+          summary: CanopyProof admin proxy appears exposed and must be disabled.
+          runbook: docs/OBSERVABILITY.md#canopyproofadminproxyexposure
+      - alert: CanopyProofCriticalRiskBacklog
+        expr: canopyproof_early_warning_critical_alerts > 0
+        for: 15m
+        labels:
+          severity: high
+          service: canopyproof-risk
+        annotations:
+          summary: Critical environmental risk alerts are waiting for human review.
+          runbook: docs/RISK.md
+      - alert: CanopyProofSecurityAbuseSignalSpike
+        expr: canopyproof_security_abuse_signals > 25
+        for: 5m
+        labels:
+          severity: high
+          service: canopyproof-api
+        annotations:
+          summary: CanopyProof security policy is recording elevated abuse signals.
+          runbook: docs/SECURITY.md#zero-trust-controls
+      - alert: CanopyProofGovernanceConflictBacklog
+        expr: canopyproof_governance_unresolved_conflicts > 0
+        for: 30m
+        labels:
+          severity: high
+          service: canopyproof-governance
+        annotations:
+          summary: CanopyProof governance has unresolved conflict disclosures blocking public actions.
+          runbook: docs/OBSERVABILITY.md#canopyproofgovernanceconflictbacklog
+      - alert: CanopyProofProofRecordChallengeBacklog
+        expr: canopyproof_proof_record_open_challenges > 0
+        for: 30m
+        labels:
+          severity: high
+          service: canopyproof-proof-engine
+        annotations:
+          summary: CanopyProof Environmental Proof Records have unresolved public challenges.
+          runbook: docs/OBSERVABILITY.md#canopyproofproofrecordchallengebacklog
+      - alert: CanopyProofOfflineEvidenceSyncConflictSpike
+        expr: canopyproof_evidence_offline_sync_conflicts > 10
+        for: 10m
+        labels:
+          severity: high
+          service: canopyproof-evidence-network
+        annotations:
+          summary: Offline evidence sync is producing elevated duplicate-ID conflicts.
+          runbook: docs/OBSERVABILITY.md#offline-evidence-sync-conflict-spike
+      - alert: CanopyProofMediaObjectQuarantineBacklog
+        expr: canopyproof_evidence_quarantined_media_objects > 0
+        for: 5m
+        labels:
+          severity: high
+          service: canopyproof-evidence-network
+        annotations:
+          summary: Evidence media objects are quarantined and cannot support proof lineage.
+          runbook: docs/OBSERVABILITY.md#canopyproofmediaobjectquarantinebacklog
+      - alert: CanopyProofDeviceAttestationRiskBacklog
+        expr: canopyproof_evidence_risky_device_attestations > 0
+        for: 10m
+        labels:
+          severity: high
+          service: canopyproof-evidence-network
+        annotations:
+          summary: Device attestations include risk flags and require evidence review.
+          runbook: docs/OBSERVABILITY.md#canopyproofdeviceattestationriskbacklog
+      - alert: CanopyProofMetadataExtractionReviewBacklog
+        expr: canopyproof_evidence_metadata_extractions_needing_review > 0
+        for: 10m
+        labels:
+          severity: high
+          service: canopyproof-evidence-network
+        annotations:
+          summary: EXIF/GPS metadata extractions are blocked from clean proof lineage pending review.
+          runbook: docs/OBSERVABILITY.md#canopyproofmetadataextractionreviewbacklog
+      - alert: CanopyProofEvidenceReviewTaskBacklog
+        expr: canopyproof_evidence_open_review_tasks > 0
+        for: 15m
+        labels:
+          severity: high
+          service: canopyproof-evidence-network
+        annotations:
+          summary: Evidence moderation review tasks are awaiting human decision.
+          runbook: docs/OBSERVABILITY.md#canopyproofevidencereviewtaskbacklog
+      - alert: CanopyProofRetentionMinimizationBacklog
+        expr: canopyproof_evidence_retention_minimization_decisions > 0
+        for: 30m
+        labels:
+          severity: medium
+          service: canopyproof-evidence-network
+        annotations:
+          summary: Consent-bound evidence artifacts require minimization or tombstone handling.
+          runbook: docs/OBSERVABILITY.md#canopyproofretentionminimizationbacklog
+      - alert: CanopyProofVerificationQueueBackpressure
+        expr: canopyproof_verification_queue_backpressure_active > 0
+        for: 5m
+        labels:
+          severity: critical
+          service: canopyproof-verification-queue
+        annotations:
+          summary: Verification queue backpressure is active and new proof work is blocked.
+          runbook: docs/OBSERVABILITY.md#canopyproofverificationqueuebackpressure
+      - alert: CanopyProofVerificationQueueBlockedWork
+        expr: canopyproof_verification_queue_blocked_work_items + canopyproof_verification_queue_escalated_work_items > 0
+        for: 15m
+        labels:
+          severity: high
+          service: canopyproof-verification-queue
+        annotations:
+          summary: Verification work items are blocked or escalated before proof issuance.
+          runbook: docs/OBSERVABILITY.md#canopyproofverificationqueueblockedwork
+      - alert: CanopyProofResilienceDrillFailed
+        expr: canopyproof_resilience_failed_drills > 0
+        for: 5m
+        labels:
+          severity: critical
+          service: canopyproof-resilience
+        annotations:
+          summary: A CanopyProof resilience drill exposed a fail-closed violation.
+          runbook: docs/OBSERVABILITY.md#canopyproofresiliencedrillfailed
