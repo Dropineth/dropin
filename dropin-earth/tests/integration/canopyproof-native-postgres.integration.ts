@@ -4236,7 +4236,7 @@ async function assertNativeE4OfflineBatchAuthorityParity(
         consent.id,
         (input.fact->>'receivedAt')::timestamptz
       ) consent_projection
-      CROSS JOIN LATERAL evidence.device_attestation_projection(
+      CROSS JOIN LATERAL evidence.effective_device_attestation_projection(
         device.id,
         (input.fact->>'receivedAt')::timestamptz
       ) device_projection
