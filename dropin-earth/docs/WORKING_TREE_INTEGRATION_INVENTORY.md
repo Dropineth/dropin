@@ -193,7 +193,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X legacy-or-product-documentation | 63 |
 | exclude | X legacy-production-automation | 28 |
 | exclude | X mixed-legacy-product-entrypoint | 3 |
-| exclude | X non-R0-dropin-package | 154 |
+| exclude | X non-R0-dropin-package | 158 |
 | exclude | X non-R0-product-surface | 166 |
 | exclude | X non-R0-protocol-surface | 10 |
 | exclude | X non-R0-service | 10 |
@@ -207,7 +207,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X unrelated-test | 35 |
 | include | A architecture-RFC | 51 |
 | include | B satellite-proof | 19 |
-| include | C global-command-center | 34 |
+| include | C global-command-center | 30 |
 | include | D mobile-evidence-vault | 5 |
 | include | E mobile-sync-authority | 19 |
 | include | F verify-only-security | 10 |
@@ -330,6 +330,9 @@ wholesale.
 - `packages/ui/src/index.tsx` is reconstructed from the committed base with
   only the five public symbols already required by tracked web wrappers; unrelated
   product components and branding edits remain excluded.
+- The untracked `packages/hooks` prototype is excluded because no approved
+  projection imports it and it combines payment, lottery, RWA, and PoCC/AHIN
+  demo authority.
 - The new `dropin-protocol` package is reduced to the deterministic canopy
   state machine. Unrelated AHIN, settlement, CLI, and security prototypes are
   excluded.
