@@ -95,6 +95,12 @@ jobs:
       - name: Enforce critical CanopyProof module coverage
         run: npm run coverage:critical
 
+      - name: Install Chromium for WebGL fallback verification
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify desktop and mobile WebGL fallback matrix
+        run: npm run test:webgl:browser
+
       - name: Build OpenNext Cloudflare artifact
         run: npm --workspace apps/web run cf:build
 

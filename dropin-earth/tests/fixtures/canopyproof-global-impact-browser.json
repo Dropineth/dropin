@@ -1,0 +1,128 @@
+{
+  "ok": true,
+  "apiVersion": "canopyproof.global-command-center.v2",
+  "authority": "postgresql_append_only_snapshot",
+  "data": {
+    "service": "canopyproof-global-impact-command-center",
+    "generatedAt": "2026-07-20T00:00:00.000Z",
+    "metrics": {
+      "projectCount": 4,
+      "activeProjectCount": 3,
+      "monitoredProjectCount": 3,
+      "challengedProjectCount": 1,
+      "targetTreeCount": 1200,
+      "areaHectares": 12,
+      "evidenceCount": 8,
+      "acceptedEvidenceCount": 7,
+      "proofRecordCount": 2,
+      "issuedProofRecordCount": 1,
+      "challengedProofRecordCount": 1,
+      "terraLayerCount": 2,
+      "terraSceneCount": 3,
+      "acceptedTerraRunCount": 2,
+      "needsReviewTerraRunCount": 1,
+      "activeRiskAlertCount": 1,
+      "criticalRiskAlertCount": 0,
+      "fundingCommittedUsd": "0",
+      "fundingAllocatedUsd": "0",
+      "fundingSettledUsd": "0",
+      "fundingChallengedUsd": "0"
+    },
+    "regions": [
+      {
+        "regionId": "region_reviewed_cohort_001",
+        "projectCount": 3,
+        "activeProjectCount": 3,
+        "challengedProjectCount": 0,
+        "targetTreeCount": 900,
+        "areaHectares": 9,
+        "evidenceCount": 6,
+        "proofRecordCount": 1,
+        "issuedProofRecordCount": 1,
+        "monitoringEventCount": 4,
+        "acceptedMonitoringEventCount": 4,
+        "terraSceneCount": 2,
+        "activeRiskAlertCount": 0,
+        "fundingAllocatedUsd": "0",
+        "fundingSettledUsd": "0",
+        "sourceRoot": "1111111111111111111111111111111111111111111111111111111111111111",
+        "spatial": {
+          "visibility": "generalized",
+          "basis": "approved_regional_disclosure_v1",
+          "regionId": "region_reviewed_cohort_001",
+          "centroid": {
+            "latitudeDegrees": 15,
+            "longitudeDegrees": -17
+          },
+          "precisionDegrees": 1,
+          "sourceProjectCount": 3,
+          "minimumCohortSize": 3,
+          "regionSourceRoot": "2222222222222222222222222222222222222222222222222222222222222222",
+          "privacyReviewRoot": "3333333333333333333333333333333333333333333333333333333333333333",
+          "safeguardingReviewRoot": "4444444444444444444444444444444444444444444444444444444444444444",
+          "validFrom": "2026-07-19T00:00:00.000Z",
+          "validUntil": "2026-07-21T00:00:00.000Z",
+          "disclosureRoot": "5555555555555555555555555555555555555555555555555555555555555555",
+          "spatialRoot": "6666666666666666666666666666666666666666666666666666666666666666"
+        },
+        "regionRoot": "7777777777777777777777777777777777777777777777777777777777777777"
+      },
+      {
+        "regionId": "region_withheld_cohort_002",
+        "projectCount": 1,
+        "activeProjectCount": 0,
+        "challengedProjectCount": 1,
+        "targetTreeCount": 300,
+        "areaHectares": 3,
+        "evidenceCount": 2,
+        "proofRecordCount": 1,
+        "issuedProofRecordCount": 0,
+        "monitoringEventCount": 1,
+        "acceptedMonitoringEventCount": 0,
+        "terraSceneCount": 1,
+        "activeRiskAlertCount": 1,
+        "fundingAllocatedUsd": "0",
+        "fundingSettledUsd": "0",
+        "sourceRoot": "8888888888888888888888888888888888888888888888888888888888888888",
+        "spatial": {
+          "visibility": "withheld",
+          "reason": "no_approved_disclosure",
+          "minimumCohortSize": 3,
+          "spatialRoot": "9999999999999999999999999999999999999999999999999999999999999999"
+        },
+        "regionRoot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "impactIndicators": {
+      "biodiversity": [],
+      "water": [],
+      "climateRisk": []
+    },
+    "recentActivity": [],
+    "lineage": {
+      "projectRoot": "1111111111111111111111111111111111111111111111111111111111111111",
+      "monitoringRoot": "2222222222222222222222222222222222222222222222222222222222222222",
+      "evidenceRoot": "3333333333333333333333333333333333333333333333333333333333333333",
+      "proofRecordRoot": "4444444444444444444444444444444444444444444444444444444444444444",
+      "proofChallengeRoot": "5555555555555555555555555555555555555555555555555555555555555555",
+      "terraSceneRoot": "6666666666666666666666666666666666666666666666666666666666666666",
+      "riskSignalRoot": "7777777777777777777777777777777777777777777777777777777777777777",
+      "riskAlertRoot": "8888888888888888888888888888888888888888888888888888888888888888",
+      "fundingLedgerRoot": "9999999999999999999999999999999999999999999999999999999999999999",
+      "regionRoot": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "dashboardRoot": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "safety": {
+      "readOnly": true,
+      "humanReviewRequiredForFinalProof": true,
+      "aiAdvisoryOnly": true,
+      "noMainnetFunds": true,
+      "noAutomaticCanopyDistribution": true,
+      "notCertifiedCarbonCredit": true,
+      "notCarbonTaxOffset": true,
+      "notFinancialAsset": true,
+      "notGuaranteedYield": true,
+      "disclosure": "CanopyProof Global Impact Command Center is a read-only operational view. It does not issue certified carbon credits, tax offsets, financial assets, mainnet fund movements, guaranteed yield, or automatic CANOPY distributions."
+    }
+  }
+}

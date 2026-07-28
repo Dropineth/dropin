@@ -1,8 +1,8 @@
 "use client";
 
 import { OrbitControls } from "@react-three/drei";
-import { Canvas, type ThreeEvent } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Canvas, type ThreeEvent, useFrame } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   buildGlobalCommandCenterEarthMarkers,
@@ -11,6 +11,13 @@ import {
 } from "@/lib/canopyproof-global-command-center-earth";
 import type { GlobalImpactEarthProps } from "./GlobalImpactEarthLoader";
 
+type GlobalImpactEarthRuntimeProps = GlobalImpactEarthProps & {
+  readonly onContextLost: (
+    code: "WEBGL_CONTEXT_LOST" | "BFCACHE_CONTEXT_INVALID",
+  ) => void;
+  readonly onReady: () => void;
+};
+
 const legend: readonly { readonly state: GlobalCommandCenterMarkerState; readonly label: string; readonly color: string }[] = [
   { state: "challenged", label: "Challenged", color: "#f87171" },
   { state: "active_risk", label: "Active risk", color: "#fbbf24" },
@@ -18,11 +25,38 @@ const legend: readonly { readonly state: GlobalCommandCenterMarkerState; readonl
   { state: "registered", label: "Registered", color: "#60a5fa" },
 ];
 
-export function GlobalImpactEarth({ regions, dashboardRoot }: GlobalImpactEarthProps) {
+export function GlobalImpactEarth({
+  regions,
+  dashboardRoot,
+  onContextLost,
+  onReady,
+}: GlobalImpactEarthRuntimeProps) {
   const markers = useMemo(() => buildGlobalCommandCenterEarthMarkers(regions), [regions]);
   const [selectedRegionId, setSelectedRegionId] = useState(markers[0]?.regionId ?? "");
+  const [renderer, setRenderer] = useState<THREE.WebGLRenderer>();
+  const [orbitRedrawCount, setOrbitRedrawCount] = useState(0);
   const selected = markers.find((marker) => marker.regionId === selectedRegionId) ?? markers[0];
   const withheldCount = regions.length - markers.length;
+
+  useEffect(() => {
+    if (!renderer) return;
+    const canvas = renderer.domElement;
+    const contextLost = (event: Event) => {
+      event.preventDefault();
+      onContextLost("WEBGL_CONTEXT_LOST");
+    };
+    const pageShown = (event: PageTransitionEvent) => {
+      if (event.persisted && renderer.getContext().isContextLost()) {
+        onContextLost("BFCACHE_CONTEXT_INVALID");
+      }
+    };
+    canvas.addEventListener("webglcontextlost", contextLost);
+    window.addEventListener("pageshow", pageShown);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", contextLost);
+      window.removeEventListener("pageshow", pageShown);
+    };
+  }, [onContextLost, renderer]);
 
   return (
     <section className="mt-10 border-y border-zinc-800 py-7" aria-labelledby="global-earth-title">
@@ -49,6 +83,9 @@ export function GlobalImpactEarth({ regions, dashboardRoot }: GlobalImpactEarthP
       <div
         aria-label={`${markers.length} approved generalized regions shown on an interactive Earth; ${withheldCount} regions withheld`}
         className="relative mt-5 h-80 w-full overflow-hidden bg-zinc-950 sm:h-auto sm:aspect-[16/7]"
+        data-instanced-marker-mesh-count={markers.length > 0 ? 1 : 0}
+        data-orbit-redraw-count={orbitRedrawCount}
+        data-testid="global-impact-earth-webgl"
         role="group"
       >
         <Canvas
@@ -58,7 +95,10 @@ export function GlobalImpactEarth({ regions, dashboardRoot }: GlobalImpactEarthP
           fallback={<EarthCanvasFallback />}
           frameloop="demand"
           gl={{ alpha: false, antialias: true, powerPreference: "high-performance" }}
-          onCreated={({ gl }) => gl.setClearColor("#09090b", 1)}
+          onCreated={({ gl }) => {
+            gl.setClearColor("#09090b", 1);
+            setRenderer(gl);
+          }}
         >
           <ambientLight intensity={1.25} />
           <directionalLight color="#f4f4f5" intensity={2.2} position={[3, 2, 4]} />
@@ -68,7 +108,13 @@ export function GlobalImpactEarth({ regions, dashboardRoot }: GlobalImpactEarthP
             onSelect={setSelectedRegionId}
             selectedRegionId={selected?.regionId}
           />
-          <OrbitControls enablePan={false} maxDistance={5} minDistance={2.1} />
+          <FirstFrameReporter onReady={onReady} />
+          <OrbitControls
+            enablePan={false}
+            maxDistance={5}
+            minDistance={2.1}
+            onChange={() => setOrbitRedrawCount((count) => count + 1)}
+          />
         </Canvas>
       </div>
 
@@ -93,6 +139,16 @@ export function GlobalImpactEarth({ regions, dashboardRoot }: GlobalImpactEarthP
       </p>
     </section>
   );
+}
+
+function FirstFrameReporter({ onReady }: { readonly onReady: () => void }) {
+  const reported = useRef(false);
+  useFrame(() => {
+    if (reported.current) return;
+    reported.current = true;
+    onReady();
+  });
+  return null;
 }
 
 function EarthScene({
