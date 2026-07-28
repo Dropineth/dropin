@@ -1,10 +1,8 @@
 import type {
   CertificateCheckpoint,
   CertificateField,
-  ExplorerMetric,
   IngestionStage,
   InstitutionalMetric,
-  ProofRecord,
   RiskIndicator,
   StackLayer,
   StatusSignal,
@@ -14,12 +12,10 @@ import type {
 } from "@/data/siteContent";
 import {
   ecosystemNodes,
-  explorerMetrics,
   fieldFeatures,
   infraStack,
   ingestionPipeline,
   institutionalMetrics,
-  proofRecords,
   prototypeDemo,
   reportingOptions,
   riskIndicators,
@@ -69,7 +65,7 @@ export function CanopyProofLanding() {
       <SolutionSection steps={workflowSteps} />
       <MobileReportingShowcase />
       <VerificationPipeline />
-      <ExplorerPreview metrics={explorerMetrics} records={proofRecords} />
+      <ExplorerPreview />
       <ImpactCertificateSection />
       <SectionBoundary label="telemetry" fallback={<TelemetryFallback />}>
         <TerraProofTelemetry series={waterRestorationSeries} layers={telemetryLayers} risks={riskIndicators} />
@@ -438,72 +434,44 @@ function VerificationPipeline() {
 /* Module 3 — Explorer + cryptographic certificate                     */
 /* ------------------------------------------------------------------ */
 
-function ExplorerPreview({ metrics, records }: { metrics: ExplorerMetric[]; records: ProofRecord[] }) {
+function ExplorerPreview() {
   return (
     <section className="cp-section" id="explorer">
       <div className="cp-section-heading">
-        <p className="cp-eyebrow">CanopyProof Explorer Preview</p>
-        <h2 className="tracking-tight">A public explorer for verified ecological restoration.</h2>
+        <p className="cp-eyebrow">Canonical Public Explorer</p>
+        <h2 className="tracking-tight">Inspect governed publication state without exposing protected evidence.</h2>
         <p>
-          Track restoration status, verified records, certificates, timelines, and proof references through a clean
-          accountability interface. All values shown here are sample interface data.
+          Query one pseudonymous public project identifier at a time. Each response is re-derived from immutable
+          publication, lifecycle, and challenge authorities before its public fields are returned.
         </p>
       </div>
-      <GlassCard className="cp-explorer-shell">
-        <div className="cp-explorer-topbar">
-          <strong className="tracking-tight">CanopyProof Explorer</strong>
-          <span>sample interface · demo data</span>
-        </div>
-        <div className="cp-explorer-grid">
-          <div className="cp-explorer-map" aria-label="Sample global ecological restoration map">
-            <span className="map-land land-a" />
-            <span className="map-land land-b" />
-            <span className="map-land land-c" />
-            <span className="map-point point-a">12</span>
-            <span className="map-point point-b">28</span>
-            <span className="map-point point-c">9</span>
-          </div>
-          <div className="cp-activity-panel">
-            <h3 className="tracking-tight">Recent activity</h3>
-            <ol>
-              <li>Community report submitted · 12 min ago</li>
-              <li>Satellite cross-check completed · 38 min ago</li>
-              <li>Impact certificate updated · 2 hrs ago</li>
-            </ol>
-          </div>
-        </div>
-        <div className="cp-metrics-row">
-          {metrics.map((metric) => (
-            <div key={metric.label}>
-              <span>{metric.label}</span>
-              <strong className="tabular-nums">{metric.value}</strong>
-              <small>{metric.context}</small>
+      <div className="border-y border-zinc-800 bg-zinc-950/60 py-8">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)] lg:items-start">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded border border-amber-400/40 bg-amber-400/10 px-2 py-1 font-mono text-xs font-semibold uppercase text-amber-200">
+                Governance gated
+              </span>
+              <span className="font-mono text-xs text-zinc-500">No anonymous mutation path</span>
             </div>
-          ))}
-        </div>
-        <div className="cp-proof-table" role="table" aria-label="Sample proof record table">
-          <div className="cp-proof-row cp-proof-head" role="row">
-            <span role="columnheader">Record</span>
-            <span role="columnheader">Project</span>
-            <span role="columnheader">Status</span>
-            <span role="columnheader">Proof reference</span>
+            <h3 className="mt-5 text-2xl font-semibold tracking-tight text-zinc-100">
+              The interface is ready; public activation remains independently governed.
+            </h3>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-400">
+              The Explorer never substitutes demo records when the canonical authority is unavailable. Protected
+              coordinates, identities, raw evidence, signatures, and internal review rationale remain excluded.
+            </p>
           </div>
-          {records.map((record) => (
-            <div className="cp-proof-row" key={record.id} role="row">
-              <span role="cell" className="font-mono text-[13px]">
-                {record.id}
-              </span>
-              <span role="cell">{record.project}</span>
-              <span role="cell">
-                <mark>{record.status}</mark>
-              </span>
-              <span role="cell" className="font-mono text-[13px]">
-                {record.proof}
-              </span>
-            </div>
-          ))}
+          <div className="grid gap-3 border-l border-zinc-800 pl-6 text-sm text-zinc-300">
+            <span>Current state re-derived on every read</span>
+            <span>Adverse states are never shared-cacheable</span>
+            <span>Public roots remain independently verifiable</span>
+          </div>
         </div>
-      </GlassCard>
+        <a className="cp-button cp-button-primary mt-7" href="/explorer">
+          Open canonical Explorer
+        </a>
+      </div>
     </section>
   );
 }

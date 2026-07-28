@@ -1,0 +1,35 @@
+name = "canopyproof-web"
+main = ".open-next/worker.js"
+compatibility_date = "2026-05-10"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+# Template for dynamic Next.js frontend deployment through @opennextjs/cloudflare.
+# Keep this separate from canopyproof-api-proxy.wrangler.toml.example:
+# - this Worker serves canopyproof.org/*
+# - the API proxy Worker serves canopyproof.org/api/*
+#
+# Do not point assets or site buckets at .next directly. OpenNext owns .open-next output.
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+routes = [
+  { pattern = "canopyproof.org/*", zone_name = "canopyproof.org" }
+]
+
+[vars]
+NEXT_PUBLIC_DROPIN_API_URL = "https://canopyproof.org/api"
+NEXT_PUBLIC_CANOPYPROOF_MODE = "testnet"
+NEXT_PUBLIC_TON_TESTNET = "true"
+NEXT_PUBLIC_DROPIN_SITE_URL = "https://canopyproof.org"
+
+[env.testnet.vars]
+NEXT_PUBLIC_DROPIN_API_URL = "https://canopyproof.org/api"
+NEXT_PUBLIC_CANOPYPROOF_MODE = "testnet"
+NEXT_PUBLIC_TON_TESTNET = "true"
+NEXT_PUBLIC_DROPIN_SITE_URL = "https://canopyproof.org"
+
+[env.production.vars]
+NEXT_PUBLIC_DROPIN_API_URL = "https://canopyproof.org/api"
+NEXT_PUBLIC_CANOPYPROOF_MODE = "production"
+NEXT_PUBLIC_TON_TESTNET = "false"
+NEXT_PUBLIC_DROPIN_SITE_URL = "https://canopyproof.org"

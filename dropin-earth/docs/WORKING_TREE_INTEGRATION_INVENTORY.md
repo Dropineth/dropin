@@ -188,7 +188,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X chain-contract-surface | 11 |
 | exclude | X deployment-or-legacy-workflow | 8 |
 | exclude | X duplicate-linked-worktree | 3 |
-| exclude | X generated-artifact | 12 |
+| exclude | X generated-artifact | 13 |
 | exclude | X legacy-api-domain | 19 |
 | exclude | X legacy-or-product-documentation | 62 |
 | exclude | X legacy-production-automation | 28 |
@@ -213,7 +213,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | include | F verify-only-security | 15 |
 | include | G evidence-orchestration | 82 |
 | include | H trust-kernel-postgres | 116 |
-| include | I validation-coverage | 83 |
+| include | I validation-coverage | 82 |
 | include | R0 recovery-evidence | 7 |
 | include | S shared-build-plumbing | 6 |
 

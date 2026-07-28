@@ -32,6 +32,8 @@
     "seed:phase16": "tsx scripts/seed-phase16-data.ts",
     "db:generate": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema services/api/prisma/schema.prisma",
     "db:push": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma db push --schema services/api/prisma/schema.prisma",
+    "db:verify:canopyproof": "node --test --test-concurrency=1 --import tsx tests/integration/canopyproof-postgres-audit.integration.ts tests/integration/canopyproof-trust-registry-pglite.integration.ts tests/integration/canopyproof-evidence-verification-pglite.integration.ts tests/integration/canopyproof-evidence-custody-pglite.integration.ts tests/integration/canopyproof-device-attestation-adapter-pglite.integration.ts tests/integration/canopyproof-evidence-media-pglite.integration.ts tests/integration/canopyproof-visual-evidence-pglite.integration.ts tests/integration/canopyproof-nasa-gibs-pglite.integration.ts tests/integration/canopyproof-mrv-graph-pglite.integration.ts tests/integration/canopyproof-global-command-center-pglite.integration.ts tests/integration/canopyproof-global-command-center-spatial-disclosure-pglite.integration.ts tests/integration/canopyproof-mobile-sync-admission-pglite.integration.ts tests/integration/canopyproof-funding-accountability-pglite.integration.ts tests/integration/canopyproof-early-warning-pglite.integration.ts tests/integration/canopyproof-organization-lifecycle-pglite.integration.ts tests/integration/canopyproof-organization-accreditation-pglite.integration.ts tests/integration/canopyproof-root-governance-pglite.integration.ts tests/integration/canopyproof-project-lifecycle-pglite.integration.ts",
+    "db:verify:canopyproof:native": "node --test --test-concurrency=1 --import tsx tests/integration/canopyproof-native-postgres.integration.ts tests/integration/canopyproof-global-command-center-spatial-disclosure-native.integration.ts",
     "seed": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} npm --workspace services/api run seed",
     "anchor:build": "cd contracts/solana && COPYFILE_DISABLE=1 anchor build --no-idl",
     "anchor:test": "cd contracts/solana && rm -rf .anchor/test-ledger test-ledger && COPYFILE_DISABLE=1 anchor build --no-idl && mkdir -p target/idl target/types && cp idl/dropin_anchor.json target/idl/dropin_anchor.json && cp idl/dropin_anchor.ts target/types/dropin_anchor.ts && COPYFILE_DISABLE=1 anchor test --skip-build --no-idl",
@@ -70,8 +72,10 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "test": "node --test --import tsx tests/unit/*.test.ts",
+    "test:coverage": "c8 --all --reporter=text-summary --reporter=json-summary --include='apps/*/src/**/*.ts' --include='apps/*/src/**/*.tsx' --include='packages/*/src/**/*.ts' --include='packages/*/src/**/*.tsx' --include='services/*/src/**/*.ts' --include='services/*/src/**/*.tsx' --exclude='**/*.d.ts' node --test --test-reporter=dot --import tsx tests/unit/*.test.ts",
+    "test:coverage:ratchet": "c8 --all --check-coverage --statements=65 --lines=65 --branches=72.75 --functions=69.5 --reporter=text-summary --reporter=json-summary --include='apps/*/src/**/*.ts' --include='apps/*/src/**/*.tsx' --include='packages/*/src/**/*.ts' --include='packages/*/src/**/*.tsx' --include='services/*/src/**/*.ts' --include='services/*/src/**/*.tsx' --exclude='**/*.d.ts' node --test --test-reporter=dot --import tsx tests/unit/*.test.ts",
     "audit": "node scripts/npm-audit-moderate.mjs",
-    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run audit"
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run db:verify:canopyproof && npm run build && npm run audit"
   },
   "devDependencies": {
     "@babel/core": "8.0.0",
@@ -82,6 +86,7 @@
     "@opennextjs/cloudflare": "1.19.11",
     "@prisma/client": "^6.19.3",
     "@types/node": "^20.19.25",
+    "c8": "10.1.3",
     "concurrently": "10.0.3",
     "esbuild": "0.28.1",
     "eslint": "^9.39.4",

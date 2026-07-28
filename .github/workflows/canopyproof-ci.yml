@@ -1,0 +1,112 @@
+name: CanopyProof Trust Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canopyproof-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+    working-directory: dropin-earth
+
+jobs:
+  trust-gate:
+    name: Verify trust kernel and OpenNext artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: canopyproof_ci_test
+          POSTGRES_USER: canopyproof_ci
+          POSTGRES_PASSWORD: canopyproof_ci_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U canopyproof_ci -d canopyproof_ci_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      CANOPYPROOF_CI_DB_SCHEME: postgresql
+      CANOPYPROOF_CI_DB_HOST: 127.0.0.1:5432
+      CANOPYPROOF_CI_DB_NAME: canopyproof_ci_test
+      CANOPYPROOF_CI_DB_USER: canopyproof_ci
+      CANOPYPROOF_CI_DB_PASSWORD: canopyproof_ci_only
+      CANOPYPROOF_NATIVE_TEST_CONFIRM: confirm-disposable-test-database
+      CANOPYPROOF_LEGACY_EVIDENCE_NETWORK_ENABLED: "false"
+      CANOPYPROOF_NASA_GIBS_ENABLED: "false"
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED: "false"
+      DROPIN_CANOPYPROOF_MODE: test
+      DROPIN_MAINNET_TRANSFERS_ENABLED: "false"
+      DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
+      NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure disposable database connection
+        run: |
+          connection_url="${CANOPYPROOF_CI_DB_SCHEME}://${CANOPYPROOF_CI_DB_USER}:${CANOPYPROOF_CI_DB_PASSWORD}@${CANOPYPROOF_CI_DB_HOST}/${CANOPYPROOF_CI_DB_NAME}"
+          {
+            echo "DATABASE_URL=${connection_url}"
+            echo "CANOPYPROOF_NATIVE_DATABASE_URL=${connection_url}"
+          } >> "$GITHUB_ENV"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Pin npm
+        run: npm install --global npm@10.9.4
+
+      - name: Install locked dependencies
+        run: npm ci --include=optional
+
+      - name: Run deterministic workspace gate
+        run: npm run ci
+
+      - name: Verify native PostgreSQL authority paths
+        run: npm run db:verify:canopyproof:native
+
+      - name: Enforce repository source coverage ratchet
+        run: |
+          set -o pipefail
+          mkdir -p reports/ci
+          npm run test:coverage:ratchet 2>&1 | tee reports/ci/canopyproof-coverage.txt
+          test -s reports/ci/canopyproof-coverage.txt
+          test -s coverage/coverage-summary.json
+
+      - name: Build OpenNext Cloudflare artifact
+        run: npm --workspace apps/web run cf:build
+
+      - name: Verify OpenNext artifact shape
+        run: |
+          test -f apps/web/.open-next/worker.js
+          test -d apps/web/.open-next/assets
+
+      - name: Preserve coverage evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canopyproof-coverage-${{ github.run_id }}
+          path: |
+            dropin-earth/reports/ci/canopyproof-coverage.txt
+            dropin-earth/coverage/coverage-summary.json
+          if-no-files-found: error
+          retention-days: 30

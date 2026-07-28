@@ -14,8 +14,6 @@ import {
 } from "@/components/ui";
 import { selectUxExperience, type UxExperienceFlags } from "@/lib/ux-experiments";
 
-export const runtime = "edge";
-
 const SELECTED_REGION_ID = "region_xishuangbanna_canopyproof";
 
 type HeroMetric = {

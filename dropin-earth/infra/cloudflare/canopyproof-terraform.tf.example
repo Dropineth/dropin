@@ -1,0 +1,68 @@
+terraform {
+  required_version = ">= 1.6.0"
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = ">= 5.11, < 6.0"
+    }
+  }
+}
+
+variable "cloudflare_account_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "canopyproof_zone_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "dropin_api_origin" {
+  type      = string
+  sensitive = true
+}
+
+variable "canopyproof_api_proxy_bundle_path" {
+  type        = string
+  description = "Path to the reviewed ESM JavaScript bundle produced by Wrangler --dry-run. TypeScript source is not accepted."
+
+  validation {
+    condition     = endswith(var.canopyproof_api_proxy_bundle_path, ".js")
+    error_message = "canopyproof_api_proxy_bundle_path must reference the Wrangler-produced .js bundle."
+  }
+}
+
+locals {
+  zone_name = "canopyproof.org"
+}
+
+# This example intentionally models resources without secrets in the repository.
+# Operators must import existing production resources or apply in a reviewed
+# environment; do not use this file to bypass GitHub Environment approval.
+
+resource "cloudflare_workers_script" "canopyproof_api_proxy" {
+  account_id     = var.cloudflare_account_id
+  script_name    = "canopyproof-api-proxy"
+  main_module    = "canopyproof-api-proxy.js"
+  content_file   = var.canopyproof_api_proxy_bundle_path
+  content_sha256 = filesha256(var.canopyproof_api_proxy_bundle_path)
+}
+
+resource "cloudflare_workers_route" "canopyproof_api_proxy" {
+  zone_id     = var.canopyproof_zone_id
+  pattern     = "canopyproof.org/api/*"
+  script_name = cloudflare_workers_script.canopyproof_api_proxy.script_name
+}
+
+resource "cloudflare_workers_route" "canopyproof_web_root" {
+  zone_id     = var.canopyproof_zone_id
+  pattern     = "canopyproof.org/*"
+  script_name = "canopyproof-web"
+}
+
+resource "cloudflare_workers_route" "canopyproof_web_www" {
+  zone_id     = var.canopyproof_zone_id
+  pattern     = "www.canopyproof.org/*"
+  script_name = "canopyproof-web"
+}
