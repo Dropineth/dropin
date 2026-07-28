@@ -64,7 +64,7 @@ test("repository-root CanopyProof CI is a non-deploying trust gate", () => {
   assert.doesNotMatch(workflow, /continue-on-error/);
 });
 
-test("repository coverage ratchet includes all source and remains below the unmet institutional target", () => {
+test("repository coverage ratchet includes all source and enforces Gate 1", () => {
   const packageJson = JSON.parse(readFileSync(packagePath, "utf8")) as {
     devDependencies?: Record<string, string>;
     scripts?: Record<string, string>;
@@ -88,14 +88,26 @@ test("repository coverage ratchet includes all source and remains below the unme
   }
   assert.match(measurement, /^c8 --all /);
   assert.match(ratchet, /^c8 --all --check-coverage /);
-  assert.match(ratchet, /--statements=65(?:\s|$)/);
-  assert.match(ratchet, /--lines=65(?:\s|$)/);
+  assert.match(ratchet, /--statements=70(?:\s|$)/);
+  assert.match(ratchet, /--lines=70(?:\s|$)/);
   assert.match(ratchet, /--branches=72\.75(?:\s|$)/);
-  assert.match(ratchet, /--functions=69\.5(?:\s|$)/);
+  assert.match(ratchet, /--functions=70(?:\s|$)/);
+  for (const command of [measurement, ratchet]) {
+    assert.match(command, /--test-concurrency=1/);
+    assert.match(
+      command,
+      /tests\/integration\/canopyproof-postgres-audit\.integration\.ts/,
+    );
+    assert.match(command, /tests\/integration\/\*-pglite\.integration\.ts/);
+  }
   assert.match(measurement, /--reporter=json-summary/);
   assert.match(ratchet, /--reporter=json-summary/);
+  assert.match(
+    ratchet,
+    /node scripts\/canopyproof-repository-coverage-report\.mjs$/,
+  );
   assert.doesNotMatch(measurement, /--check-coverage|--(?:statements|lines|branches|functions)=/);
-  assert.doesNotMatch(ratchet, /--(?:statements|lines|branches|functions)=9\d(?:\.\d+)?/);
+  assert.doesNotMatch(ratchet, /--statements=6\d|--lines=6\d/);
 });
 
 function escapeRegex(value: string) {

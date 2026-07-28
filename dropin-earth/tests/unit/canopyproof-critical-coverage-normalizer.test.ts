@@ -47,6 +47,7 @@ function fixture(t: TestContext) {
       statementMap: {
         "0": location(3, 2, 26),
         "1": location(4, 2, 15),
+        "2": location(5, 0, 1),
       },
       fnMap: {
         "0": { name: "critical", decl: location(2, 16, 24), loc: range(2, 7, 5, 1), line: 2 },
@@ -59,7 +60,7 @@ function fixture(t: TestContext) {
         "3": { type: "branch", line: 2, loc: range(2, 7, 5, 1), locations: [range(2, 7, 5, 1)] },
         "4": { type: "branch", line: 5, loc: location(5, 0, 1), locations: [location(5, 0, 1)] },
       },
-      s: { "0": 1, "1": 0 },
+      s: { "0": 1, "1": 0, "2": 0 },
       f: { "0": 1, "1": 0 },
       b: { "0": [0], "1": [0], "2": [0], "3": [1], "4": [0] },
     },
@@ -78,6 +79,7 @@ test("normalizer removes only proven V8 source-map artifacts", (t) => {
 
   assert.deepEqual(Object.keys(normalized.f), ["0"]);
   assert.deepEqual(Object.keys(normalized.b).sort(), ["0", "3"]);
+  assert.deepEqual(Object.keys(normalized.s).sort(), ["0", "1"]);
   assert.equal(normalized.b["0"]?.[0], 0, "real uncovered if branch must remain");
   assert.equal(normalized.s["1"], 0, "real uncovered statements must remain");
   assert.deepEqual(
@@ -92,6 +94,7 @@ test("normalizer removes only proven V8 source-map artifacts", (t) => {
 
 test("normalizer never removes covered entries even when their source location is synthetic", (t) => {
   const input = fixture(t);
+  input.coverage[input.absolute]!.s["2"] = 1;
   input.coverage[input.absolute]!.f["1"] = 1;
   input.coverage[input.absolute]!.b["1"] = [1];
   const result = normalizeCriticalCoverage({
@@ -101,6 +104,7 @@ test("normalizer never removes covered entries even when their source location i
   });
   const normalized = result.coverage[input.absolute]!;
 
+  assert.equal(normalized.s["2"], 1);
   assert.equal(normalized.f["1"], 1);
   assert.deepEqual(normalized.b["1"], [1]);
 });

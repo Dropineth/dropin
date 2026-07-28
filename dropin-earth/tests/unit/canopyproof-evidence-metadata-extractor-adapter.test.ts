@@ -1869,6 +1869,32 @@ test("metadata extractor Ed25519 verifier rejects unsafe keys and malformed inpu
     [signerKeyId]: signing.publicKey,
   });
   const validSignature = "A".repeat(86);
+  const atobDescriptor = Object.getOwnPropertyDescriptor(globalThis, "atob");
+  const btoaDescriptor = Object.getOwnPropertyDescriptor(globalThis, "btoa");
+  Object.defineProperty(globalThis, "atob", {
+    configurable: true,
+    value: () => "\0".repeat(63),
+  });
+  Object.defineProperty(globalThis, "btoa", {
+    configurable: true,
+    value: () => validSignature,
+  });
+  try {
+    assert.equal(
+      await verifier.verify({
+        signerKeyId,
+        signatureAlgorithm: "ed25519",
+        receiptHash: hashJson({ kind: "metadata-verifier-short-decoding" }),
+        signature: validSignature,
+      }),
+      false,
+    );
+  } finally {
+    assert.ok(atobDescriptor);
+    assert.ok(btoaDescriptor);
+    Object.defineProperty(globalThis, "atob", atobDescriptor);
+    Object.defineProperty(globalThis, "btoa", btoaDescriptor);
+  }
   assert.equal(
     await verifier.verify({
       signerKeyId: "unknown-signer",

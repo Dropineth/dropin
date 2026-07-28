@@ -140,6 +140,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --include=optional
 
+      - name: Verify supply-chain, secret, and generated artifact boundaries
+        run: npm run gate:supply-chain
+
       - name: Run deterministic release gate
         run: npm run ci
 
@@ -154,6 +157,12 @@ jobs:
         run: |
           npm run test:coverage:ratchet
           npm run ci:critical
+
+      - name: Install cross-browser WebGL fallback matrix
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Verify Chromium, Firefox, and WebKit fallback matrix
+        run: npm run test:webgl:browser
 
       - name: Resolve isolated workers.dev origins
         id: origins
@@ -184,20 +193,6 @@ jobs:
           );
           NODE
 
-      - name: Deploy separate staging API proxy Worker
-        run: |
-          npm exec -- wrangler deploy \
-            --config infra/cloudflare/canopyproof-api-proxy.staging.wrangler.jsonc \
-            --strict \
-            --message "CanopyProof staging API ${REQUESTED_TARGET_SHA}" \
-            --var "DROPIN_API_ORIGIN:${CANOPYPROOF_STAGING_API_ORIGIN}" \
-            --var "DROPIN_ALLOWED_ORIGINS:${{ steps.origins.outputs.web_url }}" \
-            --var "DROPIN_ALLOW_ADMIN_PROXY:false" \
-            --var "DROPIN_CANONICAL_HOST:${{ steps.origins.outputs.api_host }}" \
-            --var "DROPIN_CANOPYPROOF_MODE:testnet" \
-            --var "CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED:false" \
-            --var "CANOPYPROOF_EDGE_OTEL_SAMPLE_RATIO:0"
-
       - name: Build staging OpenNext Worker
         env:
           NEXT_PUBLIC_DROPIN_API_URL: ${{ steps.origins.outputs.api_url }}/api
@@ -211,6 +206,23 @@ jobs:
           test -d apps/web/.open-next/assets
           test -f apps/web/.open-next/assets/index.html
           test -f apps/web/.open-next/assets/index.rsc
+
+      - name: Run local OpenNext workerd route smoke
+        run: npm run test:workerd
+
+      - name: Deploy separate staging API proxy Worker
+        run: |
+          npm exec -- wrangler deploy \
+            --config infra/cloudflare/canopyproof-api-proxy.staging.wrangler.jsonc \
+            --strict \
+            --message "CanopyProof staging API ${REQUESTED_TARGET_SHA}" \
+            --var "DROPIN_API_ORIGIN:${CANOPYPROOF_STAGING_API_ORIGIN}" \
+            --var "DROPIN_ALLOWED_ORIGINS:${{ steps.origins.outputs.web_url }}" \
+            --var "DROPIN_ALLOW_ADMIN_PROXY:false" \
+            --var "DROPIN_CANONICAL_HOST:${{ steps.origins.outputs.api_host }}" \
+            --var "DROPIN_CANOPYPROOF_MODE:testnet" \
+            --var "CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED:false" \
+            --var "CANOPYPROOF_EDGE_OTEL_SAMPLE_RATIO:0"
 
       - name: Deploy route-free staging Web Worker
         run: |
@@ -252,5 +264,14 @@ jobs:
             dropin-earth/reports/canopyproof-staging-resource-preflight.json
             dropin-earth/reports/canopyproof-staging-smoke.json
             dropin-earth/reports/canopyproof-staging-smoke.md
+            dropin-earth/reports/canopyproof-repository-coverage.json
+            dropin-earth/reports/canopyproof-repository-coverage.md
+            dropin-earth/reports/canopyproof-critical-coverage.json
+            dropin-earth/reports/canopyproof-critical-coverage.md
+            dropin-earth/reports/canopyproof-cross-browser-webgl.json
+            dropin-earth/reports/canopyproof-cross-browser-webgl.md
+            dropin-earth/reports/canopyproof-workerd-smoke.json
+            dropin-earth/reports/ci/canopyproof-supply-chain-gate.json
+            dropin-earth/reports/ci/canopyproof-sbom.cdx.json
           if-no-files-found: warn
           retention-days: 30

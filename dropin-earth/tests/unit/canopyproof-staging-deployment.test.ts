@@ -90,10 +90,17 @@ test("staging workflow is exact-SHA, reviewer-gated, isolated, and non-productio
   assert.match(workflow, /actual_sha="\$\(git rev-parse HEAD\)"/);
   assert.match(workflow, /Manual staging target must equal the industrial RC branch tip/);
   assert.match(workflow, /npm ci --include=optional/);
+  assert.match(workflow, /npm run gate:supply-chain/);
   assert.match(workflow, /npm run ci/);
   assert.match(workflow, /npm run db:verify:canopyproof:native/);
   assert.match(workflow, /npm run test:coverage:ratchet/);
   assert.match(workflow, /npm run ci:critical/);
+  assert.match(
+    workflow,
+    /npx playwright install --with-deps chromium firefox webkit/,
+  );
+  assert.match(workflow, /npm run test:webgl:browser/);
+  assert.match(workflow, /npm run test:workerd/);
   assert.match(workflow, /postgres:17\.10/);
   assert.match(workflow, /canopyproof-web-staging/);
   assert.match(workflow, /canopyproof-api-staging/);
@@ -118,6 +125,24 @@ test("staging workflow is exact-SHA, reviewer-gated, isolated, and non-productio
   assert.doesNotMatch(workflow, /pull_request_target:/);
   assert.doesNotMatch(workflow, /canopyproof\.org\/\*/);
   assert.doesNotMatch(workflow, /www\.canopyproof\.org\/\*/);
+
+  const apiDeployIndex = workflow.indexOf(
+    "- name: Deploy separate staging API proxy Worker",
+  );
+  for (const requiredGate of [
+    "npm run gate:supply-chain",
+    "npm run test:coverage:ratchet",
+    "npm run ci:critical",
+    "npm run test:webgl:browser",
+    "npm run test:workerd",
+  ]) {
+    const gateIndex = workflow.indexOf(requiredGate);
+    assert.ok(gateIndex >= 0, `missing staging gate: ${requiredGate}`);
+    assert.ok(
+      gateIndex < apiDeployIndex,
+      `${requiredGate} must pass before either staging Worker is deployed`,
+    );
+  }
 
   const jobEnvironment = workflow.match(
     /\n[ ]{4}env:\n(?<contents>[\s\S]*?)\n\n[ ]{4}steps:/,

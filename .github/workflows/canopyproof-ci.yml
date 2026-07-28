@@ -70,6 +70,9 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --include=optional
 
+      - name: Verify supply-chain, secret, and generated artifact boundaries
+        run: npm run gate:supply-chain
+
       - name: Run deterministic workspace gate
         run: npm run ci
 
@@ -106,6 +109,9 @@ jobs:
           test -f apps/web/.open-next/worker.js
           test -d apps/web/.open-next/assets
 
+      - name: Run local OpenNext workerd route smoke
+        run: npm run test:workerd
+
       - name: Preserve coverage evidence
         if: ${{ always() && steps.coverage.outcome != 'skipped' }}
         uses: actions/upload-artifact@v4
@@ -113,8 +119,13 @@ jobs:
           name: canopyproof-coverage-${{ github.run_id }}
           path: |
             dropin-earth/reports/ci/canopyproof-coverage.txt
+            dropin-earth/reports/canopyproof-repository-coverage.json
+            dropin-earth/reports/canopyproof-repository-coverage.md
             dropin-earth/reports/canopyproof-cross-browser-webgl.json
             dropin-earth/reports/canopyproof-cross-browser-webgl.md
+            dropin-earth/reports/canopyproof-workerd-smoke.json
+            dropin-earth/reports/ci/canopyproof-supply-chain-gate.json
+            dropin-earth/reports/ci/canopyproof-sbom.cdx.json
             dropin-earth/coverage/coverage-summary.json
           if-no-files-found: error
           retention-days: 30

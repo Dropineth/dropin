@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import type { PrismaClient } from "@prisma/client";
 import {
   assertCanopyProofAuthorizationAssurance,
   bindCanopyProofAuthorizationPrincipal,
   canopyProofAuthorizationBindingStatus,
   CanopyProofAuthorizationError,
+  PrismaCanopyProofAuthorizationRegistry,
   type CanopyProofAuthorizationRegistry,
   type CanopyProofAuthorizationRegistrySnapshot,
 } from "../../services/api/src/domain/canopyproof/authorization-binding.js";
@@ -66,6 +68,11 @@ function registry(snapshot: CanopyProofAuthorizationRegistrySnapshot | undefined
   };
 }
 
+function prismaRegistry(rows: readonly unknown[]) {
+  const queryRaw = (async () => [...rows]) as unknown as PrismaClient["$queryRaw"];
+  return new PrismaCanopyProofAuthorizationRegistry({ $queryRaw: queryRaw });
+}
+
 async function expectAuthorizationError(
   operation: Promise<unknown>,
   code: "CANOPYPROOF_AUTHORIZATION_DENIED" | "CANOPYPROOF_AUTHORIZATION_UNAVAILABLE",
@@ -99,6 +106,71 @@ test("CanopyProof binds a signed principal to an exact active accredited members
 
   const serialized = JSON.stringify(binding);
   assert.doesNotMatch(serialized, /sensitive-token-identifier|canopyproof-audience|cloudflareaccess/);
+});
+
+test("Prisma authorization registry validates one durable row and fails closed on inconsistent results", async () => {
+  const durableRow = {
+    participant_id: "participant_verifier_001",
+    participant_type: "human",
+    participant_roles: ["verifier"],
+    participant_verification_status: "verified",
+    participant_organization_id: "organization_accredited_001",
+    bound_organization_id: "organization_accredited_001",
+    organization_verification_status: "verified",
+    organization_accreditation_status: "approved",
+    membership_id: "membership_verifier_001",
+    membership_role: "verifier",
+    membership_status: "active",
+    latest_accreditation_id: "accreditation_approved_001",
+    latest_accreditation_status: "approved",
+  };
+  const resolved = await prismaRegistry([durableRow]).resolve(accessPrincipal());
+  assert.deepEqual(resolved, verifiedSnapshot());
+  const unboundAgentRow = {
+    ...durableRow,
+    participant_id: "participant_agent_001",
+    participant_type: "agent",
+    participant_roles: ["agent"],
+    participant_organization_id: null,
+    bound_organization_id: null,
+    organization_verification_status: null,
+    organization_accreditation_status: null,
+    membership_id: null,
+    membership_role: null,
+    membership_status: null,
+    latest_accreditation_id: null,
+    latest_accreditation_status: null,
+  };
+  assert.deepEqual(
+    await prismaRegistry([unboundAgentRow]).resolve(
+      accessPrincipal({
+        actorId: "participant_agent_001",
+        role: "agent",
+        organizationId: undefined,
+      }),
+    ),
+    {
+      participantId: "participant_agent_001",
+      participantType: "agent",
+      participantRoles: ["agent"],
+      participantVerificationStatus: "verified",
+    },
+  );
+  assert.equal(await prismaRegistry([]).resolve(accessPrincipal()), undefined);
+
+  for (const rows of [
+    [durableRow, durableRow],
+    [{ ...durableRow, membership_status: "unknown" }],
+  ]) {
+    await assert.rejects(
+      prismaRegistry(rows).resolve(accessPrincipal()),
+      (error: unknown) =>
+        error instanceof CanopyProofAuthorizationError &&
+        error.code === "CANOPYPROOF_AUTHORIZATION_UNAVAILABLE" &&
+        error.reason === "registry_inconsistent" &&
+        error.httpStatus === 503,
+    );
+  }
 });
 
 test("CanopyProof denies absent, unverified, role-mismatched, and revoked durable authority", async () => {

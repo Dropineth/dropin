@@ -139,6 +139,30 @@ export function normalizeCriticalCoverage({
       .map(([, branch]) => locationOffsets(sourceFile, branch.loc))
       .filter(Boolean);
 
+    for (const [statementId, statementEntry] of Object.entries(
+      fileCoverage.statementMap ?? {},
+    )) {
+      if (Number(fileCoverage.s?.[statementId] ?? 0) > 0) continue;
+      const reason = classifySyntheticLocation({
+        sourceFile,
+        sourceText,
+        location: statementEntry,
+        syntax,
+        coveredBranchRanges,
+        allowFunctionName: false,
+      });
+      if (!reason) continue;
+      delete fileCoverage.statementMap[statementId];
+      delete fileCoverage.s[statementId];
+      removals.push({
+        file: configuredFile,
+        metric: "statements",
+        id: statementId,
+        reason,
+        location: statementEntry,
+      });
+    }
+
     for (const [functionId, functionEntry] of Object.entries(fileCoverage.fnMap ?? {})) {
       if (Number(fileCoverage.f?.[functionId] ?? 0) > 0) continue;
       const location = functionEntry.loc ?? functionEntry.decl;

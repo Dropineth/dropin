@@ -1,6 +1,6 @@
 # CanopyProof Coverage Policy
 
-Status: Enforced ratchet designed; institutional target not yet met  
+Status: Gate 1 enforced and satisfied by the industrial release candidate
 Effective date: 2026-07-26  
 Owners: CanopyProof Architecture, Security, and Quality Engineering
 
@@ -27,20 +27,23 @@ The repository measurement must:
 - fail when any configured threshold regresses; and
 - retain `coverage/coverage-summary.json` as CI evidence without committing it.
 
-The Phase R0 dirty-tree measurement on 2026-07-26 is:
+The clean industrial release-candidate measurement on 2026-07-28 is:
 
-| Dimension | Measured | Existing bootstrap floor |
+| Dimension | Measured | Enforced floor |
 | --- | ---: | ---: |
-| Statements | 65.58% | 65.00% |
-| Lines | 65.58% | 65.00% |
-| Branches | 73.87% | 72.75% |
-| Functions | 70.40% | 69.50% |
+| Statements | 83.08% | 70.00% |
+| Lines | 83.08% | 70.00% |
+| Branches | 76.91% | 72.75% |
+| Functions | 83.34% | 70.00% |
 
-This run completed the unit suite but is not release-candidate evidence because
-it was measured in the dirty source tree. The clean integration worktree must
-establish the committed baseline. The floor may rise after that measurement; it
-may not fall without a separately reviewed RFC amendment and retained before/
-after evidence.
+The measurement ran with `c8 --all` over every first-party source scope and
+included the single-threaded PGlite integration suites that exercise durable
+repository behavior. It did not exclude production source to change the
+denominator. Generated output remains untracked; CI retains the JSON summary and
+the before/after report as run artifacts.
+
+The active floor may rise after a separately reviewed ratchet change. It may not
+fall without a reviewed RFC amendment and retained before/after evidence.
 
 ## 3. Staged Repository Targets
 
@@ -73,19 +76,26 @@ two-connection serialization, RLS, append-only mutation denial, JSON NULL
 constraints, and replay remain separate mandatory gates even when line coverage
 is 95 percent.
 
-The dirty-tree measurement does not yet satisfy this policy. Examples:
+The clean candidate satisfies the critical-module gate:
 
-| Critical source | Statements | Branches | Functions | Result |
+| Critical module | Statements | Branches | Functions | Lines |
 | --- | ---: | ---: | ---: | --- |
-| `packages/dropin-protocol/src/canopy-state-machine.ts` | 91.13% | 77.41% | 92.50% | Blocked |
-| `packages/schemas/src/satellite-proof.schema.ts` | 85.50% | 75.00% | 55.00% | Blocked |
-| Satellite optical/SAR adapters | 84.21-93.33% | 75.00-81.81% | 100% | Blocked |
-| `mobile-evidence-sync-admission.ts` | 96.69% | 80.00% | 73.68% | Blocked |
-| `aws-kms-managed-signature-verifier.ts` | 95.00% | 80.40% | 100% | Blocked |
-| Metadata orchestration authority | 97.45% | 62.96% | 86.66% | Blocked |
-| `authorization-binding.ts` | 84.43% | 89.52% | 80.64% | Blocked |
+| Satellite state machine | 99.92% | 98.18% | 100.00% | 99.92% |
+| Satellite schemas and root builder | 100.00% | 96.88% | 100.00% | 100.00% |
+| Deterministic satellite adapters | 100.00% | 100.00% | 100.00% | 100.00% |
+| Mobile evidence vault | 98.34% | 96.58% | 100.00% | 98.34% |
+| Mobile sync authority | 99.77% | 96.00% | 100.00% | 99.77% |
+| Security authorization | 99.46% | 97.68% | 100.00% | 99.46% |
+| KMS verify-only boundary | 98.92% | 97.01% | 100.00% | 98.92% |
+| Metadata extraction | 99.38% | 96.71% | 100.00% | 99.38% |
+| Effective-media orchestration | 100.00% | 97.96% | 100.00% | 100.00% |
+| Audit and challenge invariants | 99.81% | 96.63% | 100.00% | 99.81% |
+| Global spatial disclosure | 99.77% | 96.03% | 100.00% | 99.77% |
 
-Percentages above are diagnostic dirty-tree evidence, not a committed baseline.
+V8 source-map entries are normalized only when the TypeScript parser proves
+that an uncovered entry maps to a non-executable import, closing brace,
+out-of-source location, or duplicate export binding. Every removal is recorded
+in the critical coverage provenance artifact.
 
 ## 5. Required Commands
 
@@ -94,10 +104,10 @@ The clean release-candidate gate must run:
 ```bash
 npm run test:coverage
 npm run test:coverage:ratchet
-npm run test:coverage:critical
+npm run ci:critical
 ```
 
-`test:coverage:critical` must fail if any allowlisted critical file falls below
+`ci:critical` must fail if any allowlisted critical file falls below
 95 percent in any dimension or is absent from the report. It must run the exact
 unit and PGlite tests needed to exercise those files. A missing report, empty
 allowlist, skipped integration suite, or wildcard that silently drops an
@@ -129,7 +139,10 @@ Coverage never replaces:
 
 ## 8. Current Decision
 
-Repository-wide 90 percent coverage is **not achieved**. Critical-module 95
-percent coverage is **not achieved**. Phase R0 may construct the atomic commit
-chain, but the release-candidate matrix must remain blocked until the clean
-worktree measurements and critical gate pass.
+Repository Gate 1 is achieved and enforced. Every configured critical module
+passes 95 percent in statements, branches, functions, and lines.
+
+Repository-wide 90 percent coverage is **not achieved**. Coverage therefore
+supports this release candidate but does not authorize staging or production.
+Remote CI, independent review, protected staging, security and load validation,
+backup/restore, failure injection, and the 12-hour soak remain separate gates.
