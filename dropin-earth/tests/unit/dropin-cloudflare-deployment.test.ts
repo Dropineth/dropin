@@ -219,12 +219,12 @@ test("CanopyProof package metadata keeps npm ci PostCSS resolution locked", () =
     packages?: Record<string, { version?: string; devDependencies?: Record<string, string> }>;
   };
 
-  assert.equal(rootPackage.devDependencies?.postcss, "8.5.14");
-  assert.equal(rootPackage.overrides?.postcss, "8.5.14");
-  assert.equal(webPackage.devDependencies?.postcss, "8.5.14");
-  assert.equal(lockfile.packages?.[""]?.devDependencies?.postcss, "8.5.14");
-  assert.equal(lockfile.packages?.["apps/web"]?.devDependencies?.postcss, "8.5.14");
-  assert.equal(lockfile.packages?.["node_modules/postcss"]?.version, "8.5.14");
+  assert.equal(rootPackage.devDependencies?.postcss, "8.5.18");
+  assert.equal(rootPackage.overrides?.postcss, "8.5.18");
+  assert.equal(webPackage.devDependencies?.postcss, "8.5.18");
+  assert.equal(lockfile.packages?.[""]?.devDependencies?.postcss, "8.5.18");
+  assert.equal(lockfile.packages?.["apps/web"]?.devDependencies?.postcss, "8.5.18");
+  assert.equal(lockfile.packages?.["node_modules/postcss"]?.version, "8.5.18");
 });
 
 test("GitHub Actions deploy workflow is manual, approved, and keeps guardrails", () => {
@@ -260,8 +260,8 @@ test("GitHub Actions deploy workflow is manual, approved, and keeps guardrails",
 
   assert.match(rootPackage, /deploy:web:cloudflare/);
   assert.equal(webPackageJson.scripts?.["build:cloudflare"], "npm run cf:build");
-  assert.equal(rootPackageJson.devDependencies?.["@opennextjs/cloudflare"], "1.19.11");
-  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.107.0");
+  assert.equal(rootPackageJson.devDependencies?.["@opennextjs/cloudflare"], "1.20.2");
+  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.114.0");
 
 });
 

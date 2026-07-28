@@ -61,7 +61,7 @@ test("repository coverage ratchet includes all source and remains below the unme
 
   assert.ok(measurement, "test:coverage measurement command must remain available");
   assert.ok(ratchet, "test:coverage:ratchet must be configured");
-  assert.equal(packageJson.devDependencies?.c8, "10.1.3");
+  assert.equal(packageJson.devDependencies?.c8, "12.0.0");
   for (const sourceGlob of [
     "apps/*/src/**/*.ts",
     "apps/*/src/**/*.tsx",
