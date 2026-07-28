@@ -16,7 +16,8 @@ write, financial action, or environmental claim.
 | --- | --- |
 | R1 remote candidate before final gates | `e2a0b17914f4418643a76c20b4c2232f184b228f` |
 | Cross-browser WebGL gate | `cfaf48a` |
-| Final deploy target | `6360b9aa5a73c38e5a10d1dd456d90b84edcb966` |
+| Cross-browser CI isolation fix | `a2d48748e49ffb44e9f0b0f45099a30804d7cdd8` |
+| Final deploy target | `a2d48748e49ffb44e9f0b0f45099a30804d7cdd8` |
 | Final RC evidence | the documentation-only commit containing this report |
 
 - Remote branch: `canopyproof/industrial-rc1`
@@ -47,7 +48,7 @@ final deploy target. Dependencies were installed from the lockfile with npm
 | PGlite integration | PASS; 40/40 |
 | Workspace build | PASS |
 | Moderate dependency audit | PASS; 0 vulnerabilities |
-| Repository coverage | PASS; 83.08/76.91/83.34/83.08 |
+| Repository coverage | PASS; 83.06/76.90/83.34/83.06 |
 | Critical coverage | PASS; every configured module at least 95% in all dimensions |
 | Chromium WebGL | PASS; 9 scenarios |
 | Firefox fallback | PASS; 4 scenarios |
@@ -59,7 +60,19 @@ final deploy target. Dependencies were installed from the lockfile with npm
 The repository coverage order is statements, branches, functions, and lines.
 The enforced floors are 70, 72.75, 70, and 70 percent respectively.
 
-Native PostgreSQL 17.10 passed 2/2 on the prior remote ancestor. It must run
+GitHub Trust Gate run
+[30370082728](https://github.com/Dropineth/dropin/actions/runs/30370082728)
+passed the deterministic workspace gate, native PostgreSQL 17.10 (2/2),
+repository coverage, and critical coverage. Its browser step then exposed a
+test-isolation defect: transient SwiftShader availability masked the injected
+dynamic-import failure with an earlier WebGL preflight failure. OpenNext and
+workerd were skipped by fail-fast after that browser failure.
+
+The final deploy target makes chunk failure and timeout scenarios independent
+of transient CI GPU availability while retaining separate real-rendering,
+context-unavailable, and context-loss scenarios. The official Playwright
+Chromium, Firefox, and WebKit matrix passed 19/19 locally after the fix.
+Native PostgreSQL passed on the immediate remote ancestor, but it must run
 again on this exact candidate in the GitHub Trust Gate before the PR can become
 ready for review; the ancestor result is not represented as exact-target
 evidence.
