@@ -193,7 +193,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X legacy-or-product-documentation | 63 |
 | exclude | X legacy-production-automation | 28 |
 | exclude | X mixed-legacy-product-entrypoint | 3 |
-| exclude | X non-R0-dropin-package | 155 |
+| exclude | X non-R0-dropin-package | 154 |
 | exclude | X non-R0-product-surface | 166 |
 | exclude | X non-R0-protocol-surface | 10 |
 | exclude | X non-R0-service | 10 |
@@ -215,7 +215,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | include | H trust-kernel-postgres | 116 |
 | include | I validation-coverage | 76 |
 | include | R0 recovery-evidence | 7 |
-| include | S shared-build-plumbing | 5 |
+| include | S shared-build-plumbing | 6 |
 
 ## Duplicate Logical Paths
 
@@ -327,6 +327,9 @@ wholesale.
 - Device-attestation and metadata-request SQL contracts belong to G because
   downstream E migrations require them; only adapters importing the final
   trust-registry composition root remain in I.
+- `packages/ui/src/index.tsx` is reconstructed from the committed base with
+  only the four exports already required by tracked web wrappers; unrelated
+  product components and branding edits remain excluded.
 - The new `dropin-protocol` package is reduced to the deterministic canopy
   state machine. Unrelated AHIN, settlement, CLI, and security prototypes are
   excluded.

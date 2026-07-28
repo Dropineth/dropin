@@ -577,7 +577,7 @@ dropin-earth/packages/schemas/src/canopyproof-mobile-evidence.schema.ts,untracke
 dropin-earth/packages/schemas/src/canopyproof-public-explorer.schema.ts,untracked,C global-command-center,include,privacy-minimized global command center authority,PENDING_C_GLOBAL_COMMAND_CENTER,pending_clean_replay
 dropin-earth/packages/schemas/src/index.ts,tracked_modified,X mixed-legacy-product-entrypoint,exclude,tracked file mixes approved CanopyProof work with unrelated Phase 16 product or deployment code; retain committed base,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/packages/schemas/src/satellite-proof.schema.ts,untracked,B satellite-proof,include,deterministic three-layer satellite proof and replay,PENDING_B_SATELLITE_PROOF,pending_clean_replay
-dropin-earth/packages/ui/src/index.tsx,tracked_modified,X non-R0-dropin-package,exclude,separate Dropin prototype/package is not required by approved CanopyProof slices,EXCLUDED,path_and_boundary_reviewed
+dropin-earth/packages/ui/src/index.tsx,tracked_modified,S shared-build-plumbing,include,shared manifest must evolve minimally with each independently validated authority slice,PENDING_S_SHARED_BUILD_PLUMBING,pending_clean_replay
 dropin-earth/PHASE1_REVIEW.md,untracked,X legacy-production-automation,exclude,"legacy phase, deploy, testnet, or production automation is excluded",EXCLUDED,path_and_boundary_reviewed
 dropin-earth/README.md,tracked_modified,X legacy-or-product-documentation,exclude,"cross-phase product, deployment, and prototype narrative is outside the R0 atomic baseline",EXCLUDED,path_and_boundary_reviewed
 dropin-earth/reports/npm-audit-moderate.json,tracked_modified,X production-report,exclude,production reports are expressly excluded from Phase R0,EXCLUDED,path_and_boundary_reviewed
