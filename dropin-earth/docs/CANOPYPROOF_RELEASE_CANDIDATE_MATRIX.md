@@ -1,42 +1,47 @@
-# CanopyProof Phase R0 Release Candidate Matrix
+# CanopyProof Phase R1 Release Candidate Matrix
 
-Status: R0 baseline PASS; production release BLOCKED
-Integration content SHA:
-`6a7ec9443bee970779c2a6521e7320dd5de37df1`
+Status: PUSH_READY; not pushed, approved, or deployed
+
+R1 implementation SHA:
+`24eb9e4e29257bf36a76f47d64655831bb147ddd`
 
 ## Gate Matrix
 
-| Gate | Status | Evidence or blocker |
+| Gate | Status | Evidence or next boundary |
 | --- | --- | --- |
-| Inventory before integration | PASS | 1,061 snapshot paths classified |
-| Path disposition | PASS | 436 include, 636 exclude |
-| Actual diff reconciliation | PASS | 435 changed paths plus one baseline-identical reviewed path |
-| Duplicate-path isolation | PASS | three duplicate families excluded |
-| Generated-artifact boundary | PASS | generated output not committed |
+| R0 commit chain | PASS | integration and evidence objects verified |
+| Deleted-file disposition | PASS | zero deletions; no unresolved entry |
+| Historical test delta | PASS | explicit manifest and suite ownership contract |
+| Generated-artifact boundary | PASS | generated output absent from commit diff |
 | Candidate secret scan | PASS | `SECRET_MARKER_FINDINGS=0` |
-| Atomic subsystem commits | PASS | 21 commits after the base |
+| Atomic R1 implementation commits | PASS | coverage and WebGL concerns separated |
 | Exact clean install | PASS | Node 22.23.1, npm 10.9.4 |
 | Lint | PASS | strict command completed |
 | Typecheck | PASS | all participating workspaces |
-| Unit tests | PASS | 647/647 |
+| Unit tests | PASS | 809/809 |
+| FiftyOne | PASS | 4/4 |
 | PGlite integration | PASS | 40/40 |
-| Native PostgreSQL 17.10 | PASS | 2/2 files, RLS and concurrency included |
+| Native PostgreSQL 17.10 | PASS | 2/2, forced RLS and concurrency |
 | Workspace build | PASS | all workspaces |
 | Moderate dependency audit | PASS | 0 vulnerabilities |
 | Combined CI | PASS | complete local CI command |
+| Repository no-regression coverage | PASS | 67.35/76.49/73.06/67.35 |
+| Repository Gate 1 coverage | OPEN TARGET | statements/lines below staged 70% target |
+| Critical-module 95% coverage | PASS | every module passes all four metrics |
 | OpenNext Cloudflare build | PASS | Worker and static assets present |
 | Workerd routes | PASS | 9/9 routes returned 200 |
-| Desktop WebGL | PASS | nonblank, one instanced batch, interactive |
-| Mobile WebGL | PASS | nonblank, no overflow |
-| Generalized-coordinate privacy | PASS | strict fixture payload; no raw coordinates |
-| Reduced motion | PASS | demand-render loop remained idle |
-| WebGL unavailable cold start | BLOCKED | browser controller could not inject before document load |
-| WebGL context-loss recovery | BLOCKED | live context loss did not display static fallback |
-| Repository Gate 1 coverage | BLOCKED | statements/lines remain 67.17% |
-| Critical-module 95% coverage | BLOCKED | required script is absent |
-| Remote branch reconciliation | NOT RUN | outside R0 and requires fresh review |
-| Human release approval | NOT REQUESTED | R0 does not authorize release |
-| Push, workflow, deploy | NOT RUN | expressly prohibited |
+| Desktop WebGL | PASS | nonblank, one InstancedMesh, interactive |
+| Mobile WebGL | PASS | no overflow, controls operable |
+| Generalized-coordinate privacy | PASS | no raw coordinates; withheld remains withheld |
+| WebGL unavailable cold start | PASS | static fallback visible, no blank canvas |
+| Dynamic import failure | PASS | bounded fallback |
+| Cold chunk timeout | PASS | late module cannot duplicate renderer |
+| WebGL context-loss recovery | PASS | fallback plus one controlled retry |
+| Reduced motion | PASS | readable nonanimated fallback |
+| Firefox/WebKit compatibility | NOT RUN | pinned browser binaries unavailable |
+| Remote branch reconciliation | NOT RUN | next controlled step |
+| Independent human review | NOT REQUESTED | required before remote promotion |
+| Push, workflow, deploy | NOT RUN | expressly prohibited in R1 |
 
 ## Production Boundary Matrix
 
@@ -56,28 +61,17 @@ Integration content SHA:
 | Guaranteed-yield claims | not enabled |
 | Agent final authority | prohibited |
 
-## Release Decision
+## Decision
 
-The atomic chain is suitable for architectural and security review as a
-reproducible Phase R0 baseline. It is not suitable for production release or
-deployment.
+R1 closes the two R0 release-candidate blockers: every critical module now has
+an enforced independent 95 percent coverage gate, and deterministic browser
+tests prove WebGL cold-start, chunk-failure, context-loss, reduced-motion, and
+mobile fallback behavior.
 
-Promotion requires all of the following:
+The isolated local candidate is:
 
-1. implement `test:coverage:critical` with an explicit first-party file
-   allowlist and 95 percent thresholds in every dimension;
-2. raise or formally gate repository coverage according to
-   `docs/COVERAGE_POLICY.md`;
-3. add deterministic browser coverage for WebGL-unavailable cold start and
-   context-loss recovery;
-4. reconcile the detached chain with the current authoritative remote without
-   force push;
-5. obtain independent human review and a separately approved release process.
+`PUSH_READY`
 
-Until those conditions pass, the correct state is:
-
-`R0_BASELINE_READY_FOR_REVIEW`
-
-and not:
-
-`PRODUCTION_READY`
+This authorizes neither production nor an automatic push. Remote
+reconciliation, independent human review, guarded workflow approval, and any
+deployment remain separate future steps.
