@@ -1,0 +1,256 @@
+name: CanopyProof Isolated Staging Deploy
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - labeled
+  workflow_dispatch:
+    inputs:
+      staging_confirm:
+        description: "Must equal isolated-canopyproof-staging."
+        required: true
+        type: string
+      target_sha:
+        description: "Full 40-character release-candidate commit SHA."
+        required: true
+        type: string
+      resource_manifest_sha256:
+        description: "Must equal the protected Environment manifest SHA-256."
+        required: true
+        type: string
+
+concurrency:
+  group: canopyproof-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy-staging:
+    name: Deploy exact candidate to isolated staging
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'pull_request' &&
+        github.event.label.name == 'canopyproof-staging' &&
+        github.event.pull_request.head.repo.full_name == github.repository
+      )
+    runs-on: ubuntu-latest
+    environment: canopyproof-staging
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17.10
+        env:
+          POSTGRES_DB: canopyproof_staging_ci_test
+          POSTGRES_USER: canopyproof_staging_ci
+          POSTGRES_PASSWORD: canopyproof_staging_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U canopyproof_staging_ci -d canopyproof_staging_ci_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        shell: bash
+        working-directory: dropin-earth
+    env:
+      REQUESTED_TARGET_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || inputs.target_sha }}
+      STAGING_CONFIRM: ${{ github.event_name == 'pull_request' && 'isolated-canopyproof-staging' || inputs.staging_confirm }}
+      RESOURCE_MANIFEST_SHA256: ${{ vars.CANOPYPROOF_STAGING_RESOURCE_MANIFEST_SHA256 }}
+      DISPATCH_RESOURCE_MANIFEST_SHA256: ${{ inputs.resource_manifest_sha256 }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CANOPYPROOF_STAGING_API_ORIGIN: ${{ secrets.CANOPYPROOF_STAGING_API_ORIGIN }}
+      CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON: ${{ secrets.CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON }}
+      DROPIN_PRODUCTION_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}
+      CANOPYPROOF_NATIVE_TEST_CONFIRM: confirm-disposable-test-database
+      CANOPY_PRODUCTION_UNLOCK: "false"
+      CANOPYPROOF_LEGACY_EVIDENCE_NETWORK_ENABLED: "false"
+      CANOPYPROOF_NASA_GIBS_ENABLED: "false"
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED: "false"
+      DROPIN_MAINNET_TRANSFERS_ENABLED: "false"
+      DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
+      NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS: "false"
+      PLANETARY_LAB: "false"
+
+    steps:
+      - name: Checkout governance ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pinned Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.3
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Pin npm
+        run: npm install --global npm@10.9.4
+
+      - name: Verify staging candidate source
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            test "$PR_HEAD_REPOSITORY" = "$GITHUB_REPOSITORY"
+            test "$REQUESTED_TARGET_SHA" = "$PR_HEAD_SHA"
+          else
+            git fetch --no-tags --depth=1 origin refs/heads/canopyproof/industrial-rc1
+            approved_rc_sha="$(git rev-parse FETCH_HEAD)"
+            if [ "$REQUESTED_TARGET_SHA" != "$approved_rc_sha" ]; then
+              echo "::error::Manual staging target must equal the industrial RC branch tip."
+              exit 1
+            fi
+            if [ "$DISPATCH_RESOURCE_MANIFEST_SHA256" != "$RESOURCE_MANIFEST_SHA256" ]; then
+              echo "::error::Manual manifest digest must equal the protected Environment value."
+              exit 1
+            fi
+          fi
+
+      - name: Verify isolated staging resources and dispatch
+        env:
+          CANOPYPROOF_STAGING_PREFLIGHT_OUTPUT: ${{ runner.temp }}/canopyproof-staging-preflight.json
+        run: node scripts/canopyproof-staging-preflight.mjs
+
+      - name: Checkout exact staging candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.REQUESTED_TARGET_SHA }}
+          fetch-depth: 0
+
+      - name: Verify exact candidate identity
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          if [ "$actual_sha" != "$REQUESTED_TARGET_SHA" ]; then
+            echo "::error::Checked out SHA does not match the requested staging candidate."
+            exit 1
+          fi
+
+      - name: Install locked dependencies
+        run: npm ci --include=optional
+
+      - name: Run deterministic release gate
+        run: npm run ci
+
+      - name: Verify native PostgreSQL authority
+        run: |
+          connection_url="postgresql://canopyproof_staging_ci:canopyproof_staging_ci@127.0.0.1:5432/canopyproof_staging_ci_test?schema=public"
+          DATABASE_URL="$connection_url" \
+          CANOPYPROOF_NATIVE_DATABASE_URL="$connection_url" \
+            npm run db:verify:canopyproof:native
+
+      - name: Enforce release coverage gates
+        run: |
+          npm run test:coverage:ratchet
+          npm run ci:critical
+
+      - name: Resolve isolated workers.dev origins
+        id: origins
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from "node:fs";
+
+          const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+          const token = process.env.CLOUDFLARE_API_TOKEN;
+          const response = await fetch(
+            `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`,
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
+          const payload = await response.json();
+          const subdomain = payload?.result?.subdomain;
+          if (!response.ok || payload?.success !== true || !/^[a-z0-9-]+$/u.test(subdomain)) {
+            throw new Error("Unable to resolve the Cloudflare workers.dev subdomain");
+          }
+          appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            [
+              `web_url=https://canopyproof-web-staging.${subdomain}.workers.dev`,
+              `api_url=https://canopyproof-api-staging.${subdomain}.workers.dev`,
+              `web_host=canopyproof-web-staging.${subdomain}.workers.dev`,
+              `api_host=canopyproof-api-staging.${subdomain}.workers.dev`,
+              "",
+            ].join("\n"),
+          );
+          NODE
+
+      - name: Deploy separate staging API proxy Worker
+        run: |
+          npm exec -- wrangler deploy \
+            --config infra/cloudflare/canopyproof-api-proxy.staging.wrangler.jsonc \
+            --strict \
+            --message "CanopyProof staging API ${REQUESTED_TARGET_SHA}" \
+            --var "DROPIN_API_ORIGIN:${CANOPYPROOF_STAGING_API_ORIGIN}" \
+            --var "DROPIN_ALLOWED_ORIGINS:${{ steps.origins.outputs.web_url }}" \
+            --var "DROPIN_ALLOW_ADMIN_PROXY:false" \
+            --var "DROPIN_CANONICAL_HOST:${{ steps.origins.outputs.api_host }}" \
+            --var "DROPIN_CANOPYPROOF_MODE:testnet" \
+            --var "CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED:false" \
+            --var "CANOPYPROOF_EDGE_OTEL_SAMPLE_RATIO:0"
+
+      - name: Build staging OpenNext Worker
+        env:
+          NEXT_PUBLIC_DROPIN_API_URL: ${{ steps.origins.outputs.api_url }}/api
+          NEXT_PUBLIC_DROPIN_SITE_URL: ${{ steps.origins.outputs.web_url }}
+          NEXT_PUBLIC_CANOPYPROOF_MODE: staging
+        run: npm --workspace apps/web run cf:build
+
+      - name: Verify staging OpenNext artifact
+        run: |
+          test -f apps/web/.open-next/worker.js
+          test -d apps/web/.open-next/assets
+          test -f apps/web/.open-next/assets/index.html
+          test -f apps/web/.open-next/assets/index.rsc
+
+      - name: Deploy route-free staging Web Worker
+        run: |
+          npm exec -- wrangler deploy \
+            --config apps/web/wrangler.staging.jsonc \
+            --strict \
+            --message "CanopyProof staging web ${REQUESTED_TARGET_SHA}" \
+            --var "NEXT_PUBLIC_DROPIN_API_URL:${{ steps.origins.outputs.api_url }}/api" \
+            --var "NEXT_PUBLIC_DROPIN_SITE_URL:${{ steps.origins.outputs.web_url }}" \
+            --var "NEXT_PUBLIC_CANOPYPROOF_MODE:staging" \
+            --var "CANOPY_PRODUCTION_UNLOCK:false" \
+            --var "CANOPYPROOF_LEGACY_EVIDENCE_NETWORK_ENABLED:false" \
+            --var "CANOPYPROOF_NASA_GIBS_ENABLED:false" \
+            --var "DROPIN_ALLOW_ADMIN_PROXY:false" \
+            --var "DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED:false" \
+            --var "DROPIN_MAINNET_TRANSFERS_ENABLED:false" \
+            --var "DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED:false" \
+            --var "NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS:false" \
+            --var "PLANETARY_LAB:false"
+
+      - name: Run staging route and safety smoke
+        id: staging_smoke
+        env:
+          CANOPYPROOF_STAGING_WEB_URL: ${{ steps.origins.outputs.web_url }}
+          CANOPYPROOF_STAGING_API_URL: ${{ steps.origins.outputs.api_url }}
+          CANOPYPROOF_WORKFLOW_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          mkdir -p reports
+          cp "$RUNNER_TEMP/canopyproof-staging-preflight.json" reports/canopyproof-staging-resource-preflight.json
+          node scripts/canopyproof-staging-smoke.mjs
+
+      - name: Preserve staging evidence
+        if: always() && steps.staging_smoke.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: canopyproof-staging-${{ github.run_id }}
+          path: |
+            dropin-earth/reports/canopyproof-staging-deployment.json
+            dropin-earth/reports/canopyproof-staging-resource-preflight.json
+            dropin-earth/reports/canopyproof-staging-smoke.json
+            dropin-earth/reports/canopyproof-staging-smoke.md
+          if-no-files-found: warn
+          retention-days: 30

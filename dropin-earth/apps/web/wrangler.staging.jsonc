@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "canopyproof-web-staging",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-06-17",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "canopyproof-web-staging"
+    }
+  ],
+  "vars": {
+    "NEXT_PUBLIC_DROPIN_API_URL": "https://canopyproof-api-staging.invalid/api",
+    "NEXT_PUBLIC_DROPIN_SITE_URL": "https://canopyproof-web-staging.invalid",
+    "NEXT_PUBLIC_CANOPYPROOF_MODE": "staging",
+    "CANOPY_PRODUCTION_UNLOCK": "false",
+    "CANOPYPROOF_LEGACY_EVIDENCE_NETWORK_ENABLED": "false",
+    "CANOPYPROOF_NASA_GIBS_ENABLED": "false",
+    "DROPIN_ALLOW_ADMIN_PROXY": "false",
+    "DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED": "false",
+    "DROPIN_MAINNET_TRANSFERS_ENABLED": "false",
+    "DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED": "false",
+    "NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS": "false",
+    "PLANETARY_LAB": "false"
+  }
+}
