@@ -19,6 +19,7 @@
   "dependencies": {
     "@dropin/crypto": "file:../../packages/crypto",
     "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
+    "@dropin/satellite-ingestor": "file:../satellite-ingestor",
     "@dropin/schemas": "file:../../packages/schemas",
     "@hono/node-server": "^2.0.1",
     "@prisma/client": "^6.19.3",
