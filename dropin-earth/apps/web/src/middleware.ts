@@ -81,9 +81,12 @@ export function middleware(request: NextRequest): NextResponse {
 
 export const config = {
   matcher: [
-    // All routes except static assets and image optimizer output.
+    // Dynamic app routes only. Keep the static landing page and metadata/logo
+    // assets out of middleware so OpenNext serves their prerendered assets
+    // without falling back to the default server function.
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)",
+      source:
+        "/((?!$|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|icon.jpg|apple-touch-icon.jpg|og/).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

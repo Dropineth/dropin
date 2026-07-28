@@ -74,11 +74,14 @@ test("CanopyProof SEO and crawler files are configured for canopyproof.org", () 
   const layout = read("apps/web/src/app/layout.tsx");
   const robots = read("apps/web/src/app/robots.ts");
   const sitemap = read("apps/web/src/app/sitemap.ts");
+  const publicSitemap = read("apps/web/public/sitemap.xml");
 
   assert.match(layout, /CanopyProof — Environmental Accountability for Ecological Restoration/);
   assert.match(layout, /canonical: "https:\/\/canopyproof\.org"/);
   assert.match(robots, /https:\/\/canopyproof\.org\/sitemap\.xml/);
   assert.match(sitemap, /https:\/\/canopyproof\.org/);
+  assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/<\/loc>/);
+  assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/status<\/loc>/);
 });
 
 test("CanopyProof visual system includes reduced motion support and locked production logo", () => {
@@ -98,13 +101,18 @@ test("CanopyProof visual system includes reduced motion support and locked produ
 });
 
 test("Cloudflare deployment docs and workflow preserve the existing OpenNext path", () => {
-  const docs = read("docs/deploy-cloudflare.md");
+  const platformDocs = read("docs/deploy-cloudflare.md");
+  const productionDocs = read("docs/deployment-cloudflare-canopyproof.md");
   const workflow = read(".github/workflows/deploy-cloudflare-worker.yml");
 
-  assert.match(docs, /npm run deploy:web:cloudflare/);
-  assert.match(docs, /npm --workspace apps\/web run cf:build/);
-  assert.match(docs, /Do not deploy `\.next` directly/);
+  assert.match(platformDocs, /npm run deploy:web:cloudflare/);
+  assert.match(platformDocs, /npm --workspace apps\/web run cf:build/);
+  assert.match(platformDocs, /Do not deploy `\.next` directly/);
+  assert.match(productionDocs, /npm run deploy:web:cloudflare/);
+  assert.match(productionDocs, /Do not treat `\.next` as a static Pages output directory/);
+  assert.match(productionDocs, /OpenNext deployment path/);
   assert.match(workflow, /CanopyProof OpenNext Worker Deploy/);
+  assert.match(workflow, /npm --workspace apps\/web run cf:build/);
   assert.match(workflow, /npm --workspace apps\/web run cf:deploy/);
   assert.match(workflow, /CLOUDFLARE_API_TOKEN/);
   assert.match(workflow, /CLOUDFLARE_ACCOUNT_ID/);

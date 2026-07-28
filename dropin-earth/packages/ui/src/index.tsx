@@ -609,11 +609,11 @@ export function Leaderboard({
   entries,
 }: {
   title?: string;
-  entries: Array<{ rank: number; userId: string; leafPoints: number; region?: string }>;
+  entries: ReadonlyArray<{ rank: number; userId: string; leafPoints: number; region?: string }>;
 }) {
   return (
     <Card tone="dark">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">Leaderboard</p>
           <h2 className="mt-2 text-xl font-semibold">{title}</h2>
@@ -644,7 +644,7 @@ export function Leaderboard({
         )}
       </div>
       <p className="mt-4 text-xs leading-5 text-slate-400">
-        Leaf Points are non-transferable testnet points and are not carbon credits.
+        Leaf Points are non-transferable testnet engagement points and are not certified carbon credits.
       </p>
     </Card>
   );
@@ -699,7 +699,7 @@ export function LeafPointsDashboard({
 
       <div className={`mt-5 grid gap-3 ${compact ? "" : "sm:grid-cols-3"}`}>
         <Metric label="Leaf Points" value={leafPoints.toLocaleString()} detail="Growth and learning points" />
-        <Metric label="RWA Tokens" value={rwaTokens.toLocaleString()} detail="Allocation records only" />
+        <Metric label="RWA Records" value={rwaTokens.toLocaleString()} detail="Allocation records only" />
         <Metric label="Rank" value={rank ? `#${rank}` : "Pending"} detail="Campaign leaderboard" />
       </div>
 
@@ -757,13 +757,11 @@ export function LeafPointsDashboard({
       </div>
 
       <p className="mt-5 text-xs leading-5 text-slate-400">
-        Leaf Points are non-transferable testnet engagement points. RWA token records are not guaranteed yield and
-        are not certified carbon credits.
+        Leaf Points are non-transferable testnet engagement points. RWA records are not guaranteed yield and are not certified carbon credits.
       </p>
     </Card>
   );
 }
-
 export function GlobalRegionMap({
   regions,
   selectedRegionId,
