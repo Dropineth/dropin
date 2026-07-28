@@ -19,8 +19,11 @@ import { NextResponse, type NextRequest } from "next/server";
  *    `content-security-policy-report-only` and add a `report-to` directive.
  */
 
-function buildContentSecurityPolicy(nonce: string): string {
-  return [
+function buildContentSecurityPolicy(
+  nonce: string,
+  upgradeInsecureRequests: boolean,
+): string {
+  const directives = [
     "default-src 'self'",
     "base-uri 'self'",
     // Strict: only the nonce'd bootstrap and scripts it loads execute.
@@ -38,8 +41,11 @@ function buildContentSecurityPolicy(nonce: string): string {
     "object-src 'none'",
     "manifest-src 'self'",
     "worker-src 'self' blob:",
-    "upgrade-insecure-requests",
-  ].join("; ");
+  ];
+  if (upgradeInsecureRequests) {
+    directives.push("upgrade-insecure-requests");
+  }
+  return directives.join("; ");
 }
 
 function generateNonce(): string {
@@ -54,7 +60,14 @@ function generateNonce(): string {
 
 export function middleware(request: NextRequest): NextResponse {
   const nonce = generateNonce();
-  const csp = buildContentSecurityPolicy(nonce);
+  const forwardedProtocol = request.headers
+    .get("x-forwarded-proto")
+    ?.split(",", 1)[0]
+    ?.trim();
+  const csp = buildContentSecurityPolicy(
+    nonce,
+    request.nextUrl.protocol === "https:" || forwardedProtocol === "https",
+  );
 
   // Forward the nonce + CSP on the request so Next.js can nonce its own scripts.
   const requestHeaders = new Headers(request.headers);

@@ -1,13 +1,21 @@
 import assert from "node:assert/strict";
 import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { createServer } from "node:net";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import sharp from "sharp";
 import {
   chromium,
+  firefox,
+  webkit,
   type Browser,
+  type BrowserType,
   type Page,
 } from "playwright";
 
@@ -23,9 +31,18 @@ const dashboardFixture = JSON.parse(
 ) as unknown;
 const rawCoordinates = ["14.7167", "-17.4677"];
 
+type BrowserEngine = "chromium" | "firefox" | "webkit";
+type BrowserProfile =
+  | "desktop-chromium"
+  | "mobile-chromium"
+  | "desktop-firefox"
+  | "desktop-webkit"
+  | "mobile-webkit";
+
 type ScenarioResult = Readonly<{
+  engine: BrowserEngine;
   name: string;
-  profile: "desktop-chromium" | "mobile-chromium";
+  profile: BrowserProfile;
   status: "PASS";
 }>;
 
@@ -34,25 +51,145 @@ async function main() {
   const server = externalBaseUrl ? undefined : await startWebServer();
   const baseUrl = externalBaseUrl ?? server?.baseUrl;
   assert.ok(baseUrl, "CanopyProof browser base URL is required.");
-  const browser = await launchChromium();
   const results: ScenarioResult[] = [];
 
   try {
-    results.push(await normalWebgl(browser, baseUrl));
-    results.push(await noWebgl(browser, baseUrl));
-    results.push(await dynamicImportFailure(browser, baseUrl));
-    results.push(await coldChunkTimeout(browser, baseUrl));
-    results.push(await contextLoss(browser, baseUrl));
-    results.push(await reducedMotion(browser, baseUrl));
-    results.push(await mobileWebgl(browser, baseUrl));
+    for (const engine of ["chromium", "firefox", "webkit"] as const) {
+      const browser = await launchBrowser(engine);
+      try {
+        if (engine === "chromium") {
+          results.push(await normalWebgl(browser, baseUrl));
+          results.push(
+            await webglUnsupported(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-chromium",
+            ),
+          );
+          results.push(
+            await noWebgl(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-chromium",
+            ),
+          );
+          results.push(
+            await dynamicImportFailure(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-chromium",
+            ),
+          );
+          results.push(
+            await coldChunkTimeout(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-chromium",
+            ),
+          );
+          results.push(await initialFrameTimeout(browser, baseUrl));
+          results.push(await contextLoss(browser, baseUrl));
+          results.push(
+            await reducedMotion(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-chromium",
+            ),
+          );
+          results.push(await mobileWebgl(browser, baseUrl));
+        } else if (engine === "firefox") {
+          results.push(
+            await webglUnsupported(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-firefox",
+            ),
+          );
+          results.push(
+            await noWebgl(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-firefox",
+            ),
+          );
+          results.push(
+            await dynamicImportFailure(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-firefox",
+            ),
+          );
+          results.push(
+            await reducedMotion(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-firefox",
+            ),
+          );
+        } else {
+          results.push(
+            await webglUnsupported(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-webkit",
+            ),
+          );
+          results.push(
+            await noWebgl(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-webkit",
+            ),
+          );
+          results.push(
+            await dynamicImportFailure(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-webkit",
+            ),
+          );
+          results.push(
+            await coldChunkTimeout(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-webkit",
+            ),
+          );
+          results.push(
+            await reducedMotion(
+              browser,
+              baseUrl,
+              engine,
+              "desktop-webkit",
+            ),
+          );
+          results.push(await mobileFallback(browser, baseUrl));
+        }
+      } finally {
+        await browser.close();
+      }
+    }
   } finally {
-    await browser.close();
     await stopWebServer(server?.process);
   }
 
+  writeBrowserReports(results);
   for (const result of results) {
     console.log(
-      `PASS\t${result.profile}\t${result.name}`,
+      `PASS\t${result.engine}\t${result.profile}\t${result.name}`,
     );
   }
   console.log(`PASS\twebgl-browser-scenarios\t${results.length}`);
@@ -162,8 +299,46 @@ async function normalWebgl(
   assert.deepEqual(hydrationErrors, []);
   await context.close();
   return {
+    engine: "chromium",
     name: "normal WebGL, InstancedMesh, pixels, controls, and privacy",
     profile: "desktop-chromium",
+    status: "PASS",
+  };
+}
+
+async function webglUnsupported(
+  browser: Browser,
+  baseUrl: string,
+  engine: BrowserEngine,
+  profile: BrowserProfile,
+): Promise<ScenarioResult> {
+  const context = await browser.newContext({
+    reducedMotion: "no-preference",
+    viewport: { width: 1280, height: 900 },
+  });
+  await context.addInitScript(() => {
+    Object.defineProperty(window, "WebGLRenderingContext", {
+      configurable: true,
+      value: undefined,
+    });
+    Object.defineProperty(window, "WebGL2RenderingContext", {
+      configurable: true,
+      value: undefined,
+    });
+  });
+  const page = await context.newPage();
+  const networkMaterial = captureNetworkMaterial(page);
+  await routeDashboard(page);
+  await page.goto(`${baseUrl}/dashboard/global`, {
+    waitUntil: "domcontentloaded",
+  });
+  await waitForFallback(page, "WEBGL_UNSUPPORTED");
+  await assertFallbackSafety(page, networkMaterial);
+  await context.close();
+  return {
+    engine,
+    name: "missing WebGL API renders deterministic fallback",
+    profile,
     status: "PASS",
   };
 }
@@ -171,6 +346,8 @@ async function normalWebgl(
 async function noWebgl(
   browser: Browser,
   baseUrl: string,
+  engine: BrowserEngine,
+  profile: BrowserProfile,
 ): Promise<ScenarioResult> {
   const context = await browser.newContext({
     reducedMotion: "no-preference",
@@ -188,21 +365,19 @@ async function noWebgl(
   });
   const page = await context.newPage();
   const hydrationErrors = captureHydrationErrors(page);
+  const networkMaterial = captureNetworkMaterial(page);
   await routeDashboard(page);
   await page.goto(`${baseUrl}/dashboard/global`, {
     waitUntil: "domcontentloaded",
   });
   await waitForFallback(page, "CANVAS_CONTEXT_UNAVAILABLE");
-  assert.equal(await page.locator("canvas").count(), 0);
-  assert.equal(
-    await page.getByRole("heading", { name: "Current governed regional summaries" }).count(),
-    1,
-  );
+  await assertFallbackSafety(page, networkMaterial);
   assert.deepEqual(hydrationErrors, []);
   await context.close();
   return {
+    engine,
     name: "no WebGL renders deterministic usable fallback",
-    profile: "desktop-chromium",
+    profile,
     status: "PASS",
   };
 }
@@ -210,6 +385,8 @@ async function noWebgl(
 async function dynamicImportFailure(
   browser: Browser,
   baseUrl: string,
+  engine: BrowserEngine,
+  profile: BrowserProfile,
 ): Promise<ScenarioResult> {
   const context = await browser.newContext({
     reducedMotion: "no-preference",
@@ -227,8 +404,9 @@ async function dynamicImportFailure(
   assert.equal(await page.locator("canvas").count(), 0);
   await context.close();
   return {
+    engine,
     name: "dynamic Three.js chunk failure falls back",
-    profile: "desktop-chromium",
+    profile,
     status: "PASS",
   };
 }
@@ -236,6 +414,8 @@ async function dynamicImportFailure(
 async function coldChunkTimeout(
   browser: Browser,
   baseUrl: string,
+  engine: BrowserEngine,
+  profile: BrowserProfile,
 ): Promise<ScenarioResult> {
   const context = await browser.newContext({
     reducedMotion: "no-preference",
@@ -259,7 +439,40 @@ async function coldChunkTimeout(
   );
   await context.close();
   return {
+    engine,
     name: "cold chunk deadline falls back without a late duplicate renderer",
+    profile,
+    status: "PASS",
+  };
+}
+
+async function initialFrameTimeout(
+  browser: Browser,
+  baseUrl: string,
+): Promise<ScenarioResult> {
+  const context = await browser.newContext({
+    reducedMotion: "no-preference",
+    viewport: { width: 1280, height: 900 },
+  });
+  await context.addInitScript(() => {
+    window.requestAnimationFrame = (() => 1) as typeof window.requestAnimationFrame;
+    window.cancelAnimationFrame = (() => undefined) as typeof window.cancelAnimationFrame;
+  });
+  const page = await context.newPage();
+  await routeDashboard(page);
+  await page.goto(`${baseUrl}/dashboard/global`, {
+    waitUntil: "domcontentloaded",
+  });
+  await waitForFallback(page, "INITIAL_FRAME_TIMEOUT");
+  assert.equal(await page.locator("canvas").count(), 0);
+  assert.equal(
+    await page.getByTestId("global-impact-earth-fallback").count(),
+    1,
+  );
+  await context.close();
+  return {
+    engine: "chromium",
+    name: "missed first-frame deadline renders deterministic fallback",
     profile: "desktop-chromium",
     status: "PASS",
   };
@@ -298,6 +511,7 @@ async function contextLoss(
   );
   await context.close();
   return {
+    engine: "chromium",
     name: "context loss exposes controlled bounded recovery",
     profile: "desktop-chromium",
     status: "PASS",
@@ -307,6 +521,8 @@ async function contextLoss(
 async function reducedMotion(
   browser: Browser,
   baseUrl: string,
+  engine: BrowserEngine,
+  profile: BrowserProfile,
 ): Promise<ScenarioResult> {
   const context = await browser.newContext({
     reducedMotion: "reduce",
@@ -325,8 +541,53 @@ async function reducedMotion(
   );
   await context.close();
   return {
+    engine,
     name: "reduced-motion policy remains readable and nonanimated",
-    profile: "desktop-chromium",
+    profile,
+    status: "PASS",
+  };
+}
+
+async function mobileFallback(
+  browser: Browser,
+  baseUrl: string,
+): Promise<ScenarioResult> {
+  const context = await browser.newContext({
+    deviceScaleFactor: 2,
+    hasTouch: true,
+    isMobile: true,
+    reducedMotion: "no-preference",
+    viewport: { width: 390, height: 844 },
+  });
+  await context.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      type: string,
+      options?: unknown,
+    ) {
+      if (type === "webgl" || type === "webgl2") return null;
+      return original.call(this, type, options as never);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  const page = await context.newPage();
+  const networkMaterial = captureNetworkMaterial(page);
+  await routeDashboard(page);
+  await page.goto(`${baseUrl}/dashboard/global`, {
+    waitUntil: "domcontentloaded",
+  });
+  await waitForFallback(page, "CANVAS_CONTEXT_UNAVAILABLE");
+  await assertFallbackSafety(page, networkMaterial);
+  assert.equal(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+    true,
+  );
+  await context.close();
+  return {
+    engine: "webkit",
+    name: "mobile WebKit fallback remains usable without viewport overflow",
+    profile: "mobile-webkit",
     status: "PASS",
   };
 }
@@ -359,6 +620,7 @@ async function mobileWebgl(
   );
   await context.close();
   return {
+    engine: "chromium",
     name: "mobile WebGL has no viewport overflow and keeps controls operable",
     profile: "mobile-chromium",
     status: "PASS",
@@ -373,6 +635,63 @@ async function routeDashboard(page: Page) {
       status: 200,
     }),
   );
+}
+
+function captureNetworkMaterial(page: Page) {
+  const networkMaterial: string[] = [];
+  page.on("request", (request) => {
+    networkMaterial.push(request.url(), request.postData() ?? "");
+  });
+  return networkMaterial;
+}
+
+async function assertFallbackSafety(
+  page: Page,
+  networkMaterial: readonly string[],
+) {
+  const fallback = page.getByTestId("global-impact-earth-fallback");
+  await fallback.waitFor({ state: "visible" });
+  assert.equal(await page.locator("canvas").count(), 0);
+  assert.equal(await fallback.count(), 1);
+  assert.equal(
+    await page
+      .getByRole("heading", { name: "Generalized regional projection" })
+      .count(),
+    1,
+  );
+  assert.equal(
+    await page
+      .getByRole("heading", {
+        name: "Current governed regional summaries",
+      })
+      .count(),
+    1,
+  );
+  const fallbackText = await fallback.innerText();
+  assert.match(fallbackText, /static snapshot, not a live operational claim/i);
+  assert.match(fallbackText, /reviewed regional cohorts shown/i);
+  const fallbackBox = await fallback.boundingBox();
+  assert.ok(
+    fallbackBox && fallbackBox.width > 300 && fallbackBox.height > 250,
+    "Fallback must occupy a visible, stable viewport.",
+  );
+  assert.ok(
+    (await fallback.locator('[role="img"]').count()) > 0,
+    "Fallback must expose an accessible environmental projection summary.",
+  );
+
+  const body = await page.locator("body").innerText();
+  assert.equal(
+    await page
+      .getByText("region_withheld_cohort_002", { exact: true })
+      .count(),
+    1,
+  );
+  for (const coordinate of rawCoordinates) {
+    const pattern = new RegExp(escapeRegExp(coordinate));
+    assert.doesNotMatch(body, pattern);
+    assert.doesNotMatch(networkMaterial.join("\n"), pattern);
+  }
 }
 
 async function waitForWebglState(
@@ -445,20 +764,81 @@ async function readTelemetry(
   );
 }
 
-async function launchChromium() {
-  const configured = process.env.CANOPYPROOF_CHROMIUM_EXECUTABLE;
+async function launchBrowser(engine: BrowserEngine) {
+  const browserTypes: Record<BrowserEngine, BrowserType> = {
+    chromium,
+    firefox,
+    webkit,
+  };
+  const configured =
+    process.env[`CANOPYPROOF_${engine.toUpperCase()}_EXECUTABLE`];
   const macChrome =
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
   const executablePath =
-    configured ?? (existsSync(macChrome) ? macChrome : undefined);
-  return chromium.launch({
+    configured ??
+    (engine === "chromium" && existsSync(macChrome)
+      ? macChrome
+      : undefined);
+  return browserTypes[engine].launch({
     ...(executablePath ? { executablePath } : {}),
-    args: [
-      "--enable-unsafe-swiftshader",
-      "--use-angle=swiftshader",
-    ],
+    ...(engine === "chromium"
+      ? {
+          args: [
+            "--enable-unsafe-swiftshader",
+            "--use-angle=swiftshader",
+          ],
+        }
+      : {}),
     headless: true,
   });
+}
+
+function writeBrowserReports(results: readonly ScenarioResult[]) {
+  const reportDirectory = join(root, "reports");
+  mkdirSync(reportDirectory, { recursive: true });
+  const engineCounts = Object.fromEntries(
+    (["chromium", "firefox", "webkit"] as const).map((engine) => [
+      engine,
+      results.filter((result) => result.engine === engine).length,
+    ]),
+  );
+  const report = {
+    schemaVersion: 1,
+    status: "PASS",
+    generatedAt: new Date().toISOString(),
+    requiredEngines: ["chromium", "firefox", "webkit"],
+    skipped: 0,
+    scenarioCount: results.length,
+    engineCounts,
+    results,
+  };
+  writeFileSync(
+    join(reportDirectory, "canopyproof-cross-browser-webgl.json"),
+    `${JSON.stringify(report, null, 2)}\n`,
+    "utf8",
+  );
+  const rows = results.map(
+    (result) =>
+      `| ${result.engine} | ${result.profile} | ${result.name} | ${result.status} |`,
+  );
+  writeFileSync(
+    join(reportDirectory, "canopyproof-cross-browser-webgl.md"),
+    [
+      "# CanopyProof Cross-Browser WebGL",
+      "",
+      "Status: PASS",
+      "",
+      `Generated: ${report.generatedAt}`,
+      "",
+      `Scenarios: ${results.length}; skipped: 0`,
+      "",
+      "| Engine | Profile | Scenario | Result |",
+      "| --- | --- | --- | --- |",
+      ...rows,
+      "",
+    ].join("\n"),
+    "utf8",
+  );
 }
 
 async function startWebServer() {
