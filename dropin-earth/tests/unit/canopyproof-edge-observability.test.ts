@@ -272,7 +272,12 @@ test("edge exporter aborts at the configured deadline without rejection leakage"
     span: edgeSpanInput(),
     fetcher: async (request) =>
       new Promise<Response>((_resolve, reject) => {
-        request.signal.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")), { once: true });
+        const rejectAbort = () => reject(new DOMException("aborted", "AbortError"));
+        if (request.signal.aborted) {
+          rejectAbort();
+          return;
+        }
+        request.signal.addEventListener("abort", rejectAbort, { once: true });
       }),
   });
 
