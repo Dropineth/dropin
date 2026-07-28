@@ -20,6 +20,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@deck.gl/core": "^9.2.11",
+    "@deck.gl/layers": "^9.2.11",
+    "@deck.gl/mapbox": "^9.2.11",
     "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
     "@dropin/hooks": "file:../../packages/hooks",
     "@dropin/schemas": "file:../../packages/schemas",
@@ -27,6 +30,7 @@
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.4.0",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^5.10.0",
     "next": "15.5.19",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

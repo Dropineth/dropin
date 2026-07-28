@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" version="1.0.0">
+  <ows:ServiceIdentification>
+    <ows:Title>NASA GIBS synthetic test fixture</ows:Title>
+  </ows:ServiceIdentification>
+  <Contents>
+    <Layer>
+      <ows:Title>Corrected Reflectance True Color</ows:Title>
+      <ows:Abstract>Contextual true-color visualization for connector tests.</ows:Abstract>
+      <ows:Identifier>MODIS_Terra_CorrectedReflectance_TrueColor</ows:Identifier>
+      <Format>image/jpeg</Format>
+      <Dimension>
+        <ows:Identifier>time</ows:Identifier>
+        <Default>2026-07-12</Default>
+        <Current>false</Current>
+        <Value>2026-01-01/2026-07-12/P1D</Value>
+      </Dimension>
+      <TileMatrixSetLink>
+        <TileMatrixSet>GoogleMapsCompatible_Level9</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+    <Layer>
+      <ows:Title>VIIRS Fires</ows:Title>
+      <ows:Abstract>Context-only active-fire visualization.</ows:Abstract>
+      <ows:Identifier>VIIRS_SNPP_Thermal_Anomalies_375m_Day</ows:Identifier>
+      <Format>image/png</Format>
+      <Dimension>
+        <ows:Identifier>time</ows:Identifier>
+        <Default>2026-07-12</Default>
+        <Current>false</Current>
+        <Value>2026-07-10</Value>
+        <Value>2026-07-11</Value>
+        <Value>2026-07-12</Value>
+      </Dimension>
+      <TileMatrixSetLink>
+        <TileMatrixSet>GoogleMapsCompatible_Level8</TileMatrixSet>
+      </TileMatrixSetLink>
+    </Layer>
+  </Contents>
+</Capabilities>

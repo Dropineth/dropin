@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WMS_Capabilities xmlns="http://www.opengis.net/wms" version="1.3.0">
+  <Service>
+    <Name>WMS</Name>
+    <Title>NASA GIBS synthetic WMS test fixture</Title>
+  </Service>
+  <Capability>
+    <Request>
+      <GetMap>
+        <Format>image/png</Format>
+        <Format>image/jpeg</Format>
+      </GetMap>
+    </Request>
+    <Layer>
+      <Title>NASA GIBS layers</Title>
+      <CRS>EPSG:4326</CRS>
+      <Layer>
+        <Name>MODIS_Terra_Aerosol</Name>
+        <Title>MODIS Terra Aerosol</Title>
+        <Abstract>Contextual aerosol visualization.</Abstract>
+        <CRS>EPSG:4326</CRS>
+        <Dimension name="time" units="ISO8601" default="2026-07-01">2026-01-01/2026-07-01/P1D</Dimension>
+      </Layer>
+    </Layer>
+  </Capability>
+</WMS_Capabilities>
