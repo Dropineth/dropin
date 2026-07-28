@@ -142,7 +142,7 @@ dropin-earth/apps/web/src/app/green-draw/[drawId]/purchase/page.tsx,untracked,X 
 dropin-earth/apps/web/src/app/green-draw/[drawId]/result/page.tsx,untracked,X non-R0-product-surface,exclude,web path is not one of the approved institutional surfaces,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/apps/web/src/app/green-draw/page.tsx,untracked,X non-R0-product-surface,exclude,web path is not one of the approved institutional surfaces,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/apps/web/src/app/lottery/[roundId]/page.tsx,tracked_modified,X non-R0-product-surface,exclude,web path is not one of the approved institutional surfaces,EXCLUDED,path_and_boundary_reviewed
-dropin-earth/apps/web/src/app/mobile/report/page.tsx,untracked,D mobile-evidence-vault,include,encrypted offline evidence vault,PENDING_D_MOBILE_EVIDENCE_VAULT,pending_clean_replay
+dropin-earth/apps/web/src/app/mobile/report/page.tsx,untracked,I validation-coverage,include,"cross-authority institutional UI composes trust, evidence, and mobile slices and belongs in final integration",PENDING_I_VALIDATION_COVERAGE,pending_clean_replay
 dropin-earth/apps/web/src/app/my-tickets/page.tsx,untracked,X non-R0-product-surface,exclude,web path is not one of the approved institutional surfaces,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/apps/web/src/app/page.tsx,tracked_modified,X non-R0-product-surface,exclude,web path is not one of the approved institutional surfaces,EXCLUDED,path_and_boundary_reviewed
 dropin-earth/apps/web/src/app/partners/page.tsx,untracked,I validation-coverage,include,"cross-authority institutional UI composes trust, evidence, and mobile slices and belongs in final integration",PENDING_I_VALIDATION_COVERAGE,pending_clean_replay

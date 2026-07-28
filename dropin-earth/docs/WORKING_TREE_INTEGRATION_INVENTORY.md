@@ -208,12 +208,12 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | include | A architecture-RFC | 51 |
 | include | B satellite-proof | 19 |
 | include | C global-command-center | 34 |
-| include | D mobile-evidence-vault | 6 |
+| include | D mobile-evidence-vault | 5 |
 | include | E mobile-sync-authority | 19 |
 | include | F verify-only-security | 10 |
 | include | G evidence-orchestration | 82 |
 | include | H trust-kernel-postgres | 116 |
-| include | I validation-coverage | 76 |
+| include | I validation-coverage | 77 |
 | include | R0 recovery-evidence | 7 |
 | include | S shared-build-plumbing | 6 |
 
@@ -328,7 +328,7 @@ wholesale.
   downstream E migrations require them; only adapters importing the final
   trust-registry composition root remain in I.
 - `packages/ui/src/index.tsx` is reconstructed from the committed base with
-  only the four exports already required by tracked web wrappers; unrelated
+  only the five public symbols already required by tracked web wrappers; unrelated
   product components and branding edits remain excluded.
 - The new `dropin-protocol` package is reduced to the deterministic canopy
   state machine. Unrelated AHIN, settlement, CLI, and security prototypes are
