@@ -15,6 +15,7 @@ import {
   firefox,
   webkit,
   type Browser,
+  type BrowserContext,
   type BrowserType,
   type Page,
 } from "playwright";
@@ -392,6 +393,7 @@ async function dynamicImportFailure(
     reducedMotion: "no-preference",
     viewport: { width: 1280, height: 900 },
   });
+  await installSuccessfulWebglPreflight(context);
   const page = await context.newPage();
   await routeDashboard(page);
   await page.route(/canopyproof-global-impact-earth.*\.js/, (route) =>
@@ -421,6 +423,7 @@ async function coldChunkTimeout(
     reducedMotion: "no-preference",
     viewport: { width: 1280, height: 900 },
   });
+  await installSuccessfulWebglPreflight(context);
   const page = await context.newPage();
   await routeDashboard(page);
   await page.route(/canopyproof-global-impact-earth.*\.js/, async (route) => {
@@ -710,10 +713,58 @@ async function waitForWebglState(
 async function waitForFallback(page: Page, failureCode: string) {
   const fallback = page.getByTestId("global-impact-earth-fallback");
   await fallback.waitFor({ state: "visible", timeout: 10_000 });
-  assert.equal(
-    await fallback.getAttribute("data-webgl-failure-code"),
-    failureCode,
+  const actualFailureCode = await fallback.getAttribute(
+    "data-webgl-failure-code",
   );
+  const preflightDiagnostics = await page.evaluate(
+    () =>
+      (
+        window as typeof window & {
+          __CANOPYPROOF_WEBGL_PREFLIGHT_DIAGNOSTICS__?: readonly string[];
+        }
+      ).__CANOPYPROOF_WEBGL_PREFLIGHT_DIAGNOSTICS__ ?? [],
+  );
+  assert.equal(
+    actualFailureCode,
+    failureCode,
+    `WebGL preflight diagnostics: ${preflightDiagnostics.join(", ") || "none"}`,
+  );
+}
+
+async function installSuccessfulWebglPreflight(context: BrowserContext) {
+  await context.addInitScript(() => {
+    const diagnostics: string[] = [];
+    Object.defineProperty(
+      window,
+      "__CANOPYPROOF_WEBGL_PREFLIGHT_DIAGNOSTICS__",
+      {
+        configurable: false,
+        value: diagnostics,
+        writable: false,
+      },
+    );
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      type: string,
+      options?: unknown,
+    ) {
+      const isDetachedPreflight =
+        !this.isConnected &&
+        (type === "webgl" || type === "webgl2");
+      diagnostics.push(
+        `${type}:${this.isConnected ? "connected" : "detached"}:${isDetachedPreflight ? "stubbed" : "native"}`,
+      );
+      if (isDetachedPreflight) {
+        return {
+          getExtension(name: string) {
+            diagnostics.push(`extension:${name}`);
+            return null;
+          },
+        } as unknown as WebGLRenderingContext;
+      }
+      return original.call(this, type, options as never);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
 }
 
 function captureHydrationErrors(page: Page) {

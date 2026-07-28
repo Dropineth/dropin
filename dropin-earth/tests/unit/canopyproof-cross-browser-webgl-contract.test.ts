@@ -31,6 +31,12 @@ test("cross-browser WebGL matrix executes Chromium, Firefox, and WebKit without 
   assert.match(source, /CANVAS_CONTEXT_UNAVAILABLE/u);
   assert.match(source, /DYNAMIC_IMPORT_FAILED/u);
   assert.match(source, /THREE_CHUNK_TIMEOUT/u);
+  assert.equal(
+    source.match(/await installSuccessfulWebglPreflight\(context\);/gu)
+      ?.length,
+    2,
+    "Chunk failure scenarios must not depend on transient CI GPU availability.",
+  );
   assert.match(source, /INITIAL_FRAME_TIMEOUT/u);
   assert.match(source, /WEBGL_CONTEXT_LOST/u);
   assert.match(source, /REDUCED_MOTION_POLICY/u);
