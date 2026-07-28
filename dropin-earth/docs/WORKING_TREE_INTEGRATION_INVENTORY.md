@@ -193,7 +193,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | exclude | X legacy-or-product-documentation | 63 |
 | exclude | X legacy-production-automation | 28 |
 | exclude | X mixed-legacy-product-entrypoint | 3 |
-| exclude | X non-R0-dropin-package | 158 |
+| exclude | X non-R0-dropin-package | 153 |
 | exclude | X non-R0-product-surface | 166 |
 | exclude | X non-R0-protocol-surface | 10 |
 | exclude | X non-R0-service | 10 |
@@ -210,7 +210,7 @@ explicit file at a time or through a manifest-driven exact-path copier.
 | include | C global-command-center | 29 |
 | include | D mobile-evidence-vault | 5 |
 | include | E mobile-sync-authority | 19 |
-| include | F verify-only-security | 10 |
+| include | F verify-only-security | 15 |
 | include | G evidence-orchestration | 82 |
 | include | H trust-kernel-postgres | 116 |
 | include | I validation-coverage | 78 |
@@ -333,6 +333,9 @@ wholesale.
 - The untracked `packages/hooks` prototype is excluded because no approved
   projection imports it and it combines payment, lottery, RWA, and PoCC/AHIN
   demo authority.
+- The minimal `packages/dropin-cloudflare` package is included in F because
+  the tracked API Worker becomes a thin compatibility entrypoint over its
+  hardened, default-off edge observability implementation.
 - The new `dropin-protocol` package is reduced to the deterministic canopy
   state machine. Unrelated AHIN, settlement, CLI, and security prototypes are
   excluded.
