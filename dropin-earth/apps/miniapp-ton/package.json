@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
-    "@dropin/hooks": "file:../../packages/hooks",
     "@dropin/schemas": "file:../../packages/schemas",
     "@dropin/ui": "file:../../packages/ui",
     "next": "15.5.22",

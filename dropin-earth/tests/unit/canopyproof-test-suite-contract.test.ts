@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import test from "node:test";
 
 interface PackageManifest {
   scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
 }
 
 const ROOT = process.cwd();
@@ -122,6 +126,40 @@ test("browser tests have an explicit runner and CanopyProof CI preserves every g
   assert.match(workflow, /npm run test:coverage:ratchet/);
   assert.match(workflow, /npm run coverage:critical/);
   assert.match(workflow, /npm run test:webgl:browser/);
+});
+
+test("every first-party file dependency resolves from its declaring manifest", () => {
+  const manifestPaths = [
+    "package.json",
+    ...["apps", "packages", "services"]
+      .flatMap((directory) => listFiles(join(ROOT, directory)))
+      .filter((path) => path.endsWith("/package.json")),
+  ];
+  const dependencyFields = [
+    "dependencies",
+    "devDependencies",
+    "optionalDependencies",
+    "peerDependencies",
+  ] as const;
+
+  for (const manifestPath of manifestPaths) {
+    const absoluteManifestPath = join(ROOT, manifestPath);
+    const manifest = JSON.parse(
+      readFileSync(absoluteManifestPath, "utf8"),
+    ) as PackageManifest;
+
+    for (const field of dependencyFields) {
+      for (const [name, specifier] of Object.entries(manifest[field] ?? {})) {
+        if (!specifier.startsWith("file:")) continue;
+        const target = resolve(dirname(absoluteManifestPath), specifier.slice("file:".length));
+        assert.equal(
+          existsSync(target),
+          true,
+          `${manifestPath} declares missing local dependency ${name}: ${specifier}`,
+        );
+      }
+    }
+  }
 });
 
 test("no first-party test file is outside a declared suite family", () => {
