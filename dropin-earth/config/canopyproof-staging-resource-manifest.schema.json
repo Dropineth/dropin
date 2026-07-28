@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canopyproof.org/schemas/staging-resource-manifest-v1.json",
+  "title": "CanopyProof staging resource manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "releaseType",
+    "deployTargetSha",
+    "evidenceSha",
+    "r2ManifestSha256",
+    "environment",
+    "webWorker",
+    "apiWorker",
+    "apiOrigin",
+    "telemetryEnvironment",
+    "databaseClass",
+    "databaseIdentifier",
+    "objectStorageClass",
+    "objectStorageIdentifier",
+    "objectStoragePrefix",
+    "productionDataAllowed",
+    "apiWebWorkersSeparated",
+    "featureFlags",
+    "integrity"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "releaseType": {
+      "const": "industrial-staging"
+    },
+    "deployTargetSha": {
+      "const": "a2d48748e49ffb44e9f0b0f45099a30804d7cdd8"
+    },
+    "evidenceSha": {
+      "const": "baf1695239c439a17398c4406b3362e073fbd7a5"
+    },
+    "r2ManifestSha256": {
+      "const": "f4925d27f4eaa46550cb6aefce5354deab02c088595153d6767976a5feb09698"
+    },
+    "environment": {
+      "const": "canopyproof-staging"
+    },
+    "webWorker": {
+      "const": "canopyproof-web-staging"
+    },
+    "apiWorker": {
+      "const": "canopyproof-api-staging"
+    },
+    "apiOrigin": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "telemetryEnvironment": {
+      "const": "canopyproof-staging"
+    },
+    "databaseClass": {
+      "const": "STAGING_ONLY"
+    },
+    "databaseIdentifier": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9._:/-]*staging[A-Za-z0-9._:/-]*$"
+    },
+    "objectStorageClass": {
+      "const": "STAGING_ONLY"
+    },
+    "objectStorageIdentifier": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9._:/-]*staging[A-Za-z0-9._:/-]*$"
+    },
+    "objectStoragePrefix": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9._/-]*staging[A-Za-z0-9._/-]*$"
+    },
+    "productionDataAllowed": {
+      "const": false
+    },
+    "apiWebWorkersSeparated": {
+      "const": true
+    },
+    "featureFlags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CANOPY_PRODUCTION_UNLOCK",
+        "DROPIN_ALLOW_ADMIN_PROXY",
+        "productionMobileSync",
+        "realSatelliteWrites",
+        "automaticCanopyDistribution",
+        "mainnetFunds",
+        "planetaryLab",
+        "certifiedCarbonCreditClaims",
+        "carbonTaxOffsetClaims",
+        "guaranteedRwaYieldClaims"
+      ],
+      "properties": {
+        "CANOPY_PRODUCTION_UNLOCK": {
+          "const": false
+        },
+        "DROPIN_ALLOW_ADMIN_PROXY": {
+          "const": false
+        },
+        "productionMobileSync": {
+          "const": false
+        },
+        "realSatelliteWrites": {
+          "const": false
+        },
+        "automaticCanopyDistribution": {
+          "const": false
+        },
+        "mainnetFunds": {
+          "const": false
+        },
+        "planetaryLab": {
+          "const": false
+        },
+        "certifiedCarbonCreditClaims": {
+          "const": false
+        },
+        "carbonTaxOffsetClaims": {
+          "const": false
+        },
+        "guaranteedRwaYieldClaims": {
+          "const": false
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "payloadSha256",
+        "signature"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "HMAC-SHA256"
+        },
+        "payloadSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

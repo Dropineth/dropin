@@ -1,0 +1,26 @@
+{
+  "releaseType": "industrial-staging",
+  "deployTargetSha": "a2d48748e49ffb44e9f0b0f45099a30804d7cdd8",
+  "evidenceSha": "baf1695239c439a17398c4406b3362e073fbd7a5",
+  "r2ManifestSha256": "f4925d27f4eaa46550cb6aefce5354deab02c088595153d6767976a5feb09698",
+  "environment": "canopyproof-staging",
+  "webWorker": "canopyproof-web-staging",
+  "apiWorker": "canopyproof-api-staging",
+  "telemetryEnvironment": "canopyproof-staging",
+  "databaseClass": "STAGING_ONLY",
+  "objectStorageClass": "STAGING_ONLY",
+  "productionDataAllowed": false,
+  "apiWebWorkersSeparated": true,
+  "featureFlags": {
+    "CANOPY_PRODUCTION_UNLOCK": false,
+    "DROPIN_ALLOW_ADMIN_PROXY": false,
+    "productionMobileSync": false,
+    "realSatelliteWrites": false,
+    "automaticCanopyDistribution": false,
+    "mainnetFunds": false,
+    "planetaryLab": false,
+    "certifiedCarbonCreditClaims": false,
+    "carbonTaxOffsetClaims": false,
+    "guaranteedRwaYieldClaims": false
+  }
+}

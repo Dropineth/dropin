@@ -1,0 +1,437 @@
+name: CanopyProof Protected Staging Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_target_sha:
+        description: "Immutable 40-character product commit SHA."
+        required: true
+        type: string
+      evidence_sha:
+        description: "Immutable 40-character evidence commit SHA."
+        required: true
+        type: string
+      release_manifest_sha256:
+        description: "Lowercase SHA-256 of the reviewed R2 release manifest."
+        required: true
+        type: string
+      deploy_confirm:
+        description: "Must equal canopyproof-staging."
+        required: true
+        type: string
+
+concurrency:
+  group: canopyproof-staging-${{ inputs.deploy_target_sha }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-staging:
+    name: Verify and deploy immutable candidate
+    runs-on: ubuntu-latest
+    environment: canopyproof-staging
+    permissions:
+      contents: read
+      pull-requests: read
+    services:
+      postgres:
+        image: postgres:17.10
+        env:
+          POSTGRES_DB: canopyproof_staging_ci_test
+          POSTGRES_USER: canopyproof_staging_ci
+          POSTGRES_PASSWORD: canopyproof_staging_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U canopyproof_staging_ci -d canopyproof_staging_ci_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        shell: bash
+        working-directory: dropin-earth
+    env:
+      DEPLOY_TARGET_SHA: ${{ inputs.deploy_target_sha }}
+      EVIDENCE_SHA: ${{ inputs.evidence_sha }}
+      R2_RELEASE_MANIFEST_SHA256: ${{ inputs.release_manifest_sha256 }}
+      EXPECTED_WORKFLOW_REF: Dropineth/dropin/.github/workflows/deploy-canopyproof-staging.yml@refs/heads/main
+      REVIEWED_RC_REF: refs/remotes/origin/canopyproof/industrial-rc1
+      CANOPY_PRODUCTION_UNLOCK: "false"
+      DROPIN_ALLOW_ADMIN_PROXY: "false"
+      DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED: "false"
+      DROPIN_MAINNET_TRANSFERS_ENABLED: "false"
+      DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
+      NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS: "false"
+      PLANETARY_LAB: "false"
+
+    steps:
+      - name: Checkout trusted governance main
+        uses: actions/checkout@v4
+        with:
+          ref: refs/heads/main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup pinned Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.3
+
+      - name: Pin npm
+        run: |
+          set -euo pipefail
+          npm install --global npm@10.9.4
+          test "$(npm --version)" = "10.9.4"
+
+      - name: Assert trusted workflow ref and dispatch confirmation
+        run: |
+          set -euo pipefail
+          test "${{ inputs.deploy_confirm }}" = "canopyproof-staging"
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_WORKFLOW_REF" = "$EXPECTED_WORKFLOW_REF"
+
+          full_sha='^[0-9a-f]{40}$'
+          digest='^[0-9a-f]{64}$'
+          [[ "$DEPLOY_TARGET_SHA" =~ $full_sha ]]
+          [[ "$EVIDENCE_SHA" =~ $full_sha ]]
+          [[ "$R2_RELEASE_MANIFEST_SHA256" =~ $digest ]]
+          test "$DEPLOY_TARGET_SHA" != "$EVIDENCE_SHA"
+
+      - name: Preserve trusted verifier and contracts
+        run: |
+          set -euo pipefail
+          cp scripts/canopyproof-staging-release-verifier.mjs \
+            "$RUNNER_TEMP/canopyproof-staging-release-verifier.mjs"
+          cp config/canopyproof-staging-release-binding.json \
+            "$RUNNER_TEMP/canopyproof-staging-release-binding.json"
+          cp config/canopyproof-staging-resource-manifest.schema.json \
+            "$RUNNER_TEMP/canopyproof-staging-resource-manifest.schema.json"
+
+      - name: Fetch reviewed evidence and immutable target
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            refs/heads/canopyproof/industrial-rc1:refs/remotes/origin/canopyproof/industrial-rc1
+          git cat-file -e "${DEPLOY_TARGET_SHA}^{commit}"
+          git cat-file -e "${EVIDENCE_SHA}^{commit}"
+          git show \
+            "${EVIDENCE_SHA}:dropin-earth/docs/CANOPYPROOF_R2_FINAL_RELEASE_CANDIDATE.md" \
+            > "$RUNNER_TEMP/CANOPYPROOF_R2_FINAL_RELEASE_CANDIDATE.md"
+
+      - name: Fetch exact Product PR review evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from "node:fs";
+
+          const headers = {
+            Accept: "application/vnd.github+json",
+            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+            "X-GitHub-Api-Version": "2022-11-28",
+          };
+          const apiBase = "https://api.github.com/repos/Dropineth/dropin";
+          const [pullResponse, reviewsResponse] = await Promise.all([
+            fetch(`${apiBase}/pulls/2`, { headers }),
+            fetch(`${apiBase}/pulls/2/reviews?per_page=100`, { headers }),
+          ]);
+          if (!pullResponse.ok || !reviewsResponse.ok) {
+            throw new Error("Unable to load Product PR review evidence");
+          }
+          const pullRequest = await pullResponse.json();
+          const reviews = await reviewsResponse.json();
+          const evidence = {
+            pullRequest: {
+              number: pullRequest.number,
+              author: pullRequest.user?.login,
+              baseRef: pullRequest.base?.ref,
+              headRef: pullRequest.head?.ref,
+              headSha: pullRequest.head?.sha,
+              draft: pullRequest.draft,
+            },
+            reviews: reviews.map((review) => ({
+              reviewer: review.user?.login,
+              reviewerType: review.user?.type,
+              authorAssociation: review.author_association,
+              state: review.state,
+              commitId: review.commit_id,
+              submittedAt: review.submitted_at,
+            })),
+          };
+          writeFileSync(
+            `${process.env.RUNNER_TEMP}/canopyproof-product-pr-reviews.json`,
+            `${JSON.stringify(evidence, null, 2)}\n`,
+            { mode: 0o600 },
+          );
+          NODE
+
+      - name: Verify evidence, release binding, and staging resources
+        env:
+          CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON: ${{ secrets.CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON }}
+          CANOPYPROOF_STAGING_RESOURCE_MANIFEST_HMAC_KEY_B64: ${{ secrets.CANOPYPROOF_STAGING_RESOURCE_MANIFEST_HMAC_KEY_B64 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "${CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON:-}"
+          test -n "${CANOPYPROOF_STAGING_RESOURCE_MANIFEST_HMAC_KEY_B64:-}"
+          printf '%s' "$CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON" \
+            > "$RUNNER_TEMP/canopyproof-staging-resource-manifest.json"
+
+          node "$RUNNER_TEMP/canopyproof-staging-release-verifier.mjs" \
+            --binding "$RUNNER_TEMP/canopyproof-staging-release-binding.json" \
+            --schema "$RUNNER_TEMP/canopyproof-staging-resource-manifest.schema.json" \
+            --resource-manifest "$RUNNER_TEMP/canopyproof-staging-resource-manifest.json" \
+            --evidence-report "$RUNNER_TEMP/CANOPYPROOF_R2_FINAL_RELEASE_CANDIDATE.md" \
+            --reviews "$RUNNER_TEMP/canopyproof-product-pr-reviews.json" \
+            --deploy-target-sha "$DEPLOY_TARGET_SHA" \
+            --evidence-sha "$EVIDENCE_SHA" \
+            --release-manifest-sha256 "$R2_RELEASE_MANIFEST_SHA256" \
+            --workflow-ref "$GITHUB_WORKFLOW_REF" \
+            --reviewed-rc-ref "$REVIEWED_RC_REF" \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/canopyproof-staging-verification.json"
+
+      - name: Checkout exact deploy target
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_TARGET_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify checked out target identity
+        run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          test "$actual_sha" = "$DEPLOY_TARGET_SHA"
+          test "$actual_sha" != "$EVIDENCE_SHA"
+          test "$(jq -r '.status' "$RUNNER_TEMP/canopyproof-staging-verification.json")" = "VERIFIED"
+          test "$(jq -r '.deployTargetSha' "$RUNNER_TEMP/canopyproof-staging-verification.json")" = "$actual_sha"
+
+      - name: Install locked dependencies
+        run: npm ci --include=optional
+
+      - name: Verify supply-chain and secret boundaries
+        run: npm run gate:supply-chain
+
+      - name: Run deterministic release gate
+        run: npm run ci
+
+      - name: Verify native PostgreSQL authority
+        run: |
+          set -euo pipefail
+          connection_url="postgresql://canopyproof_staging_ci:canopyproof_staging_ci@127.0.0.1:5432/canopyproof_staging_ci_test?schema=public"
+          DATABASE_URL="$connection_url" \
+          CANOPYPROOF_NATIVE_DATABASE_URL="$connection_url" \
+            npm run db:verify:canopyproof:native
+
+      - name: Enforce release coverage gates
+        run: |
+          set -euo pipefail
+          npm run test:coverage:ratchet
+          npm run ci:critical
+
+      - name: Install browser validation matrix
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Verify cross-browser WebGL fallback
+        run: npm run test:webgl:browser
+
+      - name: Build separate staging API Worker
+        run: npm --workspace packages/dropin-cloudflare run build
+
+      - name: Resolve route-free workers.dev origins
+        id: origins
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          test -n "${CLOUDFLARE_API_TOKEN:-}"
+          test -n "${CLOUDFLARE_ACCOUNT_ID:-}"
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from "node:fs";
+
+          const response = await fetch(
+            `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/workers/subdomain`,
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+              },
+            },
+          );
+          const payload = await response.json();
+          const subdomain = payload?.result?.subdomain;
+          if (
+            !response.ok ||
+            payload?.success !== true ||
+            typeof subdomain !== "string" ||
+            !/^[a-z0-9-]+$/u.test(subdomain)
+          ) {
+            throw new Error("Unable to resolve the Cloudflare workers.dev subdomain");
+          }
+          appendFileSync(
+            process.env.GITHUB_OUTPUT,
+            [
+              `web_url=https://canopyproof-web-staging.${subdomain}.workers.dev`,
+              `api_url=https://canopyproof-api-staging.${subdomain}.workers.dev`,
+              `web_host=canopyproof-web-staging.${subdomain}.workers.dev`,
+              `api_host=canopyproof-api-staging.${subdomain}.workers.dev`,
+              "",
+            ].join("\n"),
+          );
+          NODE
+
+      - name: Build separate staging Web Worker
+        env:
+          NEXT_PUBLIC_DROPIN_API_URL: ${{ steps.origins.outputs.api_url }}/api
+          NEXT_PUBLIC_DROPIN_SITE_URL: ${{ steps.origins.outputs.web_url }}
+          NEXT_PUBLIC_CANOPYPROOF_MODE: staging
+        run: npm --workspace apps/web run cf:build
+
+      - name: Verify OpenNext staging artifact
+        run: |
+          set -euo pipefail
+          test -f apps/web/.open-next/worker.js
+          test -d apps/web/.open-next/assets
+          test -f apps/web/.open-next/assets/index.html
+          test -f apps/web/.open-next/assets/index.rsc
+
+      - name: Run local workerd route smoke
+        run: npm run test:workerd
+
+      - name: Deploy separate staging API proxy Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          set +x
+          api_origin="$(
+            jq -er '.apiOrigin' \
+              "$RUNNER_TEMP/canopyproof-staging-resource-manifest.json"
+          )"
+          npm exec -- wrangler deploy \
+            --config infra/cloudflare/canopyproof-api-proxy.staging.wrangler.jsonc \
+            --strict \
+            --message "CanopyProof staging API ${DEPLOY_TARGET_SHA}" \
+            --var "DROPIN_API_ORIGIN:${api_origin}" \
+            --var "DROPIN_ALLOWED_ORIGINS:${{ steps.origins.outputs.web_url }}" \
+            --var "DROPIN_ALLOW_ADMIN_PROXY:false" \
+            --var "DROPIN_CANONICAL_HOST:${{ steps.origins.outputs.api_host }}" \
+            --var "DROPIN_CANOPYPROOF_MODE:testnet" \
+            --var "CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED:false" \
+            --var "CANOPYPROOF_EDGE_OTEL_SAMPLE_RATIO:0"
+
+      - name: Deploy separate route-free staging Web Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npm exec -- wrangler deploy \
+            --config apps/web/wrangler.staging.jsonc \
+            --strict \
+            --message "CanopyProof staging web ${DEPLOY_TARGET_SHA}" \
+            --var "NEXT_PUBLIC_DROPIN_API_URL:${{ steps.origins.outputs.api_url }}/api" \
+            --var "NEXT_PUBLIC_DROPIN_SITE_URL:${{ steps.origins.outputs.web_url }}" \
+            --var "NEXT_PUBLIC_CANOPYPROOF_MODE:staging" \
+            --var "CANOPY_PRODUCTION_UNLOCK:false" \
+            --var "CANOPYPROOF_LEGACY_EVIDENCE_NETWORK_ENABLED:false" \
+            --var "CANOPYPROOF_NASA_GIBS_ENABLED:false" \
+            --var "DROPIN_ALLOW_ADMIN_PROXY:false" \
+            --var "DROPIN_AUTOMATIC_CANOPY_DISTRIBUTION_ENABLED:false" \
+            --var "DROPIN_MAINNET_TRANSFERS_ENABLED:false" \
+            --var "DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED:false" \
+            --var "NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS:false" \
+            --var "PLANETARY_LAB:false"
+
+      - name: Run staging route and safety smoke
+        id: staging_smoke
+        env:
+          CANOPYPROOF_STAGING_WEB_URL: ${{ steps.origins.outputs.web_url }}
+          CANOPYPROOF_STAGING_API_URL: ${{ steps.origins.outputs.api_url }}
+          CANOPYPROOF_WORKFLOW_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REQUESTED_TARGET_SHA: ${{ env.DEPLOY_TARGET_SHA }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          cp "$RUNNER_TEMP/canopyproof-staging-verification.json" \
+            reports/canopyproof-staging-verification.json
+          node scripts/canopyproof-staging-smoke.mjs
+
+      - name: Emit immutable staging deployment attestation
+        if: success()
+        env:
+          STAGING_WEB_URL: ${{ steps.origins.outputs.web_url }}
+          STAGING_API_URL: ${{ steps.origins.outputs.api_url }}
+          WORKFLOW_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from "node:fs";
+
+          const verification = JSON.parse(
+            readFileSync(
+              "reports/canopyproof-staging-verification.json",
+              "utf8",
+            ),
+          );
+          const attestation = {
+            schemaVersion: 1,
+            status: "STAGING_SMOKE_PASS",
+            deployTargetSha: process.env.DEPLOY_TARGET_SHA,
+            evidenceSha: process.env.EVIDENCE_SHA,
+            r2ManifestSha256: process.env.R2_RELEASE_MANIFEST_SHA256,
+            workflowRunUrl: process.env.WORKFLOW_RUN_URL,
+            environment: "canopyproof-staging",
+            webWorker: "canopyproof-web-staging",
+            apiWorker: "canopyproof-api-staging",
+            webUrl: process.env.STAGING_WEB_URL,
+            apiUrl: process.env.STAGING_API_URL,
+            resourceManifestPayloadSha256:
+              verification.resourceManifestPayloadSha256,
+            telemetryEnvironment: verification.telemetryEnvironment,
+            productionDataAllowed: false,
+            apiWebWorkersSeparated: true,
+            productionRoutesModified: false,
+            safetyBoundaries: {
+              CANOPY_PRODUCTION_UNLOCK: false,
+              DROPIN_ALLOW_ADMIN_PROXY: false,
+              automaticCanopyDistribution: false,
+              mainnetFunds: false,
+              certifiedCarbonCreditClaims: false,
+              carbonTaxOffsetClaims: false,
+              guaranteedRwaYieldClaims: false,
+            },
+            createdAt: new Date().toISOString(),
+          };
+          writeFileSync(
+            "reports/canopyproof-staging-deployment-attestation.json",
+            `${JSON.stringify(attestation, null, 2)}\n`,
+          );
+          NODE
+
+      - name: Preserve staging evidence
+        if: always() && steps.staging_smoke.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: canopyproof-staging-${{ github.run_id }}
+          path: |
+            dropin-earth/reports/canopyproof-staging-deployment-attestation.json
+            dropin-earth/reports/canopyproof-staging-deployment.json
+            dropin-earth/reports/canopyproof-staging-verification.json
+            dropin-earth/reports/canopyproof-staging-smoke.json
+            dropin-earth/reports/canopyproof-staging-smoke.md
+            dropin-earth/reports/canopyproof-repository-coverage.json
+            dropin-earth/reports/canopyproof-repository-coverage.md
+            dropin-earth/reports/canopyproof-critical-coverage.json
+            dropin-earth/reports/canopyproof-critical-coverage.md
+            dropin-earth/reports/canopyproof-cross-browser-webgl.json
+            dropin-earth/reports/canopyproof-cross-browser-webgl.md
+            dropin-earth/reports/canopyproof-workerd-smoke.json
+            dropin-earth/reports/ci/canopyproof-supply-chain-gate.json
+            dropin-earth/reports/ci/canopyproof-sbom.cdx.json
+          if-no-files-found: warn
+          retention-days: 30
