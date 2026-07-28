@@ -571,7 +571,14 @@ test("control-plane documentation requires main, independent review, and admin-o
     checklist,
     /`CANOPYPROOF_STAGING_RESOURCE_MANIFEST_HMAC_KEY_B64`/u,
   );
-  assert.doesNotMatch(checklist, /Deployment branch policy.*industrial-rc1/u);
+  assert.match(
+    checklist,
+    /MISCONFIGURED: custom policy currently allows `canopyproof\/industrial-rc1`/u,
+  );
+  assert.match(
+    checklist,
+    /Replace the current `canopyproof\/industrial-rc1` deployment branch policy with\s+an exact `main` policy before dispatch/u,
+  );
 
   assert.match(reconciliation, /Workers Builds: canopyproof-web/u);
   assert.match(reconciliation, /Workers Builds: dropin/u);

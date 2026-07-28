@@ -2,24 +2,27 @@
 
 Status: ADMIN_CONFIGURATION_REQUIRED
 
-This checklist is for a repository and Cloudflare administrator. No item in
-this file is evidence that the Environment or resources already exist.
+This checklist is for a repository and Cloudflare administrator. A read-only
+GitHub API inspection on 2026-07-29 confirmed that the Environment exists, but
+it is not ready for dispatch. This file does not prove that any Cloudflare
+resource exists.
 
 ## Protected Environment
 
 | Setting | Required value | Current state |
 | --- | --- | --- |
-| Environment name | `canopyproof-staging` | ABSENT |
-| Deployment branch policy | selected branch `main` only | ABSENT |
-| Required reviewers | `xiruier` and `Dropineth` | ABSENT |
-| Reviewer count | two independent reviewers | ABSENT |
-| Prevent self-review | enabled | ABSENT |
+| Environment name | `canopyproof-staging` | PRESENT |
+| Deployment branch policy | selected branch `main` only | MISCONFIGURED: custom policy currently allows `canopyproof/industrial-rc1` |
+| Required reviewers | `xiruier` and `Dropineth` | PRESENT |
+| Reviewer count | two independent reviewers | PRESENT |
+| Prevent self-review | enabled | ENABLED |
 | Administrator bypass | disabled for normal promotion | UNVERIFIED |
 
 The workflow must first be independently reviewed and merged to `main`.
-Configure the Environment only for the main-owned workflow. Do not authorize
-Product PR #2, `canopyproof/industrial-rc1`, a tag, or a fork as an allowed
-deployment ref.
+Replace the current `canopyproof/industrial-rc1` deployment branch policy with
+an exact `main` policy before dispatch. Configure the Environment only for the
+main-owned workflow. Do not authorize Product PR #2,
+`canopyproof/industrial-rc1`, a tag, or a fork as an allowed deployment ref.
 
 ## Reviewer Eligibility
 
@@ -47,9 +50,10 @@ self-review prevention.
 
 ## Environment Secrets
 
-All are currently absent because `canopyproof-staging` does not exist. Record
-presence only; never paste values into issues, PRs, logs, artifacts, or this
-file.
+The Environment exists, but a name-only inspection confirmed that all four
+required secrets are absent. Record presence only; never paste values into
+issues, PRs, logs, artifacts, or this file. No Environment variables are
+present or required.
 
 | Name | Secret or variable | Format | Purpose | Required | Present or absent |
 | --- | --- | --- | --- | --- | --- |
