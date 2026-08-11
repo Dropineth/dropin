@@ -1,0 +1,13 @@
+name: "@canopyproof/review"
+version: "0.1.0"
+description: "Non-authoritative CanopyProof visual review actions"
+fiftyone:
+  version: ">=1.18,<2"
+operators:
+  - load_review_queue
+  - inspect_candidate_provenance
+  - append_review_decision
+  - request_second_review
+  - create_field_verification_task
+  - open_challenge_draft
+  - register_hard_negative

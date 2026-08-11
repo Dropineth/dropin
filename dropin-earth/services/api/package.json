@@ -19,10 +19,14 @@
   "dependencies": {
     "@dropin/crypto": "file:../../packages/crypto",
     "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
+    "@dropin/satellite-ingestor": "file:../satellite-ingestor",
     "@dropin/schemas": "file:../../packages/schemas",
     "@hono/node-server": "^2.0.1",
     "@prisma/client": "^6.19.3",
-    "hono": "4.12.25",
+    "aws4fetch": "1.0.20",
+    "fast-xml-parser": "^5.7.3",
+    "hono": "4.13.1",
+    "jose": "6.2.3",
     "pino": "^10.1.0",
     "zod": "^4.4.3"
   },

@@ -23,6 +23,35 @@ test("CanopyProof homepage exposes the required public narrative", () => {
   assert.match(source, /demo data/i);
 });
 
+test("CanopyProof Explorer uses the canonical route without sample record fallbacks", () => {
+  const landing = read("apps/web/src/components/canopyproof/CanopyProofLanding.tsx");
+  const explorer = read("apps/web/src/components/canopyproof/PublicExplorer.tsx");
+  const explorerPage = read("apps/web/src/app/explorer/page.tsx");
+  const projectPage = read("apps/web/src/app/explorer/project/[publicProjectId]/page.tsx");
+  const openNextConfig = read("apps/web/open-next.config.ts");
+  const content = read("apps/web/src/data/siteContent.ts");
+
+  assert.match(explorer, /^"use client";/);
+  assert.match(explorer, /canopyProofPublicExplorerProjectResponseSchema\.safeParse/);
+  assert.match(explorer, /fetch\(`\/api\/canopyproof\/explorer\/projects\//);
+  assert.match(explorer, /cache: "no-store"/);
+  assert.match(explorer, /There is no browse-all endpoint/);
+  assert.match(explorer, /not a certified carbon credit/);
+  assert.doesNotMatch(explorerPage, /export const runtime = ["']edge["']/);
+  assert.doesNotMatch(projectPage, /export const runtime = ["']edge["']/);
+  assert.match(openNextConfig, /defineCloudflareConfig/);
+  assert.doesNotMatch(openNextConfig, /functions\s*:/);
+  assert.doesNotMatch(openNextConfig, /cloudflare-edge/);
+  assert.match(landing, /The Explorer never substitutes demo records/);
+  assert.match(landing, /href="\/explorer"/);
+
+  const explorerPresentation = `${landing}\n${content}`;
+  assert.doesNotMatch(explorerPresentation, /explorerMetrics/);
+  assert.doesNotMatch(explorerPresentation, /proofRecords/);
+  assert.doesNotMatch(explorerPresentation, /Sample global ecological restoration map/);
+  assert.doesNotMatch(explorerPresentation, /Community report submitted · 12 min ago/);
+});
+
 test("CanopyProof public site avoids crypto trading language", () => {
   const publicFiles = [
     "apps/web/src/components/canopyproof/CanopyProofLanding.tsx",
@@ -43,11 +72,13 @@ test("CanopyProof public site avoids crypto trading language", () => {
 
 test("CanopyProof SEO and crawler files are configured for canopyproof.org", () => {
   const layout = read("apps/web/src/app/layout.tsx");
+  const robots = read("apps/web/src/app/robots.ts");
   const sitemap = read("apps/web/src/app/sitemap.ts");
   const publicSitemap = read("apps/web/public/sitemap.xml");
 
   assert.match(layout, /CanopyProof — Environmental Accountability for Ecological Restoration/);
   assert.match(layout, /canonical: "https:\/\/canopyproof\.org"/);
+  assert.match(robots, /https:\/\/canopyproof\.org\/sitemap\.xml/);
   assert.match(sitemap, /https:\/\/canopyproof\.org/);
   assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/<\/loc>/);
   assert.match(publicSitemap, /<loc>https:\/\/canopyproof\.org\/status<\/loc>/);
@@ -70,12 +101,16 @@ test("CanopyProof visual system includes reduced motion support and locked produ
 });
 
 test("Cloudflare deployment docs and workflow preserve the existing OpenNext path", () => {
-  const docs = read("docs/deployment-cloudflare-canopyproof.md");
+  const platformDocs = read("docs/deploy-cloudflare.md");
+  const productionDocs = read("docs/deployment-cloudflare-canopyproof.md");
   const workflow = read(".github/workflows/deploy-cloudflare-worker.yml");
 
-  assert.match(docs, /npm run deploy:web:cloudflare/);
-  assert.match(docs, /Do not treat `\.next` as a static Pages output directory/);
-  assert.match(docs, /OpenNext deployment path/);
+  assert.match(platformDocs, /npm run deploy:web:cloudflare/);
+  assert.match(platformDocs, /npm --workspace apps\/web run cf:build/);
+  assert.match(platformDocs, /Do not deploy `\.next` directly/);
+  assert.match(productionDocs, /npm run deploy:web:cloudflare/);
+  assert.match(productionDocs, /Do not treat `\.next` as a static Pages output directory/);
+  assert.match(productionDocs, /OpenNext deployment path/);
   assert.match(workflow, /CanopyProof OpenNext Worker Deploy/);
   assert.match(workflow, /npm --workspace apps\/web run cf:build/);
   assert.match(workflow, /npm --workspace apps\/web run cf:deploy/);

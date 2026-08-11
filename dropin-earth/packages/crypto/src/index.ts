@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 export type HashAlgorithm = "sha256" | "sha3_256";
 
 export function hashHex(input: string | Buffer, algorithm: HashAlgorithm = "sha256") {
-  return createHash(algorithm).update(input).digest("hex");
+  return createHash(algorithm === "sha3_256" ? "sha3-256" : algorithm).update(input).digest("hex");
 }
 
 export function hashJson(value: unknown, algorithm: HashAlgorithm = "sha256") {

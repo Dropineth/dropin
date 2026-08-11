@@ -3,20 +3,6 @@ export type WorkflowStep = {
   description: string;
 };
 
-export type ExplorerMetric = {
-  label: string;
-  value: string;
-  context: string;
-};
-
-export type ProofRecord = {
-  id: string;
-  project: string;
-  location: string;
-  status: "Verified" | "In review" | "Monitoring";
-  proof: string;
-};
-
 export type RiskIndicator = {
   label: string;
   value: string;
@@ -191,39 +177,6 @@ export const verificationOutputs = [
   "Proof reference",
   "Audit-ready evidence pack",
 ] as const;
-
-export const explorerMetrics: ExplorerMetric[] = [
-  { label: "Active projects", value: "38", context: "sample interface" },
-  { label: "Hectares restored", value: "12,480", context: "demo data" },
-  { label: "Trees restored", value: "1.8M", context: "demo data" },
-  { label: "Communities engaged", value: "126", context: "sample interface" },
-  { label: "Water systems improved", value: "42", context: "demo data" },
-  { label: "Verified records", value: "4,812", context: "demo data" },
-];
-
-export const proofRecords: ProofRecord[] = [
-  {
-    id: "CPR-2026-0018",
-    project: "Watershed restoration",
-    location: "Semi-arid community corridor",
-    status: "Verified",
-    proof: "root:8fe4...42a1",
-  },
-  {
-    id: "CPR-2026-0024",
-    project: "Community nursery planting",
-    location: "Upland school network",
-    status: "Monitoring",
-    proof: "root:41ab...9d77",
-  },
-  {
-    id: "CPR-2026-0031",
-    project: "Biodiversity observation",
-    location: "Riparian restoration zone",
-    status: "In review",
-    proof: "root:d903...75be",
-  },
-];
 
 // Sample certificate. Intentionally NOT bound to a real, named place: a fixed
 // certificate ID + "verified on" date attached to a real ecosystem would assert

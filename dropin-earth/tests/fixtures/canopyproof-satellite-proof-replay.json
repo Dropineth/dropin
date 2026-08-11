@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "canopyproof-satellite-proof-fixture/v1",
+  "baseline": {
+    "gridId": "grid_sahel_0001",
+    "timestamp": "2026-07-01T00:00:00.000Z",
+    "source": "sentinel-2",
+    "canopyCoverPct": 42.5,
+    "ndvi": 0.58,
+    "sarBackscatterDb": null
+  },
+  "observation": {
+    "gridId": "grid_sahel_0001",
+    "timestamp": "2026-07-08T00:00:00.000Z",
+    "source": "planet",
+    "eventType": "growth",
+    "canopyCoverPct": 44.1,
+    "ndvi": 0.63,
+    "sarBackscatterDb": null,
+    "treeSurvivalRate": 92,
+    "waterStressIndex": 0.18,
+    "anomalyConfidence": 0.21,
+    "anomalyThreshold": 0.8
+  },
+  "audit": {
+    "gridId": "grid_sahel_0001",
+    "timestamp": "2026-07-10T00:00:00.000Z",
+    "source": "field_validator",
+    "auditorId": "auditor_fixture_001",
+    "verifiedCanopyCoverPct": 43.9,
+    "verifiedTreeSurvivalRate": 91.5,
+    "verifiedTco2eDelta": 12.5,
+    "auditorSignature": "mock-ed25519-signature-fixture-00000000000000000000000000000001"
+  },
+  "certificate": {
+    "certificateId": "certificate_satellite_fixture_001",
+    "timestamp": "2026-07-11T00:00:00.000Z",
+    "verifiedTco2e": 10,
+    "methodologyVersion": "canopyproof-satellite-mrv-v1"
+  },
+  "unlock": {
+    "unlockId": "unlock_satellite_fixture_001",
+    "timestamp": "2026-07-12T00:00:00.000Z",
+    "token": "CANOPY",
+    "amount": "100"
+  },
+  "expectedRoots": {
+    "stateRoot": "d81c93d5454aee785c124f1e8a2d9d838c87155d723503d7936127c71a10e5b0",
+    "certificateRoot": "395dac8d63a30158f044a74d56e765f584f5033ed5e4a802555b184aa1e8d11f",
+    "unlockRoot": "0848a15d7836529c716c1407d5f103658106959d96f9ddfc556633017a5db28a",
+    "challengeRoot": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  }
+}

@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: canopyproof-postgres-backup
+  namespace: canopyproof
+spec:
+  schedule: "17 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          automountServiceAccountToken: false
+          containers:
+            - name: pgdump
+              image: postgres:17-alpine
+              command: ["/bin/sh", "-lc"]
+              args:
+                - >
+                  test -n "$DATABASE_URL" &&
+                  test -n "$CANOPYPROOF_BACKUP_TARGET" &&
+                  pg_dump "$DATABASE_URL" --format=custom --no-owner --no-privileges
+                  > "/tmp/canopyproof-$(date -u +%Y%m%dT%H%M%SZ).dump" &&
+                  echo "backup_written_for_external_shipper"
+              envFrom:
+                - secretRef:
+                    name: canopyproof-api-secrets
+              env:
+                - name: CANOPYPROOF_BACKUP_TARGET
+                  value: "object-storage://canopyproof-postgres-backups"
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop: ["ALL"]
+          volumes:
+            - name: tmp
+              emptyDir: {}

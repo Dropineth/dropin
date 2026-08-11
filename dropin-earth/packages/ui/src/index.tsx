@@ -604,75 +604,6 @@ export function AdminReadinessPanel({
   );
 }
 
-export type GlobalRegion = {
-  id: string;
-  name: string;
-  country: string;
-  restorationType: string;
-  restorationPriority: "low" | "medium" | "high" | "critical";
-  requiredTreesLow: number;
-  requiredTreesHigh: number;
-  verifiedTrees: number;
-  estimatedCo2eTonnes: number;
-  survivalRateEstimate: number;
-};
-
-export function GlobalRegionMap({
-  regions,
-  selectedRegionId,
-  basePath = "/campaigns",
-}: {
-  regions: readonly GlobalRegion[];
-  selectedRegionId?: string;
-  basePath?: string;
-}) {
-  const priorityTone: Record<GlobalRegion["restorationPriority"], string> = {
-    low: "border-sky-300/30 bg-sky-300/10",
-    medium: "border-emerald-300/30 bg-emerald-300/10",
-    high: "border-amber-300/35 bg-amber-300/10",
-    critical: "border-red-300/35 bg-red-400/10",
-  };
-
-  return (
-    <Card tone="dark" className="overflow-hidden border-cyan-300/20">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">Global restoration map</p>
-          <h2 className="mt-2 text-2xl font-semibold">Regional proof surface</h2>
-        </div>
-        <StatusBadge status="ready">{regions.length.toLocaleString()} regions</StatusBadge>
-      </div>
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
-        {regions.map((region) => {
-          const isSelected = region.id === selectedRegionId;
-          return (
-            <a
-              className={`rounded-[18px] border p-4 transition hover:bg-white/[0.07] ${priorityTone[region.restorationPriority]} ${
-                isSelected ? "ring-2 ring-cyan-200/70" : ""
-              }`}
-              href={`${basePath}?region=${encodeURIComponent(region.id)}`}
-              key={region.id}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-semibold text-white">{region.name}</div>
-                  <div className="mt-1 text-sm text-slate-300">{region.country}</div>
-                </div>
-                <StatusBadge status={region.restorationPriority}>{region.restorationPriority}</StatusBadge>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <Metric label="Verified" value={region.verifiedTrees.toLocaleString()} detail="trees" />
-                <Metric label="CO2e" value={region.estimatedCo2eTonnes.toLocaleString()} detail="estimated tonnes" />
-                <Metric label="Survival" value={`${Math.round(region.survivalRateEstimate * 100)}%`} detail={region.restorationType} />
-              </div>
-            </a>
-          );
-        })}
-      </div>
-    </Card>
-  );
-}
-
 export function Leaderboard({
   title = "Global / Regional Leaderboard",
   entries,
@@ -740,6 +671,7 @@ export function LeafPointsDashboard({
   rank,
   activities = [],
   poccEvents = [],
+  compact = false,
   title = "Leaf Points Dashboard",
 }: {
   userId?: string;
@@ -748,32 +680,39 @@ export function LeafPointsDashboard({
   rank?: number;
   activities?: readonly LeafPointsActivity[];
   poccEvents?: readonly PoccAhinActivity[];
+  compact?: boolean;
   title?: string;
 }) {
+  const shownActivities = activities.slice(0, compact ? 3 : 5);
+  const shownEvents = poccEvents.slice(0, compact ? 2 : 4);
+
   return (
-    <Card tone="dark" className="border-amber-200/20">
+    <Card className="border-amber-200/20" tone="dark">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-100">Leaf Points / RWA</p>
-          <h2 className="mt-2 text-xl font-semibold">{title}</h2>
+          <h2 className={`${compact ? "mt-1 text-lg" : "mt-2 text-xl"} font-semibold`}>{title}</h2>
           {userId ? <p className="mt-1 break-all text-sm text-slate-400">{userId}</p> : null}
         </div>
         <StatusBadge status="testnet">Non-transferable</StatusBadge>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+      <div className={`mt-5 grid gap-3 ${compact ? "" : "sm:grid-cols-3"}`}>
         <Metric label="Leaf Points" value={leafPoints.toLocaleString()} detail="Growth and learning points" />
         <Metric label="RWA Records" value={rwaTokens.toLocaleString()} detail="Allocation records only" />
         <Metric label="Rank" value={rank ? `#${rank}` : "Pending"} detail="Campaign leaderboard" />
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+      <div className={`mt-5 grid gap-4 ${compact ? "" : "lg:grid-cols-2"}`}>
         <div className="rounded-[18px] border border-white/10 bg-[#05070A] p-4">
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Recent activity</div>
           <div className="mt-3 grid gap-2">
-            {activities.length ? (
-              activities.slice(0, 5).map((activity) => (
-                <div className="flex items-start justify-between gap-3 text-sm" key={`${activity.label}:${activity.amount}:${activity.createdAt ?? ""}`}>
+            {shownActivities.length ? (
+              shownActivities.map((activity) => (
+                <div
+                  className="flex items-start justify-between gap-3 text-sm"
+                  key={`${activity.label}:${activity.amount}:${activity.createdAt ?? ""}`}
+                >
                   <div>
                     <div className="font-semibold text-white">{activity.label}</div>
                     {activity.source ? <div className="mt-1 text-xs text-slate-400">{activity.source}</div> : null}
@@ -795,9 +734,12 @@ export function LeafPointsDashboard({
         <div className="rounded-[18px] border border-white/10 bg-[#05070A] p-4">
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">PoCC/AHIN events</div>
           <div className="mt-3 grid gap-2">
-            {poccEvents.length ? (
-              poccEvents.slice(0, 4).map((event) => (
-                <div className="grid grid-cols-[1fr_auto] items-start gap-3 text-sm" key={`${event.agentId}:${event.eventType}:${event.timestamp ?? ""}`}>
+            {shownEvents.length ? (
+              shownEvents.map((event) => (
+                <div
+                  className="grid grid-cols-[1fr_auto] items-start gap-3 text-sm"
+                  key={`${event.agentId}:${event.eventType}:${event.timestamp ?? ""}`}
+                >
                   <div>
                     <div className="font-semibold text-white">{event.eventType}</div>
                     <div className="mt-1 text-xs text-slate-400">{event.agentId}</div>
@@ -817,6 +759,67 @@ export function LeafPointsDashboard({
       <p className="mt-5 text-xs leading-5 text-slate-400">
         Leaf Points are non-transferable testnet engagement points. RWA records are not guaranteed yield and are not certified carbon credits.
       </p>
+    </Card>
+  );
+}
+export function GlobalRegionMap({
+  regions,
+  selectedRegionId,
+  basePath = "/campaigns/campaign_v1_ggw_testnet",
+}: {
+  regions: Array<{
+    id: string;
+    name: string;
+    country: string;
+    verifiedTrees: number;
+    estimatedCo2eTonnes: number;
+    survivalRateEstimate: number;
+    restorationPriority: string;
+  }>;
+  selectedRegionId?: string;
+  basePath?: string;
+}) {
+  return (
+    <Card className="overflow-hidden" tone="dark">
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <HeroEarthOrb compact label="Interactive 3D Earth orb for selecting CanopyProof planting regions" />
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">
+            Global Map / Area Selection
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">Select a verified planting region</h2>
+          <div className="mt-5 grid gap-3">
+            {regions.map((region) => (
+              <a
+                className={
+                  region.id === selectedRegionId
+                    ? "rounded-[18px] border border-emerald-300/60 bg-emerald-300/10 p-4 transition"
+                    : "rounded-[18px] border border-white/10 bg-[#05070A] p-4 transition hover:border-cyan-200/40"
+                }
+                href={`${basePath}?region=${encodeURIComponent(region.id)}`}
+                key={region.id}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <div className="font-semibold">{region.name}</div>
+                    <div className="mt-1 text-sm text-slate-400">{region.country}</div>
+                  </div>
+                  <StatusBadge status={region.restorationPriority}>{region.restorationPriority}</StatusBadge>
+                </div>
+                <div className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+                  <span className="text-slate-300">{region.verifiedTrees.toLocaleString()} trees</span>
+                  <span className="text-slate-300">
+                    {region.estimatedCo2eTonnes.toLocaleString()} tCO2e est.
+                  </span>
+                  <span className="text-slate-300">
+                    {Math.round(region.survivalRateEstimate * 100)}% survival
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
     </Card>
   );
 }

@@ -15,6 +15,13 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
     files: ["apps/web/**/*.{js,jsx,ts,tsx}"],
     plugins: {
       "@next/next": nextPlugin,

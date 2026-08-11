@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "generatedAt": "2026-08-11T11:33:26.875Z",
+  "measurement": {
+    "sourceScope": [
+      "apps/*/src/**/*.ts",
+      "apps/*/src/**/*.tsx",
+      "packages/*/src/**/*.ts",
+      "packages/*/src/**/*.tsx",
+      "services/*/src/**/*.ts",
+      "services/*/src/**/*.tsx"
+    ],
+    "allFirstPartySourceEnabled": true,
+    "testConcurrency": 1,
+    "unitPattern": "tests/unit/*.test.ts",
+    "integrationPatterns": [
+      "tests/integration/canopyproof-postgres-audit.integration.ts",
+      "tests/integration/*-pglite.integration.ts"
+    ]
+  },
+  "results": {
+    "statements": {
+      "before": 67.36,
+      "after": 83.83,
+      "delta": 16.47,
+      "threshold": 70,
+      "status": "PASS"
+    },
+    "branches": {
+      "before": 76.5,
+      "after": 76.81,
+      "delta": 0.31,
+      "threshold": 72.75,
+      "status": "PASS"
+    },
+    "functions": {
+      "before": 73.06,
+      "after": 85.51,
+      "delta": 12.45,
+      "threshold": 70,
+      "status": "PASS"
+    },
+    "lines": {
+      "before": 67.36,
+      "after": 83.83,
+      "delta": 16.47,
+      "threshold": 70,
+      "status": "PASS"
+    }
+  },
+  "testFilesAdded": [
+    "tests/unit/canopyproof-cross-browser-webgl-contract.test.ts",
+    "tests/unit/canopyproof-repository-coverage-gate.test.ts"
+  ],
+  "failedMetrics": []
+}

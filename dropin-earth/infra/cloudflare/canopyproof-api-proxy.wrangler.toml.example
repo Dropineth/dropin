@@ -17,6 +17,8 @@ DROPIN_CANOPYPROOF_MODE = "testnet"
 DROPIN_ALLOWED_ORIGINS = "https://canopyproof.org,https://www.canopyproof.org"
 DROPIN_ALLOW_ADMIN_PROXY = "false"
 DROPIN_API_ORIGIN = "https://replace-with-api-origin.example.com"
+CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED = "false"
+CANOPYPROOF_EDGE_OTEL_SAMPLE_RATIO = "0"
 
 [env.testnet.vars]
 DROPIN_CANONICAL_HOST = "canopyproof.org"
@@ -24,6 +26,8 @@ DROPIN_CANOPYPROOF_MODE = "testnet"
 DROPIN_ALLOWED_ORIGINS = "https://canopyproof.org,https://www.canopyproof.org"
 DROPIN_ALLOW_ADMIN_PROXY = "false"
 DROPIN_API_ORIGIN = "https://replace-with-testnet-api-origin.example.com"
+CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED = "false"
+CANOPYPROOF_EDGE_OTEL_SAMPLE_RATIO = "0"
 
 [env.production.vars]
 DROPIN_CANONICAL_HOST = "canopyproof.org"
@@ -31,3 +35,5 @@ DROPIN_CANOPYPROOF_MODE = "production"
 DROPIN_ALLOWED_ORIGINS = "https://canopyproof.org,https://www.canopyproof.org"
 DROPIN_ALLOW_ADMIN_PROXY = "false"
 DROPIN_API_ORIGIN = "https://replace-with-production-api-origin.example.com"
+CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED = "false"
+CANOPYPROOF_EDGE_OTEL_SAMPLE_RATIO = "0"

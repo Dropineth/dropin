@@ -1,0 +1,1945 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "generatedAt": "2026-08-11T11:35:32.326Z",
+  "thresholds": {
+    "statements": 95,
+    "branches": 95,
+    "functions": 95,
+    "lines": 95
+  },
+  "configHash": "fadcb158103e2a3a199e6ee76667737f535aa67afdbe0d2eb4457f704d3a52cd",
+  "sourceHash": "e3eed18c33fde3f0ddd3f087fce817f9eccea500182da887ed8a7fccff8714fd",
+  "testHash": "8e2deac9f9280594f89565e9b9b477401e3a82097e4a2f7c2293878ca9d7de3b",
+  "normalization": {
+    "schemaVersion": 1,
+    "policy": "Remove only uncovered V8 source-map entries proven to map to imports, non-executable closing braces, out-of-source locations, or duplicate function export bindings with a covered executable body.",
+    "removalCount": 65,
+    "removals": [
+      {
+        "file": "apps/web/src/lib/canopyproof-mobile-evidence-vault.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 8
+          }
+        }
+      },
+      {
+        "file": "packages/dropin-protocol/src/canopy-state-machine.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 27
+          }
+        }
+      },
+      {
+        "file": "packages/schemas/src/satellite-proof.schema.ts",
+        "metric": "functions",
+        "id": "11",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "packages/schemas/src/satellite-proof.schema.ts",
+        "metric": "functions",
+        "id": "12",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "packages/schemas/src/satellite-proof.schema.ts",
+        "metric": "functions",
+        "id": "14",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "packages/schemas/src/satellite-proof.schema.ts",
+        "metric": "functions",
+        "id": "15",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "packages/schemas/src/satellite-proof.schema.ts",
+        "metric": "functions",
+        "id": "16",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "packages/schemas/src/satellite-proof.schema.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/authorization-binding.ts",
+        "metric": "functions",
+        "id": "9",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 42
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/authorization-binding.ts",
+        "metric": "functions",
+        "id": "11",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 42
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/authorization-binding.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 42
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/aws-kms-managed-signature-verifier.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/challenge-cases.ts",
+        "metric": "functions",
+        "id": "7",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 37
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/challenge-cases.ts",
+        "metric": "functions",
+        "id": "10",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 37
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/challenge-cases.ts",
+        "metric": "functions",
+        "id": "11",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 37
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/challenge-cases.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 37
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "metric": "functions",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 34
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "metric": "functions",
+        "id": "6",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 34
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "metric": "functions",
+        "id": "8",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 34
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "metric": "functions",
+        "id": "12",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 34
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "metric": "functions",
+        "id": "13",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 34
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "metric": "functions",
+        "id": "15",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 34
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 34
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/environmental-proof-challenge-authority.ts",
+        "metric": "functions",
+        "id": "11",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 37
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/environmental-proof-challenge-authority.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 37
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/evidence-metadata-orchestration-authority.ts",
+        "metric": "functions",
+        "id": "7",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/evidence-metadata-orchestration-authority.ts",
+        "metric": "functions",
+        "id": "8",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/evidence-metadata-orchestration-authority.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/evidence-metadata-orchestrator.ts",
+        "metric": "branches",
+        "id": "0",
+        "reason": "non_executable_closing_brace",
+        "location": {
+          "start": {
+            "line": 131,
+            "column": 0
+          },
+          "end": {
+            "line": 131,
+            "column": 1
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/evidence-metadata-orchestrator.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/fixed-http-metadata-extractor-provider.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 18
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts",
+        "metric": "functions",
+        "id": "10",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts",
+        "metric": "functions",
+        "id": "12",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts",
+        "metric": "functions",
+        "id": "13",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts",
+        "metric": "functions",
+        "id": "14",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts",
+        "metric": "functions",
+        "id": "15",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/metadata-extractor-adapter.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+        "metric": "functions",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+        "metric": "functions",
+        "id": "6",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+        "metric": "functions",
+        "id": "8",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+        "metric": "functions",
+        "id": "11",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+        "metric": "functions",
+        "id": "12",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-authority.ts",
+        "metric": "functions",
+        "id": "8",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-authority.ts",
+        "metric": "functions",
+        "id": "9",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-authority.ts",
+        "metric": "functions",
+        "id": "10",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/mobile-evidence-sync-authority.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/security-policy.ts",
+        "metric": "functions",
+        "id": "6",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/security-policy.ts",
+        "metric": "functions",
+        "id": "7",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/security-policy.ts",
+        "metric": "functions",
+        "id": "8",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/security-policy.ts",
+        "metric": "functions",
+        "id": "9",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/security-policy.ts",
+        "metric": "functions",
+        "id": "11",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/api/src/domain/canopyproof/security-policy.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 25
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/audit-adapter.ts",
+        "metric": "branches",
+        "id": "0",
+        "reason": "non_executable_closing_brace",
+        "location": {
+          "start": {
+            "line": 15,
+            "column": 0
+          },
+          "end": {
+            "line": 15,
+            "column": 1
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/audit-adapter.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 8
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/landsat-adapter.ts",
+        "metric": "branches",
+        "id": "0",
+        "reason": "non_executable_closing_brace",
+        "location": {
+          "start": {
+            "line": 19,
+            "column": 0
+          },
+          "end": {
+            "line": 19,
+            "column": 1
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/landsat-adapter.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 8
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/planet-adapter.ts",
+        "metric": "branches",
+        "id": "0",
+        "reason": "non_executable_closing_brace",
+        "location": {
+          "start": {
+            "line": 19,
+            "column": 0
+          },
+          "end": {
+            "line": 19,
+            "column": 1
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/planet-adapter.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 8
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/sar-adapter.ts",
+        "metric": "branches",
+        "id": "0",
+        "reason": "non_executable_closing_brace",
+        "location": {
+          "start": {
+            "line": 19,
+            "column": 0
+          },
+          "end": {
+            "line": 19,
+            "column": 1
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/sar-adapter.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 8
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/sentinel-adapter.ts",
+        "metric": "branches",
+        "id": "0",
+        "reason": "non_executable_closing_brace",
+        "location": {
+          "start": {
+            "line": 19,
+            "column": 0
+          },
+          "end": {
+            "line": 19,
+            "column": 1
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/adapters/sentinel-adapter.ts",
+        "metric": "branches",
+        "id": "4",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 8
+          }
+        }
+      },
+      {
+        "file": "services/satellite-ingestor/src/root-builder.ts",
+        "metric": "branches",
+        "id": "5",
+        "reason": "import_declaration",
+        "location": {
+          "start": {
+            "line": 1,
+            "column": 0
+          },
+          "end": {
+            "line": 1,
+            "column": 8
+          }
+        }
+      }
+    ],
+    "normalizedCoverageHash": "4420a437f8cc7fc992df52f17a64ca03feb872c5876adbc39ac2e1246d400bb0"
+  },
+  "modules": [
+    {
+      "id": "satellite-state-machine",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 1183,
+          "total": 1184,
+          "percentage": 99.92
+        },
+        "branches": {
+          "covered": 216,
+          "total": 220,
+          "percentage": 98.18
+        },
+        "functions": {
+          "covered": 40,
+          "total": 40,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 1183,
+          "total": 1184,
+          "percentage": 99.92
+        }
+      },
+      "files": [
+        {
+          "path": "packages/dropin-protocol/src/canopy-state-machine.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 1183,
+              "total": 1184,
+              "percentage": 99.92
+            },
+            "branches": {
+              "covered": 216,
+              "total": 220,
+              "percentage": 98.18
+            },
+            "functions": {
+              "covered": 40,
+              "total": 40,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 1183,
+              "total": 1184,
+              "percentage": 99.92
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "satellite-schema-root",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 365,
+          "total": 365,
+          "percentage": 100
+        },
+        "branches": {
+          "covered": 62,
+          "total": 64,
+          "percentage": 96.88
+        },
+        "functions": {
+          "covered": 34,
+          "total": 34,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 365,
+          "total": 365,
+          "percentage": 100
+        }
+      },
+      "files": [
+        {
+          "path": "packages/schemas/src/satellite-proof.schema.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 207,
+              "total": 207,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 37,
+              "total": 38,
+              "percentage": 97.37
+            },
+            "functions": {
+              "covered": 15,
+              "total": 15,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 207,
+              "total": 207,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/satellite-ingestor/src/root-builder.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 158,
+              "total": 158,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 25,
+              "total": 26,
+              "percentage": 96.15
+            },
+            "functions": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 158,
+              "total": 158,
+              "percentage": 100
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "satellite-deterministic-adapters",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 91,
+          "total": 91,
+          "percentage": 100
+        },
+        "branches": {
+          "covered": 49,
+          "total": 49,
+          "percentage": 100
+        },
+        "functions": {
+          "covered": 40,
+          "total": 40,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 91,
+          "total": 91,
+          "percentage": 100
+        }
+      },
+      "files": [
+        {
+          "path": "services/satellite-ingestor/src/adapters/audit-adapter.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 15,
+              "total": 15,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 8,
+              "total": 8,
+              "percentage": 100
+            },
+            "functions": {
+              "covered": 8,
+              "total": 8,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 15,
+              "total": 15,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/satellite-ingestor/src/adapters/landsat-adapter.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 9,
+              "total": 9,
+              "percentage": 100
+            },
+            "functions": {
+              "covered": 8,
+              "total": 8,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/satellite-ingestor/src/adapters/planet-adapter.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 10,
+              "total": 10,
+              "percentage": 100
+            },
+            "functions": {
+              "covered": 8,
+              "total": 8,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/satellite-ingestor/src/adapters/sar-adapter.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 11,
+              "total": 11,
+              "percentage": 100
+            },
+            "functions": {
+              "covered": 8,
+              "total": 8,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/satellite-ingestor/src/adapters/sentinel-adapter.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 11,
+              "total": 11,
+              "percentage": 100
+            },
+            "functions": {
+              "covered": 8,
+              "total": 8,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 19,
+              "total": 19,
+              "percentage": 100
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "mobile-evidence-vault",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 771,
+          "total": 784,
+          "percentage": 98.34
+        },
+        "branches": {
+          "covered": 252,
+          "total": 261,
+          "percentage": 96.55
+        },
+        "functions": {
+          "covered": 61,
+          "total": 61,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 771,
+          "total": 784,
+          "percentage": 98.34
+        }
+      },
+      "files": [
+        {
+          "path": "apps/web/src/lib/canopyproof-mobile-evidence-vault.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 771,
+              "total": 784,
+              "percentage": 98.34
+            },
+            "branches": {
+              "covered": 252,
+              "total": 261,
+              "percentage": 96.55
+            },
+            "functions": {
+              "covered": 61,
+              "total": 61,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 771,
+              "total": 784,
+              "percentage": 98.34
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "mobile-sync-authority",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 883,
+          "total": 885,
+          "percentage": 99.77
+        },
+        "branches": {
+          "covered": 142,
+          "total": 148,
+          "percentage": 95.95
+        },
+        "functions": {
+          "covered": 50,
+          "total": 50,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 883,
+          "total": 885,
+          "percentage": 99.77
+        }
+      },
+      "files": [
+        {
+          "path": "services/api/src/domain/canopyproof/mobile-evidence-sync-admission.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 242,
+              "total": 242,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 37,
+              "total": 38,
+              "percentage": 97.37
+            },
+            "functions": {
+              "covered": 14,
+              "total": 14,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 242,
+              "total": 242,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/api/src/domain/canopyproof/mobile-evidence-sync-authority.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 641,
+              "total": 643,
+              "percentage": 99.69
+            },
+            "branches": {
+              "covered": 105,
+              "total": 110,
+              "percentage": 95.45
+            },
+            "functions": {
+              "covered": 36,
+              "total": 36,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 641,
+              "total": 643,
+              "percentage": 99.69
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "security-authorization",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 1104,
+          "total": 1110,
+          "percentage": 99.46
+        },
+        "branches": {
+          "covered": 293,
+          "total": 300,
+          "percentage": 97.67
+        },
+        "functions": {
+          "covered": 57,
+          "total": 57,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 1104,
+          "total": 1110,
+          "percentage": 99.46
+        }
+      },
+      "files": [
+        {
+          "path": "services/api/src/domain/canopyproof/authorization-binding.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 379,
+              "total": 379,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 142,
+              "total": 143,
+              "percentage": 99.3
+            },
+            "functions": {
+              "covered": 27,
+              "total": 27,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 379,
+              "total": 379,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/api/src/domain/canopyproof/security-policy.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 725,
+              "total": 731,
+              "percentage": 99.18
+            },
+            "branches": {
+              "covered": 151,
+              "total": 157,
+              "percentage": 96.18
+            },
+            "functions": {
+              "covered": 30,
+              "total": 30,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 725,
+              "total": 731,
+              "percentage": 99.18
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "kms-verify-only",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 733,
+          "total": 741,
+          "percentage": 98.92
+        },
+        "branches": {
+          "covered": 162,
+          "total": 167,
+          "percentage": 97.01
+        },
+        "functions": {
+          "covered": 36,
+          "total": 36,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 733,
+          "total": 741,
+          "percentage": 98.92
+        }
+      },
+      "files": [
+        {
+          "path": "services/api/src/domain/canopyproof/aws-kms-managed-signature-verifier.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 733,
+              "total": 741,
+              "percentage": 98.92
+            },
+            "branches": {
+              "covered": 162,
+              "total": 167,
+              "percentage": 97.01
+            },
+            "functions": {
+              "covered": 36,
+              "total": 36,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 733,
+              "total": 741,
+              "percentage": 98.92
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "metadata-extraction",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 963,
+          "total": 969,
+          "percentage": 99.38
+        },
+        "branches": {
+          "covered": 236,
+          "total": 244,
+          "percentage": 96.72
+        },
+        "functions": {
+          "covered": 44,
+          "total": 44,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 963,
+          "total": 969,
+          "percentage": 99.38
+        }
+      },
+      "files": [
+        {
+          "path": "services/api/src/domain/canopyproof/fixed-http-metadata-extractor-provider.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 264,
+              "total": 264,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 102,
+              "total": 104,
+              "percentage": 98.08
+            },
+            "functions": {
+              "covered": 14,
+              "total": 14,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 264,
+              "total": 264,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/api/src/domain/canopyproof/metadata-extractor-adapter.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 699,
+              "total": 705,
+              "percentage": 99.15
+            },
+            "branches": {
+              "covered": 134,
+              "total": 140,
+              "percentage": 95.71
+            },
+            "functions": {
+              "covered": 30,
+              "total": 30,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 699,
+              "total": 705,
+              "percentage": 99.15
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "effective-media-orchestration",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 484,
+          "total": 484,
+          "percentage": 100
+        },
+        "branches": {
+          "covered": 48,
+          "total": 49,
+          "percentage": 97.96
+        },
+        "functions": {
+          "covered": 25,
+          "total": 25,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 484,
+          "total": 484,
+          "percentage": 100
+        }
+      },
+      "files": [
+        {
+          "path": "services/api/src/domain/canopyproof/evidence-metadata-orchestration-authority.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 353,
+              "total": 353,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 31,
+              "total": 32,
+              "percentage": 96.88
+            },
+            "functions": {
+              "covered": 13,
+              "total": 13,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 353,
+              "total": 353,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/api/src/domain/canopyproof/evidence-metadata-orchestrator.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 131,
+              "total": 131,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 17,
+              "total": 17,
+              "percentage": 100
+            },
+            "functions": {
+              "covered": 12,
+              "total": 12,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 131,
+              "total": 131,
+              "percentage": 100
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "audit-challenge-invariants",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 2151,
+          "total": 2155,
+          "percentage": 99.81
+        },
+        "branches": {
+          "covered": 400,
+          "total": 414,
+          "percentage": 96.62
+        },
+        "functions": {
+          "covered": 91,
+          "total": 91,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 2151,
+          "total": 2155,
+          "percentage": 99.81
+        }
+      },
+      "files": [
+        {
+          "path": "services/api/src/domain/canopyproof/challenge-cases.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 398,
+              "total": 398,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 86,
+              "total": 87,
+              "percentage": 98.85
+            },
+            "functions": {
+              "covered": 21,
+              "total": 21,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 398,
+              "total": 398,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/api/src/domain/canopyproof/database-audit-transparency.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 450,
+              "total": 450,
+              "percentage": 100
+            },
+            "branches": {
+              "covered": 54,
+              "total": 55,
+              "percentage": 98.18
+            },
+            "functions": {
+              "covered": 21,
+              "total": 21,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 450,
+              "total": 450,
+              "percentage": 100
+            }
+          }
+        },
+        {
+          "path": "services/api/src/domain/canopyproof/environmental-proof-challenge-authority.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 1303,
+              "total": 1307,
+              "percentage": 99.69
+            },
+            "branches": {
+              "covered": 260,
+              "total": 272,
+              "percentage": 95.59
+            },
+            "functions": {
+              "covered": 49,
+              "total": 49,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 1303,
+              "total": 1307,
+              "percentage": 99.69
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "global-spatial-disclosure",
+      "status": "PASS",
+      "metrics": {
+        "statements": {
+          "covered": 850,
+          "total": 852,
+          "percentage": 99.77
+        },
+        "branches": {
+          "covered": 145,
+          "total": 151,
+          "percentage": 96.03
+        },
+        "functions": {
+          "covered": 41,
+          "total": 41,
+          "percentage": 100
+        },
+        "lines": {
+          "covered": 850,
+          "total": 852,
+          "percentage": 99.77
+        }
+      },
+      "files": [
+        {
+          "path": "services/api/src/domain/canopyproof/global-command-center-spatial-disclosure-authority.ts",
+          "status": "PASS",
+          "metrics": {
+            "statements": {
+              "covered": 850,
+              "total": 852,
+              "percentage": 99.77
+            },
+            "branches": {
+              "covered": 145,
+              "total": 151,
+              "percentage": 96.03
+            },
+            "functions": {
+              "covered": 41,
+              "total": 41,
+              "percentage": 100
+            },
+            "lines": {
+              "covered": 850,
+              "total": 852,
+              "percentage": 99.77
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "failures": []
+}

@@ -32,6 +32,10 @@
     "seed:phase16": "tsx scripts/seed-phase16-data.ts",
     "db:generate": "PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema services/api/prisma/schema.prisma",
     "db:push": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma db push --schema services/api/prisma/schema.prisma",
+    "predb:verify:canopyproof": "npm run prisma:generate:test",
+    "db:verify:canopyproof": "node --test --test-concurrency=1 --import tsx tests/integration/canopyproof-postgres-audit.integration.ts tests/integration/canopyproof-trust-registry-pglite.integration.ts tests/integration/canopyproof-evidence-verification-pglite.integration.ts tests/integration/canopyproof-evidence-custody-pglite.integration.ts tests/integration/canopyproof-device-attestation-adapter-pglite.integration.ts tests/integration/canopyproof-evidence-media-pglite.integration.ts tests/integration/canopyproof-visual-evidence-pglite.integration.ts tests/integration/canopyproof-nasa-gibs-pglite.integration.ts tests/integration/canopyproof-mrv-graph-pglite.integration.ts tests/integration/canopyproof-global-command-center-pglite.integration.ts tests/integration/canopyproof-global-command-center-spatial-disclosure-pglite.integration.ts tests/integration/canopyproof-mobile-sync-admission-pglite.integration.ts tests/integration/canopyproof-funding-accountability-pglite.integration.ts tests/integration/canopyproof-early-warning-pglite.integration.ts tests/integration/canopyproof-organization-lifecycle-pglite.integration.ts tests/integration/canopyproof-organization-accreditation-pglite.integration.ts tests/integration/canopyproof-root-governance-pglite.integration.ts tests/integration/canopyproof-project-lifecycle-pglite.integration.ts",
+    "predb:verify:canopyproof:native": "npm run prisma:generate:test",
+    "db:verify:canopyproof:native": "node --test --test-concurrency=1 --import tsx tests/integration/canopyproof-native-postgres.integration.ts tests/integration/canopyproof-global-command-center-spatial-disclosure-native.integration.ts",
     "seed": "DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} npm --workspace services/api run seed",
     "anchor:build": "cd contracts/solana && COPYFILE_DISABLE=1 anchor build --no-idl",
     "anchor:test": "cd contracts/solana && rm -rf .anchor/test-ledger test-ledger && COPYFILE_DISABLE=1 anchor build --no-idl && mkdir -p target/idl target/types && cp idl/dropin_anchor.json target/idl/dropin_anchor.json && cp idl/dropin_anchor.ts target/types/dropin_anchor.ts && COPYFILE_DISABLE=1 anchor test --skip-build --no-idl",
@@ -69,37 +73,65 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
+    "prisma:generate:test": "npm --workspace services/api run generate",
+    "pretest": "npm run prisma:generate:test",
     "test": "node --test --import tsx tests/unit/*.test.ts",
+    "test:fiftyone": "python3 -m unittest discover -s integrations/fiftyone/tests -p 'test_*.py'",
+    "pretest:webgl:browser": "npm --workspace apps/web run build",
+    "test:webgl:browser": "node --import tsx tests/browser/canopyproof-global-impact-webgl.spec.ts",
+    "test:workerd": "node scripts/canopyproof-local-workerd-smoke.mjs",
+    "gate:supply-chain": "node scripts/canopyproof-supply-chain-gate.mjs",
+    "pretest:critical": "npm run prisma:generate:test",
+    "test:critical": "node scripts/canopyproof-critical-test-runner.mjs",
+    "precoverage:critical": "npm run prisma:generate:test",
+    "coverage:critical": "node scripts/canopyproof-critical-coverage-runner.mjs",
+    "ci:critical": "npm run test:critical && npm run coverage:critical",
+    "pretest:coverage": "npm run prisma:generate:test",
+    "test:coverage": "c8 --all --reporter=text-summary --reporter=json-summary --include='apps/*/src/**/*.ts' --include='apps/*/src/**/*.tsx' --include='packages/*/src/**/*.ts' --include='packages/*/src/**/*.tsx' --include='services/*/src/**/*.ts' --include='services/*/src/**/*.tsx' --exclude='**/*.d.ts' node --test --test-concurrency=1 --test-reporter=dot --import tsx tests/unit/*.test.ts tests/integration/canopyproof-postgres-audit.integration.ts tests/integration/*-pglite.integration.ts",
+    "pretest:coverage:ratchet": "npm run prisma:generate:test",
+    "test:coverage:ratchet": "c8 --all --check-coverage --statements=70 --lines=70 --branches=72.75 --functions=70 --reporter=text-summary --reporter=json-summary --include='apps/*/src/**/*.ts' --include='apps/*/src/**/*.tsx' --include='packages/*/src/**/*.ts' --include='packages/*/src/**/*.tsx' --include='services/*/src/**/*.ts' --include='services/*/src/**/*.tsx' --exclude='**/*.d.ts' node --test --test-concurrency=1 --test-reporter=dot --import tsx tests/unit/*.test.ts tests/integration/canopyproof-postgres-audit.integration.ts tests/integration/*-pglite.integration.ts && node scripts/canopyproof-repository-coverage-report.mjs",
     "audit": "node scripts/npm-audit-moderate.mjs",
-    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run audit"
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run test:fiftyone && npm run db:verify:canopyproof && npm run build && npm run audit"
   },
   "devDependencies": {
     "@babel/core": "8.0.0",
     "@coral-xyz/anchor": "0.32.1",
-    "@eslint/js": "^9.39.4",
-    "@next/eslint-plugin-next": "^15.5.19",
-    "@opennextjs/cloudflare": "1.19.11",
+    "@electric-sql/pglite": "0.5.4",
+    "@eslint/js": "10.0.1",
+    "@next/eslint-plugin-next": "15.5.22",
+    "@opennextjs/cloudflare": "1.20.2",
     "@prisma/client": "^6.19.3",
     "@types/node": "^20.19.25",
-    "concurrently": "10.0.3",
+    "c8": "12.0.0",
+    "concurrently": "10.0.4",
     "esbuild": "0.28.1",
-    "eslint": "^9.39.4",
+    "eslint": "10.8.0",
     "form-data": "4.0.6",
-    "postcss": "8.5.14",
+    "next": "15.5.22",
+    "playwright": "1.59.1",
+    "postcss": "8.5.26",
     "prisma": "^6.19.3",
-    "tar": "7.5.16",
+    "tar": "7.5.22",
     "tsx": "4.22.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.49.0",
-    "wrangler": "4.107.0",
+    "wrangler": "4.120.1",
     "ws": "8.21.0"
   },
   "overrides": {
-    "postcss": "8.5.14",
+    "postcss": "8.5.26",
+    "hono": "4.13.1",
+    "nanoid": "3.3.17",
+    "brace-expansion": "5.0.9",
+    "sharp": "0.35.3",
     "next": {
-      "postcss": "8.5.14"
+      "postcss": "8.5.26",
+      "sharp": "0.35.3"
     },
     "esbuild": "0.28.1",
+    "@node-minify/core": {
+      "glob": "12.0.0"
+    },
     "@opennextjs/aws": {
       "esbuild": "0.28.1"
     },
@@ -125,20 +157,20 @@
     "react-devtools-core": {
       "ws": "8.21.0"
     },
-    "shell-quote": "1.8.4",
-    "js-yaml": "4.2.0",
+    "shell-quote": "1.9.0",
+    "js-yaml": "4.3.0",
     "@istanbuljs/load-nyc-config": {
-      "js-yaml": "4.2.0"
+      "js-yaml": "4.3.0"
     },
     "uuid": "11.1.1",
     "xcode": {
       "uuid": "11.1.1"
     },
     "@expo/metro-config": {
-      "postcss": "8.5.14"
+      "postcss": "8.5.26"
     },
     "@typescript-eslint/typescript-estree": {
-      "brace-expansion": "5.0.6"
+      "brace-expansion": "5.0.9"
     }
   }
 }

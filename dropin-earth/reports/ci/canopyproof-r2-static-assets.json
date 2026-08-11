@@ -1,0 +1,360 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T11:40:48.054Z",
+  "targetSha": "8272274d5f35e72ebbb53b9a9d25e907aeeb9e58",
+  "assetCount": 70,
+  "totalBytes": 3929050,
+  "manifestSha256": "03d328369d0659a2d68fa48c16852e6c2736247669a31bb0898b46e190d5fe8c",
+  "assets": [
+    {
+      "path": "_next/static/4eQCuObrVM6KXRdS5mQNM/_buildManifest.js",
+      "bytes": 1624,
+      "sha256": "c58aa5369da5a80f533244ecf6109a725d529220d121aa02f338322c1ae50c66"
+    },
+    {
+      "path": "_next/static/4eQCuObrVM6KXRdS5mQNM/_ssgManifest.js",
+      "bytes": 80,
+      "sha256": "678f6ce2cb80b1fe72fc67e7412be6e2ab6ada083111b64f7c40d35e3cba5e00"
+    },
+    {
+      "path": "_next/static/chunks/1006.f2bd5ae408fed854.js",
+      "bytes": 28613,
+      "sha256": "aef97279479336399cad2fa17b374eddad4e63461691377e8a3fba06c7b4f56b"
+    },
+    {
+      "path": "_next/static/chunks/18-6904d02802e458a1.js",
+      "bytes": 173474,
+      "sha256": "65c4c2d260a81484f65532ca02e64e0b0b58824df9c789cb8d97ed7da3136b51"
+    },
+    {
+      "path": "_next/static/chunks/2912-9e4859142213015b.js",
+      "bytes": 35162,
+      "sha256": "7617227df685436fd295fd1ed0271eb755d83188cabb27cd58e93d3f48e58314"
+    },
+    {
+      "path": "_next/static/chunks/3041.666f8b43935d77cc.js",
+      "bytes": 19912,
+      "sha256": "cc946eec72946d9b78f89982603dfb6da62b524c0fca919756a1c6c3cab251b7"
+    },
+    {
+      "path": "_next/static/chunks/45-85fbac0191741c39.js",
+      "bytes": 3160,
+      "sha256": "c47c54e1297bad8d4767ec9138e25b638247498071ae210067bbe202f214fb93"
+    },
+    {
+      "path": "_next/static/chunks/63d2ba32.8bf1a2950b77c5f2.js",
+      "bytes": 378417,
+      "sha256": "2751e29fb755b26f4491eeca4562f0a271018ef5eb85bdf0f0d8ee8ea541b9d4"
+    },
+    {
+      "path": "_next/static/chunks/7698-b15f3c7dd532b115.js",
+      "bytes": 65967,
+      "sha256": "171d2456aab9ffcdffa87ac41f971f12ee35098c2a2469d64f455d0759145e21"
+    },
+    {
+      "path": "_next/static/chunks/7814.19691277217cb8be.js",
+      "bytes": 640327,
+      "sha256": "09d3c2e508def3e8ccf946038cd8be43c3b8cd55cf21c3521dbd94c89ce839c0"
+    },
+    {
+      "path": "_next/static/chunks/79f774c5.74c6f9a0bf0452b2.js",
+      "bytes": 1032411,
+      "sha256": "9278274cf1759b39d4b6feda9b6041fce99d8999c9b7f86c779a3970d6754b9c"
+    },
+    {
+      "path": "_next/static/chunks/8580-25a779c57cba8129.js",
+      "bytes": 16822,
+      "sha256": "a54e96446d37ed1afcdfffc414768eb5c4e5742c3f7a45e39b87c1abcb049f3b"
+    },
+    {
+      "path": "_next/static/chunks/87c73c54-24122e7b92478d00.js",
+      "bytes": 173019,
+      "sha256": "0d30e73d8f3c24eee6941dd0861b15e22d943c0aec3bfc571eecfecb0e06b7c3"
+    },
+    {
+      "path": "_next/static/chunks/9664-af80478aa73ba424.js",
+      "bytes": 8533,
+      "sha256": "dac3879acf989d861c282c63f15eb85ab47d398a1e5bda1b247f55451ac1107a"
+    },
+    {
+      "path": "_next/static/chunks/9d78c252.2a321cd716bcc3fb.js",
+      "bytes": 349241,
+      "sha256": "2f97ef081e97ecc46d5ea384e2d80f56afc156c5d9496d23ff20756a3086f435"
+    },
+    {
+      "path": "_next/static/chunks/app/_not-found/page-f429e68e7b0ebf2e.js",
+      "bytes": 2671,
+      "sha256": "5f82a52ba817fe401cca5e9e238f4883af882deb15a22e6edb2cc63d5a33003b"
+    },
+    {
+      "path": "_next/static/chunks/app/about/page-56a5518c46ab0dab.js",
+      "bytes": 147,
+      "sha256": "1830ae2ca3d581aae44583c2748fbabd5bac6c2680c0b09539800d9a440900c2"
+    },
+    {
+      "path": "_next/static/chunks/app/campaigns/[campaignId]/page-c82dffc2fea0fb8b.js",
+      "bytes": 7238,
+      "sha256": "763338a7ecb1d6c4b006bcad9b1cd9098edb7f50cf8aa9f3a7afcbc0b5709ea1"
+    },
+    {
+      "path": "_next/static/chunks/app/campaigns/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/certificates/[certificateId]/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/challenges/[challengeId]/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/challenges/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/dashboard/global/page-59454f3db90f89a3.js",
+      "bytes": 34334,
+      "sha256": "62e2381d79f2bc5916e6a1988d401aa59e7325d37161e18458fd101e8d15cb1b"
+    },
+    {
+      "path": "_next/static/chunks/app/draw/page-de0d9e1b0219e233.js",
+      "bytes": 7191,
+      "sha256": "4aeabf6d3d2dd1856fe34520b683b0423eb6f4e06771db85b074169a97ec45f1"
+    },
+    {
+      "path": "_next/static/chunks/app/explorer/page-d11f61123a0d6b24.js",
+      "bytes": 136,
+      "sha256": "02a4d5a2945ef48a3925a8e0268de18569d614450f716e44900c9e2563e91fd1"
+    },
+    {
+      "path": "_next/static/chunks/app/explorer/project/[publicProjectId]/page-13f856965ba96546.js",
+      "bytes": 136,
+      "sha256": "0b8ce5bc95ca7a265fc04b64a3307121a5651f98baf16f0111ca62bb530f819a"
+    },
+    {
+      "path": "_next/static/chunks/app/faq/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/feedback/page-30c129441d5a7bd4.js",
+      "bytes": 2878,
+      "sha256": "a249d2777c3157cadf98bba9231a338cb929340ede44c2a43fa33e5f92513a97"
+    },
+    {
+      "path": "_next/static/chunks/app/fund/allocations/[allocationId]/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/fund/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/funding/page-138bb23d771aeb4a.js",
+      "bytes": 256,
+      "sha256": "df90a17bfa6d23f2a02762d5506aed6a012a4aba85d7bdeb99c9a179cea008c2"
+    },
+    {
+      "path": "_next/static/chunks/app/governance/page-138bb23d771aeb4a.js",
+      "bytes": 256,
+      "sha256": "df90a17bfa6d23f2a02762d5506aed6a012a4aba85d7bdeb99c9a179cea008c2"
+    },
+    {
+      "path": "_next/static/chunks/app/layout-4e96b3545b910452.js",
+      "bytes": 258,
+      "sha256": "6025a4fec28e449720f217e8387a5ed66a620e97ae30a04d0b616a0f37ac373b"
+    },
+    {
+      "path": "_next/static/chunks/app/lottery/[roundId]/page-e953d83037e8daa7.js",
+      "bytes": 7093,
+      "sha256": "03dd339c479fc79c3397c50c282cc9629502866b79809a14788a852d8ca5a546"
+    },
+    {
+      "path": "_next/static/chunks/app/mobile/report/page-138bb23d771aeb4a.js",
+      "bytes": 256,
+      "sha256": "df90a17bfa6d23f2a02762d5506aed6a012a4aba85d7bdeb99c9a179cea008c2"
+    },
+    {
+      "path": "_next/static/chunks/app/page-bb7d3f492370bea2.js",
+      "bytes": 488,
+      "sha256": "4e4392b837558fbbc1374d57b61740fdaff741bcd72a4f5dfc4a7527bbf63688"
+    },
+    {
+      "path": "_next/static/chunks/app/partners/page-138bb23d771aeb4a.js",
+      "bytes": 256,
+      "sha256": "df90a17bfa6d23f2a02762d5506aed6a012a4aba85d7bdeb99c9a179cea008c2"
+    },
+    {
+      "path": "_next/static/chunks/app/payments/[paymentIntentId]/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/projects/[projectId]/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/projects/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/red-team/page-2a93b980b603bc2d.js",
+      "bytes": 231,
+      "sha256": "64187ee04a95e09db393cd01536ef3e2a26faa7a2ba309351a1d185fc15acf0b"
+    },
+    {
+      "path": "_next/static/chunks/app/reports/esg/page-138bb23d771aeb4a.js",
+      "bytes": 256,
+      "sha256": "df90a17bfa6d23f2a02762d5506aed6a012a4aba85d7bdeb99c9a179cea008c2"
+    },
+    {
+      "path": "_next/static/chunks/app/risk/page-138bb23d771aeb4a.js",
+      "bytes": 256,
+      "sha256": "df90a17bfa6d23f2a02762d5506aed6a012a4aba85d7bdeb99c9a179cea008c2"
+    },
+    {
+      "path": "_next/static/chunks/app/robots.txt/route-56a5518c46ab0dab.js",
+      "bytes": 147,
+      "sha256": "1830ae2ca3d581aae44583c2748fbabd5bac6c2680c0b09539800d9a440900c2"
+    },
+    {
+      "path": "_next/static/chunks/app/sitemap.xml/route-56a5518c46ab0dab.js",
+      "bytes": 147,
+      "sha256": "1830ae2ca3d581aae44583c2748fbabd5bac6c2680c0b09539800d9a440900c2"
+    },
+    {
+      "path": "_next/static/chunks/app/status/page-56a5518c46ab0dab.js",
+      "bytes": 147,
+      "sha256": "1830ae2ca3d581aae44583c2748fbabd5bac6c2680c0b09539800d9a440900c2"
+    },
+    {
+      "path": "_next/static/chunks/app/terra/page-eeeb3fdf3cd4031b.js",
+      "bytes": 4011,
+      "sha256": "e5cf016be9e0442199cbea0b7e3ddb69cea6f35a5dd516aed536d171015df4f0"
+    },
+    {
+      "path": "_next/static/chunks/canopyproof-global-impact-earth.f1c2d656c5d51a3e.js",
+      "bytes": 7180,
+      "sha256": "392775ada8037e6f02b80856cfe1443d8dea5d84ec332ae79da4f44c9fb4a87f"
+    },
+    {
+      "path": "_next/static/chunks/f8407a2a.f3303a392393028e.js",
+      "bytes": 146471,
+      "sha256": "61d00c9a7a78ff3498b6542aa69f19856b3ed0de20e39531a38d556e7f414eb5"
+    },
+    {
+      "path": "_next/static/chunks/framework-8cbae44638a30474.js",
+      "bytes": 189764,
+      "sha256": "acc1aa513ec2e18e9956e89c9f5eb34aefe97f7af034af9216e1ea7c7c54b2c0"
+    },
+    {
+      "path": "_next/static/chunks/main-4cd233258b1e5ee1.js",
+      "bytes": 128673,
+      "sha256": "31d69af2f7f585a3c028105cb6ed385f894a2c626ce0cc6dc64262b575c9e515"
+    },
+    {
+      "path": "_next/static/chunks/main-app-2f0be872f57b29c1.js",
+      "bytes": 555,
+      "sha256": "7ef6b09e9f99a4de1cb656815fc30587a550a17699ec447b2b0d1746eb31080b"
+    },
+    {
+      "path": "_next/static/chunks/pages/_app-50fa07b56b2d29ac.js",
+      "bytes": 238,
+      "sha256": "81fcc02878b745b9ceb63c6d984988f94037ec9d2b3b263a65671cf9b3bf5863"
+    },
+    {
+      "path": "_next/static/chunks/pages/_error-fed8688bdd23f211.js",
+      "bytes": 221,
+      "sha256": "4bde83cce4605d29668d4b06b38c57c77c3726664ff2dfa0dcbf391e3c6d8b09"
+    },
+    {
+      "path": "_next/static/chunks/polyfills-42372ed130431b0a.js",
+      "bytes": 112594,
+      "sha256": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683"
+    },
+    {
+      "path": "_next/static/chunks/webpack-db20c6ffe763f8d0.js",
+      "bytes": 3785,
+      "sha256": "ba6d3aa204503fd7e803e3fe285ea66ad0dc0e892d731a0e2fcd9a2946678aa3"
+    },
+    {
+      "path": "_next/static/css/1d450a1ba4af9886.css",
+      "bytes": 106966,
+      "sha256": "6a0d15c3ce593f233ebd36947de84e6e4f92493160d92d68aafb81474eb994f6"
+    },
+    {
+      "path": "_next/static/css/1de76be520b4de19.css",
+      "bytes": 11181,
+      "sha256": "30d81818adeb07a03aa569a526b6e24e5874b6ce3ba11c254fcb837135543dd0"
+    },
+    {
+      "path": "_next/static/css/eefc12141c996f21.css",
+      "bytes": 5720,
+      "sha256": "e6001a128d147a742a32f50b756170d21483a23e3dd2bf50d28b52befec9c820"
+    },
+    {
+      "path": "_next/static/media/layers-2x.9859cd12.png",
+      "bytes": 1259,
+      "sha256": "066daca850d8ffbef007af00b06eac0015728dee279c51f3cb6c716df7c42edf"
+    },
+    {
+      "path": "_next/static/media/layers.ef6db872.png",
+      "bytes": 696,
+      "sha256": "1dbbe9d028e292f36fcba8f8b3a28d5e8932754fc2215b9ac69e4cdecf5107c6"
+    },
+    {
+      "path": "_next/static/media/marker-icon.d577052a.png",
+      "bytes": 1466,
+      "sha256": "574c3a5cca85f4114085b6841596d62f00d7c892c7b03f28cbfa301deb1dc437"
+    },
+    {
+      "path": "apple-touch-icon.jpg",
+      "bytes": 18136,
+      "sha256": "10170bae0246e9e8f373f9a706d332c835f45b726bf9c1c882e80d4952e75d94"
+    },
+    {
+      "path": "BUILD_ID",
+      "bytes": 21,
+      "sha256": "3dbe9e371fdb5b6978809ab2a6c326e0a408c2b8d80155351dbe01f5534eccd3"
+    },
+    {
+      "path": "icon.jpg",
+      "bytes": 18136,
+      "sha256": "10170bae0246e9e8f373f9a706d332c835f45b726bf9c1c882e80d4952e75d94"
+    },
+    {
+      "path": "index.html",
+      "bytes": 112901,
+      "sha256": "bc0161707fc9347277db88e10018725b3cbdb72c77f90188756fec87185f5836"
+    },
+    {
+      "path": "index.rsc",
+      "bytes": 62040,
+      "sha256": "83fe74957906b7444d1ad7550025145dc5ff16eb8c86cb13ca569de4b03efec8"
+    },
+    {
+      "path": "og/canopyproof-og.svg",
+      "bytes": 1579,
+      "sha256": "18929a50cbf846ea44af17b98c2cc47585d4fc94fb1cee6f772b4d1838a1109a"
+    },
+    {
+      "path": "robots.txt",
+      "bytes": 69,
+      "sha256": "571092a82402d46d75ac4052e6d65ca69798832ea04d745e365b47c4d5db92ad"
+    },
+    {
+      "path": "sitemap.xml",
+      "bytes": 1538,
+      "sha256": "b6ecb9c226b40c1917acdd0b9c12a2e7e9c7692f67fe400e0124ba90bfb219a4"
+    }
+  ]
+}
