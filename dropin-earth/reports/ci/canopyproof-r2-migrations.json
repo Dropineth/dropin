@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T11:40:48.054Z",
+  "targetSha": "8272274d5f35e72ebbb53b9a9d25e907aeeb9e58",
+  "migrationCount": 49,
+  "manifestSha256": "b99764790a2ad4c06299c89421bfb86ee50fcaddd16d4bc29e503aee8e898360",
+  "migrations": [
+    {
+      "path": "services/api/prisma/canopyproof-os.sql",
+      "bytes": 1002038,
+      "sha256": "f92a08048ad0fadfcc1a8bb3c64fb68424643240edba2cd8f0422754d0536b50"
+    },
+    {
+      "path": "services/api/prisma/early-warning-authority.rollback.sql",
+      "bytes": 2509,
+      "sha256": "e0b583b4242d39acfaa6f8b02e689c448fc0a1d566b16bb3eec30fd494e644ca"
+    },
+    {
+      "path": "services/api/prisma/early-warning-authority.sql",
+      "bytes": 45439,
+      "sha256": "7df46ce6905e6fd6b12d92d01d68c0f5242a05b7d5f41369096a9c7cd06d81e0"
+    },
+    {
+      "path": "services/api/prisma/environmental-proof-lifecycle.rollback.sql",
+      "bytes": 4157,
+      "sha256": "161aa482c90dc9b1d5c98ff229aa15589ac4c7170949573855d8ddca8819be76"
+    },
+    {
+      "path": "services/api/prisma/environmental-proof-lifecycle.sql",
+      "bytes": 86213,
+      "sha256": "aa391d947801c796bcd197b15e5bca491f983287f723d916fc21f35ca5001d34"
+    },
+    {
+      "path": "services/api/prisma/esg-metric-authority.rollback.sql",
+      "bytes": 2579,
+      "sha256": "0d08ed31c4f29cf7e17053b1a5f8eee2b60ef942e4821a167ccc1c2aa9f6c906"
+    },
+    {
+      "path": "services/api/prisma/esg-metric-authority.sql",
+      "bytes": 60635,
+      "sha256": "c695cdfef57b4fa8a3acb158717b6512f0fcb32b85352384151d3f72410d5224"
+    },
+    {
+      "path": "services/api/prisma/esg-reporting-authority.rollback.sql",
+      "bytes": 2545,
+      "sha256": "97c2bc7d711ec14298b5728834880cd45c76b3a46ab2cdffe14911b60edb4c3b"
+    },
+    {
+      "path": "services/api/prisma/esg-reporting-authority.sql",
+      "bytes": 49622,
+      "sha256": "87bae1782ffcfbe7cc8e714720eba0fe7b19178ccaf215da2a34a8c0685cac68"
+    },
+    {
+      "path": "services/api/prisma/evidence-device-attestation-adapters.rollback.sql",
+      "bytes": 1628,
+      "sha256": "37a5beeaca2034f6d3f0539025d355c6acd2550c88397b31480b9ab771acbce6"
+    },
+    {
+      "path": "services/api/prisma/evidence-device-attestation-adapters.sql",
+      "bytes": 23578,
+      "sha256": "29b86cbf5a812f99a0fbfe2fbfb6787d6d92b8846bd9e430c724c5e8a776fa31"
+    },
+    {
+      "path": "services/api/prisma/evidence-media-adapters.rollback.sql",
+      "bytes": 3023,
+      "sha256": "5c0d66173559cab4838b8cc67e725ba8e3618f44face46768c8806e7e0ab5585"
+    },
+    {
+      "path": "services/api/prisma/evidence-media-adapters.sql",
+      "bytes": 35353,
+      "sha256": "eb0e730ef462c698b8bb78a09049597b83a1f78d6f8cc2315436d4ba7665dcfb"
+    },
+    {
+      "path": "services/api/prisma/evidence-metadata-adapters.rollback.sql",
+      "bytes": 1448,
+      "sha256": "3fce55bdfb1944485d1c8676c5634c5f72e99ce7fdc628c49ce0374a51ff19a4"
+    },
+    {
+      "path": "services/api/prisma/evidence-metadata-adapters.sql",
+      "bytes": 18517,
+      "sha256": "33f531399f93bf3cd4875afa484e1d2da611e9681a033c9211760c05e3919778"
+    },
+    {
+      "path": "services/api/prisma/evidence-metadata-orchestration.rollback.sql",
+      "bytes": 1491,
+      "sha256": "a0c0ef6505a4b6baad92df5376b5445e77752ea9a92d71fdbc288a92246dfe8d"
+    },
+    {
+      "path": "services/api/prisma/evidence-metadata-orchestration.sql",
+      "bytes": 20577,
+      "sha256": "203c86d5880a8f1afaced70a02d4411813c1b9ca71a36b696541733d33e2176f"
+    },
+    {
+      "path": "services/api/prisma/evidence-metadata-retention.rollback.sql",
+      "bytes": 2579,
+      "sha256": "13e01b76e6493a40ef7c60b524cb579ddcdc0cbb70201b567c79cd2b97adf18f"
+    },
+    {
+      "path": "services/api/prisma/evidence-metadata-retention.sql",
+      "bytes": 47660,
+      "sha256": "ae82ed071c030c884882437ea479e01b4077475fe12ee6832c7c6300d20a7871"
+    },
+    {
+      "path": "services/api/prisma/evidence-offline-community.rollback.sql",
+      "bytes": 1972,
+      "sha256": "63a0f0f64fb4c38f382d3c5c698c80d175163f13ea7c49410f48622165704852"
+    },
+    {
+      "path": "services/api/prisma/evidence-offline-community.sql",
+      "bytes": 41662,
+      "sha256": "904eeb4d9af8222f81eacfe90c064ba880b583e0a5d1a4cab39b8305be719357"
+    },
+    {
+      "path": "services/api/prisma/funding-accountability-authority.rollback.sql",
+      "bytes": 2052,
+      "sha256": "18b8dc181cd3ec192bc1f0318571de19666bf16f876d0025c25473d96dbe26de"
+    },
+    {
+      "path": "services/api/prisma/funding-accountability-authority.sql",
+      "bytes": 35625,
+      "sha256": "293e9e5d9dc05e46557812041fed07863cbcd9f92f7256a4db9b68f79bc5dece"
+    },
+    {
+      "path": "services/api/prisma/global-command-center-publishing-authority.rollback.sql",
+      "bytes": 926,
+      "sha256": "210dc9bb859fd98970fb0c9708f80ce0910e782132075f5351887ddde270349c"
+    },
+    {
+      "path": "services/api/prisma/global-command-center-publishing-authority.sql",
+      "bytes": 7541,
+      "sha256": "51741480968fdf139bd14a22af8651265f343de47be09fe936e8eae3bdb19b29"
+    },
+    {
+      "path": "services/api/prisma/global-command-center-spatial-disclosure-authority.rollback.sql",
+      "bytes": 2395,
+      "sha256": "dfaf9a304f683570f7cd091ba6c50e1758913ff156db95ca287b7cae80059961"
+    },
+    {
+      "path": "services/api/prisma/global-command-center-spatial-disclosure-authority.sql",
+      "bytes": 30493,
+      "sha256": "35867f38856dbedb924bda76c76ab7e97bed4aa6602dec8b1d73b1db66cd0280"
+    },
+    {
+      "path": "services/api/prisma/mobile-sync-admission.rollback.sql",
+      "bytes": 1088,
+      "sha256": "90a2a6a907427113082f79d8737bd36aeee27f622cf7b26136bb9255bee8e349"
+    },
+    {
+      "path": "services/api/prisma/mobile-sync-admission.sql",
+      "bytes": 8114,
+      "sha256": "cdfd6c81f30d592e436e6cc020fe4caece72f563ab520127e1cfe350a244b577"
+    },
+    {
+      "path": "services/api/prisma/mrv-graph.rollback.sql",
+      "bytes": 521,
+      "sha256": "7e801cd41d95fa61dbb86e2f41f4937f680a94c44c8aef2d8beb4c57cb09ca4b"
+    },
+    {
+      "path": "services/api/prisma/mrv-graph.sql",
+      "bytes": 50510,
+      "sha256": "271133bb20a49d7bbef24083153379a2fd074345ece33ce8027c2c2d14337d06"
+    },
+    {
+      "path": "services/api/prisma/nasa-gibs.rollback.sql",
+      "bytes": 1493,
+      "sha256": "f699f00e44ffab27c499fe5d021d7a06c09031916eb0d219e70280b80cca0536"
+    },
+    {
+      "path": "services/api/prisma/nasa-gibs.sql",
+      "bytes": 15665,
+      "sha256": "cb6cd05d63b124161786eb2d41893833e6b3f498eae041bf000659b342f26985"
+    },
+    {
+      "path": "services/api/prisma/organization-accreditation-authority.rollback.sql",
+      "bytes": 3364,
+      "sha256": "19d7cfdb75f241e696831b51d48d686f8b8a670622ec01fe78106bea15a1a7b4"
+    },
+    {
+      "path": "services/api/prisma/organization-accreditation-authority.sql",
+      "bytes": 60166,
+      "sha256": "f65cacfbb8db9ff2b34dd649078fa6d9e4f848dd31147658a3defff6e03e3e96"
+    },
+    {
+      "path": "services/api/prisma/organization-lifecycle-authority.rollback.sql",
+      "bytes": 5917,
+      "sha256": "7579acd84f5185233c4607cea5a6f791f8041e4ff0cd53c8a382a5459ba70f9c"
+    },
+    {
+      "path": "services/api/prisma/organization-lifecycle-authority.sql",
+      "bytes": 62955,
+      "sha256": "b404619605e6a77560cd7ab35b6faffdb2c3e612c520f69958ba542d181a130c"
+    },
+    {
+      "path": "services/api/prisma/project-lifecycle-authority.rollback.sql",
+      "bytes": 2251,
+      "sha256": "21079802f38aa295f76e894375410768d33c6d4aa33044820b78c0a265728791"
+    },
+    {
+      "path": "services/api/prisma/project-lifecycle-authority.sql",
+      "bytes": 35596,
+      "sha256": "5844eb37b46f7d4e60951dab9aeb78c6eb99458321889b09da3c685fce4eb617"
+    },
+    {
+      "path": "services/api/prisma/project-lifecycle-source-resolver.rollback.sql",
+      "bytes": 744,
+      "sha256": "ed4a4408ba3e6ed9128e2b72231f920a9192fea49e5a53ef722737e99f011fb0"
+    },
+    {
+      "path": "services/api/prisma/project-lifecycle-source-resolver.sql",
+      "bytes": 4829,
+      "sha256": "d6f07f5563f43bdae80e06f96638f8a7149e01bd611acb8ff95bf88b50353ed2"
+    },
+    {
+      "path": "services/api/prisma/public-transparency-authority.rollback.sql",
+      "bytes": 2207,
+      "sha256": "1204c188b06c9c99ce906ba894863fcb2da0b25b20d833a40d3d6bce62229caa"
+    },
+    {
+      "path": "services/api/prisma/public-transparency-authority.sql",
+      "bytes": 39657,
+      "sha256": "55fcd56386264dfc01c2944c88e9ab229c78c18a6a286dfe7ed777ebb3f6953f"
+    },
+    {
+      "path": "services/api/prisma/public-transparency-explorer.rollback.sql",
+      "bytes": 1130,
+      "sha256": "c7e8c09bd3be244645ea5457ffe023759bed108782151be1053327bdc4932cc4"
+    },
+    {
+      "path": "services/api/prisma/public-transparency-explorer.sql",
+      "bytes": 6379,
+      "sha256": "0492846a33ae27126285dc15a4cdbb6df21054a81f923b1b3f81c873f3a150b4"
+    },
+    {
+      "path": "services/api/prisma/root-governance-authority.rollback.sql",
+      "bytes": 3436,
+      "sha256": "bee7d272ff5630c621e3294a6c9bcd2da7898e8086ba23db7e3d6d03075004ee"
+    },
+    {
+      "path": "services/api/prisma/root-governance-authority.sql",
+      "bytes": 49078,
+      "sha256": "cb55044e586c63b7438aefbdc7e5ae98d7c3ce53a26ccada4af8182f4ba43064"
+    },
+    {
+      "path": "services/api/prisma/visual-evidence-intelligence.rollback.sql",
+      "bytes": 508,
+      "sha256": "21f092c53ac41a451ba4bd7aba56ed943d51ce2d325ffd92bb964c622f7d19be"
+    },
+    {
+      "path": "services/api/prisma/visual-evidence-intelligence.sql",
+      "bytes": 29103,
+      "sha256": "20e148d902fb5e74d14c5d5db6cb6170787ac74c545c5a404f99f2bd6ad6b3da"
+    }
+  ]
+}

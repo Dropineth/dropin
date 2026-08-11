@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T11:40:48.054Z",
+  "releaseType": "industrial-release-candidate",
+  "status": "REMOTE_REVIEW_PENDING",
+  "productionStatus": "NOT_DEPLOYED",
+  "targetSha": "8272274d5f35e72ebbb53b9a9d25e907aeeb9e58",
+  "targetTree": "9c06adfb5b53fb3172c9aceddc084800fc1e93a6",
+  "sourceTree": {
+    "gitTree": "9c06adfb5b53fb3172c9aceddc084800fc1e93a6",
+    "trackedEntries": 754,
+    "listingSha256": "1b453e3103c2dd1a8e09d013ca6c286d58bee194561e9bbeade009d82ba94833"
+  },
+  "dependencyLock": {
+    "status": "PASS",
+    "packageLockSha256": "54dbdbc9fa938fbf5287e335c5ff0d93a0232332c7792854e9cee596d7e1b4de"
+  },
+  "sbom": {
+    "format": "CycloneDX",
+    "specVersion": "1.5",
+    "components": 718,
+    "sha256": "7c5bce845f5f21ae6caa6518c2bd55b224cbbfcf3226715ebb284b2e97fdf9ab"
+  },
+  "artifacts": {
+    "openNextWorker": {
+      "path": "apps/web/.open-next/worker.js",
+      "bytes": 2278,
+      "sha256": "d05223bf4d44c84108a102ab62aa3bc9c5568f0c3ac2064c37be5cc65c64bc45"
+    },
+    "staticAssets": {
+      "manifest": "reports/ci/canopyproof-r2-static-assets.json",
+      "count": 70,
+      "bytes": 3929050,
+      "sha256": "03d328369d0659a2d68fa48c16852e6c2736247669a31bb0898b46e190d5fe8c"
+    },
+    "migrations": {
+      "manifest": "reports/ci/canopyproof-r2-migrations.json",
+      "count": 49,
+      "sha256": "b99764790a2ad4c06299c89421bfb86ee50fcaddd16d4bc29e503aee8e898360"
+    },
+    "tests": {
+      "manifest": "reports/ci/canopyproof-r2-test-evidence.json",
+      "sha256": "3e1b777bcc13adde23465fa85c32c48e1521e448e9bf19e9ada4f1ae2ef2e631"
+    }
+  },
+  "safety": {
+    "canopyProductionUnlock": false,
+    "adminProxy": false,
+    "realSatelliteProviderWrites": false,
+    "productionMobileSync": false,
+    "automaticCanopyDistribution": false,
+    "mainnetFunds": false,
+    "planetaryLab": false,
+    "carbonCreditIssuance": false,
+    "taxOffsetClaims": false,
+    "guaranteedYieldClaims": false,
+    "kmsMode": "verify-only",
+    "aiAuthority": "advisory-only",
+    "apiWebWorkersSeparated": true,
+    "privateSigningKeyIntroduced": false
+  }
+}

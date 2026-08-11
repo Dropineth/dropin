@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "generatedAt": "2026-08-11T11:35:06.367Z",
+  "requiredEngines": [
+    "chromium",
+    "firefox",
+    "webkit"
+  ],
+  "skipped": 0,
+  "scenarioCount": 19,
+  "engineCounts": {
+    "chromium": 9,
+    "firefox": 4,
+    "webkit": 6
+  },
+  "results": [
+    {
+      "engine": "chromium",
+      "name": "normal WebGL, InstancedMesh, pixels, controls, and privacy",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "missing WebGL API renders deterministic fallback",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "no WebGL renders deterministic usable fallback",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "dynamic Three.js chunk failure falls back",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "cold chunk deadline falls back without a late duplicate renderer",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "missed first-frame deadline renders deterministic fallback",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "context loss exposes controlled bounded recovery",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "reduced-motion policy remains readable and nonanimated",
+      "profile": "desktop-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "chromium",
+      "name": "mobile WebGL has no viewport overflow and keeps controls operable",
+      "profile": "mobile-chromium",
+      "status": "PASS"
+    },
+    {
+      "engine": "firefox",
+      "name": "missing WebGL API renders deterministic fallback",
+      "profile": "desktop-firefox",
+      "status": "PASS"
+    },
+    {
+      "engine": "firefox",
+      "name": "no WebGL renders deterministic usable fallback",
+      "profile": "desktop-firefox",
+      "status": "PASS"
+    },
+    {
+      "engine": "firefox",
+      "name": "dynamic Three.js chunk failure falls back",
+      "profile": "desktop-firefox",
+      "status": "PASS"
+    },
+    {
+      "engine": "firefox",
+      "name": "reduced-motion policy remains readable and nonanimated",
+      "profile": "desktop-firefox",
+      "status": "PASS"
+    },
+    {
+      "engine": "webkit",
+      "name": "missing WebGL API renders deterministic fallback",
+      "profile": "desktop-webkit",
+      "status": "PASS"
+    },
+    {
+      "engine": "webkit",
+      "name": "no WebGL renders deterministic usable fallback",
+      "profile": "desktop-webkit",
+      "status": "PASS"
+    },
+    {
+      "engine": "webkit",
+      "name": "dynamic Three.js chunk failure falls back",
+      "profile": "desktop-webkit",
+      "status": "PASS"
+    },
+    {
+      "engine": "webkit",
+      "name": "cold chunk deadline falls back without a late duplicate renderer",
+      "profile": "desktop-webkit",
+      "status": "PASS"
+    },
+    {
+      "engine": "webkit",
+      "name": "reduced-motion policy remains readable and nonanimated",
+      "profile": "desktop-webkit",
+      "status": "PASS"
+    },
+    {
+      "engine": "webkit",
+      "name": "mobile WebKit fallback remains usable without viewport overflow",
+      "profile": "mobile-webkit",
+      "status": "PASS"
+    }
+  ]
+}

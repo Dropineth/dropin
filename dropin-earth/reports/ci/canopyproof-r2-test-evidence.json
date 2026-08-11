@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-11T11:40:48.054Z",
+  "targetSha": "8272274d5f35e72ebbb53b9a9d25e907aeeb9e58",
+  "runtime": {
+    "node": "22.22.3",
+    "npm": "10.9.4"
+  },
+  "status": "PASS",
+  "gates": {
+    "lockedInstall": {
+      "status": "PASS",
+      "includeOptional": true
+    },
+    "lint": {
+      "status": "PASS"
+    },
+    "typecheck": {
+      "status": "PASS"
+    },
+    "unit": {
+      "status": "PASS",
+      "passed": 831,
+      "failed": 0
+    },
+    "fiftyOne": {
+      "status": "PASS",
+      "passed": 4,
+      "failed": 0
+    },
+    "pglite": {
+      "status": "PASS",
+      "passed": 40,
+      "failed": 0
+    },
+    "nativePostgresql": {
+      "status": "PASS",
+      "version": "17.10",
+      "passed": 2,
+      "failed": 0,
+      "isolation": "disposable loopback-only cluster removed after verification"
+    },
+    "workspaceBuild": {
+      "status": "PASS"
+    },
+    "dependencyAudit": {
+      "status": "PASS",
+      "level": "moderate",
+      "vulnerabilities": 0
+    },
+    "repositoryCoverage": {
+      "statements": {
+        "before": 67.36,
+        "after": 83.83,
+        "delta": 16.47,
+        "threshold": 70,
+        "status": "PASS"
+      },
+      "branches": {
+        "before": 76.5,
+        "after": 76.81,
+        "delta": 0.31,
+        "threshold": 72.75,
+        "status": "PASS"
+      },
+      "functions": {
+        "before": 73.06,
+        "after": 85.51,
+        "delta": 12.45,
+        "threshold": 70,
+        "status": "PASS"
+      },
+      "lines": {
+        "before": 67.36,
+        "after": 83.83,
+        "delta": 16.47,
+        "threshold": 70,
+        "status": "PASS"
+      }
+    },
+    "criticalCoverage": {
+      "status": "PASS",
+      "thresholds": {
+        "statements": 95,
+        "branches": 95,
+        "functions": 95,
+        "lines": 95
+      },
+      "configHash": "fadcb158103e2a3a199e6ee76667737f535aa67afdbe0d2eb4457f704d3a52cd",
+      "sourceHash": "e3eed18c33fde3f0ddd3f087fce817f9eccea500182da887ed8a7fccff8714fd",
+      "testHash": "8e2deac9f9280594f89565e9b9b477401e3a82097e4a2f7c2293878ca9d7de3b"
+    },
+    "browserWebgl": {
+      "status": "PASS",
+      "scenarios": 19,
+      "skipped": 0,
+      "engines": {
+        "chromium": 9,
+        "firefox": 4,
+        "webkit": 6
+      }
+    },
+    "openNextBuild": {
+      "status": "PASS"
+    },
+    "workerd": {
+      "status": "PASS",
+      "routes": 15,
+      "failed": 0
+    }
+  },
+  "evidenceBundleSha256": "3e1b777bcc13adde23465fa85c32c48e1521e448e9bf19e9ada4f1ae2ef2e631",
+  "evidenceFiles": [
+    {
+      "path": "reports/npm-audit-moderate.json",
+      "bytes": 366,
+      "sha256": "3a3093725ca61680d2666dfd0dc4c2bb14ccd92772299fefa5b28440ce0791e5"
+    },
+    {
+      "path": "reports/canopyproof-critical-coverage.json",
+      "bytes": 47348,
+      "sha256": "2413480dbefeb05a35e1634e3a7687ee0440458cb50d33d0386e718ee43f18c0"
+    },
+    {
+      "path": "reports/canopyproof-critical-coverage.md",
+      "bytes": 3435,
+      "sha256": "862ae7db4e96ebf693ec7065d803c1d0807313d7c074eb00b4878b22111def2d"
+    },
+    {
+      "path": "reports/canopyproof-repository-coverage.json",
+      "bytes": 1342,
+      "sha256": "3b9275a83c86c058145b4f47aa12ae5b4f561c4c3c088b0e4b54ff391bdde0a3"
+    },
+    {
+      "path": "reports/canopyproof-repository-coverage.md",
+      "bytes": 919,
+      "sha256": "05c89fc1ae9eb806f7e5fbbecb83872d0bc562648fb63477d505306c0044d34e"
+    },
+    {
+      "path": "reports/canopyproof-cross-browser-webgl.json",
+      "bytes": 3512,
+      "sha256": "d24fee354ffe9ba9c0bfcd9d89bfdea6222133f7da49c92ec11268a3087dc12a"
+    },
+    {
+      "path": "reports/canopyproof-cross-browser-webgl.md",
+      "bytes": 1931,
+      "sha256": "b942751b0e075d050ed1f716a2be1a9c030181780d470830b11e7839b998104c"
+    },
+    {
+      "path": "reports/canopyproof-workerd-smoke.json",
+      "bytes": 1993,
+      "sha256": "83daa5a3b7fc541e306745c7e8db0602567f5be473caf76969ef123fd1d8e95e"
+    },
+    {
+      "path": "reports/ci/canopyproof-supply-chain-gate.json",
+      "bytes": 713,
+      "sha256": "fd433e6945d035c6cd5f786ac637b9011757b9a6476129d0fbbc2903c1431e12"
+    },
+    {
+      "path": "reports/ci/canopyproof-sbom.cdx.json",
+      "bytes": 1097219,
+      "sha256": "7c5bce845f5f21ae6caa6518c2bd55b224cbbfcf3226715ebb284b2e97fdf9ab"
+    }
+  ]
+}

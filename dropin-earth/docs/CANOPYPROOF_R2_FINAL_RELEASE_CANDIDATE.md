@@ -4,7 +4,7 @@ Status: REMOTE REVIEW PENDING
 
 Final state: `NOT_PRODUCTION_READY`
 
-Report date: 2026-07-28
+Report date: 2026-08-11
 
 This report records engineering evidence for the exact deployable candidate. It
 does not approve a merge, staging deployment, production deployment, protocol
@@ -14,10 +14,10 @@ write, financial action, or environmental claim.
 
 | Role | Commit |
 | --- | --- |
-| R1 remote candidate before final gates | `e2a0b17914f4418643a76c20b4c2232f184b228f` |
-| Cross-browser WebGL gate | `cfaf48a` |
-| Cross-browser CI isolation fix | `a2d48748e49ffb44e9f0b0f45099a30804d7cdd8` |
-| Final deploy target | `a2d48748e49ffb44e9f0b0f45099a30804d7cdd8` |
+| Prior validated deploy target | `a2d48748e49ffb44e9f0b0f45099a30804d7cdd8` |
+| Prior RC evidence | `baf1695239c439a17398c4406b3362e073fbd7a5` |
+| Supply-chain hardening | `8272274d5f35e72ebbb53b9a9d25e907aeeb9e58` |
+| Final deploy target | `8272274d5f35e72ebbb53b9a9d25e907aeeb9e58` |
 | Final RC evidence | the documentation-only commit containing this report |
 
 - Remote branch: `canopyproof/industrial-rc1`
@@ -37,8 +37,8 @@ final deploy target. Dependencies were installed from the lockfile with npm
 
 | Gate | Result |
 | --- | --- |
-| Locked install | PASS; 725 packages added, 736 audited |
-| Supply-chain inventory | PASS; 711 CycloneDX components |
+| Locked install | PASS; npm 10.9.4, optional dependencies included |
+| Supply-chain inventory | PASS; 718 CycloneDX components |
 | Secret marker scan | PASS; 0 findings |
 | Tracked generated artifact scan | PASS; 0 findings |
 | Lint | PASS |
@@ -48,7 +48,7 @@ final deploy target. Dependencies were installed from the lockfile with npm
 | PGlite integration | PASS; 40/40 |
 | Workspace build | PASS |
 | Moderate dependency audit | PASS; 0 vulnerabilities |
-| Repository coverage | PASS; 83.06/76.90/83.34/83.06 |
+| Repository coverage | PASS; 83.83/76.81/85.51/83.83 |
 | Critical coverage | PASS; every configured module at least 95% in all dimensions |
 | Chromium WebGL | PASS; 9 scenarios |
 | Firefox fallback | PASS; 4 scenarios |
@@ -56,26 +56,33 @@ final deploy target. Dependencies were installed from the lockfile with npm
 | Browser skips | 0 |
 | OpenNext Cloudflare build | PASS |
 | Local workerd smoke | PASS; 15/15 routes |
+| Native PostgreSQL 17.10 | PASS; 2/2 on a disposable loopback-only cluster |
 
 The repository coverage order is statements, branches, functions, and lines.
 The enforced floors are 70, 72.75, 70, and 70 percent respectively.
 
-GitHub Trust Gate run
-[30370082728](https://github.com/Dropineth/dropin/actions/runs/30370082728)
-passed the deterministic workspace gate, native PostgreSQL 17.10 (2/2),
-repository coverage, and critical coverage. Its browser step then exposed a
-test-isolation defect: transient SwiftShader availability masked the injected
-dynamic-import failure with an earlier WebGL preflight failure. OpenNext and
-workerd were skipped by fail-fast after that browser failure.
+The final deploy target includes the WebGL isolation fix and updates only the
+audited dependency graph and its version-lock contract. The official Playwright
+Chromium, Firefox, and WebKit matrix passed 19/19 locally. A disposable
+loopback-only PostgreSQL 17.10 instance passed the two native tests for forced
+RLS and multi-connection atomicity, then was stopped and removed. Remote Trust
+Gate execution on this exact target remains mandatory before review promotion.
 
-The final deploy target makes chunk failure and timeout scenarios independent
-of transient CI GPU availability while retaining separate real-rendering,
-context-unavailable, and context-loss scenarios. The official Playwright
-Chromium, Firefox, and WebKit matrix passed 19/19 locally after the fix.
-Native PostgreSQL passed on the immediate remote ancestor, but it must run
-again on this exact candidate in the GitHub Trust Gate before the PR can become
-ready for review; the ancestor result is not represented as exact-target
-evidence.
+## Supply-Chain And Artifact Evidence
+
+| Artifact | SHA-256 or identity |
+| --- | --- |
+| Git tree | `9c06adfb5b53fb3172c9aceddc084800fc1e93a6` |
+| Tracked source listing | `1b453e3103c2dd1a8e09d013ca6c286d58bee194561e9bbeade009d82ba94833` |
+| Package lock | `54dbdbc9fa938fbf5287e335c5ff0d93a0232332c7792854e9cee596d7e1b4de` |
+| OpenNext Worker | `d05223bf4d44c84108a102ab62aa3bc9c5568f0c3ac2064c37be5cc65c64bc45` |
+| Static asset manifest, 70 files | `03d328369d0659a2d68fa48c16852e6c2736247669a31bb0898b46e190d5fe8c` |
+| Migration manifest, 49 SQL files | `b99764790a2ad4c06299c89421bfb86ee50fcaddd16d4bc29e503aee8e898360` |
+| Test evidence bundle | `3e1b777bcc13adde23465fa85c32c48e1521e448e9bf19e9ada4f1ae2ef2e631` |
+
+The CycloneDX SBOM, supply-chain gate, static asset list, migration list, test
+bundle, and release manifest are stored under `reports/ci`. They contain no
+credentials and introduce no signing key.
 
 ## Critical Coverage
 
@@ -84,13 +91,13 @@ evidence.
 | Satellite state machine | 99.92% | 98.18% | 100.00% | 99.92% |
 | Satellite schemas and root builder | 100.00% | 96.88% | 100.00% | 100.00% |
 | Deterministic satellite adapters | 100.00% | 100.00% | 100.00% | 100.00% |
-| Mobile evidence vault | 98.34% | 96.58% | 100.00% | 98.34% |
-| Mobile sync authority | 99.77% | 96.00% | 100.00% | 99.77% |
-| Security authorization | 99.46% | 97.68% | 100.00% | 99.46% |
+| Mobile evidence vault | 98.34% | 96.55% | 100.00% | 98.34% |
+| Mobile sync authority | 99.77% | 95.95% | 100.00% | 99.77% |
+| Security authorization | 99.46% | 97.67% | 100.00% | 99.46% |
 | KMS verify-only | 98.92% | 97.01% | 100.00% | 98.92% |
-| Metadata extraction | 99.38% | 96.71% | 100.00% | 99.38% |
+| Metadata extraction | 99.38% | 96.72% | 100.00% | 99.38% |
 | Effective-media orchestration | 100.00% | 97.96% | 100.00% | 100.00% |
-| Audit and challenge invariants | 99.81% | 96.63% | 100.00% | 99.81% |
+| Audit and challenge invariants | 99.81% | 96.62% | 100.00% | 99.81% |
 | Global spatial disclosure | 99.77% | 96.03% | 100.00% | 99.77% |
 
 ## Runtime Evidence
@@ -122,8 +129,8 @@ JPEG assets, sitemap coverage, and the intentional `/icon.svg` 404.
 
 ## Open Remote Gates
 
-1. The Draft PR must run the Trust Gate against the pushed final RC evidence
-   tip, including native PostgreSQL 17.10.
+1. The Draft PR must run the Trust Gate against the pushed final deploy target
+   and following evidence tip, including native PostgreSQL 17.10.
 2. Required branch checks and independent human review must pass before merge.
 3. GitHub Environment `canopyproof-staging` is not configured. The repository
    currently exposes only the protected production environment.

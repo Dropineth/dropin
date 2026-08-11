@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "generatedAt": "2026-08-11T11:39:23.106Z",
+  "routeCount": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/dashboard/global",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/explorer",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/governance",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/terra",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/mobile/report",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/partners",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/funding",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/risk",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/reports/esg",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200,
+      "contentType": "text/plain; charset=utf-8"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "contentType": "application/xml"
+    },
+    {
+      "path": "/icon.jpg",
+      "status": 200,
+      "contentType": "image/jpeg"
+    },
+    {
+      "path": "/apple-touch-icon.jpg",
+      "status": 200,
+      "contentType": "image/jpeg"
+    },
+    {
+      "path": "/icon.svg",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8"
+    }
+  ],
+  "safetyBoundaries": {
+    "CANOPY_PRODUCTION_UNLOCK": false,
+    "DROPIN_ALLOW_ADMIN_PROXY": false,
+    "automaticCanopyDistribution": false,
+    "mainnetFunds": false,
+    "PLANETARY_LAB": false,
+    "iconSvgPresent": false
+  }
+}
