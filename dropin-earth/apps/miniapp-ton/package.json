@@ -14,7 +14,7 @@
     "@dropin/schemas": "file:../../packages/schemas",
     "@dropin/ui": "file:../../packages/ui",
     "next": "15.5.22",
-    "postcss": "8.5.18",
+    "postcss": "8.5.26",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
@@ -26,7 +26,7 @@
   },
   "overrides": {
     "next": {
-      "postcss": "8.5.18",
+      "postcss": "8.5.26",
       "sharp": "0.35.3"
     }
   }

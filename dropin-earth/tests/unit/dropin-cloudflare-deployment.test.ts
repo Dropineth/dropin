@@ -229,6 +229,7 @@ test("CanopyProof OpenNext worker workflow installs deterministically from dropi
 });
 
 test("CanopyProof package metadata keeps npm ci PostCSS resolution locked", () => {
+  const auditedPostcssVersion = "8.5.26";
   const rootPackage = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as {
     devDependencies?: Record<string, string>;
     overrides?: Record<string, unknown>;
@@ -240,12 +241,12 @@ test("CanopyProof package metadata keeps npm ci PostCSS resolution locked", () =
     packages?: Record<string, { version?: string; devDependencies?: Record<string, string> }>;
   };
 
-  assert.equal(rootPackage.devDependencies?.postcss, "8.5.18");
-  assert.equal(rootPackage.overrides?.postcss, "8.5.18");
-  assert.equal(webPackage.devDependencies?.postcss, "8.5.18");
-  assert.equal(lockfile.packages?.[""]?.devDependencies?.postcss, "8.5.18");
-  assert.equal(lockfile.packages?.["apps/web"]?.devDependencies?.postcss, "8.5.18");
-  assert.equal(lockfile.packages?.["node_modules/postcss"]?.version, "8.5.18");
+  assert.equal(rootPackage.devDependencies?.postcss, auditedPostcssVersion);
+  assert.equal(rootPackage.overrides?.postcss, auditedPostcssVersion);
+  assert.equal(webPackage.devDependencies?.postcss, auditedPostcssVersion);
+  assert.equal(lockfile.packages?.[""]?.devDependencies?.postcss, auditedPostcssVersion);
+  assert.equal(lockfile.packages?.["apps/web"]?.devDependencies?.postcss, auditedPostcssVersion);
+  assert.equal(lockfile.packages?.["node_modules/postcss"]?.version, auditedPostcssVersion);
 });
 
 test("GitHub Actions deploy workflow is manual, approved, and keeps guardrails", () => {
@@ -282,7 +283,7 @@ test("GitHub Actions deploy workflow is manual, approved, and keeps guardrails",
   assert.match(rootPackage, /deploy:web:cloudflare/);
   assert.equal(webPackageJson.scripts?.["build:cloudflare"], "npm run cf:build");
   assert.equal(rootPackageJson.devDependencies?.["@opennextjs/cloudflare"], "1.20.2");
-  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.114.0");
+  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.120.1");
 
 });
 
