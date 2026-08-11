@@ -12,10 +12,10 @@ resources, add a promotion label, dispatch staging, or alter production.
 | --- | --- |
 | Product PR | `Dropineth/dropin#2` |
 | Reviewed RC branch | `canopyproof/industrial-rc1` |
-| Deploy target | `a2d48748e49ffb44e9f0b0f45099a30804d7cdd8` |
-| Evidence commit | `baf1695239c439a17398c4406b3362e073fbd7a5` |
-| R2 release manifest SHA-256 | `f4925d27f4eaa46550cb6aefce5354deab02c088595153d6767976a5feb09698` |
-| Trust Gate | run `30373113325`, PASS |
+| Deploy target | `8272274d5f35e72ebbb53b9a9d25e907aeeb9e58` |
+| Evidence commit | `e793842a8028140a541f67e6ae977e15ed7a7277` |
+| R2 release manifest SHA-256 | `86041e8c5ddd0f6a2ced4afb16684caf1ccd037520302e29524c9a8a1692a16b` |
+| Trust Gate | run `31487980253`, PASS |
 
 The deploy target and evidence commit are different by design. The target is
 an ancestor of the evidence commit. The evidence commit may document the

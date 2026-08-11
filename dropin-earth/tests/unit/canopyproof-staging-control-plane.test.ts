@@ -156,6 +156,18 @@ test("release binding and schema lock the immutable R3A identities", () => {
   const release = verifier.validateReleaseBinding(binding(), dispatch());
   const schema = verifier.validateSchemaContract(readJson(schemaPath), release);
 
+  assert.equal(
+    release.deployTargetSha,
+    "8272274d5f35e72ebbb53b9a9d25e907aeeb9e58",
+  );
+  assert.equal(
+    release.evidenceSha,
+    "e793842a8028140a541f67e6ae977e15ed7a7277",
+  );
+  assert.equal(
+    release.r2ManifestSha256,
+    "86041e8c5ddd0f6a2ced4afb16684caf1ccd037520302e29524c9a8a1692a16b",
+  );
   assert.equal(release.deployTargetSha, verifier.EXPECTED_BINDING.deployTargetSha);
   assert.equal(release.evidenceSha, verifier.EXPECTED_BINDING.evidenceSha);
   assert.equal(release.r2ManifestSha256, verifier.EXPECTED_BINDING.r2ManifestSha256);

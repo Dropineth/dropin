@@ -100,7 +100,7 @@ Do not add the `canopyproof-staging` label and do not dispatch until:
 4. every required secret is present;
 5. isolated staging resources exist;
 6. Product PR #2 is ready for review and has two independent collaborator
-   approvals on `baf1695239c439a17398c4406b3362e073fbd7a5`;
+   approvals on `e793842a8028140a541f67e6ae977e15ed7a7277`;
 7. Cloudflare check reconciliation is complete or explicitly waived by an
    administrator without weakening the CanopyProof Trust Gate.
 
@@ -108,9 +108,9 @@ Dispatch from `main` with:
 
 | Input | Exact value |
 | --- | --- |
-| `deploy_target_sha` | `a2d48748e49ffb44e9f0b0f45099a30804d7cdd8` |
-| `evidence_sha` | `baf1695239c439a17398c4406b3362e073fbd7a5` |
-| `release_manifest_sha256` | `f4925d27f4eaa46550cb6aefce5354deab02c088595153d6767976a5feb09698` |
+| `deploy_target_sha` | `8272274d5f35e72ebbb53b9a9d25e907aeeb9e58` |
+| `evidence_sha` | `e793842a8028140a541f67e6ae977e15ed7a7277` |
+| `release_manifest_sha256` | `86041e8c5ddd0f6a2ced4afb16684caf1ccd037520302e29524c9a8a1692a16b` |
 | `deploy_confirm` | `canopyproof-staging` |
 
 An independent Environment reviewer must approve the pending deployment.

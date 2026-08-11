@@ -2,11 +2,11 @@
 
 Status: ADMIN_ACTION_REQUIRED
 
-Inspection date: 2026-07-29
+Inspection date: 2026-08-11
 
 Product PR: [Dropineth/dropin#2](https://github.com/Dropineth/dropin/pull/2)
 
-Observed PR head: `baf1695239c439a17398c4406b3362e073fbd7a5`
+Observed PR head: `e793842a8028140a541f67e6ae977e15ed7a7277`
 
 The current PR check page shows two Cloudflare failures and the passing
 CanopyProof Trust Gate. No check is removed or reclassified in GitHub by this
@@ -16,8 +16,8 @@ document.
 
 | Check | GitHub App | Check ID | Associated SHA | Cloudflare project | Details | Branch mapping | Required-check status | Classification |
 | --- | --- | ---: | --- | --- | --- | --- | --- | --- |
-| `Workers Builds: canopyproof-web` | Cloudflare Workers and Pages (`cloudflare-workers-and-pages`) | `90322038514` | `baf1695239c439a17398c4406b3362e073fbd7a5` | `canopyproof-web` | [build `f16c287d-388a-49ba-b3fd-e3bac6be4958`](https://dash.cloudflare.com/ff1026248646a5c87b3a664d87683818/workers/services/view/canopyproof-web/production/builds/f16c287d-388a-49ba-b3fd-e3bac6be4958) | PR-head check on `canopyproof/industrial-rc1`; Cloudflare dashboard production branch mapping requires admin confirmation | UNVERIFIED; branch-protection details are admin-only | `STALE_SUPERSEDED` |
-| `Workers Builds: dropin` | Cloudflare Workers and Pages (`cloudflare-workers-and-pages`) | `90321974466` | `baf1695239c439a17398c4406b3362e073fbd7a5` | `dropin` | [build `72ad36c0-fd1d-49a8-bd07-5af2bee0749a`](https://dash.cloudflare.com/ff1026248646a5c87b3a664d87683818/workers/services/view/dropin/production/builds/72ad36c0-fd1d-49a8-bd07-5af2bee0749a) | PR-head check on `canopyproof/industrial-rc1`; project-to-branch mapping requires admin confirmation | UNVERIFIED; branch-protection details are admin-only | `ORPHANED` |
+| `Workers Builds: canopyproof-web` | Cloudflare Workers and Pages (`cloudflare-workers-and-pages`) | `93767753677` | `e793842a8028140a541f67e6ae977e15ed7a7277` | `canopyproof-web` | [build `b528e8f4-a997-4d86-9c17-d93d66f55e96`](https://dash.cloudflare.com/ff1026248646a5c87b3a664d87683818/workers/services/view/canopyproof-web/production/builds/b528e8f4-a997-4d86-9c17-d93d66f55e96) | PR-head check on `canopyproof/industrial-rc1`; Cloudflare dashboard production branch mapping requires admin confirmation | UNVERIFIED; branch-protection details are admin-only | `STALE_SUPERSEDED` |
+| `Workers Builds: dropin` | Cloudflare Workers and Pages (`cloudflare-workers-and-pages`) | `93767722981` | `e793842a8028140a541f67e6ae977e15ed7a7277` | `dropin` | [build `9cc095fd-ff1c-4bf3-aacd-878d761fa5a0`](https://dash.cloudflare.com/ff1026248646a5c87b3a664d87683818/workers/services/view/dropin/production/builds/9cc095fd-ff1c-4bf3-aacd-878d761fa5a0) | PR-head check on `canopyproof/industrial-rc1`; project-to-branch mapping requires admin confirmation | UNVERIFIED; branch-protection details are admin-only | `ORPHANED` |
 
 Both failures completed in zero seconds on the current evidence SHA. The
 `canopyproof-web` check belongs to a legacy direct Workers Builds path that
@@ -35,7 +35,7 @@ shared by the protected staging path, reclassify the affected check as
 ## Preserved Authoritative Gate
 
 `CanopyProof Trust Gate` run
-[30373113325](https://github.com/Dropineth/dropin/actions/runs/30373113325)
+[31487980253](https://github.com/Dropineth/dropin/actions/runs/31487980253)
 passed on the evidence SHA. The proposed staging workflow adds an independent
 protected deployment gate on `main`; it does not replace code review or the
 Trust Gate.
