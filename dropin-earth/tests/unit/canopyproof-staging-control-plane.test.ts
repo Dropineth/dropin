@@ -585,11 +585,16 @@ test("control-plane documentation requires main, independent review, and admin-o
   );
   assert.match(
     checklist,
-    /MISCONFIGURED: custom policy currently allows `canopyproof\/industrial-rc1`/u,
+    /PRESENT: exact branch policy `main`/u,
   );
   assert.match(
     checklist,
-    /Replace the current `canopyproof\/industrial-rc1` deployment branch policy with\s+an exact `main` policy before dispatch/u,
+    /Keep\s+the exact `main` deployment branch policy/u,
+  );
+  assert.match(checklist, /`CLOUDFLARE_API_TOKEN`.*\| yes \| present \|/u);
+  assert.match(
+    checklist,
+    /`CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON`.*\| yes \| absent \|/u,
   );
 
   assert.match(reconciliation, /Workers Builds: canopyproof-web/u);
@@ -600,7 +605,7 @@ test("control-plane documentation requires main, independent review, and admin-o
 
   assert.match(controlPlane, /Status: NOT DEPLOYED/u);
   assert.match(controlPlane, /label is informational only/u);
-  assert.match(controlPlane, /Product PR #2 remains Draft/u);
+  assert.match(controlPlane, /Product PR #2 remains unmerged/u);
   assert.doesNotMatch(controlPlane, /Status: DEPLOYED/u);
 });
 

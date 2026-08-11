@@ -111,6 +111,6 @@ Production Workers, routes, DNS, data, audit facts, and evidence records must
 remain untouched.
 
 The valid next step is independent review and merge of the control-plane PR
-only. Product PR #2 remains Draft. Staging remains blocked until the
-administrator completes
+only. Product PR #2 remains unmerged and requires two exact-evidence approvals.
+Staging remains blocked until the administrator completes
 `docs/CANOPYPROOF_STAGING_ADMIN_CHECKLIST.md`.

@@ -3,7 +3,7 @@
 Status: ADMIN_CONFIGURATION_REQUIRED
 
 This checklist is for a repository and Cloudflare administrator. A read-only
-GitHub API inspection on 2026-07-29 confirmed that the Environment exists, but
+GitHub API inspection on 2026-08-11 confirmed that the Environment exists, but
 it is not ready for dispatch. This file does not prove that any Cloudflare
 resource exists.
 
@@ -12,16 +12,15 @@ resource exists.
 | Setting | Required value | Current state |
 | --- | --- | --- |
 | Environment name | `canopyproof-staging` | PRESENT |
-| Deployment branch policy | selected branch `main` only | MISCONFIGURED: custom policy currently allows `canopyproof/industrial-rc1` |
+| Deployment branch policy | selected branch `main` only | PRESENT: exact branch policy `main` |
 | Required reviewers | `xiruier` and `Dropineth` | PRESENT |
 | Reviewer count | two independent reviewers | PRESENT |
 | Prevent self-review | enabled | ENABLED |
 | Administrator bypass | disabled for normal promotion | UNVERIFIED |
 
-The workflow must first be independently reviewed and merged to `main`.
-Replace the current `canopyproof/industrial-rc1` deployment branch policy with
-an exact `main` policy before dispatch. Configure the Environment only for the
-main-owned workflow. Do not authorize Product PR #2,
+The workflow must first be independently reviewed and merged to `main`. Keep
+the exact `main` deployment branch policy and configure the Environment only
+for the main-owned workflow. Do not authorize Product PR #2,
 `canopyproof/industrial-rc1`, a tag, or a fork as an allowed deployment ref.
 
 ## Reviewer Eligibility
@@ -31,15 +30,15 @@ review slot.
 
 | Account | GitHub type | Repository relationship | Independent from author | Use |
 | --- | --- | --- | --- | --- |
-| `xiruier` | User | collaborator, write | yes | Environment and PR reviewer candidate |
-| `Dropineth` | User, not an organization account | repository owner/admin | yes | Environment and PR reviewer candidate |
+| `xiruier` | User | collaborator, write; verified 2026-08-11 | yes | Environment and PR reviewer candidate |
+| `Dropineth` | User, not an organization account | repository owner/admin; verified 2026-08-11 | yes | Environment and PR reviewer candidate |
 | `poccahin` | User | collaborator and Product PR author | no | excluded from required approval |
 
-The administrator must confirm both candidate accounts remain active
-collaborators when creating the Environment and must configure their numeric
-GitHub user IDs through the Environment API or UI. Do not substitute the PR
-author. If either candidate is unavailable or GitHub rejects the reviewer,
-add another independent repository collaborator before promotion.
+The Environment currently binds user IDs `178269476` (`Dropineth`) and
+`23308435` (`xiruier`) with prevent-self-review enabled. Revalidate eligibility
+immediately before promotion. Do not substitute the PR author. If either
+candidate is unavailable or GitHub rejects the reviewer, add another
+independent repository collaborator before promotion.
 
 GitHub Environment required-reviewer lists require one approval from the
 configured list, not two. The main-owned verifier therefore independently
@@ -50,15 +49,15 @@ self-review prevention.
 
 ## Environment Secrets
 
-The Environment exists, but a name-only inspection confirmed that all four
-required secrets are absent. Record presence only; never paste values into
-issues, PRs, logs, artifacts, or this file. No Environment variables are
-present or required.
+The Environment exists. A name-only inspection confirmed that the two
+Cloudflare secrets are present and the two resource-manifest secrets are
+absent. Record presence only; never paste values into issues, PRs, logs,
+artifacts, or this file. No Environment variables are present or required.
 
 | Name | Secret or variable | Format | Purpose | Required | Present or absent |
 | --- | --- | --- | --- | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | secret | scoped Cloudflare API token with Workers Scripts write and account read; no global key | deploy the two staging Workers and read the workers.dev subdomain | yes | absent |
-| `CLOUDFLARE_ACCOUNT_ID` | secret | Cloudflare account identifier | bind deployment to the intended account | yes | absent |
+| `CLOUDFLARE_API_TOKEN` | secret | scoped Cloudflare API token with Workers Scripts write and account read; no global key | deploy the two staging Workers and read the workers.dev subdomain | yes | present |
+| `CLOUDFLARE_ACCOUNT_ID` | secret | Cloudflare account identifier | bind deployment to the intended account | yes | present |
 | `CANOPYPROOF_STAGING_RESOURCE_MANIFEST_JSON` | secret | UTF-8 JSON conforming to `config/canopyproof-staging-resource-manifest.schema.json` | bind isolated origin, database, storage, telemetry, Workers, target, and evidence | yes | absent |
 | `CANOPYPROOF_STAGING_RESOURCE_MANIFEST_HMAC_KEY_B64` | secret | canonical base64 encoding of at least 32 random bytes | verify resource-manifest authenticity without storing a key in Git | yes | absent |
 
