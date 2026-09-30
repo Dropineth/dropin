@@ -1,0 +1,8 @@
+npm error code E404
+npm error 404 No match found for version 9.3.7
+npm error 404
+npm error 404  '@deck.gl/maplibre@9.3.7' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /Users/lee/.npm/_logs/2026-09-30T03_14_45_788Z-debug-0.log

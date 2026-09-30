@@ -1,0 +1,4 @@
+page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response"
+    at main (/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/tests/browser/maplibre-remediation.spec.ts:68:40) {
+  name: 'TimeoutError'
+}

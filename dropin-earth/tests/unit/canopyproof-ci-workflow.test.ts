@@ -22,7 +22,7 @@ test("repository-root CanopyProof CI is a non-deploying trust gate", () => {
   assert.match(workflow, /set -o pipefail/);
   assert.match(workflow, /test -s reports\/ci\/canopyproof-coverage\.txt/);
   assert.match(workflow, /test -s coverage\/coverage-summary\.json/);
-  assert.match(workflow, /dropin-earth\/coverage\/coverage-summary\.json/);
+  assert.match(workflow, /path: dropin-earth\/\$\{\{ env\.LIFEPP_VALIDATION_OUTPUT_DIR \}\}\/artifacts\//);
   assert.match(workflow, /if-no-files-found: error/);
   assert.match(workflow, /npm --workspace apps\/web run cf:build/);
   assert.match(workflow, /test -f apps\/web\/\.open-next\/worker\.js/);

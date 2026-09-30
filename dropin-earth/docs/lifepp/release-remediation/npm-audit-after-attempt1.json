@@ -1,0 +1,48 @@
+{
+  "message": "400 Bad Request - POST https://registry.npmjs.org/-/npm/v1/security/audits/quick - Bad Request",
+  "method": "POST",
+  "uri": "https://registry.npmjs.org/-/npm/v1/security/audits/quick",
+  "headers": {
+    "date": [
+      "Wed, 30 Sep 2026 03:00:34 GMT"
+    ],
+    "transfer-encoding": [
+      "chunked"
+    ],
+    "connection": [
+      "keep-alive"
+    ],
+    "cf-ray": [
+      "a42ffa633f174900-SJC"
+    ],
+    "cf-cache-status": [
+      "DYNAMIC"
+    ],
+    "server": [
+      "cloudflare"
+    ],
+    "npm-notice": [
+      "This endpoint is being retired. Use the bulk advisory endpoint instead. See the following docs for more info: https://api-docs.npmjs.com/#tag/Audit"
+    ],
+    "x-fetch-attempts": [
+      "1"
+    ]
+  },
+  "statusCode": 400,
+  "body": {
+    "statusCode": 400,
+    "error": "Bad Request",
+    "message": "Invalid package tree, run  npm install  to rebuild your package-lock.json"
+  },
+  "error": {
+    "summary": "",
+    "detail": ""
+  },
+  "evidenceRedaction": {
+    "removed": [
+      "headers.set-cookie"
+    ],
+    "reason": "Transient server cookie excluded from committable evidence",
+    "originalSha256": "40698597ec67947f16b8e28b6c533ceda031717cbb651c519cb512e15ff486ab"
+  }
+}

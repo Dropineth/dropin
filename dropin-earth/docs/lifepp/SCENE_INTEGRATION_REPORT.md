@@ -2,7 +2,11 @@
 
 Status: **viewer safety and fallback implemented; both real-source embeds disabled and unverified**.
 
-## Actual source observations
+## Current stage observation
+
+The original results below are historical. On 2026-09-30 at 02:45:52.003Z, a new bounded HEAD observation of scene 31 returned HTTP 200 (`text/html`, length 948); scene 29 at 02:45:53.349Z returned ECONNRESET. No response body, engine or asset was read, and neither scene was actually loaded. The original URLs, unknown metadata and disabled embed registry remain unchanged. [Current exact observations and missing inputs](release-remediation/scene-and-preview-inputs.md) supersede only the accessibility snapshot, not the safety boundary.
+
+## Historical first-stage source observations
 
 `node scripts/lifepp-scene-check.mjs` ran on 2026-09-30, from 01:16:21.047Z to 01:16:23.899Z (UTC). Both HEAD requests returned `ECONNRESET`, message `socket hang up`:
 

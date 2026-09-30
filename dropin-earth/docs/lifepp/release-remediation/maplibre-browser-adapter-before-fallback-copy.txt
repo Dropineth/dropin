@@ -1,0 +1,55 @@
+{
+  "fixtureOnly": true,
+  "evidenceStage": "development-preliminary",
+  "sourceRevisionHead": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "sourceDirtyScope": [
+    "M dropin-earth/apps/admin/package.json",
+    " M dropin-earth/apps/miniapp-ton/package.json",
+    " M dropin-earth/apps/web/package.json",
+    " M dropin-earth/apps/web/src/components/canopyproof-os/NasaGibsEarthObservation.tsx",
+    " M dropin-earth/apps/web/src/components/life/LeadForm.module.css",
+    " M dropin-earth/apps/web/src/components/life/LeadForm.tsx",
+    " M dropin-earth/apps/web/src/middleware.ts",
+    " M dropin-earth/package-lock.json",
+    " M dropin-earth/package.json",
+    " M dropin-earth/scripts/lifepp-browser-check.mjs",
+    " M dropin-earth/services/api/package.json",
+    " M dropin-earth/tests/browser/lifepp.spec.ts",
+    " M dropin-earth/tests/unit/canopyproof-ci-workflow.test.ts",
+    " M dropin-earth/tests/unit/canopyproof-cross-browser-webgl-contract.test.ts",
+    " M dropin-earth/tests/unit/canopyproof-test-suite-contract.test.ts",
+    " M dropin-earth/tests/unit/canopyproof-workerd-smoke-contract.test.ts",
+    "?? dropin-earth/apps/web/migrations/",
+    "?? dropin-earth/apps/web/src/app/life/inquiries/",
+    "?? dropin-earth/apps/web/src/lib/life/",
+    "?? dropin-earth/scripts/lifepp-validation-run.mjs",
+    "?? dropin-earth/tests/browser/lifepp-consultation.spec.ts",
+    "?? dropin-earth/tests/browser/maplibre-remediation.spec.ts",
+    "?? dropin-earth/tests/unit/dependency-remediation.test.ts",
+    "?? dropin-earth/tests/unit/lifepp-consultation.test.ts",
+    "?? dropin-earth/tests/unit/lifepp-validation-run.test.ts"
+  ],
+  "renderer": "WebGL2 via SwiftShader, matching repository browser suite",
+  "physicalGpuSupportClaimed": false,
+  "externalNasaNetworkUsed": false,
+  "observedAt": "2026-09-30T03:34:59.900Z",
+  "serverMode": "next-production",
+  "results": [
+    {
+      "scenario": "maplibre6-webgl2-raster-and-overlay",
+      "status": "PASS",
+      "nasaTileRequestsIntercepted": 84,
+      "cyanOverlayPixels": 1624,
+      "refreshedCyanOverlayPixels": 1624,
+      "animatedCyanOverlayPixels": 1626
+    },
+    {
+      "scenario": "maplibre6-webgl2-unavailable-preserves-metadata",
+      "status": "PASS",
+      "nasaTileRequestsIntercepted": 0,
+      "cyanOverlayPixels": 0,
+      "refreshedCyanOverlayPixels": 0,
+      "animatedCyanOverlayPixels": 0
+    }
+  ]
+}

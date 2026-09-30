@@ -1,0 +1,201 @@
+{
+  "observedAt": "2026-09-30T03:41:44.972792+00:00",
+  "baselineCommit": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "sourceRevisionHead": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "sourceDirtyScope": [
+    "M  dropin-earth/apps/admin/package.json",
+    "M  dropin-earth/apps/miniapp-ton/package.json",
+    "A  dropin-earth/apps/web/migrations/life-inquiry/0001_inquiry.sql",
+    "M  dropin-earth/apps/web/next.config.mjs",
+    "M  dropin-earth/apps/web/package.json",
+    "A  dropin-earth/apps/web/src/app/life/inquiries/maintenance/route.ts",
+    "A  dropin-earth/apps/web/src/app/life/inquiries/route.ts",
+    "A  dropin-earth/apps/web/src/app/request-errors/prefetch/route.ts",
+    "M  dropin-earth/apps/web/src/components/canopyproof-os/NasaGibsEarthObservation.tsx",
+    "M  dropin-earth/apps/web/src/components/life/LeadForm.module.css",
+    "M  dropin-earth/apps/web/src/components/life/LeadForm.tsx",
+    "A  dropin-earth/apps/web/src/lib/life/inquiry-runtime.ts",
+    "A  dropin-earth/apps/web/src/lib/life/inquiry-service.ts",
+    "M  dropin-earth/apps/web/src/middleware.ts",
+    "M  dropin-earth/package-lock.json",
+    "M  dropin-earth/package.json",
+    "M  dropin-earth/scripts/lifepp-browser-check.mjs",
+    "A  dropin-earth/scripts/lifepp-validation-run.mjs",
+    "M  dropin-earth/services/api/package.json",
+    "A  dropin-earth/tests/browser/lifepp-consultation.spec.ts",
+    "M  dropin-earth/tests/browser/lifepp.spec.ts",
+    "A  dropin-earth/tests/browser/maplibre-remediation.spec.ts",
+    "M  dropin-earth/tests/unit/canopyproof-ci-workflow.test.ts",
+    "M  dropin-earth/tests/unit/canopyproof-cross-browser-webgl-contract.test.ts",
+    "M  dropin-earth/tests/unit/canopyproof-test-suite-contract.test.ts",
+    "M  dropin-earth/tests/unit/canopyproof-workerd-smoke-contract.test.ts",
+    "A  dropin-earth/tests/unit/dependency-remediation.test.ts",
+    "A  dropin-earth/tests/unit/lifepp-consultation.test.ts",
+    "A  dropin-earth/tests/unit/lifepp-validation-run.test.ts"
+  ],
+  "evidenceStage": "development-preliminary",
+  "installationRuntime": {
+    "node": "22.22.3",
+    "npm": "10.9.4",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "manifestHashes": {
+    "package.json": "80641ffd92b41bda183f5f94ced6222c8977fa5e8d1677f6d89f02dfc370e414",
+    "package-lock.json": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "apps/web/package.json": "543eabbc31bb51384f640e62a2384b5f8d610df39f7328fae586cfce4c29a849",
+    "apps/admin/package.json": "3e4c5081b5e58c4b0a57a9cfd93a1fdcd0a6e855bfbd157bc02623869bd6091b",
+    "apps/miniapp-ton/package.json": "28c2b88158d41413009f8429cc61fd81cdd03f6bf42f71709c20a36b15447435",
+    "services/api/package.json": "c9c12f2bafc5881df859223f5b97a743906307689335b8446cc079d78484d9e8"
+  },
+  "commands": [
+    {
+      "command": "npm install --package-lock-only --ignore-scripts --include=optional",
+      "exitCode": 0,
+      "evidencePrefix": "lock-maplibre-adapter"
+    },
+    {
+      "command": "npm update brace-expansion --package-lock-only --ignore-scripts --include=optional",
+      "exitCode": 0,
+      "evidencePrefix": "lock-brace-expansion"
+    },
+    {
+      "command": "npm ci --include=optional",
+      "exitCode": 0,
+      "evidencePrefix": "npm-ci-adapter-final"
+    },
+    {
+      "command": "npm audit --audit-level=moderate --json",
+      "exitCode": 0,
+      "evidencePrefix": "npm-audit-adapter-final"
+    },
+    {
+      "command": "npm ls next maplibre-gl @deck.gl/core @deck.gl/layers @deck.gl/maplibre @luma.gl/core sharp hono nanoid deepmerge-ts toml jayson undici qs brace-expansion minimatch --all --json",
+      "exitCode": 0,
+      "evidencePrefix": "installed-dependency-tree-adapter-final"
+    },
+    {
+      "command": "node --import tsx --test tests/unit/dependency-remediation.test.ts",
+      "exitCode": 0,
+      "evidencePrefix": "dependency-compatibility-adapter-final"
+    },
+    {
+      "command": "npm --workspace apps/web run typecheck",
+      "exitCode": 0,
+      "evidencePrefix": "maplibre-typecheck-adapter-final"
+    },
+    {
+      "command": "eslint NASA component, dependency unit test, maplibre browser test",
+      "exitCode": 0,
+      "evidencePrefix": "dependency-lint-adapter-final"
+    },
+    {
+      "command": "LIFEPP_BROWSER_BASE_URL=http://127.0.0.1:3104 LIFEPP_BROWSER_SERVER_MODE=next-production LIFEPP_MAPLIBRE_OUTPUT_DIR=reports/lifepp-phase2-development/maplibre node --import tsx tests/browser/maplibre-remediation.spec.ts",
+      "exitCode": 0,
+      "evidencePrefix": "maplibre-browser-adapter-final"
+    }
+  ],
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "compatibilityTestCount": 6,
+  "productionAuthority": false,
+  "remainingVerification": [
+    "Full workspace CI/browser/workerd and head-bound remote gates are coordinated in the parent task. These local development checks do not grant production approval."
+  ],
+  "browser": {
+    "fixtureOnly": true,
+    "evidenceStage": "development-preliminary",
+    "sourceRevisionHead": "8ba02a3e7fe591b115162229510112220b4182b8",
+    "sourceDirtyScope": [
+      "M  dropin-earth/apps/admin/package.json",
+      "M  dropin-earth/apps/miniapp-ton/package.json",
+      "A  dropin-earth/apps/web/migrations/life-inquiry/0001_inquiry.sql",
+      "M  dropin-earth/apps/web/next.config.mjs",
+      "M  dropin-earth/apps/web/package.json",
+      "A  dropin-earth/apps/web/src/app/life/inquiries/maintenance/route.ts",
+      "A  dropin-earth/apps/web/src/app/life/inquiries/route.ts",
+      "A  dropin-earth/apps/web/src/app/request-errors/prefetch/route.ts",
+      "M  dropin-earth/apps/web/src/components/canopyproof-os/NasaGibsEarthObservation.tsx",
+      "M  dropin-earth/apps/web/src/components/life/LeadForm.module.css",
+      "M  dropin-earth/apps/web/src/components/life/LeadForm.tsx",
+      "A  dropin-earth/apps/web/src/lib/life/inquiry-runtime.ts",
+      "A  dropin-earth/apps/web/src/lib/life/inquiry-service.ts",
+      "M  dropin-earth/apps/web/src/middleware.ts",
+      "M  dropin-earth/package-lock.json",
+      "M  dropin-earth/package.json",
+      "M  dropin-earth/scripts/lifepp-browser-check.mjs",
+      "A  dropin-earth/scripts/lifepp-validation-run.mjs",
+      "M  dropin-earth/services/api/package.json",
+      "A  dropin-earth/tests/browser/lifepp-consultation.spec.ts",
+      "M  dropin-earth/tests/browser/lifepp.spec.ts",
+      "A  dropin-earth/tests/browser/maplibre-remediation.spec.ts",
+      "M  dropin-earth/tests/unit/canopyproof-ci-workflow.test.ts",
+      "M  dropin-earth/tests/unit/canopyproof-cross-browser-webgl-contract.test.ts",
+      "M  dropin-earth/tests/unit/canopyproof-test-suite-contract.test.ts",
+      "M  dropin-earth/tests/unit/canopyproof-workerd-smoke-contract.test.ts",
+      "A  dropin-earth/tests/unit/dependency-remediation.test.ts",
+      "A  dropin-earth/tests/unit/lifepp-consultation.test.ts",
+      "A  dropin-earth/tests/unit/lifepp-validation-run.test.ts"
+    ],
+    "renderer": "WebGL2 via SwiftShader, matching repository browser suite",
+    "physicalGpuSupportClaimed": false,
+    "externalNasaNetworkUsed": false,
+    "observedAt": "2026-09-30T03:40:48.988Z",
+    "serverMode": "next-production",
+    "results": [
+      {
+        "scenario": "maplibre6-webgl2-raster-and-overlay",
+        "status": "PASS",
+        "nasaTileRequestsIntercepted": 84,
+        "cyanOverlayPixels": 1624,
+        "refreshedCyanOverlayPixels": 1624,
+        "animatedCyanOverlayPixels": 1626
+      },
+      {
+        "scenario": "maplibre6-webgl2-unavailable-preserves-metadata",
+        "status": "PASS",
+        "nasaTileRequestsIntercepted": 0,
+        "cyanOverlayPixels": 0,
+        "refreshedCyanOverlayPixels": 0,
+        "animatedCyanOverlayPixels": 0
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "file": "fixture-maplibre-interleaved-bounds.png",
+      "sha256": "43463cc043cd3abb0d31d2844af169a849e15a548b81aef5481722d1211a39be",
+      "fixtureOnly": true
+    },
+    {
+      "file": "fixture-maplibre-refreshed-bounds.png",
+      "sha256": "43463cc043cd3abb0d31d2844af169a849e15a548b81aef5481722d1211a39be",
+      "fixtureOnly": true
+    },
+    {
+      "file": "fixture-maplibre-animated-bounds.png",
+      "sha256": "ecaf65eb61548bd4ac7e6a4a78f049f02ef575066b9ae61a92222eaf06122c54",
+      "fixtureOnly": true
+    },
+    {
+      "file": "fixture-maplibre-webgl2-fallback.png",
+      "sha256": "1f0cd7d522b7e45aa8e048fbd3c6df38616ec8824b4203025409c50d54a7ce1e",
+      "fixtureOnly": true
+    }
+  ],
+  "visualReview": {
+    "status": "PASS",
+    "observed": "Cyan polygon visibly above solid synthetic raster, including animation. Final unavailable-WebGL2 notice is readable without duplicated Before/After prefix artifacts; fixture label and source/non-endorsement text remain visible.",
+    "reviewedFiles": [
+      "fixture-maplibre-interleaved-bounds.png",
+      "fixture-maplibre-animated-bounds.png",
+      "fixture-maplibre-webgl2-fallback.png"
+    ]
+  }
+}

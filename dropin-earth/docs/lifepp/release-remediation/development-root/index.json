@@ -1,0 +1,40 @@
+{
+  "classification": "DEVELOPMENT_DIAGNOSTICS_NOT_CANDIDATE_ACCEPTANCE",
+  "headDuringDevelopment": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "workingTreeDirty": true,
+  "exactSourceFingerprint": null,
+  "node": "22.22.3",
+  "npm": "10.9.4",
+  "commandStartTime": null,
+  "timeLimit": "Original logs lack explicit start timestamps; file mtimes are recorded as such, not invented command execution timestamps. Final CI command receipts provide exact SHA/fingerprint/time binding.",
+  "entries": [
+    {
+      "file": "lifepp-phase2-units.txt",
+      "command": "npm run test",
+      "result": "FAIL:865/867; legacy contract coverage corrected",
+      "sha256": "543fe9ad18972c6f1f3658cf75efa5818cebd8e9ff6777839e78c1a8f21bf08b",
+      "logFilesystemModifiedAt": "2026-09-30T03:10:50.782229+00:00"
+    },
+    {
+      "file": "lifepp-phase2-browser.txt",
+      "command": "node --import tsx tests/browser/lifepp.spec.ts",
+      "result": "FAIL:71/72; malformed prefetch Next500",
+      "sha256": "7f49aff3c5dd162d65935de894ffa25d37523fb785ecb313cd2ed16656ea23e3",
+      "logFilesystemModifiedAt": "2026-09-30T03:11:14.400111+00:00"
+    },
+    {
+      "file": "lifepp-phase2-types-adapter.txt",
+      "command": "npm run typecheck",
+      "result": "FAIL:TS2367/TS2339 in intermediate getStyle layer query",
+      "sha256": "6b332b6496526d07b8fd9379b70b8304db402807a41a6567290987a984ce4997",
+      "logFilesystemModifiedAt": "2026-09-30T03:31:04.799668+00:00"
+    },
+    {
+      "file": "lifepp-phase2-units-adapter.txt",
+      "command": "npm run test",
+      "result": "PASS:872/872; before final map layer correction",
+      "sha256": "44f2bd854d3a9cdeb035106dfaf82e249e0b530ab6b3901b96d1dff5d2b299b7",
+      "logFilesystemModifiedAt": "2026-09-30T03:30:06.532744+00:00"
+    }
+  ]
+}

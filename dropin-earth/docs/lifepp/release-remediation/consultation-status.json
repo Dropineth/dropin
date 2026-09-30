@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-30T03:28:17.095Z",
+  "status": "IMPLEMENTED_DEFAULT_DISABLED",
+  "evidenceClass": "LOCAL_SYNTHETIC",
+  "realInstitutionalReceipt": false,
+  "externalMessagesSent": 0,
+  "cloudResourcesCreated": 0,
+  "deployed": false,
+  "runtime": {
+    "node": "v22.22.3",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "dependencyTree": "After final Deck/OpenNext adapter clean npm ci; no consultation dependency additions"
+  },
+  "routes": [
+    "GET /life/inquiries",
+    "POST /life/inquiries",
+    "DELETE /life/inquiries",
+    "POST /life/inquiries/maintenance"
+  ],
+  "checks": [
+    {
+      "name": "Focused consultation and existing inquiry tests",
+      "command": "node --test --import tsx tests/unit/lifepp-consultation.test.ts tests/unit/lifepp-inquiry.test.ts",
+      "workingDirectory": "dropin-earth",
+      "exitCode": 0,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "log": "consultation-test-results.txt"
+    },
+    {
+      "name": "Scoped lint",
+      "command": "npx eslint apps/web/src/lib/life/inquiry-service.ts apps/web/src/lib/life/inquiry-runtime.ts apps/web/src/app/life/inquiries/route.ts apps/web/src/app/life/inquiries/maintenance/route.ts apps/web/src/components/life/LeadForm.tsx tests/unit/lifepp-consultation.test.ts tests/browser/lifepp-consultation.spec.ts",
+      "workingDirectory": "dropin-earth",
+      "exitCode": 0,
+      "log": "consultation-lint.txt"
+    },
+    {
+      "name": "Intermediate full web typecheck before release-agent MapLibre import fix",
+      "command": "npm --workspace apps/web run typecheck",
+      "workingDirectory": "dropin-earth",
+      "exitCode": 2,
+      "log": "consultation-typecheck.txt",
+      "failure": "NasaGibsEarthObservation.tsx:6 TS1192 maplibre-gl default export",
+      "scope": "Superseded by release-agent import fix; final whole-app outcome belongs to root release verification"
+    },
+    {
+      "name": "LeadForm receiving recovery browser fixture",
+      "command": "LIFEPP_CONSULTATION_BROWSER_REPORT=/tmp/lifepp-consultation-ui.json node --import tsx tests/browser/lifepp-consultation.spec.ts",
+      "workingDirectory": "dropin-earth",
+      "exitCode": 0,
+      "log": "consultation-browser-results.txt",
+      "evidenceClass": "LOCAL_SYNTHETIC_MOCK_UI",
+      "realInstitutionalReceipt": false
+    }
+  ],
+  "verifiedLocally": [
+    "Default and incomplete configuration return draft; explicit server enable flag is mandatory",
+    "Strict input schema, separate sendConsent true and policy version required",
+    "Origin, Sec-Fetch-Site and custom header checks; missing client identity fails closed",
+    "Non-JSON and oversized body rejected",
+    "Actual local D1 write and read-back; dispose and reopen runtime preserves synthetic record",
+    "Same-key retries return same receipt and changed-content retry conflicts",
+    "Eight concurrent new requests from one client admit three and reject five",
+    "Eight concurrent identical requests create one receipt and return seven duplicates",
+    "Client-denied and duplicate requests do not consume global rate budget",
+    "Invalid withdrawal credential rejected; valid withdrawal removes primary row",
+    "Unauthorized maintenance rejected; authorized cleanup heartbeat required",
+    "Expired heartbeat disables collection; expired inquiry and rate rows are removed",
+    "Missing storage returns draft/unavailable and never a success receipt",
+    "A changed sending-consent policy cannot reuse an old receipt",
+    "Concurrent clients cannot exceed 100 new requests per hour globally; existing receipts remain retrievable by idempotent retry",
+    "Withdrawal transaction retains only a keyed retry marker and original expiry; old POST replay cannot recreate personal data",
+    "Withdrawal markers are removed by original-expiry cleanup",
+    "Mocked browser: default GET only, 503 disables send, GET-only recheck preserves draft/UUID, recovery requires fresh explicit sending consent"
+  ],
+  "implementedNotSeparatelyExercised": [
+    "Five-second stalled request body deadline",
+    "Enabled receiving against an actual authorized deployment and receiving institution"
+  ],
+  "realReceivingBlockedBy": [
+    "No authorized D1 resource and binding",
+    "No confirmed receiving/data-control entity or operator access and lost-credential support process",
+    "No accepted retention and bilingual backup policy",
+    "No configured server secrets",
+    "No independently accepted deployment receipt/reference",
+    "No verified hourly cleanup scheduler and failure alerting"
+  ],
+  "remainingReleaseVerification": [
+    "Root final whole-app typecheck, lint and builds",
+    "OpenNext/workerd default-mode route checks",
+    "Default form browser regression against final source and dependencies"
+  ],
+  "reviewFixes": [
+    "Bind idempotency fingerprint to sending-consent policyVersion",
+    "Provide fail-closed GET recheck after temporary receipt failure while retaining request UUID",
+    "Atomically retain minimal expiring withdrawal marker to prevent stale replay"
+  ],
+  "sourceSha256": {
+    "apps/web/src/lib/life/inquiry-service.ts": "629a99df52e8b064c0605f4aa0daee2dad308b4496f486127413dfc5d6135645",
+    "apps/web/src/lib/life/inquiry-runtime.ts": "c3959aacd4425c230cba63e5430e4d3ac163ca83dae2bd7942a82be8cf0abf66",
+    "apps/web/src/components/life/LeadForm.tsx": "a247089dc010e2b89e01d0691dbdbecbd17a90c19bd6075f65cb7ee8fdfce3f8",
+    "apps/web/migrations/life-inquiry/0001_inquiry.sql": "4d4ce8250af09b672cf4745b33af95ddc55edd26a0af333519731b903e83d122",
+    "tests/unit/lifepp-consultation.test.ts": "d53c2ef917b58dd1d568d92916ec03dc1771dc76ce2ed8d3cdce6e19aba6096f",
+    "tests/browser/lifepp-consultation.spec.ts": "f9d4769d98fd78e06b27af61a7b76fa1e5230a6a732b4e05deec3f9a231eba2b"
+  }
+}

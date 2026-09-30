@@ -1,24 +1,24 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-09-30T02:23:18Z",
-  "overallStatus": "REVIEW_CANDIDATE_WITH_RELEASE_BLOCKERS",
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-30T03:21:27.457324+00:00",
+  "overallStatus": "REMEDIATION_IN_PROGRESS_NOT_RELEASE_APPROVED",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
   "branch": "codex/canopyproof-lifepp-full-update-20260930",
   "baseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
-  "implementationCommit": "e44f73449ce14523cc9e34817ad2574eed6776a9",
+  "phaseStartCommit": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "candidateCommit": null,
   "prUrl": "https://github.com/Dropineth/dropin/pull/4",
   "productionAuthority": false,
+  "evidencePolicy": "A result belongs only to its recorded HEAD, source fingerprint, lock hash, command and time. Prior phase records remain historical, not current acceptance.",
   "runtime": {
     "model": "gpt-6-astra",
     "reasoningEffort": "ultra",
-    "evidence": "Root task turn_context runtime metadata; not inferred from request.",
-    "node": "24.14.0",
-    "npm": "11.9.0",
-    "platform": "macOS arm64",
-    "chromium": "154.0.8037.58",
-    "ciNode": "22.22.3",
-    "ciNpm": "10.9.4"
+    "evidence": "Root task runtime metadata; explicit supported sub-agent selection. No account setting changed.",
+    "node": "22.22.3",
+    "npm": "10.9.4",
+    "localPlatform": "macOS arm64",
+    "ciPlatform": "GitHub ubuntu-latest"
   },
   "items": {
     "originalCheckout": {
@@ -26,297 +26,104 @@
       "evidence": [
         "REPOSITORY_AUDIT.md"
       ],
-      "blockedReason": null,
-      "note": "Pre-existing changes remain in original checkout; all implementation is in independent worktree."
-    },
-    "inputs": {
-      "status": "VERIFIED_INPUT_IDENTITY",
-      "evidence": [
-        "INPUT_PROVENANCE.json",
-        "../../apps/web/src/data/life/site-manifest.json"
-      ],
-      "blockedReason": null,
-      "scope": "Hashes establish supplied input identity, not external factual validity."
-    },
-    "pages": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/workerd/browser-report.json",
-        "evidence/next/browser-report.json"
-      ],
-      "blockedReason": null,
-      "chineseRoutes": 10,
-      "englishRoutes": 10
-    },
-    "ecologyPreservation": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/workerd/browser-report.json",
-        "screenshots/before-ecology-desktop.png",
-        "evidence/workerd/after-desktop-ecology.png"
-      ],
-      "blockedReason": null
-    },
-    "scene31": {
-      "status": "SAFE_FALLBACK_REAL_SOURCE_UNVERIFIED",
-      "evidence": [
-        "SCENE_INTEGRATION_REPORT.md",
-        "evidence/scene-head-observations.json"
-      ],
-      "blockedReason": "HEAD ECONNRESET; no verified HTTPS endpoint, embed/display rights, frame policy, source readiness or navigation acceptance.",
-      "realSourceLoaded": false
-    },
-    "scene29": {
-      "status": "SAFE_FALLBACK_REAL_SOURCE_UNVERIFIED",
-      "evidence": [
-        "SCENE_INTEGRATION_REPORT.md",
-        "evidence/scene-head-observations.json"
-      ],
-      "blockedReason": "HEAD ECONNRESET; no verified HTTPS endpoint, embed/display rights, frame policy, source readiness or navigation acceptance.",
-      "realSourceLoaded": false
-    },
-    "viewerFixture": {
-      "status": "PASS_FIXTURE_ONLY",
-      "evidence": [
-        "evidence/viewer-fixture-report.json"
-      ],
-      "blockedReason": null,
-      "passed": 8,
-      "actualSourceEmbedded": false,
-      "gpuRenderingTested": false
-    },
-    "inquiryForm": {
-      "status": "LOCAL_DRAFT_ONLY",
-      "evidence": [
-        "evidence/workerd/browser-report.json",
-        "../../apps/web/src/components/life/LeadForm.tsx"
-      ],
-      "blockedReason": "No verified receipt/storage integration, public email or retention policy.",
-      "realSubmission": false,
-      "realReceipt": false,
-      "persistentStorage": false
-    },
-    "localPreview": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/workerd/browser-report.json",
-        "../../apps/web/wrangler.local.jsonc"
-      ],
-      "blockedReason": null,
-      "url": "http://127.0.0.1:8788/life",
-      "publiclyAccessible": false,
-      "productionDeployed": false,
-      "lifetime": "Available while local preview process is running"
-    },
-    "externalPreview": {
-      "status": "NOT_DEPLOYED",
-      "evidence": [
-        "RELEASE_CHECKLIST.md",
-        "REPOSITORY_AUDIT.md"
-      ],
-      "blockedReason": "Isolated staging resources and exact-candidate independent approval are unverified; separate PR #3 remains untouched."
-    },
-    "production": {
-      "status": "NOT_DEPLOYED",
-      "evidence": [
-        "RELEASE_CHECKLIST.md"
-      ],
-      "blockedReason": "No merge or deployment requested beyond existing approval process; exact-SHA review, successful required CI and protected environment approval remain.",
-      "merged": false,
-      "deployed": false
-    },
-    "paymentTrainingRobotActions": {
-      "status": "DISABLED",
-      "evidence": [
-        "../../apps/web/src/data/life/site-manifest.json",
-        "../../apps/web/wrangler.local.jsonc"
-      ],
-      "blockedReason": null
-    },
-    "lint": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/command-final-lint.txt"
-      ],
-      "blockedReason": null
-    },
-    "workspaceTypes": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/command-all-typecheck.txt"
-      ],
-      "blockedReason": null
-    },
-    "workspaceBuilds": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/command-all-build.txt"
-      ],
-      "blockedReason": null
-    },
-    "openNextBuild": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/command-cf-build.txt"
-      ],
-      "blockedReason": null
-    },
-    "unitTests": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/command-final-tests.txt"
-      ],
-      "blockedReason": null,
-      "passed": 852,
-      "failed": 0,
-      "skipped": 0
-    },
-    "pglite": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/command-db.txt"
-      ],
-      "blockedReason": null,
-      "passed": 40
-    },
-    "fiftyone": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/command-fiftyone.txt"
-      ],
-      "blockedReason": null,
-      "passed": 4
-    },
-    "criticalCoverage": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/canopyproof-critical-coverage.json"
-      ],
-      "blockedReason": null
-    },
-    "repositoryCoverage": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/canopyproof-repository-coverage.json"
-      ],
-      "blockedReason": null
-    },
-    "legacyCrossBrowser": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/canopyproof-cross-browser-webgl.json"
-      ],
-      "blockedReason": null,
-      "scenarios": 19,
-      "skipped": 0
-    },
-    "nextBrowser": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/next/browser-report.json"
-      ],
-      "blockedReason": null,
-      "checks": 70
-    },
-    "workerBrowser": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/workerd/browser-report.json"
-      ],
-      "blockedReason": null,
-      "checks": 70
-    },
-    "legacyWorkerSmoke": {
-      "status": "PASS",
-      "evidence": [
-        "evidence/canopyproof-workerd-smoke.json"
-      ],
-      "blockedReason": null,
-      "checks": 15
+      "note": "All edits in independent worktree; pre-existing original checkout changes remain."
     },
     "dependencyAudit": {
-      "status": "FAIL",
-      "evidence": [
-        "evidence/npm-audit-moderate.json",
-        "evidence/command-audit.txt"
-      ],
-      "blockedReason": "17 vulnerabilities in unchanged locked dependencies: 4 moderate, 11 high, 2 critical. No broad upgrade or audit threshold reduction.",
-      "moderate": 4,
-      "high": 11,
-      "critical": 2,
-      "total": 17,
-      "remoteObservation": {
-        "status": "FAIL",
-        "total": 18,
+      "status": "REMEDIATION_UNDER_VALIDATION",
+      "baseline": {
+        "head": "8ba02a3e7fe591b115162229510112220b4182b8",
+        "total": 19,
         "moderate": 5,
-        "high": 11,
-        "critical": 2,
-        "evidence": "evidence/final-code-ci-receipt.json",
-        "note": "Separate observation; reason for difference from local snapshot not established."
-      }
-    },
-    "nativePostgres": {
-      "status": "NOT_RUN",
+        "high": 12,
+        "critical": 2
+      },
       "evidence": [
-        "evidence/command-native-db.txt"
-      ],
-      "blockedReason": "Disposable initdb failed: compiled Homebrew timezone/share paths missing; Docker daemon not running. Native CI checks remain required.",
-      "remoteStatus": "NOT_RUN_AFTER_PRECEDING_AUDIT_FAILURE"
+        "release-remediation/baseline-remote-receipt.json",
+        "release-remediation/baseline-remote-audit.json",
+        "release-remediation/DEPENDENCY_DISPOSITION.md"
+      ]
     },
-    "fieldPerformance": {
-      "status": "PARTIAL_LAB_ONLY",
-      "evidence": [
-        "evidence/performance-summary.json"
-      ],
-      "blockedReason": "Field INP and actual scene performance unmeasured."
+    "sameCandidateTrustGate": {
+      "status": "PENDING_NEW_COMMIT",
+      "evidence": [],
+      "note": "Earlier green subsets do not pass the new candidate."
     },
-    "screenshots": {
-      "status": "CAPTURED_WITH_PARTIAL_VISUAL_REVIEW",
-      "evidence": [
-        "evidence/workerd/browser-report.json",
-        "evidence/next/browser-report.json",
-        "screenshots/"
-      ],
-      "blockedReason": null,
-      "before": 2,
-      "after": 42,
-      "manualReviewScope": "Root: homepage/mobile and scene fallback; UI reviewer: desktop home and mobile center; not every screenshot."
+    "sameCandidateLifeAcceptance": {
+      "status": "PENDING_NEW_COMMIT",
+      "evidence": []
     },
-    "pullRequest": {
-      "status": "CREATED_DRAFT",
-      "evidence": [
-        "https://github.com/Dropineth/dropin/pull/4",
-        "evidence/pr-and-ci-receipt.json"
-      ],
-      "blockedReason": null
+    "pagesAndEcology": {
+      "status": "UNCHANGED_BUSINESS_SCOPE_REVALIDATION_PENDING",
+      "chineseRoutes": 10,
+      "englishRoutes": 10,
+      "note": "Original ecology home, explorer, anchors and sample/demo boundaries retained."
     },
-    "remoteCI": {
-      "status": "LIFEPP_ACCEPTANCE_PASS_TRUST_GATE_FAIL",
+    "scene31": {
+      "status": "SAFE_FALLBACK",
+      "realSourceLoaded": false,
+      "latestBoundedObservation": "HTTP HEAD 200 only; no body/assets read",
+      "blockedReason": "Missing confirmed HTTPS, display/embed rights, redirects/subresources, both frame policies and real engine readiness.",
       "evidence": [
-        "evidence/final-code-ci-receipt.json",
-        "https://github.com/Dropineth/dropin/actions/runs/36658605125",
-        "https://github.com/Dropineth/dropin/actions/runs/36658605066",
-        "evidence/iterations/ubuntu-fixture-timing-failure.json"
-      ],
-      "blockedReason": "Trust Gate npm run audit exited 1: 18 vulnerabilities (5 moderate, 11 high, 2 critical). Subsequent native PostgreSQL, coverage, cross-browser and OpenNext/workerd steps did not run. Final release still requires checks and approval on its exact head.",
-      "observedHead": "dc7f0ca10ba8236810b31557eb1e75170e50b941",
-      "lifeppAcceptance": "SUCCESS",
-      "trustGate": "FAILURE"
+        "release-remediation/scene-head-observations.json",
+        "release-remediation/scene-and-preview-inputs.md"
+      ]
     },
-    "supplyChain": {
-      "status": "PASS",
+    "scene29": {
+      "status": "SAFE_FALLBACK",
+      "realSourceLoaded": false,
+      "latestBoundedObservation": "HTTP HEAD ECONNRESET",
+      "blockedReason": "Same integration inputs as scene31; source accessibility also unverified.",
       "evidence": [
-        "evidence/supply-chain-gate.json",
-        "evidence/sbom.cdx.json",
-        "evidence/command-supply-chain.txt"
-      ],
-      "blockedReason": null,
-      "scope": "Scan includes staged new implementation files. Report candidateSha is the baseline HEAD while working tree was tested. See implementation-file-hashes.json.",
-      "components": 709,
-      "secretFindings": 0,
-      "trackedGeneratedArtifacts": 0
+        "release-remediation/scene-head-observations.json",
+        "release-remediation/scene-and-preview-inputs.md"
+      ]
+    },
+    "inquiry": {
+      "status": "DRAFT_NOT_SENT",
+      "realReceipt": false,
+      "realPersistentStorage": false,
+      "localSyntheticStorageTest": true,
+      "blockedReason": "No approved receiving institution/storage configuration and retention/deletion operation; optional adapter remains disabled.",
+      "evidence": [
+        "release-remediation/consultation-status.json",
+        "release-remediation/consultation-README.md"
+      ]
+    },
+    "publicIsolatedPreview": {
+      "status": "BLOCKED_NOT_DEPLOYED",
+      "publiclyAccessible": false,
+      "url": null,
+      "blockedReason": "No verified authorized resource manifest/digest/API origin/isolation; staging policy currently main only; exact-candidate independent approval missing. PR3 untouched.",
+      "evidence": [
+        "release-remediation/scene-and-preview-inputs.md",
+        "release-remediation/github-preview-metadata.json"
+      ]
+    },
+    "localPreview": {
+      "status": "REBUILD_PENDING",
+      "publiclyAccessible": false,
+      "url": null
+    },
+    "visualReview": {
+      "status": "PENDING_CANDIDATE_SCREENSHOTS",
+      "evidence": []
+    },
+    "production": {
+      "status": "NOT_MERGED_NOT_DEPLOYED",
+      "merged": false,
+      "deployed": false,
+      "required": "Independent exact-SHA review, successful required CI, protected environment approval and a verified deployed rollback version."
+    },
+    "prohibitedActions": {
+      "status": "DISABLED",
+      "items": [
+        "subscription charging",
+        "RWA",
+        "robot control",
+        "training data sale",
+        "ecological certification issuance",
+        "funds/mainnet transfer"
+      ]
     }
-  },
-  "reviewedCodeCommit": "dc7f0ca10ba8236810b31557eb1e75170e50b941",
-  "implementationCommitScope": "Initial implementation commit; reviewedCodeCommit includes the CI fixture correction. A subsequent documentation-only receipt commit is not claimed CI-passed."
+  }
 }

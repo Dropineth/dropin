@@ -9,8 +9,8 @@ import { isProductionSite } from "@/data/life/navigation";
  * institutional transport/sniffing protections.
  *
  * Tradeoffs (documented on purpose, not hidden):
- *  - A per-request nonce opts matched routes into dynamic rendering. The landing
- *    already runs as edge SSR, so this is acceptable. Next.js automatically
+ *  - Matched pages render per request; the static ecology homepage is excluded
+ *    from this matcher. Next.js automatically
  *    propagates the nonce from the request CSP header to its own scripts.
  *  - `script-src` is strict (nonce + strict-dynamic) — that is where XSS risk
  *    actually lives. `img-src`/`connect-src`/`font-src` intentionally allow
@@ -103,10 +103,8 @@ export const config = {
     {
       source:
         "/((?!$|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|icon.jpg|apple-touch-icon.jpg|og/).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
+      // These are client-controlled headers. Even a claimed prefetch must have
+      // its language/CSP/nonce replaced before RootLayout reads request headers.
     },
   ],
 };

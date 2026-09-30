@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: patched TOML preserves Anchor Buffer config parsing and rejects excessive nesting
+ok 1 - patched TOML preserves Anchor Buffer config parsing and rejects excessive nesting
+  ---
+  duration_ms: 10.107875
+  type: 'test'
+  ...
+# Subtest: patched TOML cannot pollute Object.prototype through key paths
+ok 2 - patched TOML cannot pollute Object.prototype through key paths
+  ---
+  duration_ms: 0.135709
+  type: 'test'
+  ...
+# Subtest: patched deepmerge preserves plain config merge and handles recursive object graphs
+ok 3 - patched deepmerge preserves plain config merge and handles recursive object graphs
+  ---
+  duration_ms: 2.317584
+  type: 'test'
+  ...
+# Subtest: Prisma 6 actually loads and resolves nested configuration using patched deepmerge
+ok 4 - Prisma 6 actually loads and resolves nested configuration using patched deepmerge
+  ---
+  duration_ms: 280.451875
+  type: 'test'
+  ...
+# Subtest: Anchor's Solana client retains JSON-RPC success and error behavior with patched Jayson
+ok 5 - Anchor's Solana client retains JSON-RPC success and error behavior with patched Jayson
+  ---
+  duration_ms: 122.334625
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 545.682084

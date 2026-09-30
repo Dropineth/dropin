@@ -1,6 +1,22 @@
 # CanopyProof × Life++ release checklist
 
-Status: **NOT DEPLOYED — REVIEW CANDIDATE**. Dependency audit failed and local native PostgreSQL could not start; these remain release blockers, not waived checks. This checklist states release gates; unchecked items are not passed. Use `delivery_status.json` and `IMPLEMENTATION_REPORT.md` for actual results and evidence.
+Status: **REMEDIATION IN VALIDATION — NOT DEPLOYED**. The baseline Trust Gate at `8ba02a3` failed with 19 audit findings. Current remediation must pass every applicable gate on one committed candidate; no earlier checked box below is itself evidence of a new commit passing. Use `delivery_status.json` and fresh candidate-bound CI artifacts for current results.
+
+## Release remediation acceptance
+
+- [ ] Committed candidate uses Node 22.22.3 / npm 10.9.4 and a clean locked install.
+- [ ] All 19 baseline findings have reviewed dependency/condition dispositions and the current moderate audit passes with raw JSON retained.
+- [ ] Full same-candidate Trust Gate: lint/types/units/PGlite/build/audit/native PostgreSQL/coverage/original browser matrix/OpenNext/workerd; no hidden skipped requirements.
+- [ ] Same-candidate Life++ acceptance, supported MapLibre overlay rendering and unavailable-WebGL fallback.
+- [ ] All required page screenshots and mobile key flows visually reviewed, with actual scope recorded.
+- [x] Scene 31/29 preserve HTTP source URLs, unknown metadata and explicit safe fallback; neither is claimed loaded.
+- [x] Consultation defaults to draft/not sent; optional server persistence remains disabled without approved inputs. Local synthetic tests do not establish real receipt.
+- [x] Remote staging blockers recorded without changing environments, creating resources, using tunnels or merging PR #3.
+- [ ] Public isolated preview is actually accessible through the protected authorized path, with noindex and isolated resources (currently blocked).
+- [ ] Real receipt/persistence verified against the approved receiving configuration (currently blocked).
+- [ ] Real scene 31 and 29 rights/HTTPS/frame policy/readiness independently accepted (currently blocked).
+
+The remaining checklist describes implementation invariants established in the first stage and the continuing release process; current execution is governed by the candidate-bound results above.
 
 ## Candidate identity and preserved boundaries
 
@@ -34,7 +50,7 @@ Native PostgreSQL authority checks require the existing disposable CI database a
 - [x] Registry runtime validation rejects bad protocols, credentials, non-allowlist origins and unapproved embed state. Original HTTP source URLs and null metadata are preserved.
 - [x] No third-party iframe/model request on initial pages or for either unapproved HTTP scene; explicit external link safeguards remain.
 - [x] Mock viewer tests cover origin/source/schema handshake rejection, timeout, retry, unsupported WebGL, mobile fallback and unmount cleanup. Report MOCK independently of REAL SOURCE results.
-- [x] Lead draft validation, privacy confirmation and copy behavior work without remote submission or false receipt. Any future receipt success requires a verified server persistence/recipient integration and separate retention configuration.
+- [x] Lead draft validation, privacy confirmation and copy behavior work without remote submission or false receipt. The optional receiver now additionally requires separate sending consent, server validation, atomic limits, retention cleanup and persistence readback; real configuration and receipt remain unverified.
 - [x] Membership has no payment, checkout, wallet, recurring billing or entitlement activation.
 - [x] Selected keyboard, focus, headings, labels, errors, reduced motion and no horizontal overflow checks verified at desktop, tablet and 375px. Keep before/after screenshots with route, viewport and commit context.
 - [x] English pages have complete localized content and consistent language/canonical/hreflang; no dead language control.
@@ -57,7 +73,7 @@ Local loopback Next/workerd preview is permitted for this implementation. Extern
 - [x] Verify current PR #3 control-plane status independently; do not merge, rewrite or borrow its secret-bearing path for this task.
 - [ ] Confirm the authorized staging path accepts this exact candidate and has a route-free web/API Worker, distinct HTTPS API origin, isolated PostgreSQL/object storage, no production data, resource manifest and matching digest.
 - [x] Verify actual environment reviewers and self-review prevention. Current read-only evidence confirms these controls, not the complete resource configuration.
-- [ ] Verify the applicable repository and environment branch rules for the exact candidate; complete branch policy was not established by the reviewer lookup.
+- [ ] Verify the applicable repository and environment branch rules for the exact candidate; current staging policy was read and permits only main; this candidate is not thereby approved.
 - [ ] Obtain the required independent environment review; automation must never approve itself.
 - [x] Do not manually dispatch the existing staging workflow for this Life++ branch: source code pins manual candidates to `canopyproof/industrial-rc1`. Do not change that gate as a shortcut.
 - [x] If authorized external preview becomes available, record exact commit, workflow, Worker version, actual URL, noindex and external route smoke. Otherwise deliver PR plus local preview and state external preview unavailable.

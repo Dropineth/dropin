@@ -17,7 +17,7 @@ const profiles = [
   { name: "tablet", width: 768, height: 1024 },
   { name: "mobile", width: 375, height: 812 },
 ] as const;
-const screenshotRoutes = new Set(["/", "/life", "/life/spaces", "/life/spaces/31", "/life/center", "/life/partners", "/en/life"]);
+const screenshotRoutes = new Set(paths);
 const results: { name: string; status: "PASS" | "FAIL"; details?: unknown; error?: string }[] = [];
 const measurements: unknown[] = [];
 const screenshots: string[] = [];
@@ -147,6 +147,59 @@ async function interactions() {
     else await route.continue();
   });
   try {
+    await check("Request language, prefetch, nonce and cache isolation", async () => {
+      const nonces = new Set<string>();
+      const observations: unknown[] = [];
+      for (const path of ["/life", "/en/life", "/company", "/en/company", "/explorer"]) {
+        const locale = /^\/(life|company)/.test(path) ? "zh-CN" : "en";
+        for (const prefetch of [{}, { purpose: "prefetch" }]) {
+          const response = await page.request.get(new URL(path, base).href, { headers: {
+            ...prefetch, "x-life-locale": locale === "en" ? "zh" : "en",
+            "x-nonce": "untrusted-client-nonce", "content-security-policy": "script-src 'unsafe-inline'",
+            "accept-language": locale === "en" ? "zh-CN" : "en",
+          } });
+          assert.equal(response.status(), 200, path);
+          const raw = await response.text();
+          assert.match(raw, new RegExp(`<html[^>]*lang=["']${locale}["']`), "Path owns language, including prefetch requests");
+          const headers = response.headers();
+          const nonce = headers["content-security-policy"]?.match(/'nonce-([^']+)'/)?.[1];
+          assert.ok(nonce && nonce !== "untrusted-client-nonce", "Server-generated CSP nonce required");
+          assert.equal(nonces.has(nonce), false, "Nonce must not be reused across requests or locales");
+          nonces.add(nonce);
+          assert.match(headers["cache-control"] ?? "", /private/);
+          assert.match(headers["cache-control"] ?? "", /no-store/);
+          assert.match(headers["content-security-policy"] ?? "", /frame-src 'none'/);
+          assert.match(headers["x-robots-tag"] ?? "", /noindex/);
+          const executableTags = [...raw.matchAll(/<script\b[^>]*>/g)].map((match) => match[0]).filter((tag) => !tag.includes('type="application/ld+json"'));
+          assert.ok(executableTags.length > 0);
+          assert.ok(executableTags.every((tag) => tag.includes(`nonce="${nonce}"`)), "HTML bootstrap must use this response nonce");
+          observations.push({ path, prefetch, locale, cacheControl: headers["cache-control"], nonceBound: true });
+        }
+        for (const rscHeaders of [{}, { rsc: "2" }, { rsc: "11" }, { rsc: "1, 1" }]) {
+          const malformed = await page.request.get(new URL(path, base).href, { headers: {
+            ...rscHeaders, "next-router-prefetch": "1", "x-life-locale": "attacker", "x-nonce": "untrusted-client-nonce",
+          } });
+          assert.equal(malformed.status(), 400, "Non-RSC internal prefetch must be rejected before framework rendering");
+          assert.deepEqual(await malformed.json(), { error: "invalid_prefetch_request" });
+          assert.match(malformed.headers()["cache-control"] ?? "", /private.*no-store/);
+          assert.match(malformed.headers()["content-security-policy"] ?? "", /frame-src 'none'/);
+          assert.doesNotMatch(malformed.headers()["content-security-policy"] ?? "", /untrusted-client-nonce/);
+          assert.match(malformed.headers()["x-robots-tag"] ?? "", /noindex/);
+          observations.push({ path, malformedPrefetch: true, rscHeaders, status: malformed.status(), rejectedBeforeRender: true });
+        }
+        const rsc = await page.request.get(new URL(`${path}?_rsc=bounded-isolation-test`, base).href, { headers: { rsc: "1", "next-router-prefetch": "1", "x-life-locale": "attacker" } });
+        assert.equal(rsc.status(), 200);
+        assert.match(rsc.headers()["content-type"] ?? "", /text\/x-component/);
+        assert.match(rsc.headers()["cache-control"] ?? "", /no-store/);
+        assert.match(rsc.headers()["content-security-policy"] ?? "", /nonce-/);
+      }
+      const home = await page.request.get(base.href, { headers: { "x-life-locale": "zh", purpose: "prefetch" } });
+      assert.equal(home.status(), 200);
+      assert.match(await home.text(), /<html[^>]*lang="en"/, "Prerendered ecology language cannot be spoofed");
+      const icon = await page.request.get(new URL("/icon.jpg", base).href);
+      assert.equal(icon.status(), 200); assert.match(icon.headers()["content-type"] ?? "", /image\/jpeg/);
+      return observations;
+    });
     await check("Original ecology anchors and content", async () => {
       const response = await page.goto(base.href, { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
       for (const id of ["top", "protocol", "how-it-works", "explorer", "methodology", "telemetry", "stack", "contact"]) assert.equal(await page.locator(`#${id}`).count(), 1, `Preserved #${id}`);
@@ -205,6 +258,19 @@ async function interactions() {
         assert.equal(response?.status(), 404, path);
       }
     });
+    await check("Unconfigured consultation endpoints remain draft-only", async () => {
+      const endpoint = new URL("/life/inquiries", base).href;
+      const status = await page.request.get(endpoint);
+      assert.equal(status.status(), 200); assert.deepEqual(await status.json(), { mode: "draft" });
+      assert.match(status.headers()["cache-control"] ?? "", /no-store/);
+      for (const method of ["POST", "DELETE"]) {
+        const response = await page.request.fetch(endpoint, { method, data: {} });
+        assert.equal(response.status(), 503); assert.doesNotMatch(await response.text(), /"status":"stored"/);
+      }
+      const maintenance = await page.request.post(new URL("/life/inquiries/maintenance", base).href);
+      assert.equal(maintenance.status(), 503);
+      return { receiveConfigured: false, realReceipt: false, writesAccepted: false };
+    });
     await check("Preview robots disallow and sitemap does not advertise pages", async () => {
       const robots = await page.request.get(new URL("/robots.txt", base).href); assert.equal(robots.status(), 200); assert.match(await robots.text(), /Disallow:\s*\//);
       const sitemap = await page.request.get(new URL("/sitemap.xml", base).href); assert.equal(sitemap.status(), 200); assert.doesNotMatch(await sitemap.text(), /<loc>/);
@@ -219,7 +285,8 @@ async function main() {
   const browserVersion = browser.version();
   try { for (const profile of profiles) await routeMatrix(profile); await interactions(); }
   finally { await browser.close(); }
-  const report = { schemaVersion: 1, generatedAt: new Date().toISOString(), status: results.some((item) => item.status === "FAIL") ? "FAIL" : "PASS", baseUrl: base.href, runtime: { node: process.version, platform: process.platform, arch: process.arch, browser: browserVersion, serverMode: process.env.LIFEPP_BROWSER_SERVER_MODE ?? "unspecified" }, candidateSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), workingTreeUnderTest: true, results, screenshots, measurements, limitations: ["Lab observations from one local Chromium browser; not Lighthouse or field performance.", "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.", "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.", "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness."] };
+  const sourceStatus = execFileSync("git", ["status", "--porcelain", "--untracked-files=normal", "--", "apps", "packages", "services", "tests", "scripts", "package.json", "package-lock.json", "../.github/workflows"], { encoding: "utf8" }).trim();
+  const report = { schemaVersion: 1, generatedAt: new Date().toISOString(), status: results.some((item) => item.status === "FAIL") ? "FAIL" : "PASS", baseUrl: base.href, runtime: { node: process.version, platform: process.platform, arch: process.arch, browser: browserVersion, serverMode: process.env.LIFEPP_BROWSER_SERVER_MODE ?? "unspecified" }, candidateSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), workingTreeUnderTest: sourceStatus !== "", sourceStatus, command: "node --import tsx tests/browser/lifepp.spec.ts", results, screenshots, measurements, limitations: ["Lab observations from one local Chromium browser; not Lighthouse or field performance.", "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.", "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.", "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness."] };
   writeFileSync(join(output, "browser-report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify({ status: report.status, passed: results.filter((item) => item.status === "PASS").length, failed: results.filter((item) => item.status === "FAIL"), screenshots: screenshots.length }, null, 2));
   if (report.status !== "PASS") process.exitCode = 1;

@@ -5,8 +5,12 @@ on:
       - 'dropin-earth/apps/web/**'
       - 'dropin-earth/tests/unit/lifepp-*.test.ts'
       - 'dropin-earth/tests/browser/lifepp*.ts'
+      - 'dropin-earth/tests/browser/maplibre-remediation.spec.ts'
+      - 'dropin-earth/tests/unit/dependency-remediation.test.ts'
       - 'dropin-earth/scripts/lifepp-*.mjs'
       - '.github/workflows/lifepp-web.yml'
+      - 'dropin-earth/package.json'
+      - 'dropin-earth/package-lock.json'
 permissions:
   contents: read
 concurrency:
@@ -22,27 +26,67 @@ jobs:
     env:
       NEXT_PUBLIC_CANOPYPROOF_MODE: staging
       NEXT_PUBLIC_DROPIN_SITE_URL: https://preview.example.invalid
-      LIFEPP_BROWSER_OUTPUT_DIR: reports/lifepp-browser/next
+      LIFEPP_EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+      LIFEPP_VALIDATION_OUTPUT_DIR: reports/lifepp-validation/web-${{ github.run_id }}-${{ github.run_attempt }}
+      LIFEPP_BROWSER_OUTPUT_DIR: reports/lifepp-validation/web-${{ github.run_id }}-${{ github.run_attempt }}/browser-next
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22.22.3
           cache: npm
           cache-dependency-path: dropin-earth/package-lock.json
-      - run: npm install --global npm@10.9.4
-      - run: npm ci --include=optional
-      - run: npm --workspace apps/web run typecheck
-      - run: npm run lint
-      - run: npm --workspace apps/web run test:lifepp
-      - run: npm --workspace apps/web run build
-      - run: npx playwright install --with-deps chromium
-      - run: mkdir -p reports/lifepp-browser && node --import tsx tests/browser/lifepp-scene-viewer.spec.ts > reports/lifepp-browser/viewer-fixture-report.json
-      - run: npm --workspace apps/web run test:lifepp:browser
-      - name: Preserve bounded browser evidence
+      - name: Initialize candidate-bound validation evidence
+        id: evidence
+        run: node scripts/lifepp-validation-run.mjs init pin-npm,install,typecheck,lint,unit,build,browsers,viewer-fixture,consultation-fixture,browser-next
+      - name: Pin npm
+        run: node scripts/lifepp-validation-run.mjs run pin-npm -- npm install --global npm@10.9.4
+      - name: Install locked dependencies
+        id: install
+        run: node scripts/lifepp-validation-run.mjs run install -- npm ci --include=optional
+      - name: Typecheck
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run typecheck -- npm --workspace apps/web run typecheck
+      - name: Lint
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run lint -- npm run lint
+      - name: Life++ unit tests
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run unit -- npm --workspace apps/web run test:lifepp
+      - name: Build Next artifact
+        id: build
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run build -- npm --workspace apps/web run build
+      - name: Install Chromium
+        id: browsers
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run browsers -- npx playwright install --with-deps chromium
+      - name: Scene viewer fixture lifecycle
+        if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
+        run: |
+          node scripts/lifepp-validation-run.mjs run viewer-fixture -- bash -e -c '
+          node --import tsx tests/browser/lifepp-scene-viewer.spec.ts > "$LIFEPP_VALIDATION_OUTPUT_DIR/viewer-fixture-report.json"
+          '
+      - name: Consultation recovery UI fixture
+        if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
+        run: |
+          node scripts/lifepp-validation-run.mjs run consultation-fixture -- bash -e -c '
+          LIFEPP_CONSULTATION_BROWSER_REPORT="$LIFEPP_VALIDATION_OUTPUT_DIR/consultation-fixture-report.json" node --import tsx tests/browser/lifepp-consultation.spec.ts
+          '
+      - name: Life++ Next browser acceptance
+        if: ${{ always() && !cancelled() && steps.build.outcome == 'success' && steps.browsers.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run browser-next -- npm --workspace apps/web run test:lifepp:browser
+      - name: Finalize candidate-bound validation result
+        if: ${{ always() && steps.evidence.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs finish
+      - name: Preserve bounded evidence including failures
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lifepp-browser-${{ github.run_id }}
-          path: dropin-earth/reports/lifepp-browser/
-          if-no-files-found: warn
+          name: lifepp-validation-${{ github.event.pull_request.head.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dropin-earth/${{ env.LIFEPP_VALIDATION_OUTPUT_DIR }}/
+          if-no-files-found: error
+          retention-days: 30

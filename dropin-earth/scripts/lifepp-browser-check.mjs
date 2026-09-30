@@ -19,6 +19,9 @@ try {
   await delay(500);
  }
  if(!ready)throw new Error(`Preview server was not ready: ${serverOutput}`);
- const test=spawn(process.execPath,['--import','tsx','tests/browser/lifepp.spec.ts'],{env,stdio:'inherit'});
- process.exitCode=await new Promise(resolve=>test.once('exit',code=>resolve(code??1)));
+ for (const spec of ['tests/browser/lifepp.spec.ts', 'tests/browser/maplibre-remediation.spec.ts']) {
+  const test=spawn(process.execPath,['--import','tsx',spec],{env,stdio:'inherit'});
+  const code=await new Promise(resolve=>{test.once('error',()=>resolve(1));test.once('exit',result=>resolve(result??1));});
+  if(code!==0)process.exitCode=code;
+ }
 } finally {server.kill('SIGTERM');}

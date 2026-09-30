@@ -66,7 +66,7 @@ test("Trust Gate runs workerd only after OpenNext artifact verification", () => 
   assert.match(workflow, /npm run test:workerd/u);
   assert.match(
     workflow,
-    /dropin-earth\/reports\/canopyproof-workerd-smoke\.json/u,
+    /path: dropin-earth\/\$\{\{ env\.LIFEPP_VALIDATION_OUTPUT_DIR \}\}\/artifacts\//u,
   );
 });
 
