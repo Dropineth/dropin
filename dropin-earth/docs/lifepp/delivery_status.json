@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T02:04:13.436266+00:00",
+  "generatedAt": "2026-09-30T02:23:18Z",
   "overallStatus": "REVIEW_CANDIDATE_WITH_RELEASE_BLOCKERS",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
@@ -244,14 +244,24 @@
       "moderate": 4,
       "high": 11,
       "critical": 2,
-      "total": 17
+      "total": 17,
+      "remoteObservation": {
+        "status": "FAIL",
+        "total": 18,
+        "moderate": 5,
+        "high": 11,
+        "critical": 2,
+        "evidence": "evidence/final-code-ci-receipt.json",
+        "note": "Separate observation; reason for difference from local snapshot not established."
+      }
     },
     "nativePostgres": {
       "status": "NOT_RUN",
       "evidence": [
         "evidence/command-native-db.txt"
       ],
-      "blockedReason": "Disposable initdb failed: compiled Homebrew timezone/share paths missing; Docker daemon not running. Native CI checks remain required."
+      "blockedReason": "Disposable initdb failed: compiled Homebrew timezone/share paths missing; Docker daemon not running. Native CI checks remain required.",
+      "remoteStatus": "NOT_RUN_AFTER_PRECEDING_AUDIT_FAILURE"
     },
     "fieldPerformance": {
       "status": "PARTIAL_LAB_ONLY",
@@ -281,15 +291,17 @@
       "blockedReason": null
     },
     "remoteCI": {
-      "status": "INITIAL_ACCEPTANCE_FAILED_CORRECTION_AWAITING_REMOTE_RETEST",
+      "status": "LIFEPP_ACCEPTANCE_PASS_TRUST_GATE_FAIL",
       "evidence": [
-        "https://github.com/Dropineth/dropin/actions/runs/36657968906",
-        "https://github.com/Dropineth/dropin/actions/runs/36657969154",
-        "https://github.com/Dropineth/dropin/pull/4/checks",
+        "evidence/final-code-ci-receipt.json",
+        "https://github.com/Dropineth/dropin/actions/runs/36658605125",
+        "https://github.com/Dropineth/dropin/actions/runs/36658605066",
         "evidence/iterations/ubuntu-fixture-timing-failure.json"
       ],
-      "blockedReason": "Initial Ubuntu acceptance failed at asynchronous fullscreen assertion. Corrected fixture passes locally; remote rerun required. Trust Gate was still running at snapshot.",
-      "observedHead": "e44f73449ce14523cc9e34817ad2574eed6776a9"
+      "blockedReason": "Trust Gate npm run audit exited 1: 18 vulnerabilities (5 moderate, 11 high, 2 critical). Subsequent native PostgreSQL, coverage, cross-browser and OpenNext/workerd steps did not run. Final release still requires checks and approval on its exact head.",
+      "observedHead": "dc7f0ca10ba8236810b31557eb1e75170e50b941",
+      "lifeppAcceptance": "SUCCESS",
+      "trustGate": "FAILURE"
     },
     "supplyChain": {
       "status": "PASS",
@@ -304,5 +316,7 @@
       "secretFindings": 0,
       "trackedGeneratedArtifacts": 0
     }
-  }
+  },
+  "reviewedCodeCommit": "dc7f0ca10ba8236810b31557eb1e75170e50b941",
+  "implementationCommitScope": "Initial implementation commit; reviewedCodeCommit includes the CI fixture correction. A subsequent documentation-only receipt commit is not claimed CI-passed."
 }

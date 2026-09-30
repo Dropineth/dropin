@@ -56,7 +56,8 @@ Local loopback Next/workerd preview is permitted for this implementation. Extern
 
 - [x] Verify current PR #3 control-plane status independently; do not merge, rewrite or borrow its secret-bearing path for this task.
 - [ ] Confirm the authorized staging path accepts this exact candidate and has a route-free web/API Worker, distinct HTTPS API origin, isolated PostgreSQL/object storage, no production data, resource manifest and matching digest.
-- [x] Verify actual environment reviewers, self-review prevention and branch policy. Current read-only evidence confirms reviewers/self-review controls, not the complete resource configuration.
+- [x] Verify actual environment reviewers and self-review prevention. Current read-only evidence confirms these controls, not the complete resource configuration.
+- [ ] Verify the applicable repository and environment branch rules for the exact candidate; complete branch policy was not established by the reviewer lookup.
 - [ ] Obtain the required independent environment review; automation must never approve itself.
 - [x] Do not manually dispatch the existing staging workflow for this Life++ branch: source code pins manual candidates to `canopyproof/industrial-rc1`. Do not change that gate as a shortcut.
 - [x] If authorized external preview becomes available, record exact commit, workflow, Worker version, actual URL, noindex and external route smoke. Otherwise deliver PR plus local preview and state external preview unavailable.
