@@ -1,0 +1,11 @@
+{
+  "runId": 36657969154,
+  "jobId": 109706289156,
+  "head": "e44f73449ce14523cc9e34817ad2574eed6776a9",
+  "url": "https://github.com/Dropineth/dropin/actions/runs/36657969154",
+  "status": "failure",
+  "failureExcerpt": "2026-09-30T02:04:50.9464681Z AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n2026-09-30T02:04:50.9465359Z false !== true\n2026-09-30T02:04:50.9465927Z     at main (/home/runner/work/dropin/dropin/dropin-earth/tests/browser/lifepp-scene-viewer.spec.ts:136:10) {\n2026-09-30T02:04:50.9467117Z   code: 'ERR_ASSERTION',\n2026-09-30T02:04:50.9617906Z ##[error]Process completed with exit code 1.",
+  "scope": "Fresh Ubuntu Node 22.22.3/npm 10.9.4 run. Install, types, lint, new unit tests and Next build passed; fixture failed before route browser suite.",
+  "correction": "Await actual fullscreen state transitions and committed iframe navigation; assertions retained. CI evidence now writes to a fresh reports/lifepp-browser directory rather than uploading checked-in local evidence.",
+  "localRetest": "8/8 fixture PASS in installed Chrome 154.0.8037.58; remote retest still required."
+}

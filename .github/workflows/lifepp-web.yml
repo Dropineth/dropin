@@ -22,6 +22,7 @@ jobs:
     env:
       NEXT_PUBLIC_CANOPYPROOF_MODE: staging
       NEXT_PUBLIC_DROPIN_SITE_URL: https://preview.example.invalid
+      LIFEPP_BROWSER_OUTPUT_DIR: reports/lifepp-browser/next
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,14 +37,12 @@ jobs:
       - run: npm --workspace apps/web run test:lifepp
       - run: npm --workspace apps/web run build
       - run: npx playwright install --with-deps chromium
-      - run: mkdir -p docs/lifepp/evidence && node --import tsx tests/browser/lifepp-scene-viewer.spec.ts > docs/lifepp/evidence/viewer-fixture-report.json
+      - run: mkdir -p reports/lifepp-browser && node --import tsx tests/browser/lifepp-scene-viewer.spec.ts > reports/lifepp-browser/viewer-fixture-report.json
       - run: npm --workspace apps/web run test:lifepp:browser
       - name: Preserve bounded browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lifepp-browser-${{ github.run_id }}
-          path: |
-            dropin-earth/docs/lifepp/evidence/
-            dropin-earth/docs/lifepp/screenshots/
+          path: dropin-earth/reports/lifepp-browser/
           if-no-files-found: warn

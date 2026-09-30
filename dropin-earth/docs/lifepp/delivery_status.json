@@ -281,13 +281,14 @@
       "blockedReason": null
     },
     "remoteCI": {
-      "status": "IN_PROGRESS_AT_SNAPSHOT",
+      "status": "INITIAL_ACCEPTANCE_FAILED_CORRECTION_AWAITING_REMOTE_RETEST",
       "evidence": [
         "https://github.com/Dropineth/dropin/actions/runs/36657968906",
         "https://github.com/Dropineth/dropin/actions/runs/36657969154",
-        "https://github.com/Dropineth/dropin/pull/4/checks"
+        "https://github.com/Dropineth/dropin/pull/4/checks",
+        "evidence/iterations/ubuntu-fixture-timing-failure.json"
       ],
-      "blockedReason": "Checks were running at this documentary snapshot. No all-CI-green claim; subsequent documentation-only commits may supersede these runs. Consult current PR checks.",
+      "blockedReason": "Initial Ubuntu acceptance failed at asynchronous fullscreen assertion. Corrected fixture passes locally; remote rerun required. Trust Gate was still running at snapshot.",
       "observedHead": "e44f73449ce14523cc9e34817ad2574eed6776a9"
     },
     "supplyChain": {

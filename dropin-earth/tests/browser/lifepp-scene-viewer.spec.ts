@@ -133,8 +133,10 @@ try {
   assert.equal(adapterRequests, 1);
   assert.equal(await listeners(), 0, "Ready handshake releases listener and timer");
   await page.getByRole("button", { name: "Full screen", exact: true }).click();
+  await page.waitForFunction(() => document.fullscreenElement !== null);
   assert.equal(await page.evaluate(() => document.fullscreenElement !== null), true);
   await page.getByRole("button", { name: "Exit full screen", exact: true }).click();
+  await page.waitForFunction(() => document.fullscreenElement === null);
   assert.equal(await page.evaluate(() => document.fullscreenElement), null);
   await page.getByRole("button", { name: "Exit and destroy viewer", exact: true }).click();
   await expectState("destroyed");
@@ -144,12 +146,21 @@ try {
 
   adapterMode = "silent";
   await reset(); await page.clock.install(); await load(); await expectState("loading");
-  const remote = () => page.frames().find((frame) => frame.url() === mockUrl);
-  await page.waitForFunction(() => Boolean(document.querySelector("iframe")?.contentWindow));
+  const remote = async () => {
+    const element = await page.locator("iframe").elementHandle();
+    assert.ok(element, "The loading viewer must attach an iframe");
+    const frame = await element.contentFrame();
+    await element.dispose();
+    assert.ok(frame, "The attached iframe must have a browsing context");
+    // contentWindow exists for about:blank before the adapter navigation commits.
+    await frame.waitForURL(mockUrl, { waitUntil: "load" });
+    return frame;
+  };
   // Ensure iframe onLoad and its handshake request actually completed before testing the timeout.
-  await remote()!.waitForFunction(() => Boolean((window as unknown as { fixtureRequest?: unknown }).fixtureRequest));
+  const silentFrame = await remote();
+  await silentFrame.waitForFunction(() => Boolean((window as unknown as { fixtureRequest?: unknown }).fixtureRequest));
   assert.equal(await state(), "loading", "Document onLoad cannot establish readiness");
-  await remote()!.evaluate(() => parent.postMessage({ type: "lifepp:scene-ready", protocol: 1, sceneId: "31", sessionId: "incorrect-session" }, "*"));
+  await silentFrame.evaluate(() => parent.postMessage({ type: "lifepp:scene-ready", protocol: 1, sceneId: "31", sessionId: "incorrect-session" }, "*"));
   assert.equal(await state(), "loading");
   await page.clock.fastForward(12100); await expectState("timeout");
   assert.equal(await page.locator("iframe").count(), 0);
@@ -159,7 +170,7 @@ try {
   await page.getByRole("button", { name: "Retry loading", exact: true }).click(); await expectState("ready");
   pass("Retry starts a fresh mock session after timeout");
 
-  await remote()!.evaluate(() => window.location.reload());
+  await (await remote()).evaluate(() => window.location.reload());
   await expectState("error");
   assert.equal(await page.locator("iframe").count(), 0);
   assert.equal(await listeners(), 0);

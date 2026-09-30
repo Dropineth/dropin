@@ -12,7 +12,7 @@
     },
     {
       "path": ".github/workflows/lifepp-web.yml",
-      "sha256": "00707ef7e40c223f71b79852bcd69dfe85e50beefe9ef803c03c87a9b9c8bb4d"
+      "sha256": "6ab1cbf7682931c695460f2482ffafdcdf770778adfe9c2c2ca79ecbc78e868a"
     },
     {
       "path": "dropin-earth/apps/web/eslint.config.mjs",
@@ -148,11 +148,11 @@
     },
     {
       "path": "dropin-earth/tests/browser/lifepp-scene-viewer.spec.ts",
-      "sha256": "85ed18f77583c22d0047b9c6344561328d0e7d200656a76869b54915a6f80dd9"
+      "sha256": "4a7ee548fd069422d0c3605b62fbc6526146849a6578f215b1789470a20f94a6"
     },
     {
       "path": "dropin-earth/tests/browser/lifepp.spec.ts",
-      "sha256": "2baa9ccc49395690ebfff81c3358c958e4daadf10ec634283b4a92faff03906a"
+      "sha256": "d88708770c82270644f5f7e2ff7afd0d839ecf0ac321720403ee4a4256b48665"
     },
     {
       "path": "dropin-earth/tests/helpers/lifepp-metadata.ts",

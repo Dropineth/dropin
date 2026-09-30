@@ -1,13 +1,15 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { chromium, type Browser, type Page } from "playwright";
 
 // Run against a built Next or local workerd server. Never starts a deploy or API.
 const base = new URL(process.env.LIFEPP_BROWSER_BASE_URL ?? "http://127.0.0.1:3101");
 assert.ok(["127.0.0.1", "localhost", "[::1]"].includes(base.hostname), "Browser suite is loopback-only.");
-const output = join(process.cwd(), "docs/lifepp/evidence", process.env.LIFEPP_BROWSER_SERVER_MODE === "workerd" ? "workerd" : "next");
+const output = process.env.LIFEPP_BROWSER_OUTPUT_DIR
+  ? resolve(process.env.LIFEPP_BROWSER_OUTPUT_DIR)
+  : join(process.cwd(), "docs/lifepp/evidence", process.env.LIFEPP_BROWSER_SERVER_MODE === "workerd" ? "workerd" : "next");
 const manifest = JSON.parse(readFileSync(join(process.cwd(), "apps/web/src/data/life/site-manifest.json"), "utf8")) as { newRoutes: string[] };
 const paths = manifest.newRoutes.flatMap((path) => [path, `/en${path}`]);
 const profiles = [
