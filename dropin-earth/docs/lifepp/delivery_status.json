@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T03:21:27.457324+00:00",
-  "overallStatus": "REMEDIATION_IN_PROGRESS_NOT_RELEASE_APPROVED",
+  "generatedAt": "2026-09-30T06:20:57.261255+00:00",
+  "overallStatus": "REVIEW_CANDIDATE_EXTERNAL_INTEGRATIONS_BLOCKED",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
   "branch": "codex/canopyproof-lifepp-full-update-20260930",
@@ -29,7 +29,7 @@
       "note": "All edits in independent worktree; pre-existing original checkout changes remain."
     },
     "dependencyAudit": {
-      "status": "REMEDIATION_UNDER_VALIDATION",
+      "status": "ALL_21_OBSERVED_PACKAGE_ENTRIES_REMEDIATED_ON_RECORDED_CANDIDATE",
       "baseline": {
         "head": "8ba02a3e7fe591b115162229510112220b4182b8",
         "total": 19,
@@ -40,23 +40,45 @@
       "evidence": [
         "release-remediation/baseline-remote-receipt.json",
         "release-remediation/baseline-remote-audit.json",
-        "release-remediation/DEPENDENCY_DISPOSITION.md"
-      ]
+        "release-remediation/DEPENDENCY_DISPOSITION.md",
+        "release-remediation/candidate-a-ci.json",
+        "release-remediation/candidate-a-ci/trust/artifacts/reports/npm-audit-moderate.json"
+      ],
+      "uniquePackageEntriesAcrossSnapshots": 21,
+      "verifiedCandidate": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "remainingAuditFindings": 0,
+      "limits": "No finding was waived. Audit zero is a time-bound advisory result, not proof of absence of all defects; MapLibre6 ES2022/WebGL2 compatibility and scoped overrides remain review considerations."
     },
     "sameCandidateTrustGate": {
-      "status": "PENDING_NEW_COMMIT",
-      "evidence": [],
-      "note": "Earlier green subsets do not pass the new candidate."
+      "status": "REQUIRE_CURRENT_HEAD_RESULT_FROM_PR",
+      "lastObserved": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "status": "PASS",
+        "runUrl": "https://github.com/Dropineth/dropin/actions/runs/36665614889"
+      },
+      "evidence": [
+        "release-remediation/candidate-a-ci.json"
+      ],
+      "note": "The subsequent consultation response-loss fix requires its own full run. Never infer a later HEAD result from this record."
     },
     "sameCandidateLifeAcceptance": {
-      "status": "PENDING_NEW_COMMIT",
-      "evidence": []
+      "status": "REQUIRE_CURRENT_HEAD_RESULT_FROM_PR",
+      "lastObserved": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "status": "PASS",
+        "runUrl": "https://github.com/Dropineth/dropin/actions/runs/36665614977"
+      },
+      "evidence": [
+        "release-remediation/candidate-a-ci.json"
+      ],
+      "note": "The subsequent consultation response-loss fix requires its own full run. Never infer a later HEAD result from this record."
     },
     "pagesAndEcology": {
-      "status": "UNCHANGED_BUSINESS_SCOPE_REVALIDATION_PENDING",
+      "status": "20_LIFEPP_ROUTES_VERIFIED_ON_RECORDED_CANDIDATE",
       "chineseRoutes": 10,
       "englishRoutes": 10,
-      "note": "Original ecology home, explorer, anchors and sample/demo boundaries retained."
+      "note": "Original ecology home, explorer, anchors and sample/demo boundaries retained.",
+      "existingCaveat": "Original ecology homepage clips some hero/status text at 375px, reproduced in pre-implementation screenshot; Life++ navigation remains usable. No redesign performed."
     },
     "scene31": {
       "status": "SAFE_FALLBACK",
@@ -100,13 +122,25 @@
       ]
     },
     "localPreview": {
-      "status": "REBUILD_PENDING",
+      "status": "CANDIDATE_A_WORKERD_VERIFIED",
+      "candidate": "b4e3954d89c61484ea90435129229230a03e3abf",
       "publiclyAccessible": false,
-      "url": null
+      "url": "http://127.0.0.1:8788/life",
+      "note": "Loopback only, noindex, no cloud bindings. Availability depends on the local process; subsequent source revisions require rebuild."
     },
     "visualReview": {
-      "status": "PENDING_CANDIDATE_SCREENSHOTS",
-      "evidence": []
+      "status": "CODEX_VISUAL_REVIEW_RECORDED",
+      "candidate": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "lifeppScreenshotsViewed": 40,
+      "scope": "20 required routes at desktop and mobile; native-pixel mobile strips; selected ecology desktop/mobile sections, tablet partnership form, interactive mobile scene/language/draft/clear/return flow.",
+      "independentHumanApproval": false,
+      "physicalDeviceTest": false,
+      "evidence": [
+        "release-remediation/visual-review-en.json",
+        "release-remediation/visual-review-zh.json",
+        "release-remediation/visual-review-root.json"
+      ],
+      "remaining": "Independent human release review and actual configured integration acceptance. Subsequent response-loss UI changes have focused fixture review and require fresh candidate checks."
     },
     "production": {
       "status": "NOT_MERGED_NOT_DEPLOYED",
@@ -125,5 +159,8 @@
         "funds/mainnet transfer"
       ]
     }
-  }
+  },
+  "candidateIdentity": "Current PR #4 head; resolve via GitHub or git rev-parse HEAD. All required current checks must match that exact SHA. The historical record below is not inherited by later commits.",
+  "lastCompleteCandidate": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "currentHeadEvidence": "Fresh canopyproof-validation-<head>-<run>-<attempt> and lifepp-validation-<head>-<run>-<attempt> artifacts linked from PR #4. The PR body records post-commit outcomes; this file does not predict its own commit result."
 }

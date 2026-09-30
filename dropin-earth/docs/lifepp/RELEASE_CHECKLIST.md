@@ -1,14 +1,18 @@
 # CanopyProof × Life++ release checklist
 
-Status: **REMEDIATION IN VALIDATION — NOT DEPLOYED**. The baseline Trust Gate at `8ba02a3` failed with 19 audit findings. Current remediation must pass every applicable gate on one committed candidate; no earlier checked box below is itself evidence of a new commit passing. Use `delivery_status.json` and fresh candidate-bound CI artifacts for current results.
+Status: **REVIEW CANDIDATE — NOT DEPLOYED**. The baseline Trust Gate at `8ba02a3` failed with 19 audit findings. Current remediation must pass every applicable gate on one committed candidate; no earlier checked box below is itself evidence of a new commit passing. Use `delivery_status.json` and fresh candidate-bound CI artifacts for current results.
 
 ## Release remediation acceptance
 
-- [ ] Committed candidate uses Node 22.22.3 / npm 10.9.4 and a clean locked install.
-- [ ] All 19 baseline findings have reviewed dependency/condition dispositions and the current moderate audit passes with raw JSON retained.
-- [ ] Full same-candidate Trust Gate: lint/types/units/PGlite/build/audit/native PostgreSQL/coverage/original browser matrix/OpenNext/workerd; no hidden skipped requirements.
-- [ ] Same-candidate Life++ acceptance, supported MapLibre overlay rendering and unavailable-WebGL fallback.
-- [ ] All required page screenshots and mobile key flows visually reviewed, with actual scope recorded.
+Completed boxes in this section refer only to candidate A `b4e3954d89c61484ea90435129229230a03e3abf`; see `release-remediation/candidate-a-ci.json`. The later consultation wording fix requires fresh checks on its own HEAD.
+
+- [ ] Resolve current PR head and verify both complete workflow artifacts name that exact SHA; check the post-commit PR body and CI, never inherit candidate A checks.
+
+- [x] Recorded candidate A used Node 22.22.3 / npm 10.9.4 for a clean locked install and all workload commands.
+- [x] All 21 distinct observed package entries (19 baseline plus 2 subsequent) have dependency/condition dispositions; candidate A remote moderate audit is zero with raw JSON retained.
+- [x] Candidate A full Trust Gate passed lint/types/units/PGlite/build/audit/native PostgreSQL/coverage/original browser matrix/OpenNext/workerd; all 13 recorded commands passed.
+- [x] Candidate A Life++ acceptance, supported MapLibre overlay rendering and unavailable-WebGL fallback passed.
+- [x] All 20 required Life++ page desktop/mobile screenshots and selected mobile key flows received Codex visual review, with scope/limitations recorded. Independent human release approval remains required.
 - [x] Scene 31/29 preserve HTTP source URLs, unknown metadata and explicit safe fallback; neither is claimed loaded.
 - [x] Consultation defaults to draft/not sent; optional server persistence remains disabled without approved inputs. Local synthetic tests do not establish real receipt.
 - [x] Remote staging blockers recorded without changing environments, creating resources, using tunnels or merging PR #3.
@@ -16,7 +20,7 @@ Status: **REMEDIATION IN VALIDATION — NOT DEPLOYED**. The baseline Trust Gate 
 - [ ] Real receipt/persistence verified against the approved receiving configuration (currently blocked).
 - [ ] Real scene 31 and 29 rights/HTTPS/frame policy/readiness independently accepted (currently blocked).
 
-The remaining checklist describes implementation invariants established in the first stage and the continuing release process; current execution is governed by the candidate-bound results above.
+The remaining checked items describe implementation invariants established in the first stage and the continuing release process; current execution is governed by the candidate-bound results above.
 
 ## Candidate identity and preserved boundaries
 

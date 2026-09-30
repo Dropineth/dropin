@@ -1,0 +1,13 @@
+{
+  "source": "browser-workerd/after-mobile-life.png",
+  "sourceSha256": "0ce506d5bd1d26267d1ad29b94476061a136cd9c85d7f8e67f2f1dbbc6d5463d",
+  "candidateSha": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "method": "Inspection crop only; no resizing, synthesis or application change",
+  "crop": {
+    "left": 0,
+    "top": 0,
+    "width": 375,
+    "height": 812
+  },
+  "sha256": "7905a55aa92cb2a90b8aebaae879b077896bf3197a52f0953e916facc50ecd50"
+}

@@ -1,0 +1,29 @@
+{
+  "fixtureOnly": true,
+  "evidenceStage": "ci",
+  "sourceRevisionHead": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "sourceDirtyScope": [],
+  "renderer": "WebGL2 via SwiftShader, matching repository browser suite",
+  "physicalGpuSupportClaimed": false,
+  "externalNasaNetworkUsed": false,
+  "observedAt": "2026-09-30T04:00:09.383Z",
+  "serverMode": "workerd",
+  "results": [
+    {
+      "scenario": "maplibre6-webgl2-raster-and-overlay",
+      "status": "PASS",
+      "nasaTileRequestsIntercepted": 84,
+      "cyanOverlayPixels": 1624,
+      "refreshedCyanOverlayPixels": 1624,
+      "animatedCyanOverlayPixels": 1626
+    },
+    {
+      "scenario": "maplibre6-webgl2-unavailable-preserves-metadata",
+      "status": "PASS",
+      "nasaTileRequestsIntercepted": 0,
+      "cyanOverlayPixels": 0,
+      "refreshedCyanOverlayPixels": 0,
+      "animatedCyanOverlayPixels": 0
+    }
+  ]
+}

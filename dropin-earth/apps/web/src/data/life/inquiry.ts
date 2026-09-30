@@ -11,8 +11,11 @@ export function validateInquiry(input: Inquiry): Record<string, string> {
   if (!input.consent) errors.consent = "consent";
   return errors;
 }
-export function composeInquiry(input: Inquiry, locale: "zh" | "en"): string {
+export function composeInquiry(input: Inquiry, locale: "zh" | "en", hasPriorSubmissionAttempt = false): string {
   if (Object.keys(validateInquiry(input)).length) throw new Error("Invalid inquiry");
   const zh = locale === "zh";
-  return [zh ? "Life++ 合作询问草稿 — 尚未发送" : "Life++ inquiry draft — not sent", `${zh ? "称呼" : "Name"}: ${input.name.trim()}`, `${zh ? "机构（可选）" : "Organization (optional)"}: ${input.organization.trim()}`, `${input.channel}: ${input.contact.trim()}`, `${zh ? "合作类型" : "Interest"}: ${input.type}`, input.message.trim(), zh ? "本意向不授予展示、模型下载、训练、导航或再分发许可。" : "This inquiry grants no display, model download, training, navigation or redistribution rights."].join("\n");
+  const title = hasPriorSubmissionAttempt
+    ? (zh ? "Life++ 本地草稿副本 — 不代表此前提交状态" : "Life++ local draft copy — not a statement of earlier submission status")
+    : (zh ? "Life++ 合作询问草稿 — 尚未发送" : "Life++ inquiry draft — not sent");
+  return [title, `${zh ? "称呼" : "Name"}: ${input.name.trim()}`, `${zh ? "机构（可选）" : "Organization (optional)"}: ${input.organization.trim()}`, `${input.channel}: ${input.contact.trim()}`, `${zh ? "合作类型" : "Interest"}: ${input.type}`, input.message.trim(), zh ? "本意向不授予展示、模型下载、训练、导航或再分发许可。" : "This inquiry grants no display, model download, training, navigation or redistribution rights."].join("\n");
 }

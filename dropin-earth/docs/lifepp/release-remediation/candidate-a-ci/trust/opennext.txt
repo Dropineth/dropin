@@ -1,0 +1,121 @@
+
+> @dropin/web@0.1.0 cf:build
+> npm run opennext:build
+
+
+> @dropin/web@0.1.0 preopennext:build
+> node scripts/clean-opennext-build.mjs
+
+
+> @dropin/web@0.1.0 opennext:build
+> opennextjs-cloudflare build && node scripts/promote-static-homepage.mjs
+
+
+┌─────────────────────────────┐
+│ OpenNext — Cloudflare build │
+└─────────────────────────────┘
+
+Monorepo detected at /home/runner/work/dropin/dropin/dropin-earth
+App directory: /home/runner/work/dropin/dropin/dropin-earth/apps/web
+Next.js version : 15.5.26
+@opennextjs/cloudflare version: 1.20.2
+@opennextjs/aws version: 4.1.0
+workerd compatibility_date: 2026-06-17
+
+┌─────────────────────────────────┐
+│ OpenNext — Building Next.js app │
+└─────────────────────────────────┘
+
+
+> @dropin/web@0.1.0 build
+> next build
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+   ▲ Next.js 15.5.26
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 24.6s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/25) ...
+   Generating static pages (6/25) 
+   Generating static pages (12/25) 
+   Generating static pages (18/25) 
+ ✓ Generating static pages (25/25)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      462 B         103 kB
+├ ƒ /_not-found                            987 B         104 kB
+├ ƒ /about                                 146 B         103 kB
+├ ƒ /campaigns                             195 B         106 kB
+├ ƒ /campaigns/[campaignId]               2.9 kB         109 kB
+├ ƒ /certificates/[certificateId]          195 B         106 kB
+├ ƒ /challenges                            195 B         106 kB
+├ ƒ /challenges/[challengeId]              195 B         106 kB
+├ ƒ /company                               188 B         115 kB
+├ ƒ /dashboard/global                    10.2 kB         134 kB
+├ ƒ /draw                                 2.9 kB         106 kB
+├ ƒ /en/company                            188 B         115 kB
+├ ƒ /en/life/[[...path]]                   133 B         121 kB
+├ ƒ /explorer                              130 B         129 kB
+├ ƒ /explorer/project/[publicProjectId]    130 B         129 kB
+├ ƒ /faq                                   195 B         106 kB
+├ ƒ /feedback                            1.27 kB         109 kB
+├ ƒ /fund                                  195 B         106 kB
+├ ƒ /fund/allocations/[allocationId]       195 B         106 kB
+├ ƒ /funding                               196 B         133 kB
+├ ƒ /governance                            196 B         133 kB
+├ ƒ /life/[[...path]]                      133 B         121 kB
+├ ƒ /life/inquiries                        146 B         103 kB
+├ ƒ /life/inquiries/maintenance            146 B         103 kB
+├ ƒ /lottery/[roundId]                   2.06 kB         106 kB
+├ ƒ /mobile/report                         196 B         133 kB
+├ ƒ /partners                              196 B         133 kB
+├ ƒ /payments/[paymentIntentId]            195 B         106 kB
+├ ƒ /projects                              195 B         106 kB
+├ ƒ /projects/[projectId]                  195 B         106 kB
+├ ƒ /red-team                              195 B         106 kB
+├ ƒ /reports/esg                           196 B         133 kB
+├ ƒ /request-errors/prefetch               146 B         103 kB
+├ ƒ /risk                                  196 B         133 kB
+├ ○ /robots.txt                            146 B         103 kB
+├ ○ /sitemap.xml                           146 B         103 kB
+├ ƒ /status                                146 B         103 kB
+└ ƒ /terra                               1.55 kB         134 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-498168fb58dcd546.js        46.4 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          2.27 kB
+
+
+ƒ Middleware                             34.9 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+┌──────────────────────────────┐
+│ OpenNext — Generating bundle │
+└──────────────────────────────┘
+
+Bundling middleware function...
+Bundling static assets...
+Bundling cache assets...
+Building server function: default...
+Applying code patches: 3.892s
+# copyPackageTemplateFiles
+[35m⚙️ Bundling the OpenNext server...
+[0m
+[35mWorker saved in `.open-next/worker.js` 🚀
+[0m
+OpenNext build complete.
+[CanopyProof] Promoted prerendered homepage into OpenNext Worker assets.

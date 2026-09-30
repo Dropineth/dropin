@@ -1,0 +1,51 @@
+{
+  "candidateSha": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "reviewedAt": "2026-09-30T03:53:25.705457+00:00",
+  "reviewer": "Codex root; visual inspection, not independent human release approval",
+  "runtime": "Actual local OpenNext/workerd; browser viewport 375x812 for interactive checks",
+  "staticChecks": [
+    {
+      "file": "candidate-a-local/browser-workerd/after-desktop-ecology.png",
+      "sha256": "681c6d480ec8ea32e51a3ad8c358d80f7e00466eb363968dc7977711971831ec",
+      "scope": "Full layout plus readable inspection crop where long; original ecology selected top/middle/footer only, not every paragraph."
+    },
+    {
+      "file": "candidate-a-local/browser-workerd/after-mobile-ecology.png",
+      "sha256": "6900fab2d8f8f852207feada40c6f6e845dc9988d4a7a76fb8dccb0a7f750702",
+      "scope": "Full layout plus readable inspection crop where long; original ecology selected top/middle/footer only, not every paragraph."
+    },
+    {
+      "file": "candidate-a-local/browser-workerd/after-tablet-life-partners.png",
+      "sha256": "6d6b70794fa2f9cbd7759a1d62ccd62cb9427e31d8609e89a17071ee7efb69aa",
+      "scope": "Full layout plus readable inspection crop where long; original ecology selected top/middle/footer only, not every paragraph."
+    }
+  ],
+  "interactiveChecks": [
+    "Life++ phone homepage rendered without clipping",
+    "Spaces list to scene31; disabled viewer and original HTTP/source permission text retained",
+    "Spaces list to scene29 then English locale; matching scene/localized boundary retained",
+    "English partnership form: synthetic local draft generated and explicitly not sent/not received",
+    "Clear this page removed synthetic data",
+    "Return to original ecology home; original Proof Explorer anchor clicked and governed publication heading observed"
+  ],
+  "syntheticValuesOnly": true,
+  "realSceneLoaded": false,
+  "realReceipt": false,
+  "independentHumanApproval": false,
+  "limitations": [
+    "Screenshot review and desktop mobile emulation, not physical device or comprehensive WCAG review",
+    "Static fullpage images were followed by original-size crops for readability",
+    "Original ecology mobile clipping already appears in before-ecology-mobile.png; retained as existing layout debt under the no-redesign scope",
+    "The fullpage ecology capture shows repeated-looking content near its end; the live DOM has one corresponding hero heading. Capture cause is unestablished; no duplicate homepage component is inferred from this image alone."
+  ],
+  "baselineIssue": {
+    "status": "EXISTING_VISUAL_CAVEAT",
+    "viewport": {
+      "width": 375,
+      "height": 812
+    },
+    "description": "Ecology hero heading and status row/text extend beyond the visible right edge. Reproduced interactively and present in pre-implementation baseline screenshot; Life++ entry remains visible and usable. Existing ecology page was not redesigned.",
+    "baselineFile": "../screenshots/before-ecology-mobile.png",
+    "baselineSha256": "4c147e1056f6fcfa8fc9a46fd452a48cf97b6bfea5f07acb72665d5f038d4825"
+  }
+}

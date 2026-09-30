@@ -1,0 +1,185 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 109729530976,
+      "run_id": 36665614977,
+      "workflow_name": "Life++ web acceptance",
+      "head_branch": "codex/canopyproof-lifepp-full-update-20260930",
+      "run_url": "https://api.github.com/repos/Dropineth/dropin/actions/runs/36665614977",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOM9RD_c8AAAAZjGPEYA",
+      "head_sha": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "url": "https://api.github.com/repos/Dropineth/dropin/actions/jobs/109729530976",
+      "html_url": "https://github.com/Dropineth/dropin/actions/runs/36665614977/job/109729530976",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-09-30T03:42:37Z",
+      "started_at": "2026-09-30T03:42:38Z",
+      "completed_at": "2026-09-30T03:46:25Z",
+      "name": "web",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-30T03:42:39Z",
+          "completed_at": "2026-09-30T03:42:40Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-30T03:42:40Z",
+          "completed_at": "2026-09-30T03:42:43Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-30T03:42:43Z",
+          "completed_at": "2026-09-30T03:42:48Z"
+        },
+        {
+          "name": "Initialize candidate-bound validation evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-09-30T03:42:48Z",
+          "completed_at": "2026-09-30T03:42:48Z"
+        },
+        {
+          "name": "Pin npm",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-09-30T03:42:48Z",
+          "completed_at": "2026-09-30T03:42:52Z"
+        },
+        {
+          "name": "Install locked dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-09-30T03:42:52Z",
+          "completed_at": "2026-09-30T03:43:14Z"
+        },
+        {
+          "name": "Typecheck",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-09-30T03:43:14Z",
+          "completed_at": "2026-09-30T03:43:23Z"
+        },
+        {
+          "name": "Lint",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-09-30T03:43:23Z",
+          "completed_at": "2026-09-30T03:43:35Z"
+        },
+        {
+          "name": "Life++ unit tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-09-30T03:43:35Z",
+          "completed_at": "2026-09-30T03:43:50Z"
+        },
+        {
+          "name": "Build Next artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-09-30T03:43:50Z",
+          "completed_at": "2026-09-30T03:44:36Z"
+        },
+        {
+          "name": "Install Chromium",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-09-30T03:44:36Z",
+          "completed_at": "2026-09-30T03:44:56Z"
+        },
+        {
+          "name": "Scene viewer fixture lifecycle",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-09-30T03:44:56Z",
+          "completed_at": "2026-09-30T03:44:59Z"
+        },
+        {
+          "name": "Consultation recovery UI fixture",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-09-30T03:44:59Z",
+          "completed_at": "2026-09-30T03:45:01Z"
+        },
+        {
+          "name": "Life++ Next browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-09-30T03:45:01Z",
+          "completed_at": "2026-09-30T03:46:11Z"
+        },
+        {
+          "name": "Finalize candidate-bound validation result",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-09-30T03:46:11Z",
+          "completed_at": "2026-09-30T03:46:11Z"
+        },
+        {
+          "name": "Preserve bounded evidence including failures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-09-30T03:46:11Z",
+          "completed_at": "2026-09-30T03:46:13Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-09-30T03:46:13Z",
+          "completed_at": "2026-09-30T03:46:22Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-09-30T03:46:22Z",
+          "completed_at": "2026-09-30T03:46:22Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33,
+          "started_at": "2026-09-30T03:46:22Z",
+          "completed_at": "2026-09-30T03:46:22Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/Dropineth/dropin/check-runs/109729530976",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000059,
+      "runner_name": "GitHub Actions 1000000059",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

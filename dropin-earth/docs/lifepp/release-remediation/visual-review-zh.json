@@ -1,0 +1,943 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-09-30T03:51:50.107824+00:00",
+  "candidateSha": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "reviewer": {
+    "type": "Codex agent",
+    "task": "scene_safety",
+    "method": "逐张实际view_image目视检查",
+    "independentHumanApproval": false
+  },
+  "status": "PASS_WITH_NON_BLOCKING_OBSERVATION_AND_LIMITATIONS",
+  "sourceEvidence": {
+    "browserReport": "reports/lifepp-validation/local-b4e3954/browser-workerd/browser-report.json",
+    "browserReportSha256": "ff9f6e2d61eef7d44dcb5da56c2164de8962c26a5f341c3a6dedb40f635052d0",
+    "candidateSha": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "generatedAt": "2026-09-30T03:44:49.842Z",
+    "runtime": {
+      "node": "v22.22.3",
+      "platform": "darwin",
+      "arch": "arm64",
+      "browser": "154.0.8037.58",
+      "serverMode": "workerd"
+    },
+    "workingTreeUnderTest": false,
+    "sourceStatus": "",
+    "automatedStatus": "PASS",
+    "automatedStatusUsedAsSubstituteForVisualInspection": false,
+    "viewportDefinition": "tests/browser/lifepp.spec.ts:15-18 at candidate SHA"
+  },
+  "scope": {
+    "locale": "zh",
+    "routes": [
+      "/life",
+      "/life/spaces",
+      "/life/spaces/31",
+      "/life/spaces/29",
+      "/life/center",
+      "/life/agents",
+      "/life/membership",
+      "/life/partners",
+      "/life/trust",
+      "/company"
+    ],
+    "originalScreenshotsViewed": 20,
+    "desktop": 10,
+    "mobile": 10,
+    "additionalOriginalWidthMobileContactSheetsViewed": 10,
+    "tabletIncluded": false
+  },
+  "summary": {
+    "materialVisualIssuesObserved": 0,
+    "all20OriginalImagesViewed": true,
+    "all10MobileImagesReviewedInOriginalWidthSegments": true,
+    "navigationAndPageEndInspected": true,
+    "sourceFilesModified": false,
+    "actualThirdPartySceneReadinessEstablished": false,
+    "productionOrHumanApprovalGranted": false
+  },
+  "issues": [
+    {
+      "id": "ZH-MOBILE-LIFE-01",
+      "severity": "cosmetic_non_blocking",
+      "route": "/life",
+      "profile": "mobile",
+      "observation": "底部信任提示中“看得见来源，也看得见边界。”受图标与右侧链接挤占文字宽度，标题分三行，最后“界。”单独成行。文字、说明及了解信任原则链接均未裁切或相互遮挡。",
+      "recommendation": "后续可在375px布局中将该提示内的链接放到文字下方，改善标题断行；本次冻结候选未改页面。",
+      "blocksCurrentScreenshotReview": false
+    }
+  ],
+  "screenshots": [
+    {
+      "route": "/life",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life.png",
+      "sha256": "96fec2c9d0d925578cced9234b79fa624d3c6b517b92313d1c3e58aca27dad03",
+      "imagePixels": {
+        "width": 1440,
+        "height": 3577
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "主视觉、31/29场景卡片、四个服务方向、671.26平方米规划表、信任说明和底部合作横幅均可见，内容延续至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "顶部一起共创、探索测试场景、申请空间合作、全部空间场景、了解共生中心、信任原则及底部聊聊合作可能均完整可辨。",
+        "disabledAndPermissionBoundary": "主图标明概念示意、非实际场地与非已部署设备；场景卡片标明通用占位图和嵌入停用；规划面积及服务开放附有条件说明。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life.png"
+    },
+    {
+      "route": "/life/spaces",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-spaces.png",
+      "sha256": "53c12d52b91158303ff9dd4913842b51780000975ff0df895a85a1bb42542f48",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2216
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "两张场景卡片、先确认再启用说明、五步服务流程、两组交付前问题和底部合作横幅均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "两个查看来源与场景状态入口，以及底部聊聊合作可能清楚可见。",
+        "disabledAndPermissionBoundary": "页面明确第三方自动加载关闭、导航未验收；占位图非场景照片，现有HTTP来源及后续HTTPS/许可/嵌入/浏览器条件清楚列出。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-spaces.png"
+    },
+    {
+      "route": "/life/spaces/31",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-spaces-31.png",
+      "sha256": "47db863ac3be9b8d020154c57cf8cdfa2660bd09926410f05236dba8e24e3bfd",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2338
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "31号通用网格占位图、禁用说明、三项加载前条件、原始链接、七项待确认来源元数据及页面末尾授权说明均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "打开第三方原始链接和复制原始链接按钮完整可见；没有加载或进入已就绪场景的按钮。",
+        "disabledAndPermissionBoundary": "嵌入尚未启用；截图明确尚未读取场景内容、HTTPS/展示权限待确认；原文HTTP链接为http://kjlying.com:8456/scenes/31；视觉浏览不等于导航地图或生态成果。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-spaces-31.png"
+    },
+    {
+      "route": "/life/spaces/29",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-spaces-29.png",
+      "sha256": "8f5b7af3e7aed66676fb175883a73a604573cbb8949522302afa010ae53def10",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2338
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "29号通用网格占位图、禁用说明、三项加载前条件、原始链接、七项待确认来源元数据及页面末尾授权说明均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "打开第三方原始链接和复制原始链接按钮完整可见；没有加载或进入已就绪场景的按钮。",
+        "disabledAndPermissionBoundary": "嵌入尚未启用；截图明确尚未读取场景内容、HTTPS/展示权限待确认；原文HTTP链接为http://kjlying.com:8456/scenes/29；视觉浏览不等于导航地图或生态成果。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-spaces-29.png"
+    },
+    {
+      "route": "/life/center",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-center.png",
+      "sha256": "7875d6e269ec8940c75a06b6fa59d6070e5778e34752fa3c53142fd6f59530a0",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2451
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "671.26平方米总面积、612.57平方米二层主体、导入期规划标识、四个房间及面积、三步条件和共学/机器人边界说明完整可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "顶部一起共创和底部聊聊合作可能完整可见；未显示立即预约、付款或配送操作。",
+        "disabledAndPermissionBoundary": "面积为用户规划输入，非已核验租约/开放承诺；四个模块均标拟议模块、条件待确认；共学项目不代表学历或办学许可，机器人实际配送前需安全验收。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-center.png"
+    },
+    {
+      "route": "/life/agents",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-agents.png",
+      "sha256": "0d81950fd67874794f33c9253b7b760f946c0d46207533e9102de63b4c8a58f5",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2580
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "授权数字分身、边缘终端、云服务选项、五步授权流程、当前能力状态及完整初始询问表单延续至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "登记内测意向、阅读数据与授权说明、生成询问内容和清除本页信息均可见；联系人、机构、渠道、联系方式、类型、需求和未选中的同意复选框没有遮挡。",
+        "disabledAndPermissionBoundary": "能力卡标咨询/内测意向；说明未接入真实任务执行、机器人运动、支付、钱包或数据交易。表单醒目标明只在本页生成草稿、未接收件后台、不会自动发送；数据训练/导航/再分发不获授权。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-agents.png"
+    },
+    {
+      "route": "/life/membership",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-membership.png",
+      "sha256": "3f77339426f9ceb55b248715da6317765aea15515d21dcb002c2546a959904f6",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2078
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "Life/Life+/Life++三个拟议方案、人民币299/599/1000年费、服务方向、统一边界说明、三个折叠FAQ标题和底部横幅均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "每档表达参与意向及底部聊聊合作可能完整可见；未显示支付或预约控件。",
+        "disabledAndPermissionBoundary": "标题附近与方案下方均说明拟议方案、尚未开放收费；费用为各自独立方案，不叠加、不暗示升级抵扣，不承诺无限参与/算力/token。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-membership.png"
+    },
+    {
+      "route": "/life/partners",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-partners.png",
+      "sha256": "a9a82e3d5f86f04daf47e1125d71042ae321783ab358e5fe9980a844f791865e",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2116
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "物业与空间、商户与展商、设备与技术、研究与共学四类合作卡和完整初始询问表单均可见至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "顶部一起共创、表单生成询问内容和清除本页信息完整可见；所有字段和未选中的同意复选框均可辨。",
+        "disabledAndPermissionBoundary": "合作意向不构成订单、预约、报价接受或合同；无需上传图纸视频，不授权训练。表单清楚标明仅本页草稿、没有收件后台、不会自动发送。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-partners.png"
+    },
+    {
+      "route": "/life/trust",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-life-trust.png",
+      "sha256": "5391012a126ae773c861b5447d146b6680e975160a05872154198cc6711792b3",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2621
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "视觉浏览、导航地图、生态成果三种用途的差异、七类独立许可、身份/来源/授权/争议四类记录和撤回询问区域均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "生成异议或撤回询问按钮在正文末尾清楚可见；页脚数据授权与责任及主体入口可见。",
+        "disabledAndPermissionBoundary": "明确两场景未经验证且嵌入停用；哈希不证明真实/版权/合法权限/碳信用；七类用途各需独立授权；真人视频训练、直播交易、数据买卖和机器人指令默认关闭。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-life-trust.png"
+    },
+    {
+      "route": "/company",
+      "locale": "zh",
+      "profile": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-company.png",
+      "sha256": "aee3e586e1839d9af7d91bc2a6b5e5c6d72fc0999640171aa4652a33fb5f2377",
+      "imagePixels": {
+        "width": 1440,
+        "height": 2234
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG"
+      ],
+      "observations": {
+        "navigation": "品牌返回入口、生态与地球观测、五项Life++导航、EN与一起共创均可见；桌面导航横排，未观察到遮挡。",
+        "bodyAndEnd": "主体介绍、绿色生态入口与紫色Life++入口、品牌/协议/履约边界、生态联系入口以及完整初始询问表单均可见至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "进入生态与地球观测、进入Life++、查看生态业务现有联系入口以及生成询问内容/清除本页信息均完整可见。",
+        "disabledAndPermissionBoundary": "生态卡标样例数据不等于认证碳信用；Life++卡标导入期规划、服务条件待确认；说明网站文案不代表资产/IP转移、合同转签或深圳线下服务由香港主体直接履约。表单仍为本页草稿。",
+        "responsiveLayout": "对应桌面多栏卡片、内容区及CTA对齐，无可见相互覆盖；小字以全页呈现为主，未逐字校对所有细字。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-company.png"
+    },
+    {
+      "route": "/life",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life.png",
+      "sha256": "0ce506d5bd1d26267d1ad29b94476061a136cd9c85d7f8e67f2f1dbbc6d5463d",
+      "imagePixels": {
+        "width": 375,
+        "height": 5157
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "主视觉、31/29场景卡片、四个服务方向、671.26平方米规划表、信任说明和底部合作横幅均可见，内容延续至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "顶部一起共创、探索测试场景、申请空间合作、全部空间场景、了解共生中心、信任原则及底部聊聊合作可能均完整可辨。",
+        "disabledAndPermissionBoundary": "主图标明概念示意、非实际场地与非已部署设备；场景卡片标明通用占位图和嵌入停用；规划面积及服务开放附有条件说明。",
+        "responsiveLayout": "双栏主视觉和卡片转为单列；五个导航入口、EN和一起共创均可见。信任提示标题在狭窄文字列中换行为三行，最后“界。”单独成行，未遮挡内容或旁边链接。"
+      },
+      "issueIds": [
+        "ZH-MOBILE-LIFE-01"
+      ],
+      "result": "PASS_WITH_NON_BLOCKING_OBSERVATION",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "0b30892fb568a3b6833663c8984da4f7306da51d684282feb45461f3a2ae1a7c",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 3800,
+            "width": 375,
+            "height": 1357
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life.png"
+    },
+    {
+      "route": "/life/spaces",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-spaces.png",
+      "sha256": "f32b2df105157204593d8a078d2068ccb421ad2c1abf860f24441db564b6ff4f",
+      "imagePixels": {
+        "width": 375,
+        "height": 3289
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "两张场景卡片、先确认再启用说明、五步服务流程、两组交付前问题和底部合作横幅均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "两个查看来源与场景状态入口，以及底部聊聊合作可能清楚可见。",
+        "disabledAndPermissionBoundary": "页面明确第三方自动加载关闭、导航未验收；占位图非场景照片，现有HTTP来源及后续HTTPS/许可/嵌入/浏览器条件清楚列出。",
+        "responsiveLayout": "场景卡片、五步流程、问答说明纵向排列，禁用条件及按钮没有被左右截断。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "11c4afffda070e8f211eec973a7df8a8d6cc1223c2a92f1954845dbcc11872cc",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1389
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-spaces.png"
+    },
+    {
+      "route": "/life/spaces/31",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-spaces-31.png",
+      "sha256": "c9fab76d711ec837ec109da5bda5e0b3200861be5010d6986cc806b2827b4fbe",
+      "imagePixels": {
+        "width": 375,
+        "height": 2766
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "31号通用网格占位图、禁用说明、三项加载前条件、原始链接、七项待确认来源元数据及页面末尾授权说明均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "打开第三方原始链接和复制原始链接按钮完整可见；没有加载或进入已就绪场景的按钮。",
+        "disabledAndPermissionBoundary": "嵌入尚未启用；截图明确尚未读取场景内容、HTTPS/展示权限待确认；原文HTTP链接为http://kjlying.com:8456/scenes/31；视觉浏览不等于导航地图或生态成果。",
+        "responsiveLayout": "来源打开/复制按钮纵向堆叠，完整URL适配375px页面；元数据表转为上下排列，待确认字段与底部授权说明完整可见。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "b04fe79abfef5037569486c612f5de4ad9adcd4f4f3d74bfce0447810faeec1b",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 866
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-spaces-31.png"
+    },
+    {
+      "route": "/life/spaces/29",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-spaces-29.png",
+      "sha256": "48af884e40cbab93ab037a5aae246337e43988a007952e713c22b05c843a2468",
+      "imagePixels": {
+        "width": 375,
+        "height": 2766
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "29号通用网格占位图、禁用说明、三项加载前条件、原始链接、七项待确认来源元数据及页面末尾授权说明均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "打开第三方原始链接和复制原始链接按钮完整可见；没有加载或进入已就绪场景的按钮。",
+        "disabledAndPermissionBoundary": "嵌入尚未启用；截图明确尚未读取场景内容、HTTPS/展示权限待确认；原文HTTP链接为http://kjlying.com:8456/scenes/29；视觉浏览不等于导航地图或生态成果。",
+        "responsiveLayout": "来源打开/复制按钮纵向堆叠，完整URL适配375px页面；元数据表转为上下排列，待确认字段与底部授权说明完整可见。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "4ec2295ee08badbc6a2bb405efa7dbfcb05a2693eb0351907728388da47ed3d8",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 866
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-spaces-29.png"
+    },
+    {
+      "route": "/life/center",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-center.png",
+      "sha256": "d7cc180347d9b8d9c2677b81abcd230125a7a72b77d57eddd60164d78b462cc2",
+      "imagePixels": {
+        "width": 375,
+        "height": 3774
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "671.26平方米总面积、612.57平方米二层主体、导入期规划标识、四个房间及面积、三步条件和共学/机器人边界说明完整可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "顶部一起共创和底部聊聊合作可能完整可见；未显示立即预约、付款或配送操作。",
+        "disabledAndPermissionBoundary": "面积为用户规划输入，非已核验租约/开放承诺；四个模块均标拟议模块、条件待确认；共学项目不代表学历或办学许可，机器人实际配送前需安全验收。",
+        "responsiveLayout": "两项面积并列、当前阶段单独一行；四个房间及三步条件改为单列，长边界说明自然换行，合作入口与完整页脚可见。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "65a600e47d24b41c1e3f2731ef878c63765a2671707b528ef83911159d938c54",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1874
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-center.png"
+    },
+    {
+      "route": "/life/agents",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-agents.png",
+      "sha256": "2387c639654f81e7fed143dc2059ab6443b00d3f938d6ead6e2a8412de8f79c0",
+      "imagePixels": {
+        "width": 375,
+        "height": 4080
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "授权数字分身、边缘终端、云服务选项、五步授权流程、当前能力状态及完整初始询问表单延续至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "登记内测意向、阅读数据与授权说明、生成询问内容和清除本页信息均可见；联系人、机构、渠道、联系方式、类型、需求和未选中的同意复选框没有遮挡。",
+        "disabledAndPermissionBoundary": "能力卡标咨询/内测意向；说明未接入真实任务执行、机器人运动、支付、钱包或数据交易。表单醒目标明只在本页生成草稿、未接收件后台、不会自动发送；数据训练/导航/再分发不获授权。",
+        "responsiveLayout": "三张服务卡、五步流程和表单转为单列；所有字段标签、隐私提示、复选框与生成/清除按钮可辨，两个按钮并列且不溢出。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "9f872e4b6c84864bb9793c8c8a9aa2a30b2fea1b23ac48660d2abc05b7d4f8ac",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 3800,
+            "width": 375,
+            "height": 280
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-agents.png"
+    },
+    {
+      "route": "/life/membership",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-membership.png",
+      "sha256": "2a53cde620daa91882ccc0dd42d3212b1306bbed4ecdf3f3ff69c95ba9bbcb7e",
+      "imagePixels": {
+        "width": 375,
+        "height": 3033
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "Life/Life+/Life++三个拟议方案、人民币299/599/1000年费、服务方向、统一边界说明、三个折叠FAQ标题和底部横幅均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "每档表达参与意向及底部聊聊合作可能完整可见；未显示支付或预约控件。",
+        "disabledAndPermissionBoundary": "标题附近与方案下方均说明拟议方案、尚未开放收费；费用为各自独立方案，不叠加、不暗示升级抵扣，不承诺无限参与/算力/token。",
+        "responsiveLayout": "三档卡片纵向排列，价格和每档参与入口完整可见；第三档白色按钮与紫色背景区分明确；FAQ为折叠状态，未目视检查其隐藏答案。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "ccf1713be08030941dbc74edd99ce611cfb539db9ccdab01932c6734fc045c5f",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1133
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-membership.png"
+    },
+    {
+      "route": "/life/partners",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-partners.png",
+      "sha256": "136156a35045703c717f3802fc26f68a0e82f4cf4b12a287d426e74e9210f148",
+      "imagePixels": {
+        "width": 375,
+        "height": 3364
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "物业与空间、商户与展商、设备与技术、研究与共学四类合作卡和完整初始询问表单均可见至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "顶部一起共创、表单生成询问内容和清除本页信息完整可见；所有字段和未选中的同意复选框均可辨。",
+        "disabledAndPermissionBoundary": "合作意向不构成订单、预约、报价接受或合同；无需上传图纸视频，不授权训练。表单清楚标明仅本页草稿、没有收件后台、不会自动发送。",
+        "responsiveLayout": "四类合作卡和表单纵向排列，长隐私说明、复选框和两个并列操作按钮适配页面宽度，全文末尾页脚可见。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "8b47ea2719029e2670032d804441d12a17164ffab6656dc59e29aedfbd1dc69c",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1464
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-partners.png"
+    },
+    {
+      "route": "/life/trust",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-life-trust.png",
+      "sha256": "6a70ea8dabd61c669cf7a564e7def61b32ad09b4239dbdbaed7adee0d5b5cf26",
+      "imagePixels": {
+        "width": 375,
+        "height": 3916
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "视觉浏览、导航地图、生态成果三种用途的差异、七类独立许可、身份/来源/授权/争议四类记录和撤回询问区域均可见。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "生成异议或撤回询问按钮在正文末尾清楚可见；页脚数据授权与责任及主体入口可见。",
+        "disabledAndPermissionBoundary": "明确两场景未经验证且嵌入停用；哈希不证明真实/版权/合法权限/碳信用；七类用途各需独立授权；真人视频训练、直播交易、数据买卖和机器人指令默认关闭。",
+        "responsiveLayout": "用途卡单列、七类许可两列、记录卡单列；撤回说明与按钮完整可见，标题换行但未裁切。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "63f9911c2e82537c620595361da5f60ffa346db537f74ced38e0bd29ad9deefb",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 3800,
+            "width": 375,
+            "height": 116
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-life-trust.png"
+    },
+    {
+      "route": "/company",
+      "locale": "zh",
+      "profile": "mobile",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "screenshot": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-company.png",
+      "sha256": "82892b6e50e09fc1d1f550969a608f56d42766adf7e1298854e6977e649dea0a",
+      "imagePixels": {
+        "width": 375,
+        "height": 3311
+      },
+      "fullPage": true,
+      "actualViewImageInspection": true,
+      "inspectionMethod": [
+        "view_image original full-page PNG",
+        "view_image original-width 1900px sequential strips placed left-to-right in temporary contact sheet"
+      ],
+      "observations": {
+        "navigation": "品牌、生态与地球观测、EN及一起共创可见；五项Life++入口在独立第二行全部显示，未观察到被隐藏的关键导航。",
+        "bodyAndEnd": "主体介绍、绿色生态入口与紫色Life++入口、品牌/协议/履约边界、生态联系入口以及完整初始询问表单均可见至页脚。",
+        "footer": "完整品牌页脚、探索/联系/生态入口及最终导入期规划、测试输入、订阅尚未开放收费说明可见；未发现页尾被截断。",
+        "overflow": "未目视发现横向裁切、重叠或挤出页面的正文/CTA；截图本身不能替代DOM滚动宽度测量。",
+        "cta": "进入生态与地球观测、进入Life++、查看生态业务现有联系入口以及生成询问内容/清除本页信息均完整可见。",
+        "disabledAndPermissionBoundary": "生态卡标样例数据不等于认证碳信用；Life++卡标导入期规划、服务条件待确认；说明网站文案不代表资产/IP转移、合同转签或深圳线下服务由香港主体直接履约。表单仍为本页草稿。",
+        "responsiveLayout": "两个业务入口改为纵排，长品牌边界和表单提示自然换行；所有字段、复选框、按钮及页脚可见，无左右裁切。"
+      },
+      "issueIds": [],
+      "result": "NO_MATERIAL_VISUAL_ISSUE_OBSERVED",
+      "inspectionDerivative": {
+        "purpose": "temporary inspection only; original PNG unchanged",
+        "sha256": "df0a528e73a82d90f04596657c9104e3a24f714ff7f94ff66a58ee1da23578d3",
+        "segments": [
+          {
+            "x": 0,
+            "y": 0,
+            "width": 375,
+            "height": 1900
+          },
+          {
+            "x": 0,
+            "y": 1900,
+            "width": 375,
+            "height": 1411
+          }
+        ],
+        "layout": "columns in source order, 12px gray gap, 1900px canvas height; no resampling"
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-company.png"
+    }
+  ],
+  "limitations": [
+    "本报告是Codex逐图目视检查，不是独立人类设计审批、上线审批或法律/权利审查。",
+    "截图来自本地loopback的workerd与Chromium 154.0.8037.58；mobile仅为375x812浏览器viewport，不是真实手机、触屏、iOS Safari或Android设备测试。",
+    "每张原始长图均实际调用view_image；工具对超长原图缩放显示。移动图另以原始375px宽、连续1900px切片横排查看，未覆盖或替换原图。",
+    "检查覆盖整页可见布局、导航、正文区域延续、页面末尾、主要CTA、表单初始状态及禁用/授权说明；不宣称逐字校对所有桌面细字、通过对比度标准或完备无障碍验收。",
+    "会员FAQ在截图中折叠，未目视检查隐藏答案；表单为初始空值/未勾选状态，未在此审查中查看动态校验、草稿、复制、清除及后端失败状态。相关自动测试不是本次视觉观察的替代证据。",
+    "静态截图只能确认CTA及导航可见，不能证明链接目的地、交互功能、键盘焦点、网络请求、第三方访问、安全策略或权限执行。",
+    "31和29展示的是明确标注的通用占位与禁用界面；没有加载真实第三方场景，不构成HTTPS、嵌入许可、导航能力或真实就绪验收。",
+    "未检查英文、平板和生态主页；这些范围由其他审查负责。轻微标题换行观察不等于已证明候选相对旧版的回归。"
+  ],
+  "archiveNote": "Original capture paths remain in each entry. archivedImagePath identifies the unchanged bytes committed alongside this review; temporary inspection derivatives are not application assets."
+}

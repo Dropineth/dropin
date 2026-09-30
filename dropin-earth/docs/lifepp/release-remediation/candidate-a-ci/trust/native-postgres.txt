@@ -1,0 +1,46 @@
+
+> dropin-earth-monorepo@0.1.0 predb:verify:canopyproof:native
+> npm run prisma:generate:test
+
+
+> dropin-earth-monorepo@0.1.0 prisma:generate:test
+> npm --workspace services/api run generate
+
+
+> @dropin/api@0.1.0 generate
+> PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema prisma/schema.prisma
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 262ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+> dropin-earth-monorepo@0.1.0 db:verify:canopyproof:native
+> node --test --test-concurrency=1 --import tsx tests/integration/canopyproof-native-postgres.integration.ts tests/integration/canopyproof-global-command-center-spatial-disclosure-native.integration.ts
+
+TAP version 13
+# Subtest: Global spatial disclosure enforces forced RLS with a native non-bypass PostgreSQL role
+ok 1 - Global spatial disclosure enforces forced RLS with a native non-bypass PostgreSQL role
+  ---
+  duration_ms: 3857.818996
+  type: 'test'
+  ...
+# Subtest: CanopyProof Prisma trust registry is atomic and idempotent across native PostgreSQL connections
+ok 2 - CanopyProof Prisma trust registry is atomic and idempotent across native PostgreSQL connections
+  ---
+  duration_ms: 24874.411132
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 29919.98599

@@ -30,9 +30,11 @@ async function main() {
     const executablePath=process.env.CANOPYPROOF_CHROMIUM_EXECUTABLE ?? (existsSync(installedChrome)?installedChrome:undefined);
     browser=await chromium.launch({headless:true,...(executablePath?{executablePath}:{})});
     const context=await browser.newContext();
+    await context.grantPermissions(['clipboard-read','clipboard-write'],{origin:base});
     const requests:{method:string;body:Record<string,unknown>|null}[]=[];
     let receiving=false;
     let failPost=true;
+    let abortPost=false;
     const policy={mode:'receive',policyVersion:'LOCAL_SYNTHETIC-v1',retentionDays:2,controller:'LOCAL_SYNTHETIC recipient',backupNoticeZh:'本地合成测试，无生产声明。',backupNoticeEn:'LOCAL_SYNTHETIC only; no production retention claim.'};
     await context.route('**/*',async route=>{
       const request=route.request();
@@ -40,6 +42,7 @@ async function main() {
         requests.push({method:request.method(),body:request.postDataJSON() as Record<string,unknown>|null});
         if(request.method()==='GET'){await route.fulfill({json:receiving?policy:{mode:'draft'}});return;}
         assert.equal(request.method(),'POST','Fixture permits only the explicitly exercised synthetic method');
+        if(abortPost){await route.abort('connectionreset');return;}
         if(failPost){await route.fulfill({status:503,json:{error:'unavailable'}});return;}
         await route.fulfill({status:200,json:{status:'stored',receiptId:'00000000-0000-4000-8000-000000000001',withdrawalToken:'a'.repeat(64),expiresAt:'2026-10-02T00:00:00.000Z',duplicate:true}});return;
       }
@@ -55,12 +58,20 @@ async function main() {
     await page.getByLabel('Contact detail (required, one channel only)',{exact:true}).fill('test@example.invalid');
     await page.getByLabel('Brief request (10–1200 characters)',{exact:true}).fill('LOCAL_SYNTHETIC consultation. No real recipient.');
     await page.getByRole('checkbox',{name:/I have read the privacy notice/}).check();
+    await page.getByRole('button',{name:'Generate inquiry draft'}).click();
     await page.getByRole('checkbox',{name:/I agree to send the minimum necessary/}).check();
     await page.getByRole('button',{name:'Send enquiry and obtain storage receipt'}).click();
     const recheck=page.getByRole('button',{name:'Recheck receiving status (does not send)'});await recheck.waitFor();
     assert.equal(await page.getByRole('button',{name:'Send enquiry and obtain storage receipt'}).count(),0,'503 disables sending');
+    assert.match(await page.locator('#inquiry-draft').inputValue(),/not a statement of earlier submission status/);
     const first=requests.find(request=>request.method==='POST')!.body!;
     assert.equal(first.sendConsent,true);assert.equal(first.policyVersion,policy.policyVersion);
+    await page.getByRole('button',{name:'Generate inquiry draft'}).click();
+    assert.match(await page.getByRole('status').innerText(),/earlier sending attempt remains unknown/);
+    await page.getByRole('button',{name:'Copy draft (does not send)',exact:true}).click();
+    assert.match(await page.getByRole('status').innerText(),/earlier sending attempt remains unknown/);
+    assert.ok(!(await page.locator('body').innerText()).includes('This site has not received it.'));
+    assert.ok(!(await page.locator('body').innerText()).includes('No receiving backend is connected'));
     receiving=false;await recheck.click();
     await page.getByText(/Receiving remains unavailable/).waitFor();
     assert.equal(requests.filter(request=>request.method==='POST').length,1,'Rechecking unavailable status does not send');
@@ -73,7 +84,38 @@ async function main() {
     const posts=requests.filter(request=>request.method==='POST');assert.equal(posts.length,2);
     assert.equal(posts[1]!.body!.idempotencyKey,first.idempotencyKey,'503 recovery preserves the original dedupe key');
     assert.deepEqual(posts[1]!.body!.inquiry,first.inquiry);
-    const report={evidenceClass:'LOCAL_SYNTHETIC_MOCK_UI',realInstitutionalReceipt:false,status:'PASS',browserVersion:browser.version(),checks:['default draft performs GET only','503 removes send action','status recheck never POSTs','draft and dedupe UUID survive status recheck','fresh consent required','receipt wording limits itself to storage'],syntheticPostCount:posts.length};
+    assert.equal(await page.locator('[data-receipt-state="unknown"]').count(),0,'A stored receipt resolves this attempt');
+    abortPost=true;await page.reload({waitUntil:'networkidle'});
+    await page.getByLabel('Your name (required)',{exact:true}).fill('LOCAL_SYNTHETIC response-loss visitor');
+    await page.getByLabel('Contact detail (required, one channel only)',{exact:true}).fill('lost@example.invalid');
+    await page.getByLabel('Brief request (10–1200 characters)',{exact:true}).fill('LOCAL_SYNTHETIC possible storage with lost response.');
+    await page.getByRole('checkbox',{name:/I have read the privacy notice/}).check();
+    await page.getByRole('checkbox',{name:/I agree to send the minimum necessary/}).check();
+    await send.click();await recheck.waitFor();
+    await page.getByRole('button',{name:'Generate inquiry draft'}).click();
+    assert.match(await page.getByRole('status').innerText(),/earlier sending attempt remains unknown/);
+    await page.getByRole('button',{name:'Copy draft (does not send)',exact:true}).click();
+    assert.match(await page.getByRole('status').innerText(),/earlier sending attempt remains unknown/);
+    const lost=requests.filter(request=>request.method==='POST').at(-1)!.body!;
+    await recheck.click();await send.waitFor();
+    assert.equal(await send.isDisabled(),true);
+    assert.equal(await page.locator('[data-receipt-state="unknown"]').count(),1,'Availability recheck cannot resolve a lost POST');
+    assert.equal(requests.filter(request=>request.method==='POST').length,3,'Draft/copy/recheck never resend');
+    assert.match(await page.locator('#inquiry-draft').inputValue(),/not a statement of earlier submission status/);
+    if(process.env.LIFEPP_CONSULTATION_BROWSER_SCREENSHOT)await page.screenshot({path:process.env.LIFEPP_CONSULTATION_BROWSER_SCREENSHOT,fullPage:true});
+    abortPost=false;await page.getByRole('checkbox',{name:/I agree to send the minimum necessary/}).check();await send.click();
+    await page.getByText('Storage receipt (not proof of email delivery)',{exact:true}).waitFor();
+    assert.equal(requests.filter(request=>request.method==='POST').at(-1)!.body!.idempotencyKey,lost.idempotencyKey,'Lost-response retry preserves dedupe identity');
+    assert.equal(await page.locator('[data-receipt-state="unknown"]').count(),0);
+    await page.getByRole('button',{name:'Clear this page',exact:true}).click();
+    await page.getByLabel('Your name (required)',{exact:true}).fill('LOCAL_SYNTHETIC later draft');
+    await page.getByLabel('Contact detail (required, one channel only)',{exact:true}).fill('later@example.invalid');
+    await page.getByLabel('Brief request (10–1200 characters)',{exact:true}).fill('LOCAL_SYNTHETIC later draft does not undo earlier submissions.');
+    await page.getByRole('checkbox',{name:/I have read the privacy notice/}).check();
+    await page.getByRole('button',{name:'Generate inquiry draft'}).click();
+    assert.match(await page.getByRole('status').innerText(),/does not change earlier submissions/);
+    assert.ok(!(await page.locator('body').innerText()).includes('This site has not received it.'));
+    const report={evidenceClass:'LOCAL_SYNTHETIC_MOCK_UI',realInstitutionalReceipt:false,status:'PASS',browserVersion:browser.version(),checks:['default draft performs GET only','503 removes send action','status recheck never POSTs','draft and dedupe UUID survive status recheck','fresh consent required','receipt wording limits itself to storage','503 draft and copy preserve receipt uncertainty','lost response remains unknown through draft, copy and availability recheck','lost-response retry retains request identity','verified receipt resolves uncertainty','later local draft never denies an earlier submission'],syntheticPostCount:requests.filter(request=>request.method==='POST').length};
     if(process.env.LIFEPP_CONSULTATION_BROWSER_REPORT)await writeFile(process.env.LIFEPP_CONSULTATION_BROWSER_REPORT,JSON.stringify(report,null,2)+'\n');
     console.log(JSON.stringify(report,null,2));
   } finally {await browser?.close();if(server)await new Promise<void>((resolve,reject)=>server!.close(error=>error?reject(error):resolve()));await rm(directory,{recursive:true,force:true});}

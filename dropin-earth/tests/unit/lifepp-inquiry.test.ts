@@ -7,6 +7,10 @@ test("inquiry draft explicitly cannot represent delivery",()=>{
  assert.match(composeInquiry(valid,"en"),/not sent/);
  assert.match(composeInquiry(valid,"zh"),/尚未发送/);
  assert.match(composeInquiry(valid,"en"),/grants no display/);
+ assert.match(composeInquiry(valid,"en",true),/not a statement of earlier submission status/);
+ assert.doesNotMatch(composeInquiry(valid,"en",true),/draft — not sent/);
+ assert.match(composeInquiry(valid,"zh",true),/不代表此前提交状态/);
+ assert.doesNotMatch(composeInquiry(valid,"zh",true),/尚未发送/);
 });
 test("invalid contact, channel, lengths and absent consent cannot produce draft",()=>{
  for(const input of [{...valid,consent:false},{...valid,contact:"bad"},{...valid,contact:"a@b.com\nBcc:x@y.com"},{...valid,message:"short"},{...valid,message:"x".repeat(1201)},{...valid,name:"x".repeat(61)},{...valid,organization:"x".repeat(101)},{...valid,channel:"unknown" as Inquiry["channel"]},{...valid,type:"billing" as Inquiry["type"]}])assert.throws(()=>composeInquiry(input,"en"));

@@ -1,0 +1,866 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-09-30T03:50:36.611Z",
+  "candidate": "A",
+  "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "observedGitHead": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "reviewer": "Codex subagent life_ui",
+  "method": "First, all 20 full-page screenshots were individually emitted by view_image and inspected for overall layout. Because long images may be downscaled in model display even with original detail, all 10 mobile screenshots were additionally inspected as contiguous 1500-pixel-high original-scale strips arranged left-to-right on temporary boards no larger than 1548x1500. CTA, form, warning, navigation and footer text observations rely on this supplemental native-pixel mobile review rather than the overview alone. Automated assertions were not substituted for visual inspection.",
+  "independentHumanApproval": false,
+  "realDeviceReview": false,
+  "realSceneReview": false,
+  "conclusion": "NO_VISIBLE_BLOCKER_FOUND_IN_20_ENGLISH_SCREENSHOTS",
+  "reviewedImages": 20,
+  "scope": {
+    "routes": 10,
+    "profiles": [
+      "desktop 1440x1000",
+      "mobile 375x812"
+    ],
+    "captureRuntime": "Local OpenNext/workerd candidate screenshots supplied by parent",
+    "viewportSource": "tests/browser/lifepp.spec.ts profiles"
+  },
+  "findings": [],
+  "limitations": [
+    "This is Codex screenshot review, not independent human design or business approval. The reviewer previously contributed UI and consultation code.",
+    "Desktop/mobile mean browser viewport profiles, not physical hardware, real touch interaction or a mobile OS browser.",
+    "Static screenshots cannot prove keyboard behavior, focus order, link destinations, form submission, screen-reader semantics or network isolation; separate automated evidence covers parts of those behaviors.",
+    "Membership FAQ rows are collapsed; expanded contents and interaction states were not visible in this set.",
+    "Receiving is disabled in these screenshots. Configured receiving/recovery/withdrawal UI states require their separate synthetic fixture and eventual authorized deployment acceptance.",
+    "Scene grids are explicit placeholders; no real 3D content, navigation accuracy, permissions or ecological claims were validated.",
+    "The original screenshots and page source were not modified. Sharp produced temporary inspection-only crops/composites under /tmp; no production action was performed.",
+    "Full-page overview display can shrink fine print. All mobile source pixels were re-inspected in unscaled segments. Desktop overview conclusions establish layout, visible controls and no obvious clipping, not exhaustive word-by-word desktop fine-print verification."
+  ],
+  "entries": [
+    {
+      "route": "/en/life",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life.png",
+      "imageSha256": "9eb65b295327ea7ec9b2cbf1700e71dc8ed584821e121e91881f9972e3e283e8",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 3618
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Two-column hero, clearly labeled concept illustration, paired test-scene cards, four service cards, 671.26 m2 plan, trust strip and closing CTA remain aligned through the footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Explore test scenes; Discuss a space; scene source/status links; Explore the center; Our trust principles; Explore a collaboration.",
+        "disabledBoundaries": "Concept illustration says it is not a real site/deployed equipment. Both scene cards say generic placeholder and Embed disabled. The area is a planned introductory space; footer says subscriptions are not on sale.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life.png"
+    },
+    {
+      "route": "/en/life",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life.png",
+      "imageSha256": "44ccd4889969ef61d55161e037013c57300a0c4a101b4d753adc98e2fd2f6167",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 5465
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "Hero and scene cards stack within the 375 px canvas. Explore test scenes and Discuss a space remain prominent above the illustration. Room-area rows, trust strip, closing CTA and complete footer fit without visible clipping.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Explore test scenes; Discuss a space; scene source/status links; Explore the center; Our trust principles; Explore a collaboration.",
+        "disabledBoundaries": "Concept illustration says it is not a real site/deployed equipment. Both scene cards say generic placeholder and Embed disabled. The area is a planned introductory space; footer says subscriptions are not on sale.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-strips.png",
+        "inspectionSha256": "13a9306ad7a956c9edfcca5ad1d399fc4dbe3c62648e213baf0124e36731533c",
+        "inspectionDimensions": {
+          "width": 1548,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 1500
+          },
+          {
+            "sourceY": 4500,
+            "height": 965
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=5464",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life.png"
+    },
+    {
+      "route": "/en/life/spaces",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-spaces.png",
+      "imageSha256": "78ba2283ba8eb7c6855db3da0578c9e782f03335e24513027f192f5d08ea2bcb",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2309
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Title and three state badges precede two equal-width scene cards. Confirm-before-enabling notice, five-step service row, two scope panels and closing CTA are fully visible before the footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "View source & scene status on both cards; Explore a collaboration.",
+        "disabledBoundaries": "Third-party auto-loading off, Navigation not validated, Embed disabled and explicit HTTPS/rights/policy/acceptance prerequisites are visible. Placeholders are not presented as site photographs.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-spaces.png"
+    },
+    {
+      "route": "/en/life/spaces",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-spaces.png",
+      "imageSha256": "a6fa95b7081746476bba7bfafa6302b96d85f35190858fd1101960104cd6fd1a",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 3546
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "Scene 31 and Scene 29 cards stack with readable source/status actions. The enabling notice wraps fully, the five steps become rows, and scope cards and final CTA remain inside the page.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "View source & scene status on both cards; Explore a collaboration.",
+        "disabledBoundaries": "Third-party auto-loading off, Navigation not validated, Embed disabled and explicit HTTPS/rights/policy/acceptance prerequisites are visible. Placeholders are not presented as site photographs.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-spaces-strips.png",
+        "inspectionSha256": "fbf95f0e13aee57fc100779542bfd0f69fb7bcdb970cde1f2f647a86c9784ca0",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 546
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=3545",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-spaces.png"
+    },
+    {
+      "route": "/en/life/spaces/31",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-spaces-31.png",
+      "imageSha256": "a8e2143f49749ccd1aec1bbc9aecd3d322156f04d068d45257142a4826ec23af",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2363
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Scene 31 heading and large generic grid lead into a complete blocked-state panel. Original-link actions and full HTTP URL are visible. Seven provenance rows and the final permissions notice remain intact above the footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Open original third-party link; Copy original link; persistent Partner with us and footer return links.",
+        "disabledBoundaries": "Embedding is not enabled. HTTPS and source rights are unverified; original HTTP is called unencrypted. Every provenance value reads To be confirmed. Visual browsing is distinguished from navigation and ecological certification.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-spaces-31.png"
+    },
+    {
+      "route": "/en/life/spaces/31",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-spaces-31.png",
+      "imageSha256": "648fcdabd540940340d79c8c6efa096e75305d1f5db3a80bf73f3b8c2dfcd9a8",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 3041
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "Scene 31 number and placeholder caption fit. Prerequisites wrap without overlap; external-open and copy actions stack at full panel width. HTTP URL and all seven vertically arranged provenance items fit before the complete page end.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Open original third-party link; Copy original link; persistent Partner with us and footer return links.",
+        "disabledBoundaries": "Embedding is not enabled. HTTPS and source rights are unverified; original HTTP is called unencrypted. Every provenance value reads To be confirmed. Visual browsing is distinguished from navigation and ecological certification.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-spaces-31-strips.png",
+        "inspectionSha256": "216a4f833b311ae1883a10ff5cede7babdc182d80f2c1ca0734f22c502510850",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 41
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=3040",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-spaces-31.png"
+    },
+    {
+      "route": "/en/life/spaces/29",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-spaces-29.png",
+      "imageSha256": "c4b357204a00ea94f771a2a8a81cc94f5662efd848efd723051e9b10d80ec84d",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2363
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Scene 29 identifier and source URL ending /29 match in the visible panel. Blocked explanation, prerequisites, actions, provenance table and final notice are complete with no observed overlap.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Open original third-party link; Copy original link; persistent Partner with us and footer return links.",
+        "disabledBoundaries": "Embedding is not enabled and the generic grid is labeled not a scene capture. HTTP, unverified permissions, To be confirmed metadata and separate-use permission requirements remain visible.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-spaces-29.png"
+    },
+    {
+      "route": "/en/life/spaces/29",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-spaces-29.png",
+      "imageSha256": "59f6b6d93c1fc4bd711257621f1189a9450812cd53c11197290af3923cc692f5",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 3041
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "The Scene 29 grid, wrapped prerequisite text, stacked actions and URL ending /29 are contained within the card. Provenance labels/values stack cleanly and the page finishes with the expected footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Open original third-party link; Copy original link; persistent Partner with us and footer return links.",
+        "disabledBoundaries": "Embedding is not enabled and the generic grid is labeled not a scene capture. HTTP, unverified permissions, To be confirmed metadata and separate-use permission requirements remain visible.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-spaces-29-strips.png",
+        "inspectionSha256": "13c2bcfd4989bad589177ca4f1e4a00c2b579374cd6f33dba3f757465135d8b6",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 41
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=3040",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-spaces-29.png"
+    },
+    {
+      "route": "/en/life/center",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-center.png",
+      "imageSha256": "b9db2b1bae281cf831166bc24d220ef1070b26e83a918c2da778c2012ee2eb0b",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2567
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "The 671.26 m2 total and 612.57 m2 main second-floor area are prominent. Four room cards retain unit IDs and areas, followed by three planning-stage cards, a learning/robot notice, closing CTA and footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Explore a collaboration; persistent header Partner with us; footer Four-unit plan and related links.",
+        "disabledBoundaries": "Introductory planning and Proposed module / Conditions pending labels are visible. The notice rejects a degree-granting/licensing claim and real robot delivery orders before safety acceptance.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-center.png"
+    },
+    {
+      "route": "/en/life/center",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-center.png",
+      "imageSha256": "1e7c78ea12d123d6361b5d7d3bc58984392effc437628e2486db9e2aba1f1344",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 4257
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "The area panel uses two numeric columns and a separate planning-state row without cut-off values. L112/L203/L202/L201 cards, sequential conditions and the long learning/robot notice all wrap inside the page.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Explore a collaboration; persistent header Partner with us; footer Four-unit plan and related links.",
+        "disabledBoundaries": "Introductory planning and Proposed module / Conditions pending labels are visible. The notice rejects a degree-granting/licensing claim and real robot delivery orders before safety acceptance.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-center-strips.png",
+        "inspectionSha256": "1551e69839aac0c46d6ad66e05f304b61be58370ef98d60d89e51fbfc50eaca0",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 1257
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=4256",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-center.png"
+    },
+    {
+      "route": "/en/life/agents",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-agents.png",
+      "imageSha256": "128442c26c6ebae7ba4fb38e125720ef442bc7d21928e8a184820ef54bf31d4f",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2799
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Two-line permission-first title, pilot CTA and three service cards are followed by the authorization sequence and current-capability notice. The enquiry section has aligned labels, readable privacy text, draft controls and an intact footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Register pilot interest; Read the data & permission principles; Generate inquiry draft; Clear this page.",
+        "disabledBoundaries": "Information/pilot interest does not operate an agent console. The visible form explicitly says no receiving backend is connected and shows no Send enquiry action. No operating robot, payment or wallet control is displayed.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-agents.png"
+    },
+    {
+      "route": "/en/life/agents",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-agents.png",
+      "imageSha256": "ac4a9bc0e2b697f4c9cbd8ee9ed5ce3d19d8501f67c8b33869417105d62258c4",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 4549
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "Pilot-interest CTA stays near the title. Service cards and authorization steps stack cleanly. Form labels/inputs, privacy text, unchecked compose consent and separate Generate inquiry draft / Clear this page buttons remain visible without clipping.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Register pilot interest; Read the data & permission principles; Generate inquiry draft; Clear this page.",
+        "disabledBoundaries": "Information/pilot interest does not operate an agent console. The visible form explicitly says no receiving backend is connected and shows no Send enquiry action. No operating robot, payment or wallet control is displayed.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-agents-strips.png",
+        "inspectionSha256": "ce536c1f35ea551b313db6cad8c169c7bc2fc3ad53b6aec0d9341b00dad87e4c",
+        "inspectionDimensions": {
+          "width": 1548,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 1500
+          },
+          {
+            "sourceY": 4500,
+            "height": 49
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=4548",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-agents.png"
+    },
+    {
+      "route": "/en/life/membership",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-membership.png",
+      "imageSha256": "d35a840693d7cb0c6eb9e85c80479dc5bbe27ab71df2070ec0edb6f9db0dc980",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2125
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Three plan cards show Life 299, Life+ 599 and Life++ 1000 with CNY/year labels. The highlighted Life++ card retains readable benefits and action. Terms notice, three collapsed FAQ rows, closing CTA and footer are complete.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Express interest for each plan; Explore a collaboration; no checkout control is visible.",
+        "disabledBoundaries": "Proposed plans / Payments not open and not-yet-on-sale language are visible. Prices are not added together; no upgrade credits or unlimited participation/compute/tokens are implied. FAQ answers are collapsed and were not inspected in these screenshots.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-membership.png"
+    },
+    {
+      "route": "/en/life/membership",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-membership.png",
+      "imageSha256": "309b13b88ef1b3edd958135e151ed1b7915cdd2a02800c0df5c9203aa28402c8",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 3322
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "All three pricing cards stack with full amounts, units and Express interest buttons. Long benefit text and the proposed-plan notice wrap within the cards. The final FAQ question wraps without colliding with its plus marker.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Express interest for each plan; Explore a collaboration; no checkout control is visible.",
+        "disabledBoundaries": "Proposed plans / Payments not open and not-yet-on-sale language are visible. Prices are not added together; no upgrade credits or unlimited participation/compute/tokens are implied. FAQ answers are collapsed and were not inspected in these screenshots.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-membership-strips.png",
+        "inspectionSha256": "5dc7da58b85ab365d3afc2fd2fa24b66db747cf194b344f4021688aa93ef73b4",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 322
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=3321",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-membership.png"
+    },
+    {
+      "route": "/en/life/partners",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-partners.png",
+      "imageSha256": "b137b1b79a0a7d6581ee62228eecb8c2149c29a6b43a70f310aa92728c51e640",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2265
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Four partner-type panels sit above a two-column enquiry section. Introductory limits, draft-only status panel, form controls, consent statement and two draft buttons remain readable through the full footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Header Partner with us; Generate inquiry draft; Clear this page; footer partnership links.",
+        "disabledBoundaries": "The enquiry is not an order, reservation, quote acceptance or final contract. No drawings/video are requested. Draft-only status is prominent, with no send/receipt or payment action displayed.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-partners.png"
+    },
+    {
+      "route": "/en/life/partners",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-partners.png",
+      "imageSha256": "d1ea99a52688e56c6dd7922ed02aca439cc538d2dc66d6c6987bfa3e4bb9924d",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 3821
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "Partner cards and their longer headings wrap inside one column. The complete form is visible to its final Generate inquiry draft and Clear this page controls, with ample separation between labels and fields.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Header Partner with us; Generate inquiry draft; Clear this page; footer partnership links.",
+        "disabledBoundaries": "The enquiry is not an order, reservation, quote acceptance or final contract. No drawings/video are requested. Draft-only status is prominent, with no send/receipt or payment action displayed.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-partners-strips.png",
+        "inspectionSha256": "1a52e63fd81ce1ce53d38d58b9008997a519e795125113996bd24095e16698e7",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 821
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=3820",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-partners.png"
+    },
+    {
+      "route": "/en/life/trust",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-life-trust.png",
+      "imageSha256": "1eac9243e2f0607e6446ba5f70b49a5f4d423726c1c05867284a918a136fa59d",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2716
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "Three distinct validation cards and the explanatory notice remain separate. All seven permission tiles, four review-record panels and final concern/withdrawal CTA are fully visible before the footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Prepare a concern or withdrawal enquiry; persistent header and footer navigation.",
+        "disabledBoundaries": "Scene browsing, accepted navigation and ecological outcomes are distinguished. Each permission is separate; hashes do not prove factual correctness or carbon-credit issuance. The page displays no robot, transfer or trading control.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-life-trust.png"
+    },
+    {
+      "route": "/en/life/trust",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-life-trust.png",
+      "imageSha256": "69386ca0af0d7c88cfec3d73020ce8d2ecf45b68bbfd61393e7d8d67c846eb19",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 4482
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "Long validation-card headings wrap inside the cards. The permission grid becomes two columns; Robot navigation and Commercial settlement wrap without overflow. The final concern/withdrawal CTA text fits its purple button.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Prepare a concern or withdrawal enquiry; persistent header and footer navigation.",
+        "disabledBoundaries": "Scene browsing, accepted navigation and ecological outcomes are distinguished. Each permission is separate; hashes do not prove factual correctness or carbon-credit issuance. The page displays no robot, transfer or trading control.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-life-trust-strips.png",
+        "inspectionSha256": "42388b85540b194241fbee749808a9a955d27fc6af2c1e792179d05ed9b276a7",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 1482
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=4481",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-life-trust.png"
+    },
+    {
+      "route": "/en/company",
+      "profile": "desktop",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-desktop-en-company.png",
+      "imageSha256": "fe3f7eadc5e998f102dc2bbd43e2c5584496731c446f92ddb0e686aff08e38a1",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "imageDimensions": {
+        "width": 1440,
+        "height": 2426
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, Life++ logo, five primary links, Chinese-language switch and Partner with us CTA are visible without overlap.",
+        "contentAndPageEnd": "The company introduction, green ecology and purple Life++ panels are balanced. Their links and role-separation notice are complete. Existing ecology contact route and default draft form are visible through the footer.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Explore ecology & Earth observation; Explore Life++; View the existing ecology contact route; Generate inquiry draft; Clear this page.",
+        "disabledBoundaries": "Sample ecology data is not a certified carbon credit; Life++ remains introductory planning. The role notice does not assert completed asset/IP transfers or mainland operating approvals. Form remains draft-only with no receiving button.",
+        "mobileKeyEntry": "Not applicable to desktop profile; desktop entry points reviewed above."
+      },
+      "textReviewBoundary": "Desktop full-page overview for layout and visible controls; detailed boundary wording was also inspected in the corresponding mobile original-scale strips, without claiming a word-by-word desktop fine-print audit.",
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-desktop-en-company.png"
+    },
+    {
+      "route": "/en/company",
+      "profile": "mobile",
+      "sourceCommit": "b4e3954d89c61484ea90435129229230a03e3abf",
+      "imagePath": "reports/lifepp-validation/local-b4e3954/browser-workerd/after-mobile-en-company.png",
+      "imageSha256": "81db0627fa0207c9e54dbf9269e61c3e8b3e940b8035dc23cdc25c6d21e73388",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "imageDimensions": {
+        "width": 375,
+        "height": 3813
+      },
+      "actuallyViewed": true,
+      "viewMethod": "tools.view_image with detail original, full screenshot emitted and visually inspected; additionally, original-scale temporary inspection strips were individually viewed",
+      "result": "NO_VISIBLE_BLOCKER_FOUND",
+      "observations": {
+        "headerAndNavigation": "Ecology return strip, logo, Chinese-language switch and Partner with us CTA fit above the five-link mobile navigation row; key entries remain visible.",
+        "contentAndPageEnd": "The two business-entry panels stack with full titles and buttons. The long company/service-role notice and contact introduction wrap cleanly. All form fields, privacy consent, draft controls and final footer are intact.",
+        "overflow": "No visibly clipped text, sideways content or overlapping blocks observed in this full-page image; this is a visual judgment, not a DOM overflow measurement.",
+        "cta": "Explore ecology & Earth observation; Explore Life++; View the existing ecology contact route; Generate inquiry draft; Clear this page.",
+        "disabledBoundaries": "Sample ecology data is not a certified carbon credit; Life++ remains introductory planning. The role notice does not assert completed asset/IP transfers or mainland operating approvals. Form remains draft-only with no receiving button.",
+        "mobileKeyEntry": "Header partner CTA, language switch, five primary navigation links, page-specific actions and footer ecology/company routes remain visually available."
+      },
+      "supplementalReview": {
+        "actuallyViewed": true,
+        "method": "Sharp extract only, no resampling; contiguous strips composited left to right with gray separators/padding for inspection; original screenshot unchanged",
+        "temporaryInspectionPath": "/tmp/lifepp-en-inspection-b4e3954/after-mobile-en-company-strips.png",
+        "inspectionSha256": "2ccf1dbbff01c54d5348641c105351cf1f58633a54b040cbf85172aa4fe136fa",
+        "inspectionDimensions": {
+          "width": 1157,
+          "height": 1500
+        },
+        "stripsLeftToRight": [
+          {
+            "sourceY": 0,
+            "height": 1500
+          },
+          {
+            "sourceY": 1500,
+            "height": 1500
+          },
+          {
+            "sourceY": 3000,
+            "height": 813
+          }
+        ],
+        "sourcePixelScale": 1,
+        "discernibleRange": "All original mobile pixels y=0 through y=3812",
+        "observation": "Native-pixel recheck confirms readable page-specific CTAs, form/privacy or scene-boundary text, mobile header entries and footer; no additional material visual defect found."
+      },
+      "archivedImagePath": "candidate-a-local/browser-workerd/after-mobile-en-company.png"
+    }
+  ],
+  "supplementalInspections": 10,
+  "archiveNote": "Original capture paths remain in each entry. archivedImagePath identifies the unchanged bytes committed alongside this review; temporary inspection derivatives are not application assets."
+}
