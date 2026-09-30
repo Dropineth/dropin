@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "1.0.0",
-  "documentStatus": "execution_input_not_implemented",
+  "schemaVersion": "3.0.0",
+  "documentStatus": "review_candidate_not_release_evidence",
   "repo": "Dropineth/dropin",
   "appPath": "dropin-earth/apps/web",
   "observedBaseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
@@ -22,8 +22,9 @@
   "newRoutes": [
     "/life",
     "/life/spaces",
-    "/life/spaces/31",
+    "/life/spaces/33",
     "/life/spaces/29",
+    "/life/spaces/31",
     "/life/center",
     "/life/agents",
     "/life/membership",
@@ -35,30 +36,94 @@
     {
       "unit": "L112",
       "areaSqm": 58.69,
-      "module": "Robot Fleet Garage"
+      "module": "Robot Fleet Garage",
+      "floor": "1F",
+      "programZh": "机库与设备运维",
+      "programEn": "Robot Fleet Garage",
+      "sourcePage": 2,
+      "marker": {
+        "x": 0.17,
+        "y": 0.633
+      },
+      "markerNumber": "1",
+      "markerColor": "#5B32D6",
+      "stage": "planned",
+      "sourceRef": "floorplans",
+      "leaseExecuted": null,
+      "openToPublic": false,
+      "roomBindingToScene": null,
+      "markerMeaning": "visual-location-only-not-boundary-or-navigation"
     },
     {
       "unit": "L203",
       "areaSqm": 135.8,
-      "module": "Sovereign Agent & Edge Lab"
+      "module": "Sovereign Agent & Edge Lab",
+      "floor": "2F",
+      "programZh": "数字分身与边缘计算实验室",
+      "programEn": "Sovereign Agent & Edge Lab",
+      "sourcePage": 3,
+      "marker": {
+        "x": 0.43,
+        "y": 0.58
+      },
+      "markerNumber": "2",
+      "markerColor": "#5B32D6",
+      "stage": "planned",
+      "sourceRef": "floorplans",
+      "leaseExecuted": null,
+      "openToPublic": false,
+      "roomBindingToScene": null,
+      "markerMeaning": "visual-location-only-not-boundary-or-navigation"
     },
     {
       "unit": "L202",
       "areaSqm": 185.99,
-      "module": "Life++ Club"
+      "module": "Life++ Club",
+      "floor": "2F",
+      "programZh": "Life++会所与交流",
+      "programEn": "Life++ Club",
+      "sourcePage": 3,
+      "marker": {
+        "x": 0.48,
+        "y": 0.58
+      },
+      "markerNumber": "3",
+      "markerColor": "#087E82",
+      "stage": "planned",
+      "sourceRef": "floorplans",
+      "leaseExecuted": null,
+      "openToPublic": false,
+      "roomBindingToScene": null,
+      "markerMeaning": "visual-location-only-not-boundary-or-navigation"
     },
     {
       "unit": "L201",
       "areaSqm": 290.78,
-      "module": "University + Spatial Arena"
+      "module": "Learning + Spatial Arena",
+      "floor": "2F",
+      "programZh": "学习工作坊与空间赛事",
+      "programEn": "Learning + Spatial Arena",
+      "sourcePage": 3,
+      "marker": {
+        "x": 0.55,
+        "y": 0.63
+      },
+      "markerNumber": "4",
+      "markerColor": "#527D3C",
+      "stage": "planned",
+      "sourceRef": "floorplans",
+      "leaseExecuted": null,
+      "openToPublic": false,
+      "roomBindingToScene": null,
+      "markerMeaning": "visual-location-only-not-boundary-or-navigation"
     }
   ],
   "scenes": [
     {
-      "id": "31",
-      "titleZh": "场景31",
-      "titleEn": "Scene 31",
-      "sourceUrl": "http://kjlying.com:8456/scenes/31",
+      "id": "33",
+      "titleZh": "场景33",
+      "titleEn": "Scene 33",
+      "sourceUrl": "http://kjlying.com:8456/scenes/33",
       "embedUrl": null,
       "thumbnail": null,
       "captureDate": null,
@@ -71,7 +136,12 @@
       "transportStatus": "http_source_provided_https_unverified",
       "embedStatus": "disabled",
       "navigationStatus": "not_validated",
-      "verificationStatus": "unverified_test_input"
+      "verificationStatus": "unverified_test_input",
+      "primary": true,
+      "legacy": false,
+      "roomBinding": null,
+      "userDisplayInstructionReceived": true,
+      "thirdPartyRightsVerified": false
     },
     {
       "id": "29",
@@ -90,7 +160,36 @@
       "transportStatus": "http_source_provided_https_unverified",
       "embedStatus": "disabled",
       "navigationStatus": "not_validated",
-      "verificationStatus": "unverified_test_input"
+      "verificationStatus": "unverified_test_input",
+      "primary": true,
+      "legacy": false,
+      "roomBinding": null,
+      "userDisplayInstructionReceived": true,
+      "thirdPartyRightsVerified": false
+    },
+    {
+      "id": "31",
+      "titleZh": "场景31",
+      "titleEn": "Scene 31",
+      "sourceUrl": "http://kjlying.com:8456/scenes/31",
+      "embedUrl": null,
+      "thumbnail": null,
+      "captureDate": null,
+      "location": null,
+      "captureProvider": null,
+      "assetFormat": null,
+      "assetVersion": null,
+      "sourceDescription": "user-provided 3D Gaussian Splatting test link",
+      "rightsStatus": "pending_confirmation",
+      "transportStatus": "http_source_provided_https_unverified",
+      "embedStatus": "disabled",
+      "navigationStatus": "not_validated",
+      "verificationStatus": "unverified_test_input",
+      "primary": false,
+      "legacy": true,
+      "roomBinding": null,
+      "userDisplayInstructionReceived": false,
+      "thirdPartyRightsVerified": false
     }
   ],
   "membership": {
@@ -126,13 +225,13 @@
     "mergeApprovalRequired": true,
     "respectExistingProtectedWorkflows": true
   },
-  "executionStatus": {
-    "branchCreate": "blocked_http_403",
-    "siteCodeChanged": false,
-    "codexTaskAcknowledged": false,
-    "issueCreate": "blocked_http_403",
-    "codeDelivered": false,
-    "taskBriefDelivered": true
-  },
-  "instructionsFile": "CanopyProof_LifePP_Codex_Full_Update.md"
+  "instructionsFile": "CODEX_EXECUTE.md",
+  "inputProvenance": {
+    "packageSha256": "03fa95cab8902730b857d98e901c63fd1f40dd7bcaeb88a01a8a36ef63f2ccd4",
+    "manifestSchema": "lifepp-ui-release-handoff/3.0",
+    "floorplanSha256": "77e9cb2765609fb91d556b3415d06947ed63716f2be27bc932a3e0efb73c5954",
+    "sourcePageNumbering": "one-based",
+    "sceneRoomBindingsVerified": false,
+    "asOf": "2026-09-30"
+  }
 }

@@ -1,20 +1,21 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-09-30T06:20:57.261255+00:00",
-  "overallStatus": "REVIEW_CANDIDATE_EXTERNAL_INTEGRATIONS_BLOCKED",
+  "schemaVersion": 3,
+  "generatedAt": "2026-09-30T10:18:11.999329+00:00",
+  "overallStatus": "R3_IMPLEMENTED_CANDIDATE_ACCEPTANCE_PENDING_PRODUCTION_HOLD",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
   "branch": "codex/canopyproof-lifepp-full-update-20260930",
   "baseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
-  "phaseStartCommit": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "phaseStartCommit": "7613ee6b2b7e32560b49ecb5947b18aa5dc25b71",
   "candidateCommit": null,
+  "candidateCommitResolution": "Fresh CI run.json records the actual immutable HEAD; latest PR head must match. This checked-in declaration is not its own acceptance receipt.",
   "prUrl": "https://github.com/Dropineth/dropin/pull/4",
   "productionAuthority": false,
   "evidencePolicy": "A result belongs only to its recorded HEAD, source fingerprint, lock hash, command and time. Prior phase records remain historical, not current acceptance.",
   "runtime": {
     "model": "gpt-6-astra",
     "reasoningEffort": "ultra",
-    "evidence": "Root task runtime metadata; explicit supported sub-agent selection. No account setting changed.",
+    "evidence": "Current root turn_context metadata 2026-09-30T09:40:34.437Z; ultra is the highest exposed supported effort. No account settings changed.",
     "node": "22.22.3",
     "npm": "10.9.4",
     "localPlatform": "macOS arm64",
@@ -23,155 +24,173 @@
   "items": {
     "originalCheckout": {
       "status": "PRESERVED",
-      "evidence": [
-        "REPOSITORY_AUDIT.md"
-      ],
-      "note": "All edits in independent worktree; pre-existing original checkout changes remain."
+      "statusSha256": "e86859fd8cc2ca284cf0064e9cba2375b95a7a0bf59ebfc8afc81ca8730cf2d7",
+      "originalStatusEntries": 529,
+      "note": "All work is in the previously isolated PR4 worktree."
     },
     "dependencyAudit": {
-      "status": "ALL_21_OBSERVED_PACKAGE_ENTRIES_REMEDIATED_ON_RECORDED_CANDIDATE",
-      "baseline": {
-        "head": "8ba02a3e7fe591b115162229510112220b4182b8",
-        "total": 19,
-        "moderate": 5,
-        "high": 12,
-        "critical": 2
-      },
-      "evidence": [
-        "release-remediation/baseline-remote-receipt.json",
-        "release-remediation/baseline-remote-audit.json",
-        "release-remediation/DEPENDENCY_DISPOSITION.md",
-        "release-remediation/candidate-a-ci.json",
-        "release-remediation/candidate-a-ci/trust/artifacts/reports/npm-audit-moderate.json"
-      ],
-      "uniquePackageEntriesAcrossSnapshots": 21,
-      "verifiedCandidate": "b4e3954d89c61484ea90435129229230a03e3abf",
-      "remainingAuditFindings": 0,
-      "limits": "No finding was waived. Audit zero is a time-bound advisory result, not proof of absence of all defects; MapLibre6 ES2022/WebGL2 compatibility and scoped overrides remain review considerations."
+      "status": "FRESH_CANDIDATE_RECOMPUTATION_REQUIRED",
+      "lockfileChangedInR3": false,
+      "previousDisposition": "release-remediation/DEPENDENCY_DISPOSITION.md",
+      "localAttempt": "Two fresh npm10.9.4 audit attempts failed without a usable advisory result: registry bulk fallback/quick400, then pre-TLS disconnect. Raw failures preserved locally; no waiver or threshold change.",
+      "remainingAuditFindings": null,
+      "historicalBaseline": {
+        "head": "7613ee6b2b7e32560b49ecb5947b18aa5dc25b71",
+        "status": "PASS_ONLY_FOR_THAT_HEAD",
+        "trustRun": "https://github.com/Dropineth/dropin/actions/runs/36679451381"
+      }
     },
     "sameCandidateTrustGate": {
       "status": "REQUIRE_CURRENT_HEAD_RESULT_FROM_PR",
-      "lastObserved": {
-        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
-        "status": "PASS",
-        "runUrl": "https://github.com/Dropineth/dropin/actions/runs/36665614889"
-      },
-      "evidence": [
-        "release-remediation/candidate-a-ci.json"
-      ],
-      "note": "The subsequent consultation response-loss fix requires its own full run. Never infer a later HEAD result from this record."
+      "head": null,
+      "note": "No earlier green run or dirty development screenshot is current candidate acceptance."
     },
     "sameCandidateLifeAcceptance": {
       "status": "REQUIRE_CURRENT_HEAD_RESULT_FROM_PR",
-      "lastObserved": {
-        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
-        "status": "PASS",
-        "runUrl": "https://github.com/Dropineth/dropin/actions/runs/36665614977"
-      },
-      "evidence": [
-        "release-remediation/candidate-a-ci.json"
-      ],
-      "note": "The subsequent consultation response-loss fix requires its own full run. Never infer a later HEAD result from this record."
+      "head": null,
+      "note": "No earlier green run or dirty development screenshot is current candidate acceptance."
     },
     "pagesAndEcology": {
-      "status": "20_LIFEPP_ROUTES_VERIFIED_ON_RECORDED_CANDIDATE",
-      "chineseRoutes": 10,
-      "englishRoutes": 10,
-      "note": "Original ecology home, explorer, anchors and sample/demo boundaries retained.",
-      "existingCaveat": "Original ecology homepage clips some hero/status text at 375px, reproduced in pre-implementation screenshot; Life++ navigation remains usable. No redesign performed."
-    },
-    "scene31": {
-      "status": "SAFE_FALLBACK",
-      "realSourceLoaded": false,
-      "latestBoundedObservation": "HTTP HEAD 200 only; no body/assets read",
-      "blockedReason": "Missing confirmed HTTPS, display/embed rights, redirects/subresources, both frame policies and real engine readiness.",
-      "evidence": [
-        "release-remediation/scene-head-observations.json",
-        "release-remediation/scene-and-preview-inputs.md"
+      "status": "IMPLEMENTED_DEVELOPMENT_VISUAL_REVIEW_COMPLETE_CANDIDATE_BUILD_PENDING",
+      "chineseRoutes": 11,
+      "englishRoutes": 11,
+      "widths": [
+        375,
+        390,
+        768,
+        1440,
+        1920
+      ],
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "note": "Original ecology home, logo, anchors, explorer and sample boundaries retained; local narrow-screen clipping fixed. Production artifact and real device review are separate.",
+      "visualReports": [
+        "R3_VISUAL_REVIEW_ZH.md",
+        "R3_VISUAL_REVIEW_EN.md"
       ]
+    },
+    "fourShops": {
+      "status": "SOURCE_REVIEWED_PLANNED",
+      "units": [
+        "L112",
+        "L203",
+        "L202",
+        "L201"
+      ],
+      "areaSqm": 671.26,
+      "secondFloorAreaSqm": 612.57,
+      "leaseVerified": false,
+      "openToPublic": false,
+      "source": "R3_SOURCE_ASSET_REGISTER.json",
+      "componentFixture": "30 bilingual/width/browser layout cases plus interactions passed before commit; must rerun for candidate."
+    },
+    "scene33": {
+      "status": "SAFE_FALLBACK_PRIMARY",
+      "originalUrl": "http://kjlying.com:8456/scenes/33",
+      "realSourceLoaded": false,
+      "userDisplayInstructionReceived": true,
+      "thirdPartyRightsVerified": false,
+      "verifiedHttpsUrl": null,
+      "roomBinding": null,
+      "note": "HTTP probe reset; native Chrome503; HTTPS not verified."
     },
     "scene29": {
-      "status": "SAFE_FALLBACK",
+      "status": "SAFE_FALLBACK_PRIMARY",
+      "originalUrl": "http://kjlying.com:8456/scenes/29",
       "realSourceLoaded": false,
-      "latestBoundedObservation": "HTTP HEAD ECONNRESET",
-      "blockedReason": "Same integration inputs as scene31; source accessibility also unverified.",
-      "evidence": [
-        "release-remediation/scene-head-observations.json",
-        "release-remediation/scene-and-preview-inputs.md"
-      ]
+      "userDisplayInstructionReceived": true,
+      "thirdPartyRightsVerified": false,
+      "verifiedHttpsUrl": null,
+      "roomBinding": null,
+      "note": "A 948-byte206 SPA entry is not engine readiness; native Chrome503; HTTPS not verified."
     },
-    "inquiry": {
-      "status": "DRAFT_NOT_SENT",
-      "realReceipt": false,
-      "realPersistentStorage": false,
-      "localSyntheticStorageTest": true,
-      "blockedReason": "No approved receiving institution/storage configuration and retention/deletion operation; optional adapter remains disabled.",
-      "evidence": [
-        "release-remediation/consultation-status.json",
-        "release-remediation/consultation-README.md"
-      ]
+    "scene31": {
+      "status": "SAFE_FALLBACK_LEGACY",
+      "originalUrl": "http://kjlying.com:8456/scenes/31",
+      "realSourceLoaded": false,
+      "userDisplayInstructionReceived": false,
+      "thirdPartyRightsVerified": false,
+      "verifiedHttpsUrl": null,
+      "roomBinding": null,
+      "note": "Historical URL retained with separate status; no equivalence to33 claimed."
     },
-    "publicIsolatedPreview": {
-      "status": "BLOCKED_NOT_DEPLOYED",
-      "publiclyAccessible": false,
+    "consultation": {
+      "status": "DRAFT_ONLY",
+      "realInstitutionalReceipt": false,
+      "realPublicPersistence": false,
+      "localSyntheticPersistence": true,
+      "note": "Current source/runtime has no complete approved institutional receiver configuration. Per-request unknown receipt state now survives another request success.",
+      "evidence": "R3_CONSULTATION_REVIEW.md"
+    },
+    "publicPreview": {
+      "status": "BLOCKED_EXISTING_STAGING_BRANCH_POLICY_AND_APPROVAL",
       "url": null,
-      "blockedReason": "No verified authorized resource manifest/digest/API origin/isolation; staging policy currently main only; exact-candidate independent approval missing. PR3 untouched.",
-      "evidence": [
-        "release-remediation/scene-and-preview-inputs.md",
-        "release-remediation/github-preview-metadata.json"
-      ]
-    },
-    "localPreview": {
-      "status": "CANDIDATE_A_WORKERD_VERIFIED",
-      "candidate": "b4e3954d89c61484ea90435129229230a03e3abf",
-      "publiclyAccessible": false,
-      "url": "http://127.0.0.1:8788/life",
-      "note": "Loopback only, noindex, no cloud bindings. Availability depends on the local process; subsequent source revisions require rebuild."
-    },
-    "visualReview": {
-      "status": "CODEX_VISUAL_REVIEW_RECORDED",
-      "candidate": "b4e3954d89c61484ea90435129229230a03e3abf",
-      "lifeppScreenshotsViewed": 40,
-      "scope": "20 required routes at desktop and mobile; native-pixel mobile strips; selected ecology desktop/mobile sections, tablet partnership form, interactive mobile scene/language/draft/clear/return flow.",
-      "independentHumanApproval": false,
-      "physicalDeviceTest": false,
-      "evidence": [
-        "release-remediation/visual-review-en.json",
-        "release-remediation/visual-review-zh.json",
-        "release-remediation/visual-review-root.json"
-      ],
-      "remaining": "Independent human release review and actual configured integration acceptance. Subsequent response-loss UI changes have focused fixture review and require fresh candidate checks."
+      "noindexRequired": true,
+      "note": "No tunnel, new resource, protection change or PR3 merge."
     },
     "production": {
       "status": "NOT_MERGED_NOT_DEPLOYED",
-      "merged": false,
-      "deployed": false,
-      "required": "Independent exact-SHA review, successful required CI, protected environment approval and a verified deployed rollback version."
-    },
-    "prohibitedActions": {
-      "status": "DISABLED",
-      "items": [
-        "subscription charging",
-        "RWA",
-        "robot control",
-        "training data sale",
-        "ecological certification issuance",
-        "funds/mainnet transfer"
+      "targetUrl": "https://canopyproof.org",
+      "worker": "canopyproof-web",
+      "newWorkerVersion": null,
+      "rollbackWorkerVersion": null,
+      "releaseEnvironment": "canopyproof-production",
+      "evidence": "R3_RELEASE_AUDIT.md",
+      "blockers": [
+        "Final candidate/full main SHA CI and actual independent review pending",
+        "Real known-good deployed rollback version and deployment IDs unverified",
+        "Existing environment human approval not obtained",
+        "Cloudflare read access403 bot challenge; no bypass",
+        "Separate Cloudflare Git publishing behavior must be confirmed by maintainer"
       ]
+    },
+    "disabledBusinessFlags": {
+      "billing": false,
+      "rwaSales": false,
+      "robotCommands": false,
+      "trainingDataSales": false,
+      "carbonCreditIssuance": false
     }
   },
-  "candidateIdentity": "Current PR #4 head; resolve via GitHub or git rev-parse HEAD. All required current checks must match that exact SHA. The historical record below is not inherited by later commits.",
-  "lastCompleteCandidate": "b4e3954d89c61484ea90435129229230a03e3abf",
-  "currentHeadEvidence": "Fresh canopyproof-validation-<head>-<run>-<attempt> and lifepp-validation-<head>-<run>-<attempt> artifacts linked from PR #4. The PR body records post-commit outcomes; this file does not predict its own commit result.",
-  "intermediateCandidateFailure": {
-    "head": "83b06e6c5df399d7f745cf301a6276f94e503db5",
-    "status": "FAIL_LOCAL_FULL_GATE",
-    "reason": "Tracked coverage generation file accidentally included in evidence archive",
-    "correction": "Remove generated file from Git, preserve original artifact and compact reports; keep existing supply-chain rule unchanged",
-    "evidence": [
-      "release-remediation/candidate-b-archive-failure/run.json",
-      "release-remediation/candidate-b-archive-failure/supply-chain.txt"
+  "historicalEvidence": {
+    "previousTrackedDeliveryAt": "2026-09-30T06:20:57.261255+00:00",
+    "baselineTrustRun": "https://github.com/Dropineth/dropin/actions/runs/36679451381",
+    "baselineLifeRun": "https://github.com/Dropineth/dropin/actions/runs/36679451369",
+    "scope": "Prior release-remediation and final-7613ee6 reports remain historical and are not overwritten by this candidate."
+  },
+  "localPrecommitValidation": {
+    "scope": "Dirty R3 working tree over phaseStartCommit; diagnostic only, not same-candidate remote acceptance",
+    "node": "22.22.3",
+    "npm": "10.9.4",
+    "checks": [
+      {
+        "id": "units",
+        "command": "npm test",
+        "result": "PASS 883/883; zero skipped",
+        "log": "/tmp/lifepp-r3-inputs/units-all-second.log",
+        "finishedAt": "2026-09-30T10:13:21.452123+00:00",
+        "sha256": "6b9582de6ff6bca6c01ce165d55cc0eb8f3f441fae1f4ee1926e727a934dc948"
+      },
+      {
+        "id": "lint",
+        "command": "npm run lint",
+        "result": "PASS",
+        "log": "/tmp/lifepp-r3-inputs/lint-third.log",
+        "finishedAt": "2026-09-30T10:12:56.652927+00:00",
+        "sha256": "4004a2f54f845865b0b296b2ffa5557dc2bb8ab75a269926b344fac2b5628968"
+      },
+      {
+        "id": "types",
+        "command": "npm run typecheck",
+        "result": "PASS",
+        "log": "/tmp/lifepp-r3-inputs/types-workspace.log",
+        "finishedAt": "2026-09-30T10:00:24.160249+00:00",
+        "sha256": "ae2fc97727ae1f59df227a36842cb928be79fa7c5a6b84d5d1d9c5f051310588"
+      }
     ],
-    "subsequentHeadRequiresFreshCI": true
+    "note": "Full unit/lint/workspace type results precede the final small mobile-focus fix. That fix has separate web types/scoped lint/10-keyboard-link checks; final full CI is still mandatory."
   }
 }

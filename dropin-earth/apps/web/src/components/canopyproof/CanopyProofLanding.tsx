@@ -169,7 +169,7 @@ function HeroSection() {
 
 function StatusTerminal({ signals }: { signals: StatusSignal[] }) {
   return (
-    <div className="mb-7 w-full max-w-xl rounded-lg border border-zinc-800/70 bg-zinc-950/70 px-3 py-2 font-mono text-[11px] backdrop-blur-md">
+    <div className="cp-status-terminal mb-7 w-full max-w-xl rounded-lg border border-zinc-800/70 bg-zinc-950/70 px-3 py-2 font-mono text-[11px] backdrop-blur-md">
       <div className="flex items-center justify-between border-b border-zinc-800/60 pb-2">
         <span className="flex items-center gap-2 text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.3)]">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
@@ -201,7 +201,7 @@ function InstitutionalMetricsStrip({ metrics }: { metrics: InstitutionalMetric[]
   return (
     <section className="cp-section" aria-label="Network metrics">
       <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950/50 backdrop-blur-md">
-        <div className="flex items-center justify-between border-b border-zinc-800/60 px-6 py-3">
+        <div className="cp-panel-heading flex items-center justify-between border-b border-zinc-800/60 px-6 py-3">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-500">Network metrics</p>
           <p className="font-mono text-[11px] tracking-tight text-zinc-500">illustrative sample · not verified totals</p>
         </div>
@@ -487,7 +487,7 @@ function ImpactCertificateSection() {
         </p>
       </div>
       <div className="rounded-2xl border border-zinc-800/60 bg-zinc-900/40 p-6 backdrop-blur-md shadow-[0_30px_90px_rgba(0,0,0,0.45)]">
-        <div className="flex items-center justify-between gap-3 border-b border-zinc-800/60 pb-4">
+        <div className="cp-panel-heading flex items-center justify-between gap-3 border-b border-zinc-800/60 pb-4">
           <span className="flex items-center gap-3">
             <CanopyProofLogo size={44} />
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.3)]">
@@ -601,7 +601,7 @@ function TerraProofTelemetry({
         </p>
       </div>
       <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950/50 backdrop-blur-md">
-        <div className="flex items-center justify-between border-b border-zinc-800/60 px-6 py-3">
+        <div className="cp-panel-heading flex items-center justify-between border-b border-zinc-800/60 px-6 py-3">
           <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-emerald-400 drop-shadow-[0_0_6px_rgba(16,185,129,0.3)]">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
             terraproof.telemetry
@@ -625,7 +625,7 @@ function WaterRestorationChart({ series, net }: { series: TelemetryPoint[]; net:
   const latest = series[series.length - 1];
   return (
     <div className="rounded-lg border border-zinc-800/60 bg-zinc-900/30 p-4">
-      <div className="flex items-end justify-between">
+      <div className="cp-panel-heading flex items-end justify-between">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-zinc-500">Water restoration index</p>
           <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums text-zinc-50">

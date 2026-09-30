@@ -21,7 +21,10 @@ export function LeadForm({ locale }: { locale: "zh" | "en" }) {
   const [sendConsent,setSendConsent]=useState(false);
   const [receipt,setReceipt]=useState<Receipt | null>(null);
   const [sendAttempted,setSendAttempted]=useState(false);
-  const [receiptUnknown,setReceiptUnknown]=useState(false);
+  // Keep only unresolved request identifiers in this page's memory. A receipt for
+  // a later edited enquiry cannot establish what happened to an earlier attempt.
+  const [unknownRequestKeys,setUnknownRequestKeys]=useState<Set<string>>(()=>new Set());
+  const receiptUnknown=unknownRequestKeys.size>0;
   const idempotencyKey=useRef<string | null>(null);
   useEffect(()=>{const controller=new AbortController();fetch("/life/inquiries",{cache:"no-store",signal:controller.signal}).then(response=>response.ok?response.json():null).then((result:unknown)=>setPolicy(receivePolicy(result))).catch(()=>undefined);return()=>controller.abort();},[]);
   const t=(zh:string,en:string)=>locale==="zh"?zh:en;
@@ -37,21 +40,23 @@ export function LeadForm({ locale }: { locale: "zh" | "en" }) {
   async function send(){
     if(!policy || !sendConsent || sending || receipt)return;
     const next=validateInquiry(value);setErrors(next);if(Object.keys(next).length)return;
-    setSending(true);setNotice("");setSendAttempted(true);setReceiptUnknown(true);if(draft)setDraft(composeInquiry(value,locale,true));
+    setSending(true);setNotice("");setSendAttempted(true);if(draft)setDraft(composeInquiry(value,locale,true));
     try{
       idempotencyKey.current ??= crypto.randomUUID();
-      const response=await fetch("/life/inquiries",{method:"POST",headers:{"content-type":"application/json","x-lifepp-inquiry":"1"},body:JSON.stringify({inquiry:value,idempotencyKey:idempotencyKey.current,policyVersion:policy.policyVersion,sendConsent,website})});
+      const requestKey=idempotencyKey.current;
+      setUnknownRequestKeys(previous=>new Set(previous).add(requestKey));
+      const response=await fetch("/life/inquiries",{method:"POST",headers:{"content-type":"application/json","x-lifepp-inquiry":"1"},body:JSON.stringify({inquiry:value,idempotencyKey:requestKey,policyVersion:policy.policyVersion,sendConsent,website})});
       if(response.status===503 || response.status===409){setPolicy(null);setRecheck(true);setSendConsent(false);}
       const result:unknown=await response.json();
       if(response.ok && result && typeof result==="object" && "status" in result && result.status==="stored" && "receiptId" in result && typeof result.receiptId==="string" && "withdrawalToken" in result && typeof result.withdrawalToken==="string" && "expiresAt" in result && typeof result.expiresAt==="string"){
-        setReceiptUnknown(false);setReceipt({receiptId:result.receiptId,withdrawalToken:result.withdrawalToken,expiresAt:result.expiresAt});setDraft("");setNotice(t("咨询已写入接收存储并完成回读。此回执不表示工作人员已阅读或邮件已送达。","Your enquiry was persisted and read back from the receiving store. This receipt does not mean staff have read it or an email was delivered."));
+        setUnknownRequestKeys(previous=>{const remaining=new Set(previous);remaining.delete(requestKey);return remaining;});setReceipt({receiptId:result.receiptId,withdrawalToken:result.withdrawalToken,expiresAt:result.expiresAt});setDraft("");setNotice(t("本次咨询已写入接收存储并完成回读。此回执不表示其他请求状态、工作人员已阅读或邮件已送达。","This enquiry was persisted and read back from the receiving store. This receipt does not establish the status of other requests, staff reading or email delivery."));
       }else{setNotice(response.status===429?t("提交过于频繁，请稍后重试；尚未确认收件。","Too many requests. Try later; receipt has not been confirmed."):t("未能确认收件。请保留草稿，勿假定已送达；可用同一请求重试以防重复。","Receipt could not be confirmed. Keep the draft and do not assume delivery; retrying the same request prevents duplicates."));}
     }catch{setPolicy(null);setRecheck(true);setSendConsent(false);setNotice(t("连接中断，收件状态未知。请保留草稿并重新检查接收状态；重试将使用同一请求标识。","Connection interrupted; receipt is unknown. Keep the draft and recheck receiving status; retrying uses the same request identifier."));}
     finally{setSending(false);}
   }
   async function withdraw(){
     if(!receipt || sending)return;setSending(true);
-    try{const response=await fetch("/life/inquiries",{method:"DELETE",headers:{"content-type":"application/json","x-lifepp-inquiry":"1"},body:JSON.stringify({receiptId:receipt.receiptId,withdrawalToken:receipt.withdrawalToken})});const result:unknown=await response.json();if(response.ok && result && typeof result==="object" && "status" in result && result.status==="removed_from_primary_store"){setReceiptUnknown(false);setReceipt(null);setValue({...empty});setSendConsent(false);idempotencyKey.current=null;setNotice(t("已确认从主存储移除。备份按下方已公布的保留说明处理。","Removal from the primary store is confirmed. Backups follow the published retention notice below."));}else setNotice(t("未能确认撤回，请保留回执与撤回凭据后重试。","Withdrawal could not be confirmed. Keep the receipt and withdrawal credential to retry."));}catch{setNotice(t("撤回连接中断，删除状态未知。","Withdrawal connection interrupted; deletion status is unknown."));}finally{setSending(false);}
+    try{const response=await fetch("/life/inquiries",{method:"DELETE",headers:{"content-type":"application/json","x-lifepp-inquiry":"1"},body:JSON.stringify({receiptId:receipt.receiptId,withdrawalToken:receipt.withdrawalToken})});const result:unknown=await response.json();if(response.ok && result && typeof result==="object" && "status" in result && result.status==="removed_from_primary_store"){setReceipt(null);setValue({...empty});setSendConsent(false);idempotencyKey.current=null;setNotice(t("已确认从主存储移除此回执对应的记录；其他请求的状态不变。备份按下方已公布的保留说明处理。","The record for this receipt was removed from the primary store; other requests are unchanged. Backups follow the published retention notice below."));}else setNotice(t("未能确认撤回，请保留回执与撤回凭据后重试。","Withdrawal could not be confirmed. Keep the receipt and withdrawal credential to retry."));}catch{setNotice(t("撤回连接中断，删除状态未知。","Withdrawal connection interrupted; deletion status is unknown."));}finally{setSending(false);}
   }
   const field=(key:"name"|"organization"|"contact"|"message",limit:number)=> <label className={styles.field} key={key} htmlFor={`inquiry-${key}`}>{labels[key]}{key==="message"?<textarea id={`inquiry-${key}`} value={value[key]} disabled={sending || !!receipt} maxLength={limit} aria-invalid={!!errors[key]} aria-describedby={errors[key]?`error-${key}`:undefined} onChange={e=>update(key,e.target.value)} />:<input id={`inquiry-${key}`} value={value[key]} disabled={sending || !!receipt} maxLength={limit} autoComplete="off" type={key==="contact"&&value.channel==="email"?"email":"text"} aria-invalid={!!errors[key]} aria-describedby={errors[key]?`error-${key}`:undefined} onChange={e=>update(key,e.target.value)} />}{errors[key]&&<span className={styles.error} id={`error-${key}`}>{key==="message"?t("请填写10–1200字的简短需求。","Enter a request of 10–1200 characters."):t("请检查此字段及长度；邮箱需为有效格式。","Check this field and its length; use a valid email format if selected.")}</span>}</label>;
   return <form className={styles.form} onSubmit={generate} noValidate aria-label={t("合作询问草稿","Partnership inquiry draft")}>

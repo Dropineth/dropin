@@ -117,6 +117,7 @@ test("browser tests have an explicit runner and CanopyProof CI preserves every g
   assert.deepEqual(browserTests, [
     "tests/browser/canopyproof-global-impact-webgl.spec.ts",
     "tests/browser/lifepp-consultation.spec.ts",
+    "tests/browser/lifepp-floorplan.spec.ts",
     "tests/browser/lifepp-scene-viewer.spec.ts",
     "tests/browser/lifepp.spec.ts",
     "tests/browser/maplibre-remediation.spec.ts",
@@ -134,6 +135,7 @@ test("browser tests have an explicit runner and CanopyProof CI preserves every g
   assert.match(lifeWorkflow, /npm --workspace apps\/web run test:lifepp:browser/);
   assert.match(lifeWorkflow, /lifepp-scene-viewer\.spec\.ts/);
   assert.match(lifeWorkflow, /lifepp-consultation\.spec\.ts/);
+  assert.match(lifeWorkflow, /lifepp-floorplan\.spec\.ts/);
   const lifeBrowserRunner = readFileSync(join(ROOT, "scripts/lifepp-browser-check.mjs"), "utf8");
   assert.match(lifeBrowserRunner, /tests\/browser\/lifepp\.spec\.ts/);
   assert.match(lifeBrowserRunner, /for \(const spec of \['tests\/browser\/lifepp\.spec\.ts', 'tests\/browser\/maplibre-remediation\.spec\.ts'\]\)/);

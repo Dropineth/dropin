@@ -1,3 +1,21 @@
+# R3 scene update — observed 2026-09-30
+
+Primary inputs: **33 / 29**. Historical compatibility: **31**, original URL retained, no redirect/equivalence to33. All known metadata remains unconfirmed, including capture, location, provider, version, coverage and unit binding.
+
+| Scene | Actual new observation | Result |
+| --- | --- | --- |
+| 33 | Bounded HTTP HEAD/GET reset. Native Chrome displayed503. Strict HTTPS candidates on8456/443 did not establish TLS. | Real engine loading not verified; embed disabled. |
+| 29 | HTTP HEAD200 and RangeGET206 returned948-byte SPA HTML with same-origin script/CSS references. Native Chrome displayed503. HTTPS candidates did not establish TLS. | HTML shell is not model/texture or rendering evidence; embed disabled. |
+| 31 | R3 preserves its independent historical page and original source. No new real rendering is claimed. | Legacy fallback remains. |
+
+Network observations are environment- and time-specific, not a universal source-outage claim. No model was copied, no provider restriction bypassed, no arbitrary proxy introduced, and global CSP remains `frame-src 'none'`. User display intent for33/29 is recorded separately from third-party rights verification.
+
+Required provider inputs: official valid HTTPS endpoints; display/embed rights scope and owner; exact redirects; model/texture/font/script resource chain with HTTPS and CORS; source frame policy; compatible exact site frame policy; official engine readiness/interaction observability; capture/version/coverage/location details and privacy redactions; explicit scene-to-unit relation only if verified. User display intent need not be requested again. Viewer onLoad and mocked GPU tests remain non-authoritative.
+
+Raw local R3 observation record: `reports/lifepp-validation/r3-preflight/scene-investigation.json` (SHA256 `42e225fbce901dbd4c15997ef7df44b0ebb5740d944f340a3f668284e3ffe768`). The new registry and unit tests preserve exact identities and reject role/source corruption. Real rendering, model requests and view interactions remain **NOT VERIFIED**.
+
+## Historical observations (prior versions)
+
 # Life++ scene integration — bounded implementation report
 
 Status: **viewer safety and fallback implemented; both real-source embeds disabled and unverified**.

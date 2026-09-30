@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import manifest from "../../apps/web/src/data/life/site-manifest.json";
 import { renderedMetadata } from "../helpers/lifepp-metadata";
 
@@ -39,4 +40,18 @@ test("local Worker preview cannot inherit production routes or live API settings
  assert.equal(config.vars.DROPIN_ALLOW_ADMIN_PROXY,"false");
  assert.equal(config.vars.DROPIN_MAINNET_TRANSFERS_ENABLED,"false");
  assert.ok(config.services.every((binding:{service:string;remote?:boolean})=>binding.service===config.name&&!binding.remote));
+});
+
+
+test("R3 room provenance is bounded to original floors and reviewed local derivatives",()=>{
+ assert.deepEqual(manifest.spaces.map(room=>[room.unit,room.floor,room.sourcePage,room.markerNumber]),[["L112","1F",2,"1"],["L203","2F",3,"2"],["L202","2F",3,"3"],["L201","2F",3,"4"]]);
+ for(const room of manifest.spaces){
+  assert.equal(room.roomBindingToScene,null);assert.equal(room.leaseExecuted,null);assert.equal(room.openToPublic,false);
+  assert.ok(room.marker.x>0&&room.marker.x<1&&room.marker.y>0&&room.marker.y<1);
+  assert.equal(room.markerMeaning,"visual-location-only-not-boundary-or-navigation");
+ }
+ const registry=JSON.parse(readFileSync("docs/lifepp/R3_SOURCE_ASSET_REGISTER.json","utf8"));
+ assert.deepEqual(readdirSync("apps/web/public/life").sort(),["floorplan-1f-reference.webp","floorplan-2f-reference.webp"]);
+ for(const asset of registry.publicAssets){assert.equal(createHash("sha256").update(readFileSync(asset.path)).digest("hex"),asset.sha256);assert.equal(asset.assetKind,"source-diagram");}
+ assert.equal(registry.originalPdfsCommitted,false);assert.equal(registry.conceptPhotoPublic,false);
 });

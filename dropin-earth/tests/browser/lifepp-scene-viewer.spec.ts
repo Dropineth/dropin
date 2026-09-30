@@ -35,7 +35,7 @@ try {
       contents: `import React from 'react'; import { createRoot } from 'react-dom/client';
         import { SceneViewer } from './apps/web/src/components/life/SceneViewer';
         import { getScene } from './apps/web/src/data/life/scenes';
-        const scene = {...getScene('31'), embedUrl: ${JSON.stringify(mockUrl)}, embedStatus: 'approved', rightsStatus: 'display_embed_confirmed', transportStatus: 'https_embed_verified'};
+        const scene = {...getScene('31'), embedUrl: ${JSON.stringify(mockUrl)}, embedStatus: 'approved', thirdPartyRightsVerified: true, rightsStatus: 'display_embed_confirmed', transportStatus: 'https_embed_verified'};
         const root = createRoot(document.getElementById('root'));
         root.render(<SceneViewer scene={scene} locale="en" />);
         window.fixtureUnmount = () => root.unmount();`,

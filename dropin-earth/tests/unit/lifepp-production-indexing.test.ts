@@ -14,13 +14,15 @@ const publicKeys = ["NEXT_PUBLIC_CANOPYPROOF_MODE", "NEXT_PUBLIC_DROPIN_SITE_URL
 
 function workflowBuildEnvironment(name: string): Record<string, string> {
   const source = readFileSync(join(projectRoot, "../.github/workflows", name), "utf8");
-  // These workflows have one deploy job. Read its job-wide env, inherited by Next,
-  // OpenNext and the subsequent static-asset promotion process, without reading secrets.
+  // Public build values may be inherited from workflow-level env or job env.
+  // Read only the two public settings; keep the no-shadow assertion across all jobs.
   const jobEnvironment = source.match(/^ {4}env:\n((?: {6}.*(?:\n|$))*)/m)?.[1];
-  assert.ok(jobEnvironment, `${name} must have an explicit job build environment`);
+  const globalEnvironment = source.match(/^env:\n((?: {2}.*(?:\n|$))*)/m)?.[1];
+  assert.ok(jobEnvironment || globalEnvironment, `${name} must have an explicit inherited build environment`);
   const environment: Record<string, string> = {};
   for (const key of publicKeys) {
-    const value = jobEnvironment.match(new RegExp(`^ {6}${key}: (.+)$`, "m"))?.[1];
+    const value = jobEnvironment?.match(new RegExp(`^ {6}${key}: (.+)$`, "m"))?.[1]
+      ?? globalEnvironment?.match(new RegExp(`^ {2}${key}: (.+)$`, "m"))?.[1];
     assert.ok(value, `${name} must expose ${key} to build subprocesses`);
     assert.equal(source.match(new RegExp(`${key}:`, "g"))?.length, 1, `${name} must not shadow the public build setting`);
     environment[key] = value;

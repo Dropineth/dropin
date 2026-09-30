@@ -157,6 +157,14 @@ jobs:
         if: ${{ always() && steps.evidence.outcome == 'success' }}
         run: node scripts/lifepp-validation-run.mjs finish
 
+      - name: Preserve staging workerd build for offline visual review
+        if: ${{ always() && steps.artifact.outcome == 'success' }}
+        run: |
+          artifact_path="$LIFEPP_VALIDATION_OUTPUT_DIR/workerd-review.tar.gz"
+          tar -czf "$artifact_path" -C apps/web .open-next
+          sha256sum "$artifact_path" > "$artifact_path.sha256"
+          printf '%s\n' "$LIFEPP_EXPECTED_SHA" > "$LIFEPP_VALIDATION_OUTPUT_DIR/workerd-review-commit.txt"
+
       - name: Preserve command results including failures
         if: always()
         uses: actions/upload-artifact@v4

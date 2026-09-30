@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-30T10:08:36.688621+00:00",
+  "status": "NOT_DEPLOYED_NO_PUBLIC_R3_RECEIPT",
+  "repository": "Dropineth/dropin",
+  "pr": 4,
+  "candidateCommit": null,
+  "intendedOrigin": "https://canopyproof.org",
+  "actualR3PublicUrl": null,
+  "publicIsolatedPreview": null,
+  "workerName": "canopyproof-web",
+  "workerVersion": null,
+  "deploymentId": null,
+  "deployedAt": null,
+  "rollbackVersion": null,
+  "rollbackDeploymentId": null,
+  "independentReview": null,
+  "environmentApproval": null,
+  "productionMergedByThisTask": false,
+  "productionDeployedByThisTask": false,
+  "note": "This is a truthful hold receipt, not proof of public deployment. The protected release runner writes an actual command/version/approval receipt only after its gates pass. Full external route acceptance remains a separate required step.",
+  "preReleasePublicObservation": [
+    {
+      "url": "https://canopyproof.org/",
+      "observedAt": "2026-09-30T10:10:20.445Z",
+      "result": "fetch failed"
+    },
+    {
+      "url": "https://canopyproof.org/life",
+      "observedAt": "2026-09-30T10:10:23.119Z",
+      "httpStatus": 404
+    },
+    {
+      "url": "https://canopyproof.org/life/spaces/33",
+      "observedAt": "2026-09-30T10:10:25.881Z",
+      "httpStatus": 404
+    }
+  ]
+}

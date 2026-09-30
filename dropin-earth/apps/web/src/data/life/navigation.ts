@@ -18,7 +18,7 @@ export const isProductionSite = process.env.NEXT_PUBLIC_CANOPYPROOF_MODE === "pr
   && process.env.NEXT_PUBLIC_DROPIN_SITE_URL === "https://canopyproof.org";
 export function localPath(path: string, locale: Locale) { return locale === "en" ? `/en${path}` : path; }
 export function lifeMetadata(path: string, page: string, locale: Locale): Metadata {
-  const isScene = path === "/life/spaces/31" || path === "/life/spaces/29";
+  const isScene = path === "/life/spaces/33" || path === "/life/spaces/31" || path === "/life/spaces/29";
   const title = isScene ? `${locale === "zh" ? "场景" : "Scene "}${path.split("/").pop()} · Life++` : (titles[page]?.[locale === "zh" ? 0 : 1] ?? "Life++");
   const description = locale === "zh" ? "从真实空间的数字重建开始，连接人的需求、社区服务与可问责的智能协作。导入期规划与用户提供的测试输入。" : "Starting with digital reconstruction of real spaces, connecting people, community services and accountable intelligent collaboration. Pilot planning and user-provided test inputs.";
   const canonical = `https://canopyproof.org${localPath(path, locale)}`;

@@ -38,11 +38,11 @@ export const rooms = manifest.spaces.map((room) => {
   return { ...room, ...content };
 });
 
-export const modules: { number: string; icon: 'space' | 'agent' | 'club' | 'robot'; title: Bilingual; subtitle: string; description: Bilingual; path: string }[] = [
-  { number: '01', icon: 'space', title: { zh: '让空间，被看见', en: 'Make space visible' }, subtitle: 'Spatial', description: { zh: '从三维采集与空间展示开始，建立清晰的交付、验收与更新约定。', en: 'Start with 3D capture and spatial presentation, with clear delivery, acceptance and update agreements.' }, path: '/life/spaces' },
-  { number: '02', icon: 'agent', title: { zh: '让协作，有分寸', en: 'Give agents boundaries' }, subtitle: 'Agent & Edge', description: { zh: '在你明确授权的范围内，以数字分身、边缘终端和云服务辅助具体任务。', en: 'Use digital agents, edge devices and cloud services for specific tasks within your explicit authorization.' }, path: '/life/agents' },
-  { number: '03', icon: 'club', title: { zh: '让相遇，有意义', en: 'Make room to connect' }, subtitle: 'Club & Learning', description: { zh: '围绕共学、闭门交流与空间赛事，连接有共同兴趣的人与社区。', en: 'Bring people and communities together through learning, focused conversations and spatial events.' }, path: '/life/membership' },
-  { number: '04', icon: 'robot', title: { zh: '让服务，走进日常', en: 'Bring services closer' }, subtitle: 'Robot Garage', description: { zh: '携手物业、商户与设备伙伴，分阶段探索经过安全验收的机器人服务。', en: 'Work with property, retail and equipment partners on phased robot services that require safety acceptance.' }, path: '/life/center#garage' },
+export const modules: { number: string; icon: 'space' | 'agent' | 'club' | 'robot'; title: Bilingual; subtitle: string; description: Bilingual; audience: Bilingual; stage: Bilingual; next: Bilingual; path: string }[] = [
+  { number: '01', icon: 'agent', title: { zh: '个人智能助手', en: 'A personal AI assistant' }, subtitle: 'CAI / PERSONAL', audience: { zh: '个人与小团队', en: 'Individuals and small teams' }, description: { zh: '以CAI数字分身探索资料整理、日程建议与有限任务辅助。数据、算力配额和人工确认逐项约定。', en: 'Explore document organization, schedule suggestions and bounded task assistance with CAI. Agree data access, compute quotas and human confirmation for each task.' }, stage: { zh: '内测规划 · 按需求咨询', en: 'Pilot planning · Enquire for scope' }, next: { zh: '描述一个任务', en: 'Describe a task' }, path: '/life/agents#agent-enquiry' },
+  { number: '02', icon: 'space', title: { zh: '三维空间展示', en: 'Show a space in 3D' }, subtitle: 'SPATIAL / PRESENTATION', audience: { zh: '物业、商户与展商', en: 'Property teams, merchants and exhibitors' }, description: { zh: '讨论空间采集、三维展示页面与版本更新。先明确展示许可、交付范围和验收，不预设导航能力。', en: 'Discuss spatial capture, a 3D presentation page and version updates. Define display rights, deliverables and acceptance without assuming navigation capability.' }, stage: { zh: '接入测试 · 逐项报价', en: 'Integration testing · Scoped quotation' }, next: { zh: '查看空间测试', en: 'View spatial tests' }, path: '/life/spaces' },
+  { number: '03', icon: 'club', title: { zh: '社区学习与交流', en: 'Learn and connect' }, subtitle: 'COMMUNITY / LEARNING', audience: { zh: '社区成员与学习伙伴', en: 'Community members and learning partners' }, description: { zh: '规划共学工作坊、主题交流和空间活动。以正式排期、场地条件与服务规则确认每次参与。', en: 'Plan learning workshops, focused conversations and spatial activities. Confirm each session through an agreed schedule, site conditions and service terms.' }, stage: { zh: '规划中 · 尚未售票或收费', en: 'Planned · No ticketing or payments' }, next: { zh: '了解参与计划', en: 'Explore participation plans' }, path: '/life/membership' },
+  { number: '04', icon: 'robot', title: { zh: '企业与机构协作', en: 'Work on a shared pilot' }, subtitle: 'BUSINESS / COLLABORATION', audience: { zh: '企业、机构与场地方', en: 'Businesses, institutions and venue partners' }, description: { zh: '从一个可验收的试点开始，约定职责、排期、对账与退出。设备、边缘终端或机器人另需现场安全验收。', en: 'Start with a reviewable pilot and agree responsibilities, schedule, reconciliation and exit terms. Devices, edge systems or robots require separate site safety acceptance.' }, stage: { zh: '合作咨询 · 范围另行确认', en: 'Partnership enquiries · Scope to be agreed' }, next: { zh: '了解合作试点', en: 'Discuss a pilot' }, path: '/life/partners' },
 ];
 
 export const tiers = manifest.membership.tiers.map((tier, index) => ({
@@ -55,12 +55,12 @@ export const tiers = manifest.membership.tiers.map((tier, index) => ({
   benefits: [
     [{ zh: '拟议会所服务', en: 'Proposed club services' }, { zh: '社区交流与活动意向', en: 'Community and activity interests' }],
     [{ zh: '拟议空间赛事服务', en: 'Proposed spatial event services' }, { zh: '高尔夫、划船、骑行等方向', en: 'Golf, rowing and cycling concepts' }],
-    [{ zh: '拟议数据主权与 AHIN 相关服务', en: 'Proposed data sovereignty and AHIN services' }, { zh: '高端闭门交流等方向', en: 'Focused private discussions and related activities' }],
+    [{ zh: '拟议CAI数字分身与数据授权服务', en: 'Proposed CAI agent and data permission services' }, { zh: '高端闭门交流等方向', en: 'Focused private discussions and related activities' }],
   ][index] ?? [],
 }));
 
 export const pageMeta: Record<LifePageId, { title: Bilingual; description: Bilingual }> = {
-  home: { title: { zh: 'Life++ 生生不息', en: 'Life++ — Life, connected' }, description: { zh: '让数字分身进入真实生活。从空间重建开始，连接社区服务与可问责的智能协作。', en: 'Bring digital agents into everyday life. Explore spatial reconstruction, community services and accountable collaboration.' } },
+  home: { title: { zh: 'Life++ 生生不息', en: 'Life++ — Life, connected' }, description: { zh: '让数字智能，走进真实生活。以会展湾671.26㎡四铺导入期为起点，探索数字分身、三维空间与社区服务的可问责协作。', en: 'Bring digital agents into everyday life. Explore spatial reconstruction, community services and accountable collaboration.' } },
   spaces: { title: { zh: '探索空间', en: 'Explore spaces' }, description: { zh: '两个用户提供的三维高斯测试输入，清楚呈现来源、权限与验证状态。', en: 'Two user-provided Gaussian splatting test inputs, with explicit source, permission and verification status.' } },
   center: { title: { zh: '共生中心', en: 'The Life++ center' }, description: { zh: '以671.26㎡四铺导入期规划，探索空间、数字分身、共学与机器人服务。', en: 'A 671.26 m², four-unit introductory plan for spatial experiences, agents, collaborative learning and robot services.' } },
   agents: { title: { zh: '数字分身与边缘计算', en: 'Agents & edge computing' }, description: { zh: '在明确授权、任务边界与可撤回条件下，探索数字分身、边缘终端与云服务。', en: 'Explore digital agents, edge devices and cloud services with explicit authorization, bounded tasks and withdrawal.' } },

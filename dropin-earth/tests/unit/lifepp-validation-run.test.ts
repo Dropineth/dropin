@@ -238,7 +238,12 @@ test('read-only workflows check out candidate SHA and always upload fresh failed
     assert.match(text, /lifepp-validation-run\.mjs finish/);
     assert.match(text, /if: always\(\)\n\s+uses: actions\/upload-artifact@v4/);
     assert.match(text, /path: dropin-earth\/\$\{\{ env\.LIFEPP_VALIDATION_OUTPUT_DIR \}\}\//);
-    assert.doesNotMatch(text, /continue-on-error|secrets\.|pull_request_target|workflow_dispatch:/);
+    assert.doesNotMatch(text, /continue-on-error|secrets\.|pull_request_target/);
+    if (path === 'lifepp-web.yml') {
+      assert.match(text, /workflow_dispatch:/);
+      assert.match(text, /if: github\.event_name != 'workflow_dispatch' \|\| github\.ref == 'refs\/heads\/main'/);
+      assert.match(text, /push:\n\s+branches:\n\s+- main/);
+    } else assert.doesNotMatch(text, /workflow_dispatch:/);
   }
   const trust = readFileSync(resolve('..', '.github/workflows/canopyproof-ci.yml'), 'utf8');
   assert.match(trust, /run lifepp-workerd -- node scripts\/lifepp-validation-run\.mjs workerd-browser/);

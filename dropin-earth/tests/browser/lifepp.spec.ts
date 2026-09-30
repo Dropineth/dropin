@@ -2,26 +2,80 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { chromium, type Browser, type Page } from "playwright";
+import { chromium, firefox, webkit, type Browser, type Page } from "playwright";
 
 // Run against a built Next or local workerd server. Never starts a deploy or API.
 const base = new URL(process.env.LIFEPP_BROWSER_BASE_URL ?? "http://127.0.0.1:3101");
 assert.ok(["127.0.0.1", "localhost", "[::1]"].includes(base.hostname), "Browser suite is loopback-only.");
+const engines = { chromium, firefox, webkit };
+const requestedEngine = process.env.LIFEPP_BROWSER_ENGINE ?? "chromium";
+assert.ok(Object.hasOwn(engines, requestedEngine), `Unsupported LIFEPP_BROWSER_ENGINE: ${requestedEngine}`);
+const engine = requestedEngine as keyof typeof engines;
 const output = process.env.LIFEPP_BROWSER_OUTPUT_DIR
   ? resolve(process.env.LIFEPP_BROWSER_OUTPUT_DIR)
-  : join(process.cwd(), "docs/lifepp/evidence", process.env.LIFEPP_BROWSER_SERVER_MODE === "workerd" ? "workerd" : "next");
+  : join(process.cwd(), "reports/lifepp-validation/browser", process.env.LIFEPP_BROWSER_SERVER_MODE === "workerd" ? "workerd" : "next", engine);
 const manifest = JSON.parse(readFileSync(join(process.cwd(), "apps/web/src/data/life/site-manifest.json"), "utf8")) as { newRoutes: string[] };
 const paths = manifest.newRoutes.flatMap((path) => [path, `/en${path}`]);
+assert.equal(paths.length, 22, "R3 must exercise all 22 localized manifest routes");
+assert.equal(new Set(paths).size, paths.length, "Manifest routes must be unique");
+const sceneIds = ["33", "29", "31"] as const;
+for (const id of sceneIds) for (const prefix of ["", "/en"]) assert.ok(paths.includes(`${prefix}/life/spaces/${id}`), `Scene ${id} must remain in the route matrix`);
 const profiles = [
   { name: "desktop", width: 1440, height: 1000 },
   { name: "tablet", width: 768, height: 1024 },
   { name: "mobile", width: 375, height: 812 },
+  { name: "mobile-wide", width: 390, height: 844 },
+  { name: "desktop-wide", width: 1920, height: 1080 },
 ] as const;
 const screenshotRoutes = new Set(paths);
 const results: { name: string; status: "PASS" | "FAIL"; details?: unknown; error?: string }[] = [];
 const measurements: unknown[] = [];
 const screenshots: string[] = [];
 let browser: Browser;
+
+async function assertReducedMotion(page: Page) {
+  const motion = await page.evaluate(() => ({
+    requested: matchMedia("(prefers-reduced-motion: reduce)").matches,
+    active: document.getAnimations().filter((animation) => animation.playState === "running" || animation.pending).map((animation) => ({ duration: animation.effect?.getComputedTiming().duration, name: animation.id })),
+    scrollBehavior: getComputedStyle(document.querySelector("main")!).scrollBehavior,
+  }));
+  assert.equal(motion.requested, true, "Reduced-motion preference is active");
+  assert.deepEqual(motion.active, [], "Reduced-motion pages must not leave animations running");
+  assert.equal(motion.scrollBehavior, "auto", "Reduced motion disables smooth scrolling");
+  return motion;
+}
+
+async function assertBlockedScene(page: Page, id: string) {
+  const viewer = page.locator(`[data-scene-id="${id}"]`);
+  assert.equal(await viewer.getAttribute("data-viewer-state"), "blocked");
+  assert.equal(await viewer.isVisible(), true, "Unavailable source has a visible fallback");
+  assert.equal(await page.locator("iframe").count(), 0, "Blocked sources never create a frame");
+  assert.equal(await viewer.getByRole("button", { name: /按需加载场景|Load scene on demand|重试加载|Retry loading/ }).count(), 0, "No launch control for an unapproved source");
+  const link = viewer.locator(`a[href="http://kjlying.com:8456/scenes/${id}"]`);
+  assert.equal(await link.count(), 1);
+  assert.equal(await link.getAttribute("target"), "_blank");
+  assert.match(await link.getAttribute("rel") ?? "", /noopener/);
+  assert.match(await link.getAttribute("rel") ?? "", /noreferrer/);
+  assert.equal(await link.getAttribute("referrerpolicy"), "no-referrer");
+  assert.match(await viewer.innerText(), /非实景影像|not a scene capture/);
+  return viewer;
+}
+
+async function assertKeyboardEntry(page: Page) {
+  await page.keyboard.press("Tab");
+  const skip = page.locator('a[href="#life-main"]');
+  assert.equal(await skip.evaluate((element) => element === document.activeElement), true, "First Tab reaches skip navigation");
+  const indicator = await skip.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const bounds = element.getBoundingClientRect();
+    return { outline: style.outlineStyle, width: parseFloat(style.outlineWidth), top: bounds.top, bottom: bounds.bottom };
+  });
+  assert.notEqual(indicator.outline, "none", "Keyboard focus has a visible outline");
+  assert.ok(indicator.width >= 2 && indicator.top >= 0 && indicator.bottom <= page.viewportSize()!.height, "Skip link and focus ring are visible");
+  await page.keyboard.press("Enter");
+  await page.waitForFunction(() => document.activeElement?.id === "life-main");
+  return indicator;
+}
 
 async function check(name: string, task: () => Promise<unknown>) {
   try { const details = await task(); results.push({ name, status: "PASS", details }); }
@@ -36,6 +90,43 @@ async function setupMetrics(page: Page) {
     try { new PerformanceObserver((list) => { for (const entry of list.getEntries()) { const shift = entry as PerformanceEntry & { hadRecentInput: boolean; value: number }; if (!shift.hadRecentInput) metrics.cls += shift.value; } }).observe({ type: "layout-shift", buffered: true }); } catch { /* unsupported browser metric stays null */ }
     try { new PerformanceObserver((list) => { for (const entry of list.getEntries()) { const event = entry as PerformanceEntry & { interactionId?: number }; if (event.interactionId) metrics.maxObservedInteractionDurationMs = Math.max(metrics.maxObservedInteractionDurationMs ?? 0, event.duration); } }).observe({ type: "event", buffered: true, durationThreshold: 16 } as PerformanceObserverInit); } catch { /* no field INP claim */ }
   });
+}
+
+async function prepareFullPageImages(page: Page) {
+  const loaded: { src: string; naturalWidth: number; naturalHeight: number; loading: string }[] = [];
+  const images = page.locator("img");
+  const count = await images.count();
+  let hidden = 0;
+  try {
+    for (let index = 0; index < count; index++) {
+      const image = images.nth(index);
+      // Hidden tabs stay hidden. The full-page image represents the current UI,
+      // not a composite of every tab or a mutation of native lazy loading.
+      if (!await image.isVisible()) { hidden++; continue; }
+      const before = await image.evaluate((element) => ({ src: (element as HTMLImageElement).currentSrc || (element as HTMLImageElement).src, loading: element.getAttribute("loading") }));
+      assert.equal(new URL(before.src, base).origin, base.origin, "Screenshot preparation only loads same-origin images");
+      await image.scrollIntoViewIfNeeded({ timeout: 10_000 });
+      const decoded = await image.evaluate(async (element) => {
+        const image = element as HTMLImageElement;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            image.decode(),
+            new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`Image decode timed out: ${image.currentSrc || image.src}`)), 10_000); }),
+          ]);
+          if (!image.complete || image.naturalWidth === 0 || image.naturalHeight === 0) throw new Error(`Image did not load: ${image.currentSrc || image.src}`);
+          return { src: image.currentSrc || image.src, naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight, loading: image.loading };
+        } finally { if (timer !== undefined) clearTimeout(timer); }
+      });
+      assert.equal(new URL(decoded.src).origin, base.origin, "Decoded image stays on the approved local origin");
+      assert.equal(await image.getAttribute("loading"), before.loading, "Screenshot preparation preserves the loading attribute");
+      loaded.push(decoded);
+    }
+  } finally {
+    await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
+    await page.waitForFunction(() => Math.abs(scrollY) < 1 && Math.abs(scrollX) < 1, undefined, { timeout: 2_000 });
+  }
+  return { loaded, hidden, scrollRestoredToTop: true };
 }
 
 async function informationalContrast(page: Page) {
@@ -56,13 +147,13 @@ async function informationalContrast(page: Page) {
 }
 
 async function routeMatrix(profile: typeof profiles[number]) {
-  const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height }, reducedMotion: "reduce" });
+  const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height }, hasTouch: profile.width <= 390, reducedMotion: "reduce", serviceWorkers: "block" });
   // Tests neither submit leads nor follow third-party scene URLs. Block unexpected external requests and record them.
   const external: string[] = [];
   const mutations: string[] = [];
   await context.route("**/*", async (route) => {
     const request = route.request();
-    if (!['GET', 'HEAD'].includes(request.method())) mutations.push(`${request.method()} ${request.url()}`);
+    if (!['GET', 'HEAD'].includes(request.method())) { mutations.push(`${request.method()} ${request.url()}`); await route.abort(); return; }
     if (new URL(request.url()).origin !== base.origin) { external.push(request.url()); await route.abort(); }
     else await route.continue();
   });
@@ -100,30 +191,37 @@ async function routeMatrix(profile: typeof profiles[number]) {
           const contrast = await informationalContrast(page);
           assert.deepEqual(contrast.filter((entry) => entry.ratio < 4.5), [], "Selected informational normal text meets 4.5:1 contrast");
           assert.equal(await page.getByRole("link", { name: /生态与地球观测|Ecology.*Earth|Ecology.*observation/i }).count() > 0, true, "Return to ecology link");
-          if (path.endsWith("/31") || path.endsWith("/29")) {
-            const id = path.split("/").pop();
-            assert.equal(await page.locator(`[data-scene-id="${id}"]`).getAttribute("data-viewer-state"), "blocked");
-            const link = page.locator(`a[href="http://kjlying.com:8456/scenes/${id}"]`);
-            assert.equal(await link.count(), 1);
-            assert.equal(await link.getAttribute("target"), "_blank");
-            assert.match(await link.getAttribute("rel") ?? "", /noopener/);
-            assert.match(await link.getAttribute("rel") ?? "", /noreferrer/);
-            assert.equal(await link.getAttribute("referrerpolicy"), "no-referrer");
+          if (sceneIds.some((id) => path.endsWith(`/spaces/${id}`))) {
+            await assertBlockedScene(page, path.split("/").pop()!);
             assert.ok((await page.locator("dd").allTextContents()).filter((value) => /待确认|To be confirmed/.test(value)).length >= 7);
+            const placeholder = await page.locator('[class*="placeholder"] p').evaluate(element => {
+              const viewer = element.closest('[class*="viewer"]')!;
+              const bounds = viewer.getBoundingClientRect();
+              const range = document.createRange(); range.selectNodeContents(element);
+              return { viewerLeft: bounds.left, viewerRight: bounds.right, fontSize: Number.parseFloat(getComputedStyle(element).fontSize),
+                lines: Array.from(range.getClientRects(), rect => ({ left: rect.left, right: rect.right })) };
+            });
+            assert.ok(placeholder.fontSize >= 14, "Scene source caption is readable metadata");
+            assert.ok(placeholder.lines.length > 0 && placeholder.lines.every(line => line.left >= placeholder.viewerLeft && line.right <= placeholder.viewerRight), "Viewer source caption is not clipped inside a non-overflowing page");
           }
+          const reducedMotion = await assertReducedMotion(page);
           if (locale === "en") assert.doesNotMatch(await page.locator("main").innerText(), /待确认|拟议方案|申请空间合作|合作询问草稿|尚未发送|导入期空间/, "English content is localized");
+          // Freeze the initial-viewport measurements before the screenshot walk
+          // intentionally brings below-the-fold lazy images into view.
+          const metrics = await page.evaluate(() => {
+            const entries = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
+            return { ...((window as unknown as { __LIFEPP_LAB_METRICS__: object }).__LIFEPP_LAB_METRICS__), capturedAtMs: performance.now(), scripts: entries.filter((entry) => entry.initiatorType === "script").map((entry) => ({ url: entry.name, transferSize: entry.transferSize, encodedBodySize: entry.encodedBodySize, decodedBodySize: entry.decodedBodySize })), resources: entries.length };
+          });
+          measurements.push({ profile: profile.name, path, measurementPhase: "initial-viewport-before-screenshot-scroll", informationalContrast: contrast, ...metrics });
+          let screenshotImages: Awaited<ReturnType<typeof prepareFullPageImages>> | undefined;
           if (screenshotRoutes.has(path)) {
+            screenshotImages = await prepareFullPageImages(page);
             const name = `after-${profile.name}-${path.slice(1).replaceAll("/", "-") || "ecology"}.png`;
             await page.screenshot({ path: join(output, name), fullPage: true }); screenshots.push(name);
           }
-          const metrics = await page.evaluate(() => {
-            const entries = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
-            return { ...((window as unknown as { __LIFEPP_LAB_METRICS__: object }).__LIFEPP_LAB_METRICS__), scripts: entries.filter((entry) => entry.initiatorType === "script").map((entry) => ({ url: entry.name, transferSize: entry.transferSize, encodedBodySize: entry.encodedBodySize, decodedBodySize: entry.decodedBodySize })), resources: entries.length };
-          });
-          measurements.push({ profile: profile.name, path, informationalContrast: contrast, ...metrics });
           assert.deepEqual(external.slice(externalStart), [], "Life++ must not auto-load third-party resources");
           assert.deepEqual(errors, [], "No runtime or CSP hydration errors");
-          return { status: response!.status(), htmlLang: locale, overflow, externalRequests: 0 };
+          return { status: response!.status(), htmlLang: locale, overflow, externalRequests: 0, reducedMotion, screenshotImages };
         } catch (error) {
           const name = `failure-${profile.name}-${path.slice(1).replaceAll("/", "-")}.png`;
           await page.screenshot({ path: join(output, name), fullPage: true }).then(() => screenshots.push(name)).catch(() => undefined);
@@ -136,14 +234,18 @@ async function routeMatrix(profile: typeof profiles[number]) {
 }
 
 async function interactions() {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: "reduce", permissions: ["clipboard-read", "clipboard-write"] });
+  // Firefox/WebKit do not accept Chromium's clipboard permission names. Their real
+  // success or manual-copy fallback must still preserve the unsent draft below.
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: "reduce", serviceWorkers: "block", ...(engine === "chromium" ? { permissions: ["clipboard-read", "clipboard-write"] } : {}) });
   const page = await context.newPage();
   page.setDefaultTimeout(10_000);
   const writes: string[] = [];
+  const external: string[] = [];
   page.on("request", (request) => { if (!['GET', 'HEAD'].includes(request.method())) writes.push(request.url()); });
   await context.route("**/*", async (route) => {
     const request = route.request();
-    if (!['GET', 'HEAD'].includes(request.method()) || new URL(request.url()).origin !== base.origin) await route.abort();
+    if (new URL(request.url()).origin !== base.origin) { external.push(request.url()); await route.abort(); }
+    else if (!['GET', 'HEAD'].includes(request.method())) await route.abort();
     else await route.continue();
   });
   try {
@@ -152,7 +254,7 @@ async function interactions() {
       const observations: unknown[] = [];
       for (const path of ["/life", "/en/life", "/company", "/en/company", "/explorer"]) {
         const locale = /^\/(life|company)/.test(path) ? "zh-CN" : "en";
-        for (const prefetch of [{}, { purpose: "prefetch" }]) {
+        for (const prefetch of [{}, { purpose: "prefetch" }] as Record<string, string>[]) {
           const response = await page.request.get(new URL(path, base).href, { headers: {
             ...prefetch, "x-life-locale": locale === "en" ? "zh" : "en",
             "x-nonce": "untrusted-client-nonce", "content-security-policy": "script-src 'unsafe-inline'",
@@ -175,7 +277,7 @@ async function interactions() {
           assert.ok(executableTags.every((tag) => tag.includes(`nonce="${nonce}"`)), "HTML bootstrap must use this response nonce");
           observations.push({ path, prefetch, locale, cacheControl: headers["cache-control"], nonceBound: true });
         }
-        for (const rscHeaders of [{}, { rsc: "2" }, { rsc: "11" }, { rsc: "1, 1" }]) {
+        for (const rscHeaders of [{}, { rsc: "2" }, { rsc: "11" }, { rsc: "1, 1" }] as Record<string, string>[]) {
           const malformed = await page.request.get(new URL(path, base).href, { headers: {
             ...rscHeaders, "next-router-prefetch": "1", "x-life-locale": "attacker", "x-nonce": "untrusted-client-nonce",
           } });
@@ -206,14 +308,34 @@ async function interactions() {
       const body = await page.locator("body").innerText();
       for (const copy of [/Proof Explorer/, /TerraProof/i, /Methodology/, /Open Stack/, /sample/, /not certified carbon credits|nothing here is a certified carbon credit/]) assert.match(body, copy);
       assert.ok(await page.locator('a[href="#explorer"]').count() > 0);
-      for (const profile of profiles) { await page.setViewportSize({ width: profile.width, height: profile.height }); const name = `after-${profile.name}-ecology.png`; await page.screenshot({ path: join(output, name), fullPage: true }); screenshots.push(name); }
+      for (const profile of profiles) {
+        await page.setViewportSize({ width: profile.width, height: profile.height });
+        const bounds = await page.locator(".cp-hero h1, .cp-status-terminal, .cp-panel-heading").evaluateAll((elements) => elements.map((element) => {
+          const rect = element.getBoundingClientRect();
+          return { text: element.textContent?.slice(0, 80), left: rect.left, right: rect.right, viewport: innerWidth };
+        }));
+        assert.ok(bounds.length > 0, "Original ecology content is present");
+        assert.deepEqual(bounds.filter((rect) => rect.left < -1 || rect.right > rect.viewport + 1), [], `${profile.name} ecology content is not clipped at the viewport`);
+        await prepareFullPageImages(page);
+        const name = `after-${profile.name}-ecology.png`;
+        await page.screenshot({ path: join(output, name), fullPage: true }); screenshots.push(name);
+      }
     });
-    await check("Scene 31 and 29 reachable within two homepage clicks", async () => {
-      for (const id of ["31", "29"]) {
+    await check("Primary scenes 33 and 29 reachable within two homepage clicks", async () => {
+      for (const id of ["33", "29"]) {
         await page.goto(base.href, { waitUntil: "networkidle" });
         await page.locator('a[href="/life"]').first().click(); await page.waitForURL("**/life");
         await page.locator(`a[href="/life/spaces/${id}"]`).first().click(); await page.waitForURL(`**/life/spaces/${id}`);
-        assert.equal(await page.locator(`[data-scene-id="${id}"]`).getAttribute("data-viewer-state"), "blocked");
+        await assertBlockedScene(page, id);
+      }
+    });
+    await check("Legacy scene 31 retains its own source and locale routes", async () => {
+      for (const prefix of ["", "/en"]) {
+        const path = `${prefix}/life/spaces/31`;
+        const response = await page.goto(new URL(path, base).href, { waitUntil: "networkidle" });
+        assert.equal(response?.status(), 200);
+        assert.equal(new URL(page.url()).pathname, path, "Legacy scene must not redirect to scene 33");
+        await assertBlockedScene(page, "31");
       }
     });
     await check("Language switch and ecology return update document language", async () => {
@@ -275,18 +397,135 @@ async function interactions() {
       const robots = await page.request.get(new URL("/robots.txt", base).href); assert.equal(robots.status(), 200); assert.match(await robots.text(), /Disallow:\s*\//);
       const sitemap = await page.request.get(new URL("/sitemap.xml", base).href); assert.equal(sitemap.status(), 200); assert.doesNotMatch(await sitemap.text(), /<loc>/);
     });
+    await check("Interactive navigation and draft controls do not contact third parties", async () => assert.deepEqual(external, []));
+  } finally { await context.close(); }
+}
+
+async function accessibilityAndUnavailableSources() {
+  // A halved CSS viewport with DPR 2 is a reproducible reflow alternative to
+  // native browser 200% zoom, which Playwright cannot portably control. It is
+  // deliberately recorded as that alternative, never as OS/browser zoom proof.
+  const reflowProfile = { name: "zoom-200-reflow-alternative", width: 640, height: 500 };
+  for (const profile of [...profiles, reflowProfile]) {
+    const zoomAlternative = profile.name === reflowProfile.name;
+    const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height }, hasTouch: profile.width <= 390, deviceScaleFactor: zoomAlternative ? 2 : 1, reducedMotion: "reduce", serviceWorkers: "block" });
+    const external: string[] = [];
+    const mutations: string[] = [];
+    await context.route("**/*", async (route) => {
+      const request = route.request();
+      if (new URL(request.url()).origin !== base.origin) { external.push(request.url()); await route.abort(); }
+      else if (!["GET", "HEAD"].includes(request.method())) { mutations.push(request.url()); await route.abort(); }
+      else await route.continue();
+    });
+    const page = await context.newPage();
+    page.setDefaultTimeout(10_000);
+    try {
+      for (const prefix of ["", "/en"]) await check(`${profile.name} ${prefix || "zh"} keyboard navigation and reflow`, async () => {
+        await page.goto(new URL(`${prefix}/life`, base).href, { waitUntil: "networkidle" });
+        const focus = await assertKeyboardEntry(page);
+        // Follow real keyboard links through the visible navigation, including
+        // horizontally scrollable mobile navigation. No mouse is needed.
+        const navigation = page.getByRole("navigation", { name: profile.width <= 960 ? /移动端导航|Mobile navigation/ : /主导航|Main navigation/ });
+        assert.equal(await navigation.isVisible(), true);
+        const first = navigation.getByRole("link").first();
+        await first.focus();
+        const total = await navigation.getByRole("link").count();
+        assert.ok(total >= 3, "Key navigation entries remain available");
+        for (let index = 0; index < total; index++) {
+          const link = navigation.getByRole("link").nth(index);
+          assert.equal(await link.evaluate((element) => element === document.activeElement), true, "Tab reaches each visible navigation link");
+          const bounds = await link.boundingBox();
+          assert.ok(bounds && bounds.x >= -1 && bounds.x + bounds.width <= profile.width + 1, "Focused navigation item scrolls into view");
+          if (index < total - 1) await page.keyboard.press("Tab");
+        }
+        const scene = page.locator(`main a[href="${prefix}/life/spaces/33"]`).first();
+        await scene.focus(); await page.keyboard.press("Enter");
+        await page.waitForURL(`**${prefix}/life/spaces/33`);
+        await assertBlockedScene(page, "33");
+        const cooperation = page.locator(`header a[href="${prefix}/life/partners"]`).first();
+        await cooperation.focus(); await page.keyboard.press("Enter");
+        await page.waitForURL(`**${prefix}/life/partners`);
+        const name = page.locator("#inquiry-name");
+        await name.focus(); await page.keyboard.type("Keyboard fixture");
+        assert.equal(await name.inputValue(), "Keyboard fixture");
+        await page.keyboard.press("Tab");
+        assert.equal(await page.locator("#inquiry-organization").evaluate((element) => element === document.activeElement), true);
+        await page.keyboard.press("Shift+Tab");
+        assert.equal(await name.evaluate((element) => element === document.activeElement), true, "Keyboard users can move back out of the next field");
+        assert.equal(await page.locator('button[type="submit"]').isEnabled(), true, "Draft action stays available");
+        const overflow = await page.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth, dpr: devicePixelRatio }));
+        assert.ok(overflow.width <= overflow.viewport + 1, "Reflow leaves the draft form within the viewport");
+        if (zoomAlternative) {
+          assert.equal(overflow.viewport, 640); assert.equal(overflow.dpr, 2);
+          await prepareFullPageImages(page);
+          const screenshot = `after-${profile.name}-${prefix ? "en" : "zh"}-partners.png`;
+          await page.screenshot({ path: join(output, screenshot), fullPage: true }); screenshots.push(screenshot);
+        }
+        if (profile.width <= 390) {
+          assert.ok(await page.evaluate(() => navigator.maxTouchPoints > 0), "Touch capability is enabled for the narrow viewport");
+          await page.locator(`header a[href="${prefix}/life"]`).tap();
+          await page.waitForURL(`**${prefix}/life`);
+          await page.locator(`main a[href="${prefix}/life/spaces/29"]`).first().tap();
+          await page.waitForURL(`**${prefix}/life/spaces/29`);
+          await assertBlockedScene(page, "29");
+        }
+        return { focus, overflow, emulatedTouchNavigation: profile.width <= 390, zoom: zoomAlternative ? { percent: 200, method: "1280x1000 baseline represented by 640x500 CSS pixels and DPR 2", nativeBrowserZoomMeasured: false } : null };
+      });
+      await check(`${profile.name} accessible flows have no external requests or writes`, async () => { assert.deepEqual(external, []); assert.deepEqual(mutations, []); });
+    } finally { await context.close(); }
+  }
+  // This is fault injection against the real blocked-source component, not a
+  // claim that any provider scene rendered or that its readiness was observed.
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", serviceWorkers: "block" });
+  const attempted: string[] = [];
+  await context.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, kind: string, ...args: unknown[]) {
+      if (["webgl", "webgl2", "experimental-webgl"].includes(kind)) return null;
+      return Reflect.apply(original, this, [kind, ...args]);
+    } as typeof original;
+  });
+  await context.route("**/*", async (route) => {
+    if (new URL(route.request().url()).origin !== base.origin) { attempted.push(route.request().url()); await route.abort("connectionfailed"); }
+    else if (!["GET", "HEAD"].includes(route.request().method())) { attempted.push(route.request().url()); await route.abort(); }
+    else await route.continue();
+  });
+  const page = await context.newPage();
+  page.setDefaultTimeout(10_000);
+  try {
+    for (const id of sceneIds) for (const prefix of ["", "/en"]) await check(`Unavailable source / no WebGL / offline ${prefix || "zh"} scene ${id}`, async () => {
+      await context.setOffline(false);
+      await page.goto(new URL(`${prefix}/life/spaces/${id}`, base).href, { waitUntil: "networkidle" });
+      assert.equal(await page.evaluate(() => document.createElement("canvas").getContext("webgl2")), null, "No-WebGL fault injection is effective");
+      const viewer = await assertBlockedScene(page, id);
+      await context.setOffline(true);
+      // Copy remains a user action and never opens the external source. Denial
+      // is a valid accessible outcome if the source text remains selectable.
+      const copy = viewer.getByRole("button", { name: /复制原始链接|Copy original link/ });
+      await copy.focus(); await page.keyboard.press("Enter");
+      await page.waitForFunction(() => /链接已复制|Link copied|无法自动复制|Automatic copying is unavailable/.test(document.querySelector("[data-scene-id]")?.textContent ?? ""));
+      assert.equal(await viewer.locator("code").innerText(), `http://kjlying.com:8456/scenes/${id}`);
+      await assertBlockedScene(page, id);
+      assert.deepEqual(attempted, [], "Unavailable scenes must not trigger third-party fetches or writes, even on interaction");
+      return { fixtureOnly: true, simulatedNoWebGL: true, simulatedOffline: true, state: "blocked", capabilityBranchExercised: false, realSceneRequests: 0, realRenderOrReadinessValidated: false };
+    });
   } finally { await context.close(); }
 }
 
 async function main() {
   mkdirSync(output, { recursive: true });
   const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-  browser = await chromium.launch({ ...(existsSync(chrome) ? { executablePath: chrome } : {}), headless: true });
-  const browserVersion = browser.version();
-  try { for (const profile of profiles) await routeMatrix(profile); await interactions(); }
-  finally { await browser.close(); }
+  let browserVersion: string | null = null;
+  try {
+    browser = await engines[engine].launch({ ...(engine === "chromium" && existsSync(chrome) ? { executablePath: chrome } : {}), headless: true });
+    browserVersion = browser.version();
+    for (const profile of profiles) await routeMatrix(profile);
+    await interactions();
+    await accessibilityAndUnavailableSources();
+  } catch (error) { results.push({ name: `${engine} browser execution`, status: "FAIL", error: error instanceof Error ? error.stack : String(error) }); }
+  finally { await browser?.close(); }
   const sourceStatus = execFileSync("git", ["status", "--porcelain", "--untracked-files=normal", "--", "apps", "packages", "services", "tests", "scripts", "package.json", "package-lock.json", "../.github/workflows"], { encoding: "utf8" }).trim();
-  const report = { schemaVersion: 1, generatedAt: new Date().toISOString(), status: results.some((item) => item.status === "FAIL") ? "FAIL" : "PASS", baseUrl: base.href, runtime: { node: process.version, platform: process.platform, arch: process.arch, browser: browserVersion, serverMode: process.env.LIFEPP_BROWSER_SERVER_MODE ?? "unspecified" }, candidateSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), workingTreeUnderTest: sourceStatus !== "", sourceStatus, command: "node --import tsx tests/browser/lifepp.spec.ts", results, screenshots, measurements, limitations: ["Lab observations from one local Chromium browser; not Lighthouse or field performance.", "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.", "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.", "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness."] };
+  const report = { schemaVersion: 2, generatedAt: new Date().toISOString(), status: results.some((item) => item.status === "FAIL") ? "FAIL" : "PASS", baseUrl: base.href, runtime: { node: process.version, platform: process.platform, arch: process.arch, engine, browser: browserVersion, serverMode: process.env.LIFEPP_BROWSER_SERVER_MODE ?? "unspecified" }, matrix: { profiles, paths, plannedRouteChecks: profiles.length * paths.length }, candidateSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), workingTreeUnderTest: sourceStatus !== "", sourceStatus, command: `LIFEPP_BROWSER_ENGINE=${engine} node --import tsx tests/browser/lifepp.spec.ts`, results, screenshots, measurements, limitations: [`Lab observations from one local ${engine} browser; not Lighthouse, field performance or a real-device review.`, "The 200% zoom alternative tests reflow at half a baseline CSS viewport with DPR 2; native browser/OS zoom is not measured.", "Unavailable-source checks inject no WebGL and offline conditions; this is fixture evidence, not provider outage diagnosis or real-scene acceptance.", "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.", "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.", "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness.", "The separate MapLibre remediation spec uses Chromium; this report does not imply MapLibre coverage on the selected Life++ engine."] };
   writeFileSync(join(output, "browser-report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify({ status: report.status, passed: results.filter((item) => item.status === "PASS").length, failed: results.filter((item) => item.status === "FAIL"), screenshots: screenshots.length }, null, 2));
   if (report.status !== "PASS") process.exitCode = 1;

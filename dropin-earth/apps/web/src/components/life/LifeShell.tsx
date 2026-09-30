@@ -2,11 +2,12 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { lifePath, navigation, t, type LifeLocale } from '@/data/life/content';
 import styles from './life.module.css';
+import { LifeMobileNav } from './LifeMobileNav';
 
 export function LifeShell({ locale, path = '/life', children }: { locale: LifeLocale; path?: string; children: ReactNode }) {
   const otherLocale = locale === 'zh' ? 'en' : 'zh';
   return (
-    <div className={styles.shell} lang={locale === 'zh' ? 'zh-CN' : 'en'}>
+    <div className={styles.shell} data-business="life" lang={locale === 'zh' ? 'zh-CN' : 'en'}>
       <a className={styles.skipLink} href="#life-main">{locale === 'zh' ? '跳至内容' : 'Skip to content'}</a>
       <div className={styles.businessBar}>
         <div className={styles.businessInner}>
@@ -23,7 +24,7 @@ export function LifeShell({ locale, path = '/life', children }: { locale: LifeLo
             <Link href={lifePath(locale, '/life/partners')} className={styles.headerCta}>{locale === 'zh' ? '一起共创' : 'Partner with us'}<span aria-hidden="true">↗</span></Link>
           </div>
         </div>
-        <nav className={styles.mobileNav} aria-label={locale === 'zh' ? '移动端导航' : 'Mobile navigation'}>{navigation.map((item) => <Link key={item.path} href={lifePath(locale, item.path)} aria-current={path === item.path || path.startsWith(`${item.path}/`) ? 'page' : undefined}>{t(locale, item.label)}</Link>)}</nav>
+        <LifeMobileNav className={styles.mobileNav} label={locale === 'zh' ? '移动端导航' : 'Mobile navigation'}>{navigation.map((item) => <Link key={item.path} href={lifePath(locale, item.path)} aria-current={path === item.path || path.startsWith(`${item.path}/`) ? 'page' : undefined}>{t(locale, item.label)}</Link>)}</LifeMobileNav>
       </header>
       <main id="life-main" tabIndex={-1}>{children}</main>
       <footer className={styles.footer}>

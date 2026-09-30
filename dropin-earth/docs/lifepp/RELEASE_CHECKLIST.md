@@ -1,3 +1,30 @@
+# R3 mandatory release checklist — current candidate
+
+Previous checked boxes below apply only to their recorded historical SHA. R3 remains blocked until each fresh requirement has evidence; uploading source or a development screenshot does not check a release box.
+
+- [x] Preserve original worktree status and continue PR4; do not merge PR3.
+- [x] Read and visually inspect the14 specified original PDF pages; register source/asset hashes and planning boundaries.
+- [x] Implement33/29 main entries,31 legacy and four-shop bilingual/source-diagram UI in the original app.
+- [x] Preserve ecosystem home/logo/anchors/explorer, sample/demo boundaries and disabled business flags.
+- [ ] Fresh exact-candidate locked install, lint, types, units, PGlite, audit, native PostgreSQL, coverage, original browser matrix, Life++ three-engine/five-width matrix, OpenNext and workerd evidence.
+- [ ] Candidate-built screenshot/visual review for every route plus mobile key flows; record agent/device/human scope accurately. Development review alone is not this acceptance.
+- [ ] Independent code, visual and release review of the exact candidate; do not self-approve.
+- [ ] If merge creates a new main SHA, rerun complete Trust Gate and Life++ acceptance for that SHA.
+- [ ] Maintainer evidence confirms existing Cloudflare Git publishing cannot bypass the environment approval; current failed Workers checks need actual diagnostic review.
+- [ ] Supply and validate actual active known-good rollback Worker version/deployment IDs, binding compatibility and operator/procedure.
+- [ ] Prepare and hash the exact production build without cloud credentials; review manifest before existing `canopyproof-production` human approval.
+- [ ] Verify real independent environment approval and unchanged main/active rollback immediately before the web-only mutation.
+- [ ] Deploy existing `canopyproof-web`; no API proxy, DNS, paid resource, protection or notification change.
+- [ ] Record actual Worker version/deployment/time and external HTTPS routes/assets/headers/SEO/consultation status; use the approved rollback if public smoke fails.
+- [ ] Public isolated preview through eligible existing resources/branch policy/approval. Local127.0.0.1 is not a remotely reviewable preview.
+- [ ] Real scene33 loading; require HTTPS/rights/resource/frame/actual-render evidence.
+- [ ] Real scene29 loading; HTML/onLoad/fixture does not qualify.
+- [ ] Real institutional consultation persistence/receipt with approved controller, store, retention, backup/withdrawal and cleanup evidence.
+
+A reviewed fallback website can be released if website release gates pass while scene/receipt remain accurately unavailable. No unavailable business feature may be declared commercially live. Current hold/receipt: [PUBLIC_DEPLOYMENT_RECEIPT.json](PUBLIC_DEPLOYMENT_RECEIPT.json); concrete release inputs: [R3_RELEASE_AUDIT.md](R3_RELEASE_AUDIT.md).
+
+## Historical checklist (not current R3 approval)
+
 # CanopyProof × Life++ release checklist
 
 Status: **REVIEW CANDIDATE — NOT DEPLOYED**. The baseline Trust Gate at `8ba02a3` failed with 19 audit findings. Current remediation must pass every applicable gate on one committed candidate; no earlier checked box below is itself evidence of a new commit passing. Use `delivery_status.json` and fresh candidate-bound CI artifacts for current results.

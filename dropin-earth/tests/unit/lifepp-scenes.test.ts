@@ -3,12 +3,12 @@ import test from "node:test";
 import {
   APPROVED_SCENE_EMBEDS, SCENE_SOURCES, VIEWER_TIMEOUT_MS, evaluateSceneEmbed, getScene,
   isExactHttpsUrl, isTrustedSceneReady, nextViewerPhase, observeSceneReadiness,
-  parseSceneRegistry, scenes, viewerDeviceFallback, type EmbedApproval, type Scene,
+  parseSceneRegistry, primaryScenes, scenes, viewerDeviceFallback, type EmbedApproval, type Scene,
 } from "../../apps/web/src/data/life/scenes";
 
 // This is a mock adapter only. No real source or real permission is claimed by these fixtures.
 const mockUrl = "https://scene-adapter.example.test/scenes/31";
-const mockScene: Scene = { ...scenes[0]!, embedUrl: mockUrl, embedStatus: "approved", rightsStatus: "display_embed_confirmed", transportStatus: "https_embed_verified" };
+const mockScene: Scene = { ...getScene("31")!, embedUrl: mockUrl, embedStatus: "approved", thirdPartyRightsVerified: true, rightsStatus: "display_embed_confirmed", transportStatus: "https_embed_verified" };
 const mockApproval: EmbedApproval = {
   sceneId: "31", sourceUrl: SCENE_SOURCES["31"], embedUrl: mockUrl,
   displayAndEmbedPermission: "FIXTURE_PERMISSION", httpsAndSubresourcesReview: "FIXTURE_HTTPS",
@@ -24,7 +24,7 @@ const message = { type: "lifepp:scene-ready", protocol: 1, sceneId: "31", sessio
 function freshRegistry() { return scenes.map((scene) => ({ ...scene })); }
 
 test("supplied scene identity, null unknowns and disabled defaults are preserved", () => {
-  assert.deepEqual(scenes.map((scene) => scene.id), ["31", "29"]);
+  assert.deepEqual(scenes.map((scene) => scene.id), ["33", "29", "31"]);
   for (const scene of scenes) {
     assert.equal(scene.sourceUrl, SCENE_SOURCES[scene.id]);
     for (const field of ["embedUrl", "thumbnail", "captureDate", "location", "captureProvider", "assetFormat", "assetVersion"] as const) assert.equal(scene[field], null);
@@ -36,17 +36,21 @@ test("supplied scene identity, null unknowns and disabled defaults are preserved
     assert.equal(evaluateSceneEmbed(scene).allowed, false);
     assert.equal(Object.isFrozen(scene), true);
   }
+  assert.deepEqual(primaryScenes.map(scene => scene.id), ["33", "29"]);
+  assert.equal(getScene("31")?.legacy, true);
+  assert.ok(primaryScenes.every(scene => !scene.legacy && scene.userDisplayInstructionReceived));
+  assert.ok(scenes.every(scene => !scene.thirdPartyRightsVerified && scene.roomBinding === null));
   assert.deepEqual(APPROVED_SCENE_EMBEDS, []);
   assert.equal(Object.isFrozen(scenes), true);
   for (const id of ["30", "031", "__proto__", "toString", "https://evil.test/"]) assert.equal(getScene(id), undefined);
 });
 
 test("runtime validation rejects unknown, duplicate, missing and corrupted scene input", () => {
-  for (const input of [null, {}, [], [scenes[0]], [scenes[0], scenes[0]], [{ ...scenes[0], id: "toString" }, scenes[1]]]) assert.throws(() => parseSceneRegistry(input));
+  for (const input of [null, {}, [], [scenes[0]], [scenes[0], scenes[0]], [scenes[0], scenes[0], scenes[2]], [{ ...scenes[0], id: "toString" }, scenes[1], scenes[2]]]) assert.throws(() => parseSceneRegistry(input));
   for (const patch of [
     { sourceUrl: "https://kjlying.com:8456/scenes/31" }, { captureProvider: "" }, { thumbnail: "https://evil.test/image.jpg" },
-    { embedUrl: "http://kjlying.com:8456/scenes/31" }, { verificationStatus: "verified" }, { captureDate: undefined }, { id: 31 },
-  ]) assert.throws(() => parseSceneRegistry([{ ...scenes[0], ...patch }, scenes[1]]));
+    { embedUrl: "http://kjlying.com:8456/scenes/31" }, { primary: false }, { legacy: true }, { roomBinding: "L201" }, { thirdPartyRightsVerified: "true" }, { verificationStatus: "verified" }, { captureDate: undefined }, { id: 31 },
+  ]) assert.throws(() => parseSceneRegistry([{ ...scenes[0], ...patch }, scenes[1], scenes[2]]));
   assert.deepEqual(parseSceneRegistry(freshRegistry()), scenes);
 });
 
@@ -65,7 +69,7 @@ test("malicious URLs and unapproved HTTPS cannot bypass embed gate", () => {
   for (const key of ["displayAndEmbedPermission", "httpsAndSubresourcesReview", "redirectReview", "sourceFramePolicyReview", "siteFrameSrcReview", "browserAcceptanceReview"] as const) {
     assert.equal(evaluateSceneEmbed(mockScene, [{ ...mockApproval, [key]: "" }]).allowed, false, key);
   }
-  for (const patch of [{ rightsStatus: "pending_confirmation" as const }, { transportStatus: "http_source_provided_https_unverified" as const }, { embedStatus: "disabled" as const }, { sourceUrl: "http://evil.test/31" }]) assert.equal(evaluateSceneEmbed({ ...mockScene, ...patch }, [mockApproval]).allowed, false);
+  for (const patch of [{ thirdPartyRightsVerified: false }, { rightsStatus: "pending_confirmation" as const }, { transportStatus: "http_source_provided_https_unverified" as const }, { embedStatus: "disabled" as const }, { sourceUrl: "http://evil.test/31" }]) assert.equal(evaluateSceneEmbed({ ...mockScene, ...patch }, [mockApproval]).allowed, false);
 });
 
 test("readiness handshake requires exact origin, source, schema and current session", () => {
@@ -139,7 +143,7 @@ test("accepted mock handshake cancels timeout; route cleanup is idempotent and r
 test("HEAD checker blocks malicious redirects and does not guess HTTPS or issue GET", async () => {
   const { checkSource, checkedRedirect, isAllowedSource, SOURCE_ALLOWLIST } = await import("../../scripts/lifepp-scene-check.mjs");
   const source = SCENE_SOURCES["31"];
-  assert.deepEqual(SOURCE_ALLOWLIST, Object.values(SCENE_SOURCES).reverse());
+  assert.deepEqual(SOURCE_ALLOWLIST, scenes.map(scene => scene.sourceUrl));
   for (const value of ["https://kjlying.com:8456/scenes/31", "http://evil.test/", "http://user:secret@kjlying.com:8456/scenes/31", `${source}?q=1`, `${source}#x`]) assert.equal(isAllowedSource(value), false);
   for (const location of ["https://kjlying.com:8456/scenes/31", "http://127.0.0.1/", "//evil.test/", "javascript:alert(1)", "http://user:pass@kjlying.com:8456/scenes/29"]) assert.equal(checkedRedirect(source, location), null);
   let requests = 0;

@@ -1,5 +1,5 @@
 /**
- * Read-only, bounded HEAD observations of the two supplied URLs only.
+ * Read-only, bounded HEAD observations of the two primary and one historical supplied URL only.
  * No page body, assets, credentials, cookies, alternate URLs, proxy or TLS bypass.
  * A successful HEAD is not permission, an embed test, or source-content verification.
  */
@@ -11,8 +11,9 @@ import { setTimeout, clearTimeout } from 'node:timers';
 import process from 'node:process';
 
 export const SOURCE_ALLOWLIST = Object.freeze([
-  'http://kjlying.com:8456/scenes/31',
+  'http://kjlying.com:8456/scenes/33',
   'http://kjlying.com:8456/scenes/29',
+  'http://kjlying.com:8456/scenes/31',
 ]);
 export const LIMITS = Object.freeze({ timeoutMs: 5000, maxRedirects: 2, maxHeaderBytes: 16384, maxHeaderValueChars: 1024 });
 const OBSERVED_HEADERS = ['location', 'content-type', 'content-length', 'content-security-policy', 'x-frame-options', 'access-control-allow-origin', 'strict-transport-security'];

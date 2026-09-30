@@ -1,5 +1,9 @@
 name: Life++ web acceptance
 on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
   pull_request:
     paths:
       - 'dropin-earth/apps/web/**'
@@ -9,30 +13,32 @@ on:
       - 'dropin-earth/tests/unit/dependency-remediation.test.ts'
       - 'dropin-earth/scripts/lifepp-*.mjs'
       - '.github/workflows/lifepp-web.yml'
+      - '.github/workflows/deploy-canopyproof.yml'
       - 'dropin-earth/package.json'
       - 'dropin-earth/package-lock.json'
 permissions:
   contents: read
 concurrency:
-  group: lifepp-web-${{ github.event.pull_request.number }}
+  group: lifepp-web-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
   web:
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: dropin-earth
     env:
       NEXT_PUBLIC_CANOPYPROOF_MODE: staging
       NEXT_PUBLIC_DROPIN_SITE_URL: https://preview.example.invalid
-      LIFEPP_EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+      LIFEPP_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       LIFEPP_VALIDATION_OUTPUT_DIR: reports/lifepp-validation/web-${{ github.run_id }}-${{ github.run_attempt }}
       LIFEPP_BROWSER_OUTPUT_DIR: reports/lifepp-validation/web-${{ github.run_id }}-${{ github.run_attempt }}/browser-next
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -41,7 +47,7 @@ jobs:
           cache-dependency-path: dropin-earth/package-lock.json
       - name: Initialize candidate-bound validation evidence
         id: evidence
-        run: node scripts/lifepp-validation-run.mjs init pin-npm,install,typecheck,lint,unit,build,browsers,viewer-fixture,consultation-fixture,browser-next
+        run: node scripts/lifepp-validation-run.mjs init pin-npm,install,typecheck,lint,unit,build,browsers,viewer-fixture,consultation-fixture,floorplan-chromium,browser-next-chromium,floorplan-firefox,browser-next-firefox,floorplan-webkit,browser-next-webkit
       - name: Pin npm
         run: node scripts/lifepp-validation-run.mjs run pin-npm -- npm install --global npm@10.9.4
       - name: Install locked dependencies
@@ -60,10 +66,10 @@ jobs:
         id: build
         if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
         run: node scripts/lifepp-validation-run.mjs run build -- npm --workspace apps/web run build
-      - name: Install Chromium
+      - name: Install Chromium, Firefox and WebKit
         id: browsers
         if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
-        run: node scripts/lifepp-validation-run.mjs run browsers -- npx playwright install --with-deps chromium
+        run: node scripts/lifepp-validation-run.mjs run browsers -- npx playwright install --with-deps chromium firefox webkit
       - name: Scene viewer fixture lifecycle
         if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
         run: |
@@ -76,9 +82,27 @@ jobs:
           node scripts/lifepp-validation-run.mjs run consultation-fixture -- bash -e -c '
           LIFEPP_CONSULTATION_BROWSER_REPORT="$LIFEPP_VALIDATION_OUTPUT_DIR/consultation-fixture-report.json" node --import tsx tests/browser/lifepp-consultation.spec.ts
           '
-      - name: Life++ Next browser acceptance
+      - name: Floorplan interaction fixture in three browser engines
+        if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
+        run: |
+          status=0
+          for engine in chromium firefox webkit; do
+            LIFEPP_BROWSER_ENGINE="$engine" \
+            LIFEPP_FLOORPLAN_BROWSER_REPORT="$LIFEPP_VALIDATION_OUTPUT_DIR/floorplan-$engine.json" \
+            LIFEPP_FLOORPLAN_SCREENSHOT_PREFIX="$LIFEPP_VALIDATION_OUTPUT_DIR/floorplan" \
+              node scripts/lifepp-validation-run.mjs run "floorplan-$engine" -- node --import tsx tests/browser/lifepp-floorplan.spec.ts || status=1
+          done
+          exit "$status"
+      - name: Life++ Next browser acceptance in three browser engines
         if: ${{ always() && !cancelled() && steps.build.outcome == 'success' && steps.browsers.outcome == 'success' }}
-        run: node scripts/lifepp-validation-run.mjs run browser-next -- npm --workspace apps/web run test:lifepp:browser
+        run: |
+          status=0
+          for engine in chromium firefox webkit; do
+            LIFEPP_BROWSER_ENGINE="$engine" \
+            LIFEPP_BROWSER_OUTPUT_DIR="$LIFEPP_VALIDATION_OUTPUT_DIR/browser-next-$engine" \
+              node scripts/lifepp-validation-run.mjs run "browser-next-$engine" -- npm --workspace apps/web run test:lifepp:browser || status=1
+          done
+          exit "$status"
       - name: Finalize candidate-bound validation result
         if: ${{ always() && steps.evidence.outcome == 'success' }}
         run: node scripts/lifepp-validation-run.mjs finish
@@ -86,7 +110,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lifepp-validation-${{ github.event.pull_request.head.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: lifepp-validation-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: dropin-earth/${{ env.LIFEPP_VALIDATION_OUTPUT_DIR }}/
           if-no-files-found: error
           retention-days: 30

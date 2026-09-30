@@ -1,12 +1,18 @@
 import manifest from "./site-manifest.json";
 
 export const SCENE_SOURCES = Object.freeze({
+  "33": "http://kjlying.com:8456/scenes/33",
   "31": "http://kjlying.com:8456/scenes/31",
   "29": "http://kjlying.com:8456/scenes/29",
 } as const);
 export type SceneId = keyof typeof SCENE_SOURCES;
 export type Scene = Readonly<{
   id: SceneId;
+  primary: boolean;
+  legacy: boolean;
+  roomBinding: null;
+  userDisplayInstructionReceived: boolean;
+  thirdPartyRightsVerified: boolean;
   titleZh: string;
   titleEn: string;
   sourceUrl: string;
@@ -40,7 +46,7 @@ export function isExactHttpsUrl(value: unknown): value is string {
 }
 
 export function parseSceneRegistry(input: unknown): readonly Scene[] {
-  if (!Array.isArray(input) || input.length !== 2) throw new Error("Expected the two supplied scene inputs");
+  if (!Array.isArray(input) || input.length !== 3) throw new Error("Expected two primary scenes and one legacy scene");
   const ids = new Set<string>();
   const nullableFields = ["thumbnail", "captureDate", "location", "captureProvider", "assetFormat", "assetVersion"] as const;
   const parsed = input.map((entry): Scene => {
@@ -48,6 +54,9 @@ export function parseSceneRegistry(input: unknown): readonly Scene[] {
     const id = entry.id as SceneId;
     if (typeof entry.id !== "string" || ids.has(id) || entry.sourceUrl !== SCENE_SOURCES[id]) throw new Error("Invalid scene source identity");
     ids.add(id);
+    if (entry.primary !== (id !== "31") || entry.legacy !== (id === "31") ||
+        entry.roomBinding !== null || entry.userDisplayInstructionReceived !== (id !== "31") ||
+        typeof entry.thirdPartyRightsVerified !== "boolean") throw new Error("Invalid scene role or rights provenance");
     for (const field of ["titleZh", "titleEn", "sourceDescription"] as const) {
       if (typeof entry[field] !== "string" || entry[field].trim().length === 0 || entry[field].length > 300) throw new Error(`Invalid scene ${field}`);
     }
@@ -64,7 +73,9 @@ export function parseSceneRegistry(input: unknown): readonly Scene[] {
         entry.navigationStatus !== "not_validated" || entry.verificationStatus !== "unverified_test_input") throw new Error("Invalid scene status");
     // Do not pass through unexpected manifest keys to browser code.
     return Object.freeze({
-      id, titleZh: entry.titleZh as string, titleEn: entry.titleEn as string,
+      id, primary: id !== "31", legacy: id === "31", roomBinding: null,
+      userDisplayInstructionReceived: entry.userDisplayInstructionReceived as boolean,
+      thirdPartyRightsVerified: entry.thirdPartyRightsVerified as boolean, titleZh: entry.titleZh as string, titleEn: entry.titleEn as string,
       sourceUrl: SCENE_SOURCES[id], embedUrl: entry.embedUrl as string | null,
       thumbnail: entry.thumbnail as string | null, captureDate: entry.captureDate as string | null,
       location: entry.location as string | null, captureProvider: entry.captureProvider as string | null,
@@ -78,6 +89,7 @@ export function parseSceneRegistry(input: unknown): readonly Scene[] {
 }
 
 export const scenes = parseSceneRegistry(manifest.scenes);
+export const primaryScenes = Object.freeze(scenes.filter((scene) => scene.primary));
 export function getScene(id: string): Scene | undefined { return scenes.find((scene) => scene.id === id); }
 
 /** Evidence references must be backed by a separate review, never inferred from HEAD or an iframe load. */
@@ -102,7 +114,7 @@ export type EmbedGate = { allowed: false; reason: "disabled" | "unverified" | "u
 export function evaluateSceneEmbed(scene: Scene, approvals: readonly EmbedApproval[] = APPROVED_SCENE_EMBEDS): EmbedGate {
   if (scene.embedStatus !== "approved" || !scene.embedUrl) return { allowed: false, reason: "disabled" };
   if (!Object.hasOwn(SCENE_SOURCES, scene.id) || scene.sourceUrl !== SCENE_SOURCES[scene.id] ||
-      !isExactHttpsUrl(scene.embedUrl) || scene.rightsStatus !== "display_embed_confirmed" ||
+      !isExactHttpsUrl(scene.embedUrl) || scene.thirdPartyRightsVerified !== true || scene.rightsStatus !== "display_embed_confirmed" ||
       scene.transportStatus !== "https_embed_verified") return { allowed: false, reason: "unverified" };
   const approval = approvals.find((item) => item.sceneId === scene.id && item.sourceUrl === scene.sourceUrl && item.embedUrl === scene.embedUrl);
   const evidenceKeys = ["displayAndEmbedPermission", "httpsAndSubresourcesReview", "redirectReview", "sourceFramePolicyReview", "siteFrameSrcReview", "browserAcceptanceReview"] as const;

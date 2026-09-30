@@ -50,6 +50,7 @@ async function main() {
       else await route.abort();
     });
     const page=await context.newPage();page.setDefaultTimeout(10_000);
+    const pageErrors:string[]=[];page.on('pageerror',error=>pageErrors.push(error.message));
     await page.goto(base,{waitUntil:'networkidle'});
     assert.equal(await page.getByRole('button',{name:'Send enquiry and obtain storage receipt'}).count(),0);
     assert.deepEqual(requests.map(request=>request.method),['GET'],'Default closure never posts');
@@ -115,7 +116,23 @@ async function main() {
     await page.getByRole('button',{name:'Generate inquiry draft'}).click();
     assert.match(await page.getByRole('status').innerText(),/does not change earlier submissions/);
     assert.ok(!(await page.locator('body').innerText()).includes('This site has not received it.'));
-    const report={evidenceClass:'LOCAL_SYNTHETIC_MOCK_UI',realInstitutionalReceipt:false,status:'PASS',browserVersion:browser.version(),checks:['default draft performs GET only','503 removes send action','status recheck never POSTs','draft and dedupe UUID survive status recheck','fresh consent required','receipt wording limits itself to storage','503 draft and copy preserve receipt uncertainty','lost response remains unknown through draft, copy and availability recheck','lost-response retry retains request identity','verified receipt resolves uncertainty','later local draft never denies an earlier submission'],syntheticPostCount:requests.filter(request=>request.method==='POST').length};
+    abortPost=true;await page.getByRole('checkbox',{name:/I agree to send the minimum necessary/}).check();await send.click();await recheck.waitFor();
+    const unresolvedA=requests.filter(request=>request.method==='POST').at(-1)!.body!;
+    await page.getByRole('textbox',{name:/^Brief request/}).fill('LOCAL_SYNTHETIC edited request B, separate from unresolved request A.');
+    await recheck.click();await send.waitFor();
+    assert.equal(await page.locator('[data-receipt-state="unknown"]').count(),1,'Availability recheck retains request A uncertainty after editing');
+    abortPost=false;await page.getByRole('checkbox',{name:/I agree to send the minimum necessary/}).check();await send.click();
+    await page.getByText('Storage receipt (not proof of email delivery)',{exact:true}).waitFor();
+    const storedB=requests.filter(request=>request.method==='POST').at(-1)!.body!;
+    assert.notEqual(storedB.idempotencyKey,unresolvedA.idempotencyKey,'Editing creates a separate request B');
+    assert.equal(await page.locator('[data-receipt-state="unknown"]').count(),1,'A receipt for B cannot resolve the unknown request A');
+    assert.match(await page.getByRole('status').innerText(),/This enquiry was persisted and read back/);
+    assert.match(await page.getByRole('status').innerText(),/does not establish the status of other requests/);
+    await page.getByRole('button',{name:'Clear this page',exact:true}).click();
+    assert.equal(await page.locator('[data-receipt-state="unknown"]').count(),1,'Clearing the page form cannot resolve request A');
+    assert.equal(await page.getByText('Storage receipt (not proof of email delivery)',{exact:true}).count(),0,'Clear removes only the displayed B receipt');
+    assert.deepEqual(pageErrors,[],'Consultation interactions have no uncaught browser errors');
+    const report={evidenceClass:'LOCAL_SYNTHETIC_MOCK_UI',realInstitutionalReceipt:false,status:'PASS',browserVersion:browser.version(),checks:['default draft performs GET only','503 removes send action','status recheck never POSTs','draft and dedupe UUID survive status recheck','fresh consent required','receipt wording limits itself to storage','503 draft and copy preserve receipt uncertainty','lost response remains unknown through draft, copy and availability recheck','lost-response retry retains request identity','verified receipt resolves uncertainty for that request only','later local draft never denies an earlier submission','request A remains unknown after editing, availability recheck and successful distinct request B','B storage receipt is accurate while A remains unknown','clearing B receipt keeps A uncertainty'],syntheticPostCount:requests.filter(request=>request.method==='POST').length};
     if(process.env.LIFEPP_CONSULTATION_BROWSER_REPORT)await writeFile(process.env.LIFEPP_CONSULTATION_BROWSER_REPORT,JSON.stringify(report,null,2)+'\n');
     console.log(JSON.stringify(report,null,2));
   } finally {await browser?.close();if(server)await new Promise<void>((resolve,reject)=>server!.close(error=>error?reject(error):resolve()));await rm(directory,{recursive:true,force:true});}
