@@ -13,6 +13,8 @@ This section supersedes the prior delivery summary for the new R3 request. Earli
 
 Current production and public-preview outcome is **HOLD**. The known deployment path described by the uploaded packet did not match the actual baseline; the discrepancy is documented. Worker version, actual release approval and real rollback IDs are not invented. [PUBLIC_DEPLOYMENT_RECEIPT.json](PUBLIC_DEPLOYMENT_RECEIPT.json) states the actual current absence of a deployment receipt. No subscription, RWA, training-data sale, robot action or ecological certificate is enabled.
 
+The first R3 candidate failed its new browser acceptance; see [failure and corrections](R3_ACCEPTANCE_CORRECTION.md). The corrected HEAD requires both complete workflows again. Successful subsets are not acceptance.
+
 ## Historical implementation record (not R3 acceptance)
 
 # CanopyProof × Life++ release remediation

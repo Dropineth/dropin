@@ -106,6 +106,12 @@ async function prepareFullPageImages(page: Page) {
       const before = await image.evaluate((element) => ({ src: (element as HTMLImageElement).currentSrc || (element as HTMLImageElement).src, loading: element.getAttribute("loading") }));
       assert.equal(new URL(before.src, base).origin, base.origin, "Screenshot preparation only loads same-origin images");
       await image.scrollIntoViewIfNeeded({ timeout: 10_000 });
+      // Native lazy loading starts asynchronously after scrolling. Decode only
+      // after actual load completion; broken or missing images still fail.
+      await page.waitForFunction(element => {
+        const image = element as HTMLImageElement;
+        return image.complete && image.naturalWidth > 0 && image.naturalHeight > 0;
+      }, await image.elementHandle(), { timeout: 10_000 });
       const decoded = await image.evaluate(async (element) => {
         const image = element as HTMLImageElement;
         let timer: ReturnType<typeof setTimeout> | undefined;
@@ -157,11 +163,13 @@ async function routeMatrix(profile: typeof profiles[number]) {
     if (new URL(request.url()).origin !== base.origin) { external.push(request.url()); await route.abort(); }
     else await route.continue();
   });
-  const page = await context.newPage();
-  page.setDefaultTimeout(10_000);
-  await setupMetrics(page);
   try {
     for (const path of paths) {
+      // A fresh document/page isolates cancelled prefetch events from the prior
+      // route, while retaining this profile's shared browser context/cache.
+      const page = await context.newPage();
+      page.setDefaultTimeout(10_000);
+      await setupMetrics(page);
       await check(`${profile.name} ${path}`, async () => {
         const externalStart = external.length;
         const errors: string[] = [];
@@ -226,7 +234,7 @@ async function routeMatrix(profile: typeof profiles[number]) {
           const name = `failure-${profile.name}-${path.slice(1).replaceAll("/", "-")}.png`;
           await page.screenshot({ path: join(output, name), fullPage: true }).then(() => screenshots.push(name)).catch(() => undefined);
           throw error;
-        } finally { page.off("pageerror", onError); page.off("console", onConsole); }
+        } finally { page.off("pageerror", onError); page.off("console", onConsole); await page.close(); }
       });
     }
     await check(`${profile.name} no form mutations`, async () => assert.deepEqual(mutations, []));
@@ -408,7 +416,11 @@ async function accessibilityAndUnavailableSources() {
   const reflowProfile = { name: "zoom-200-reflow-alternative", width: 640, height: 500 };
   for (const profile of [...profiles, reflowProfile]) {
     const zoomAlternative = profile.name === reflowProfile.name;
-    const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height }, hasTouch: profile.width <= 390, deviceScaleFactor: zoomAlternative ? 2 : 1, reducedMotion: "reduce", serviceWorkers: "block" });
+    // Firefox's context scale option does not change devicePixelRatio here.
+    // Use its native pixel-scale preference for this dedicated reflow browser.
+    const profileBrowser = engine === "firefox" && zoomAlternative
+      ? await firefox.launch({ headless: true, firefoxUserPrefs: { "layout.css.devPixelsPerPx": "2.0" } }) : browser;
+    const context = await profileBrowser.newContext({ viewport: { width: profile.width, height: profile.height }, hasTouch: profile.width <= 390, deviceScaleFactor: zoomAlternative ? 2 : 1, reducedMotion: "reduce", serviceWorkers: "block" });
     const external: string[] = [];
     const mutations: string[] = [];
     await context.route("**/*", async (route) => {
@@ -419,6 +431,13 @@ async function accessibilityAndUnavailableSources() {
     });
     const page = await context.newPage();
     page.setDefaultTimeout(10_000);
+    const touchEvents: { trusted: boolean; touches: number }[] = [];
+    await page.exposeFunction("__recordLifeTouch", (event: { trusted: boolean; touches: number }) => touchEvents.push(event));
+    const observeTouch = () => page.evaluate(() => {
+      document.addEventListener("touchstart", event => {
+        (window as unknown as { __recordLifeTouch: (value: { trusted: boolean; touches: number }) => void }).__recordLifeTouch({ trusted: event.isTrusted, touches: event.touches.length });
+      }, { once: true, capture: true });
+    });
     try {
       for (const prefix of ["", "/en"]) await check(`${profile.name} ${prefix || "zh"} keyboard navigation and reflow`, async () => {
         await page.goto(new URL(`${prefix}/life`, base).href, { waitUntil: "networkidle" });
@@ -462,17 +481,22 @@ async function accessibilityAndUnavailableSources() {
           await page.screenshot({ path: join(output, screenshot), fullPage: true }); screenshots.push(screenshot);
         }
         if (profile.width <= 390) {
-          assert.ok(await page.evaluate(() => navigator.maxTouchPoints > 0), "Touch capability is enabled for the narrow viewport");
+          // Firefox/WebKit can expose maxTouchPoints=0 while native emulated
+          // touch works. Require actual trusted touch events and navigation.
+          const beforeTouches = touchEvents.length;
+          await observeTouch();
           await page.locator(`header a[href="${prefix}/life"]`).tap();
           await page.waitForURL(`**${prefix}/life`);
+          await observeTouch();
           await page.locator(`main a[href="${prefix}/life/spaces/29"]`).first().tap();
           await page.waitForURL(`**${prefix}/life/spaces/29`);
+          assert.deepEqual(touchEvents.slice(beforeTouches), [{ trusted: true, touches: 1 }, { trusted: true, touches: 1 }], "Both navigation actions receive actual trusted touch input");
           await assertBlockedScene(page, "29");
         }
         return { focus, overflow, emulatedTouchNavigation: profile.width <= 390, zoom: zoomAlternative ? { percent: 200, method: "1280x1000 baseline represented by 640x500 CSS pixels and DPR 2", nativeBrowserZoomMeasured: false } : null };
       });
       await check(`${profile.name} accessible flows have no external requests or writes`, async () => { assert.deepEqual(external, []); assert.deepEqual(mutations, []); });
-    } finally { await context.close(); }
+    } finally { await context.close(); if (profileBrowser !== browser) await profileBrowser.close(); }
   }
   // This is fault injection against the real blocked-source component, not a
   // claim that any provider scene rendered or that its readiness was observed.

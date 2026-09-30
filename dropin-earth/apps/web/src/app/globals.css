@@ -1802,8 +1802,15 @@ a {
   margin: 0;
 }
 
+.cp-hero > * {
+  min-width: 0;
+  max-width: 100%;
+  justify-self: stretch;
+}
+
 .cp-hero-copy h1 {
-  font-size: clamp(3.8rem, 8vw, 7.9rem);
+  overflow-wrap: anywhere;
+  font-size: clamp(3.8rem, 5vw, 5rem);
   line-height: 0.93;
   max-width: 820px;
 }

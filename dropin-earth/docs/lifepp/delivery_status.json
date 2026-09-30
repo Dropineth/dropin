@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-09-30T10:18:11.999329+00:00",
-  "overallStatus": "R3_IMPLEMENTED_CANDIDATE_ACCEPTANCE_PENDING_PRODUCTION_HOLD",
+  "generatedAt": "2026-09-30T10:53:05.125797+00:00",
+  "overallStatus": "R3_CORRECTED_CANDIDATE_REVALIDATION_REQUIRED_PRODUCTION_HOLD",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
   "branch": "codex/canopyproof-lifepp-full-update-20260930",
@@ -32,7 +32,7 @@
       "status": "FRESH_CANDIDATE_RECOMPUTATION_REQUIRED",
       "lockfileChangedInR3": false,
       "previousDisposition": "release-remediation/DEPENDENCY_DISPOSITION.md",
-      "localAttempt": "Two fresh npm10.9.4 audit attempts failed without a usable advisory result: registry bulk fallback/quick400, then pre-TLS disconnect. Raw failures preserved locally; no waiver or threshold change.",
+      "localAttempt": "A later committed local audit of1bd9416 and that exact remote Trust workspace audit passed with all severities zero. The corrected HEAD still requires fresh complete CI; earlier failed transport attempts remain preserved.",
       "remainingAuditFindings": null,
       "historicalBaseline": {
         "head": "7613ee6b2b7e32560b49ecb5947b18aa5dc25b71",
@@ -159,7 +159,14 @@
     "previousTrackedDeliveryAt": "2026-09-30T06:20:57.261255+00:00",
     "baselineTrustRun": "https://github.com/Dropineth/dropin/actions/runs/36679451381",
     "baselineLifeRun": "https://github.com/Dropineth/dropin/actions/runs/36679451369",
-    "scope": "Prior release-remediation and final-7613ee6 reports remain historical and are not overwritten by this candidate."
+    "scope": "Prior release-remediation and final-7613ee6 reports remain historical and are not overwritten by this candidate.",
+    "r3FirstCandidate": {
+      "head": "1bd9416e9c4b2bb004f8d627030d4237fa44e609",
+      "status": "FAIL_NOT_ACCEPTED",
+      "trustRun": "https://github.com/Dropineth/dropin/actions/runs/36703007035",
+      "lifeRun": "https://github.com/Dropineth/dropin/actions/runs/36703007028",
+      "record": "R3_ACCEPTANCE_CORRECTION.md"
+    }
   },
   "localPrecommitValidation": {
     "scope": "Dirty R3 working tree over phaseStartCommit; diagnostic only, not same-candidate remote acceptance",
