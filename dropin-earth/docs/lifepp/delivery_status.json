@@ -162,5 +162,16 @@
   },
   "candidateIdentity": "Current PR #4 head; resolve via GitHub or git rev-parse HEAD. All required current checks must match that exact SHA. The historical record below is not inherited by later commits.",
   "lastCompleteCandidate": "b4e3954d89c61484ea90435129229230a03e3abf",
-  "currentHeadEvidence": "Fresh canopyproof-validation-<head>-<run>-<attempt> and lifepp-validation-<head>-<run>-<attempt> artifacts linked from PR #4. The PR body records post-commit outcomes; this file does not predict its own commit result."
+  "currentHeadEvidence": "Fresh canopyproof-validation-<head>-<run>-<attempt> and lifepp-validation-<head>-<run>-<attempt> artifacts linked from PR #4. The PR body records post-commit outcomes; this file does not predict its own commit result.",
+  "intermediateCandidateFailure": {
+    "head": "83b06e6c5df399d7f745cf301a6276f94e503db5",
+    "status": "FAIL_LOCAL_FULL_GATE",
+    "reason": "Tracked coverage generation file accidentally included in evidence archive",
+    "correction": "Remove generated file from Git, preserve original artifact and compact reports; keep existing supply-chain rule unchanged",
+    "evidence": [
+      "release-remediation/candidate-b-archive-failure/run.json",
+      "release-remediation/candidate-b-archive-failure/supply-chain.txt"
+    ],
+    "subsequentHeadRequiresFreshCI": true
+  }
 }

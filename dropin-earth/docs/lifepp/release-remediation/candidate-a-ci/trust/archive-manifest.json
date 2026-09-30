@@ -151,11 +151,6 @@
       "sha256": "715c0d89cc832e05795ea4b54a66358184d5741c036057a63d4e3f5ed81eb3d1"
     },
     {
-      "originalArtifactPath": "artifacts/coverage/coverage-summary.json",
-      "archivedPath": "artifacts/coverage/coverage-summary.json",
-      "sha256": "f9c2a57443625aef1893471f6d4f73d6ab4e913f0f8ad62e461d7a4b50051e0c"
-    },
-    {
       "originalArtifactPath": "artifacts/reports/canopyproof-workerd-smoke.json",
       "archivedPath": "artifacts/reports/canopyproof-workerd-smoke.json",
       "sha256": "57ea3f28b3b5975d65983f81b1c786ba1d726e1fff1105d072371697dc42e869"
@@ -209,6 +204,14 @@
       "originalArtifactPath": "artifacts/reports/ci/canopyproof-supply-chain-gate.json",
       "archivedPath": "artifacts/reports/ci/canopyproof-supply-chain-gate.json",
       "sha256": "623ac2f1162675b1a00e1acb0cfc9ed0d6c7508b50a221a8a7f559a30be5ae3c"
+    }
+  ],
+  "omittedFromGit": [
+    {
+      "originalArtifactPath": "artifacts/coverage/coverage-summary.json",
+      "archivedPath": "artifacts/coverage/coverage-summary.json",
+      "sha256": "f9c2a57443625aef1893471f6d4f73d6ab4e913f0f8ad62e461d7a4b50051e0c",
+      "reason": "Repository policy prohibits tracked coverage generation directories. Original remains unchanged in the downloaded GitHub artifact and reports/lifepp-validation/remote-b4e3954/36665614889/artifact; coverage totals remain in candidate-a-ci.json and repository coverage report."
     }
   ]
 }
