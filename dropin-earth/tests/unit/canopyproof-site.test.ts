@@ -1,3 +1,4 @@
+import { renderedMetadata } from "../helpers/lifepp-metadata";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -74,7 +75,8 @@ test("CanopyProof SEO and crawler files are configured for canopyproof.org", () 
   const layout = read("apps/web/src/app/layout.tsx");
   const robots = read("apps/web/src/app/robots.ts");
   const sitemap = read("apps/web/src/app/sitemap.ts");
-  const publicSitemap = read("apps/web/public/sitemap.xml");
+  const productionMetadata = renderedMetadata(true);
+  const publicSitemap = productionMetadata.sitemap.map(item => `<loc>${item.url}</loc>`).join("\n");
 
   assert.match(layout, /CanopyProof — Environmental Accountability for Ecological Restoration/);
   assert.match(layout, /canonical: "https:\/\/canopyproof\.org"/);

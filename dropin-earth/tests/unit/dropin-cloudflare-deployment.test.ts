@@ -1,3 +1,4 @@
+import { renderedMetadata } from "../helpers/lifepp-metadata";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -153,15 +154,19 @@ test("Wrangler templates separate API proxy from OpenNext web worker safely", ()
 
 test("CanopyProof production metadata assets are present for OpenNext", () => {
   assert.equal(statSync(join(process.cwd(), "apps/web/src/app/sitemap.ts")).isFile(), true);
-  assert.equal(statSync(join(process.cwd(), "apps/web/public/sitemap.xml")).isFile(), true);
-  assert.equal(statSync(join(process.cwd(), "apps/web/public/robots.txt")).isFile(), true);
+  assert.equal(existsSync(join(process.cwd(), "apps/web/public/sitemap.xml")), false, "No duplicate public file may shadow the metadata route");
+  assert.equal(existsSync(join(process.cwd(), "apps/web/public/robots.txt")), false, "No duplicate public robots file");
   assert.equal(statSync(join(process.cwd(), "apps/web/public/icon.jpg")).isFile(), true);
   assert.equal(statSync(join(process.cwd(), "apps/web/public/apple-touch-icon.jpg")).isFile(), true);
   assert.equal(existsSync(join(process.cwd(), "apps/web/public/icon.svg")), false);
 
   const sitemapRoute = readFileSync(join(process.cwd(), "apps/web/src/app/sitemap.ts"), "utf8");
-  const publicSitemap = readFileSync(join(process.cwd(), "apps/web/public/sitemap.xml"), "utf8");
-  const robots = readFileSync(join(process.cwd(), "apps/web/public/robots.txt"), "utf8");
+  const productionMetadata = renderedMetadata(true);
+  const publicSitemap = productionMetadata.sitemap.map(item => `<loc>${item.url}</loc>`).join("\n");
+  const robots = `Sitemap: ${productionMetadata.robots.sitemap}`;
+  const previewMetadata = renderedMetadata(false);
+  assert.deepEqual(previewMetadata.sitemap, []);
+  assert.equal(previewMetadata.robots.rules[0]?.disallow, "/");
   const icon = readFileSync(join(process.cwd(), "apps/web/public/icon.jpg"));
   const appleIcon = readFileSync(join(process.cwd(), "apps/web/public/apple-touch-icon.jpg"));
 

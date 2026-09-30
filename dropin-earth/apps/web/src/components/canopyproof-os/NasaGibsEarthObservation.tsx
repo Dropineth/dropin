@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { MapboxOverlay } from "@deck.gl/mapbox";
+import { MapLibreOverlay } from "@deck.gl/maplibre";
 import { PolygonLayer } from "@deck.gl/layers";
-import maplibregl, { type Map as MapLibreMap } from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
+import { type Map as MapLibreMap } from "maplibre-gl";
 
 const apiBase = process.env.NEXT_PUBLIC_DROPIN_API_URL?.replace(/\/$/, "") ?? "/api";
 const connectorPath = "/canopyproof/terra/connectors/nasa-gibs";
@@ -388,10 +389,21 @@ function MapPane({ label, productId, tileTemplate }: {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const failureReportedRef = useRef(false);
+  const [rendererUnavailable, setRendererUnavailable] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const map = new maplibregl.Map({
+    // MapLibre 6 requires WebGL2. A blocked/unsupported renderer must leave a
+    // readable observation placeholder instead of taking down the whole panel.
+    let map: MapLibreMap;
+    try {
+      const probe = document.createElement("canvas").getContext("webgl2");
+      if (!probe) {
+        setRendererUnavailable(true);
+        return;
+      }
+      probe.getExtension("WEBGL_lose_context")?.loseContext();
+      map = new maplibregl.Map({
       container: containerRef.current,
       style: {
         version: 8,
@@ -402,8 +414,12 @@ function MapPane({ label, productId, tileTemplate }: {
       zoom: 4,
       attributionControl: false,
       cooperativeGestures: true,
-    });
-    const overlay = new MapboxOverlay({
+      });
+    } catch {
+      setRendererUnavailable(true);
+      return;
+    }
+    const overlay = new MapLibreOverlay({
       interleaved: true,
       layers: [new PolygonLayer({
         id: "project-review-bounds",
@@ -422,7 +438,7 @@ function MapPane({ label, productId, tileTemplate }: {
       void reportTileFailure(productId);
     };
     map.on("error", reportFirstFailure);
-    map.addControl(overlay as unknown as maplibregl.IControl);
+    map.addControl(overlay);
     mapRef.current = map;
     return () => {
       map.off("error", reportFirstFailure);
@@ -437,10 +453,16 @@ function MapPane({ label, productId, tileTemplate }: {
     const map = mapRef.current;
     if (!map) return;
     const applyTiles = () => {
-      if (map.getLayer("nasa-gibs-raster")) map.removeLayer("nasa-gibs-raster");
-      if (map.getSource("nasa-gibs-raster")) map.removeSource("nasa-gibs-raster");
+      const source = map.getSource<maplibregl.RasterTileSource>("nasa-gibs-raster");
+      if (source) {
+        source.setTiles([tileTemplate]);
+        return;
+      }
       map.addSource("nasa-gibs-raster", { type: "raster", tiles: [tileTemplate], tileSize: 256 });
-      map.addLayer({ id: "nasa-gibs-raster", type: "raster", source: "nasa-gibs-raster", paint: { "raster-fade-duration": 0 } });
+      // The adapter owns its custom layer's ID. Insert the imagery beneath it,
+      // then update the source in place so date changes preserve that order.
+      const boundaryLayerId = map.getLayersOrder().find((id) => map.getLayer(id)?.type === "custom");
+      map.addLayer({ id: "nasa-gibs-raster", type: "raster", source: "nasa-gibs-raster", paint: { "raster-fade-duration": 0 } }, boundaryLayerId);
     };
     if (map.loaded()) applyTiles();
     else map.once("load", applyTiles);
@@ -449,6 +471,13 @@ function MapPane({ label, productId, tileTemplate }: {
     };
   }, [tileTemplate]);
 
+  if (rendererUnavailable) {
+    return (
+      <div className="flex h-full min-h-[430px] w-full items-center justify-center bg-slate-950 p-6 text-sm text-slate-200" role="status">
+        <p>This browser cannot initialize WebGL2. The map is unavailable; observation metadata and source links remain available below.</p>
+      </div>
+    );
+  }
   return <div aria-label={label} className="h-full min-h-[430px] w-full" ref={containerRef} role="img" />;
 }
 

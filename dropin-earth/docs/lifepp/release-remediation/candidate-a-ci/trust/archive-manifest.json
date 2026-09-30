@@ -1,0 +1,217 @@
+{
+  "workflowRunId": 36665614889,
+  "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "obtainedVia": "gh run download from authorized GitHub Actions artifact",
+  "archivedAt": "2026-09-30T06:18:52.503690+00:00",
+  "note": "JSON/log/text evidence copied byte-for-byte; log extension renamed .txt. PNGs omitted here because candidate-a-local contains separately identified local captures. No older report substituted.",
+  "files": [
+    {
+      "originalArtifactPath": "coverage.log",
+      "archivedPath": "coverage.txt",
+      "sha256": "ca0643f6eab62b4ac0edc1b213fb7361329a68528c3da47ff03939c696827016"
+    },
+    {
+      "originalArtifactPath": "workerd-smoke.json",
+      "archivedPath": "workerd-smoke.json",
+      "sha256": "e6ece887eb915fdf2a63af2d6771a8ea9169b6f97f5ea88882c1cc6298172b73"
+    },
+    {
+      "originalArtifactPath": "critical-coverage.json",
+      "archivedPath": "critical-coverage.json",
+      "sha256": "5eb42c28558fb6815b93b10003db2c7edcafdb88ac5c46a8b3d76791e002631a"
+    },
+    {
+      "originalArtifactPath": "supply-chain.log",
+      "archivedPath": "supply-chain.txt",
+      "sha256": "d5fb3664679318514650c402bff2c4ca1a984572eae61c11bcd6474997e9ab08"
+    },
+    {
+      "originalArtifactPath": "workspace.json",
+      "archivedPath": "workspace.json",
+      "sha256": "42224852dee5092da8c429413e45811aec3d33e139cb88c54fb00b522ca175c4"
+    },
+    {
+      "originalArtifactPath": "pin-npm.log",
+      "archivedPath": "pin-npm.txt",
+      "sha256": "ca125e56179ae4e5aec2bd61e1ce441f5ef8c93d86efba2170e21aa9e88e4096"
+    },
+    {
+      "originalArtifactPath": "browsers.log",
+      "archivedPath": "browsers.txt",
+      "sha256": "2c3704e94fb8c2b9c9741cdb11520a18afd28b55d36fe47a89a908e16e0606cb"
+    },
+    {
+      "originalArtifactPath": "native-postgres.log",
+      "archivedPath": "native-postgres.txt",
+      "sha256": "e632be4ea1efd250a143102f7314fceb9142b4f7e73b73817d422f762390dcfd"
+    },
+    {
+      "originalArtifactPath": "artifact.log",
+      "archivedPath": "artifact.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "originalArtifactPath": "supply-chain.json",
+      "archivedPath": "supply-chain.json",
+      "sha256": "19381856720803a9941f4260d49556e4908f46672424a022e8aa1feec6b305d5"
+    },
+    {
+      "originalArtifactPath": "workspace.log",
+      "archivedPath": "workspace.txt",
+      "sha256": "2426d8710ce4297fea0a0b02c62bd17b2ac48a3d277cbeddc5b2884eb170c295"
+    },
+    {
+      "originalArtifactPath": "lifepp-workerd.json",
+      "archivedPath": "lifepp-workerd.json",
+      "sha256": "5b919022fcb1c1fc0d516071692b8c059ee4cff643c37a0fc0bd6442d36251e5"
+    },
+    {
+      "originalArtifactPath": "pin-npm.json",
+      "archivedPath": "pin-npm.json",
+      "sha256": "14c9781a5134c57a8a7de0344721047787aa6aa17742efcf373d6f1a5084ae15"
+    },
+    {
+      "originalArtifactPath": "webgl.log",
+      "archivedPath": "webgl.txt",
+      "sha256": "d2c8382f941d74d875d2f64cca5ae8dc7d0ab98b33342a349b617d4fafd5c2ea"
+    },
+    {
+      "originalArtifactPath": "lifepp-workerd.log",
+      "archivedPath": "lifepp-workerd.txt",
+      "sha256": "a100b5e3d66606b4a8ec3463686445640ae0bde964b4ef4cb04dc51484896834"
+    },
+    {
+      "originalArtifactPath": "browsers.json",
+      "archivedPath": "browsers.json",
+      "sha256": "d961ec3ccc4774277f8eb845f3427c716037d97ea9836281392bbf581be9d520"
+    },
+    {
+      "originalArtifactPath": "coverage.json",
+      "archivedPath": "coverage.json",
+      "sha256": "0502ff71d67610e0b4d3f9cd49f586dd8b86d112a3fdf4dc544bf6f2770764ad"
+    },
+    {
+      "originalArtifactPath": "critical-coverage.log",
+      "archivedPath": "critical-coverage.txt",
+      "sha256": "383f78c484af66e3dbfd00473b06700500c6bffb8badb3c36e93cb1fb7b2bc80"
+    },
+    {
+      "originalArtifactPath": "opennext.log",
+      "archivedPath": "opennext.txt",
+      "sha256": "847d479e9aa8dcc7851106082bbe371ac27ad2c384fc7dc6ce030bb1e3c2fa4f"
+    },
+    {
+      "originalArtifactPath": "workerd-smoke.log",
+      "archivedPath": "workerd-smoke.txt",
+      "sha256": "aa37496437ff699dfd7ad27fe012b292e17ee0254653d0651c681188311991d1"
+    },
+    {
+      "originalArtifactPath": "native-postgres.json",
+      "archivedPath": "native-postgres.json",
+      "sha256": "764aa3e500eea0c825e3f971b730f9a303f9b29722dc492418a6b3679f4fd912"
+    },
+    {
+      "originalArtifactPath": "opennext.json",
+      "archivedPath": "opennext.json",
+      "sha256": "6321d3aaeb8671404668f54e3df6d51d955ebdb291f04b17575303a067cd9689"
+    },
+    {
+      "originalArtifactPath": "webgl.json",
+      "archivedPath": "webgl.json",
+      "sha256": "a37be2ed9c7407364dbafe6bb7871085fa2a3493584cc1921e004188369c505c"
+    },
+    {
+      "originalArtifactPath": "install.log",
+      "archivedPath": "install.txt",
+      "sha256": "ea8d0b37cf9b1dbe410ee973a95239e704cefa8feb5d1c727806212c3927c89b"
+    },
+    {
+      "originalArtifactPath": "run.json",
+      "archivedPath": "run.json",
+      "sha256": "dac79fa0058627a17a219503a198cee7e0b467ace67f898917b39fa657d97d37"
+    },
+    {
+      "originalArtifactPath": "install.json",
+      "archivedPath": "install.json",
+      "sha256": "ecf411b7d7753660bbf6df71396a841b56decabbccc10c71fde9b0127a603996"
+    },
+    {
+      "originalArtifactPath": "artifact.json",
+      "archivedPath": "artifact.json",
+      "sha256": "511e3e22829757f1e418a24afc93335afe430f38dff071e02e0c48c903298f45"
+    },
+    {
+      "originalArtifactPath": "browser-workerd/maplibre-browser.json",
+      "archivedPath": "browser-workerd/maplibre-browser.json",
+      "sha256": "5d742a1e82bc189a7fc7217d4bc3739c566a059e37420df6fdf428a4d4ccfbb6"
+    },
+    {
+      "originalArtifactPath": "browser-workerd/browser-report.json",
+      "archivedPath": "browser-workerd/browser-report.json",
+      "sha256": "715c0d89cc832e05795ea4b54a66358184d5741c036057a63d4e3f5ed81eb3d1"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/canopyproof-workerd-smoke.json",
+      "archivedPath": "artifacts/reports/canopyproof-workerd-smoke.json",
+      "sha256": "57ea3f28b3b5975d65983f81b1c786ba1d726e1fff1105d072371697dc42e869"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/npm-audit-moderate.json",
+      "archivedPath": "artifacts/reports/npm-audit-moderate.json",
+      "sha256": "db53dab957789b9af5ba347a02f946f18e7bfcaa2ce70e467dc93face43a5abe"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/canopyproof-cross-browser-webgl.md",
+      "archivedPath": "artifacts/reports/canopyproof-cross-browser-webgl.md",
+      "sha256": "e8dfe4e37c73fba10fd2024e669661c1aa55990f305958bdd95252c3800d587c"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/canopyproof-critical-coverage.json",
+      "archivedPath": "artifacts/reports/canopyproof-critical-coverage.json",
+      "sha256": "63515591e2f7477ca0d21e59e54af5d69735b6ca2aecfb4422cff485cca01f09"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/canopyproof-critical-coverage.md",
+      "archivedPath": "artifacts/reports/canopyproof-critical-coverage.md",
+      "sha256": "be2a83e9ff887b9bf9b5bcb868e76d91218f520f508abd53cf781d9c522596b8"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/canopyproof-repository-coverage.json",
+      "archivedPath": "artifacts/reports/canopyproof-repository-coverage.json",
+      "sha256": "12e1a76c5a3f012477263ce1d1c7f83088fd9b021ba099eae23f1dfc7000b7e9"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/canopyproof-repository-coverage.md",
+      "archivedPath": "artifacts/reports/canopyproof-repository-coverage.md",
+      "sha256": "3e15c9f530d256be757db2ee5b23198322c0d3cdcad9cbd3226582f19b96de75"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/canopyproof-cross-browser-webgl.json",
+      "archivedPath": "artifacts/reports/canopyproof-cross-browser-webgl.json",
+      "sha256": "fbe4f6bb18cc647e5734c38964fdbdab7e70e9211ae53a550977d6a4de50c2b5"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/ci/canopyproof-sbom.cdx.json",
+      "archivedPath": "artifacts/reports/ci/canopyproof-sbom.cdx.json",
+      "sha256": "1aa2f2e16c9ff0aa34aaa45439ed9b9fd6d28e27c5e789ae7f4cdb59aded7eff"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/ci/canopyproof-coverage.txt",
+      "archivedPath": "artifacts/reports/ci/canopyproof-coverage.txt",
+      "sha256": "ca0643f6eab62b4ac0edc1b213fb7361329a68528c3da47ff03939c696827016"
+    },
+    {
+      "originalArtifactPath": "artifacts/reports/ci/canopyproof-supply-chain-gate.json",
+      "archivedPath": "artifacts/reports/ci/canopyproof-supply-chain-gate.json",
+      "sha256": "623ac2f1162675b1a00e1acb0cfc9ed0d6c7508b50a221a8a7f559a30be5ae3c"
+    }
+  ],
+  "omittedFromGit": [
+    {
+      "originalArtifactPath": "artifacts/coverage/coverage-summary.json",
+      "archivedPath": "artifacts/coverage/coverage-summary.json",
+      "sha256": "f9c2a57443625aef1893471f6d4f73d6ab4e913f0f8ad62e461d7a4b50051e0c",
+      "reason": "Repository policy prohibits tracked coverage generation directories. Original remains unchanged in the downloaded GitHub artifact and reports/lifepp-validation/remote-b4e3954/36665614889/artifact; coverage totals remain in candidate-a-ci.json and repository coverage report."
+    }
+  ]
+}

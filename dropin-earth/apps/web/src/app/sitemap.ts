@@ -1,3 +1,4 @@
+import { lifeRoutes, isProductionSite } from "../data/life/navigation";
 import type { MetadataRoute } from "next";
 
 const routes = [
@@ -18,9 +19,10 @@ const routes = [
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return routes.map((route) => ({
-    url: `https://canopyproof.org${route}`,
-    lastModified: new Date("2026-05-17T00:00:00.000Z"),
+  if (!isProductionSite) return [];
+  return [...routes, ...lifeRoutes, ...lifeRoutes.map(route => `/en${route}`)].map((route) => ({
+    url: `https://canopyproof.org${route || "/"}`,
+    ...(lifeRoutes.includes(route.replace(/^\/en/, "")) ? { alternates: { languages: { "zh-CN": `https://canopyproof.org${route.replace(/^\/en/, "")}`, en: `https://canopyproof.org/en${route.replace(/^\/en/, "")}` } } } : { lastModified: new Date("2026-05-17T00:00:00.000Z") }),
     changeFrequency: route === "" ? "weekly" : "monthly",
     priority: route === "" ? 1 : 0.7,
   }));

@@ -1,0 +1,5 @@
+
+> dropin-earth-monorepo@0.1.0 gate:supply-chain
+> node scripts/canopyproof-supply-chain-gate.mjs
+
+{"status":"PASS","candidateSha":"b4e3954d89c61484ea90435129229230a03e3abf","components":720,"secretFindings":0,"trackedGeneratedArtifacts":0}

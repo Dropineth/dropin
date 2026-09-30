@@ -1,0 +1,29 @@
+{
+  "head": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "runId": 36659734752,
+  "jobId": 109711614967,
+  "url": "https://github.com/Dropineth/dropin/actions/runs/36659734752",
+  "failedCommand": "npm run audit",
+  "status": "FAIL",
+  "source": "Exact audit JSON extracted from GitHub job log; timestamps removed without changing JSON fields.",
+  "auditMetadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 5,
+      "high": 12,
+      "critical": 2,
+      "total": 19
+    },
+    "dependencies": {
+      "prod": 222,
+      "dev": 593,
+      "optional": 109,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 822
+    }
+  },
+  "observedFailure": "2026-09-30T02:31:39.4373467Z",
+  "priorLocalReportsPreserved": true
+}

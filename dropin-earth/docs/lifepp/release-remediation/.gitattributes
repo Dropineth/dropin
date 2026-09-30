@@ -1,0 +1,2 @@
+# Preserve archived command output bytes and their recorded SHA-256.
+*.txt -text

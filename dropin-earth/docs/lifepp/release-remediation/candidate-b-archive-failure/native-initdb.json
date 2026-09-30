@@ -1,0 +1,25 @@
+{
+  "startedAt": "2026-09-30T06:33:50.206229+00:00",
+  "finishedAt": "2026-09-30T06:33:50.534334+00:00",
+  "command": [
+    "/opt/homebrew/bin/initdb",
+    "-D",
+    "/var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-native-83b06e6-_dzghdj9/data",
+    "-L",
+    "/opt/homebrew/Cellar/postgresql@17/17.10/share/postgresql",
+    "--auth-local=trust",
+    "--auth-host=trust",
+    "-U",
+    "canopyproof_ci",
+    "--locale=C",
+    "--encoding=UTF8",
+    "-c",
+    "timezone=UTC",
+    "-c",
+    "log_timezone=UTC"
+  ],
+  "exitCode": 1,
+  "stdout": "The files belonging to this database system will be owned by user \"lee\".\nThis user must also own the server process.\n\nThe database cluster will be initialized with locale \"C\".\nThe default text search configuration will be set to \"english\".\n\nData page checksums are disabled.\n\ncreating directory /var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-native-83b06e6-_dzghdj9/data ... ok\ncreating subdirectories ... ok\nselecting dynamic shared memory implementation ... posix\nselecting default \"max_connections\" ... 25\nselecting default \"shared_buffers\" ... 400kB\nselecting default time zone ... Asia/Hong_Kong\ncreating configuration files ... ok\nrunning bootstrap script ... ",
+  "stderr": "2026-09-30 06:33:50.529 GMT [69948] LOG:  could not open directory \"/opt/homebrew/share/postgresql@17/timezone\": No such file or directory\n2026-09-30 06:33:50.529 GMT [69948] LOG:  invalid value for parameter \"log_timezone\": \"UTC\"\n2026-09-30 06:33:50.529 GMT [69948] LOG:  could not open directory \"/opt/homebrew/share/postgresql@17/timezone\": No such file or directory\n2026-09-30 06:33:50.529 GMT [69948] LOG:  invalid value for parameter \"TimeZone\": \"UTC\"\n2026-09-30 06:33:50.530 GMT [69948] FATAL:  configuration file \"/var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-native-83b06e6-_dzghdj9/data/postgresql.conf\" contains errors\nchild process exited with exit code 1\ninitdb: removing data directory \"/var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-native-83b06e6-_dzghdj9/data\"\n",
+  "root": "/var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-native-83b06e6-_dzghdj9"
+}

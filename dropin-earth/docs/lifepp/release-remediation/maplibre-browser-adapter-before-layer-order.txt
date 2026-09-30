@@ -1,0 +1,9 @@
+AssertionError [ERR_ASSERTION]: the cyan project boundary must actually render above the synthetic raster
+    at main (/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/tests/browser/maplibre-remediation.spec.ts:102:14) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}

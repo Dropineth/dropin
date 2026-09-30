@@ -1,6 +1,8 @@
+import { isProductionSite } from "../data/life/navigation";
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
+  if (!isProductionSite) return { rules: [{ userAgent: "*", disallow: "/" }] };
   return {
     rules: [
       {

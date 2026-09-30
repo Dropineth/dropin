@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "collectedAt": "2026-09-30T02:52:04.657Z",
+  "scope": "Read-only GitHub metadata; secret values were neither read nor emitted. Environment reviewer metadata is minimized to required public logins.",
+  "priorCombinedQueries": [
+    {
+      "key": "staging_branch_policy_and_environment_first",
+      "output": "Get \"https://api.github.com/repos/Dropineth/dropin/environments/canopyproof-staging\": EOF\n{\"branch_policies\":[{\"id\":55902307,\"name\":\"main\",\"node_id\":\"MDE2OkdhdGVCcmFuY2hQb2xpY3k1NTkwMjMwNw==\",\"type\":\"branch\"}],\"total_count\":1}\n"
+    },
+    {
+      "key": "staging_environment_variables_and_secret_names_first",
+      "output": "Get \"https://api.github.com/repos/Dropineth/dropin/environments/canopyproof-staging/secrets\": EOF\n{\"total_count\":0,\"variables\":[]}\n"
+    }
+  ],
+  "queries": [
+    {
+      "key": "pr3_cli",
+      "requestedAt": "2026-09-30T02:47:39.880Z",
+      "command": "gh api repos/Dropineth/dropin/pulls/3 --jq '{number,title,state,draft,merged_at,merge_commit_sha,html_url,updated_at,base:{ref:.base.ref,sha:.base.sha},head:{ref:.head.ref,sha:.head.sha,repository:.head.repo.full_name},labels:[.labels[].name]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/pulls/3\": EOF"
+    },
+    {
+      "key": "pr3_retry_final",
+      "requestedAt": "2026-09-30T02:48:29.110Z",
+      "command": "gh api repos/Dropineth/dropin/pulls/3 --jq '{number,title,state,draft,merged_at,html_url,updated_at,base:{ref:.base.ref,sha:.base.sha},head:{ref:.head.ref,sha:.head.sha,repository:.head.repo.full_name},labels:[.labels[].name]}'",
+      "status": "observed",
+      "exitCode": 0,
+      "metadata": {
+        "base": {
+          "ref": "main",
+          "sha": "15025bc03456d605f1ccbd529a8d66b0f1f8d3f8"
+        },
+        "draft": false,
+        "head": {
+          "ref": "canopyproof/staging-control-plane",
+          "repository": "Dropineth/dropin",
+          "sha": "2dfc98d4af18d33bcd3e91403aa2777d61aea2f6"
+        },
+        "html_url": "https://github.com/Dropineth/dropin/pull/3",
+        "labels": [],
+        "merged_at": null,
+        "number": 3,
+        "state": "open",
+        "title": "chore(canopyproof): add protected staging deployment control plane",
+        "updated_at": "2026-08-11T12:15:53Z"
+      }
+    },
+    {
+      "key": "staging_environment_retry",
+      "requestedAt": "2026-09-30T02:47:39.884Z",
+      "command": "gh api repos/Dropineth/dropin/environments/canopyproof-staging --jq '{name,protection_rules,deployment_branch_policy}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/environments/canopyproof-staging\": EOF"
+    },
+    {
+      "key": "environment_list",
+      "requestedAt": "2026-09-30T02:48:29.110Z",
+      "command": "gh api repos/Dropineth/dropin/environments --jq '{total_count,environments:[.environments[]|select(.name==\"canopyproof-staging\" or .name==\"canopyproof-production\")|{name,protection_rules,deployment_branch_policy}]}'",
+      "status": "observed",
+      "exitCode": 0,
+      "metadata": {
+        "environments": [
+          {
+            "name": "canopyproof-production",
+            "deployment_branch_policy": null,
+            "protection_rules": [
+              {
+                "type": "required_reviewers",
+                "prevent_self_review": true,
+                "reviewers": [
+                  {
+                    "type": "User",
+                    "login": "poccahin"
+                  },
+                  {
+                    "type": "User",
+                    "login": "Dropineth"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "canopyproof-staging",
+            "deployment_branch_policy": {
+              "custom_branch_policies": true,
+              "protected_branches": false
+            },
+            "protection_rules": [
+              {
+                "type": "required_reviewers",
+                "prevent_self_review": true,
+                "reviewers": [
+                  {
+                    "type": "User",
+                    "login": "Dropineth"
+                  },
+                  {
+                    "type": "User",
+                    "login": "xiruier"
+                  }
+                ]
+              },
+              {
+                "type": "branch_policy"
+              }
+            ]
+          }
+        ],
+        "total_count": 2
+      }
+    },
+    {
+      "key": "staging_secrets_retry",
+      "requestedAt": "2026-09-30T02:47:39.884Z",
+      "command": "gh api repos/Dropineth/dropin/environments/canopyproof-staging/secrets --jq '{total_count,secrets:[.secrets[]|{name,created_at,updated_at}]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/environments/canopyproof-staging/secrets\": EOF"
+    },
+    {
+      "key": "environment_secret_names_final",
+      "requestedAt": "2026-09-30T02:49:13.605Z",
+      "command": "gh api repos/Dropineth/dropin/environments/canopyproof-staging/secrets --jq '{total_count,secrets:[.secrets[]|{name,created_at,updated_at}]}'",
+      "status": "observed",
+      "exitCode": 0,
+      "metadata": {
+        "secrets": [
+          {
+            "created_at": "2026-07-29T06:30:53Z",
+            "name": "CLOUDFLARE_ACCOUNT_ID",
+            "updated_at": "2026-07-29T06:30:53Z"
+          },
+          {
+            "created_at": "2026-07-29T06:25:14Z",
+            "name": "CLOUDFLARE_API_TOKEN",
+            "updated_at": "2026-07-29T06:25:14Z"
+          }
+        ],
+        "total_count": 2
+      }
+    },
+    {
+      "key": "repo_public_variable_names",
+      "requestedAt": "2026-09-30T02:47:39.884Z",
+      "command": "gh api repos/Dropineth/dropin/actions/variables --jq '{total_count,variables:[.variables[]|{name,created_at,updated_at}]}'",
+      "status": "observed",
+      "exitCode": 0,
+      "metadata": {
+        "total_count": 0,
+        "variables": []
+      }
+    },
+    {
+      "key": "repository_identity",
+      "requestedAt": "2026-09-30T02:48:29.110Z",
+      "command": "gh api repos/Dropineth/dropin --jq '{full_name,visibility,default_branch,owner:{login:.owner.login,type:.owner.type}}'",
+      "status": "observed",
+      "exitCode": 0,
+      "metadata": {
+        "default_branch": "main",
+        "full_name": "Dropineth/dropin",
+        "owner": {
+          "login": "Dropineth",
+          "type": "User"
+        },
+        "visibility": "public"
+      }
+    },
+    {
+      "key": "repo_secret_names",
+      "requestedAt": "2026-09-30T02:49:13.605Z",
+      "command": "gh api repos/Dropineth/dropin/actions/secrets --jq '{total_count,secrets:[.secrets[]|{name,created_at,updated_at}]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/actions/secrets\": EOF"
+    },
+    {
+      "key": "repo_secret_names_retry",
+      "requestedAt": "2026-09-30T02:50:11.465Z",
+      "command": "gh api repos/Dropineth/dropin/actions/secrets --jq '{total_count,secrets:[.secrets[]|{name,created_at,updated_at}]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/actions/secrets\": EOF"
+    },
+    {
+      "key": "staging_workflow_metadata",
+      "requestedAt": "2026-09-30T02:48:29.110Z",
+      "command": "gh api repos/Dropineth/dropin/actions/workflows/deploy-canopyproof-staging.yml --jq '{id,name,path,state,created_at,updated_at,html_url}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/actions/workflows/deploy-canopyproof-staging.yml\": EOF"
+    },
+    {
+      "key": "workflow_catalog",
+      "requestedAt": "2026-09-30T02:49:13.605Z",
+      "command": "gh api 'repos/Dropineth/dropin/actions/workflows?per_page=100' --jq '{total_count,workflows:[.workflows[]|select(.path==\".github/workflows/deploy-canopyproof-staging.yml\")|{id,name,path,state,created_at,updated_at,html_url}]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/actions/workflows?per_page=100\": EOF"
+    },
+    {
+      "key": "workflow_catalog_retry",
+      "requestedAt": "2026-09-30T02:50:11.465Z",
+      "command": "gh api 'repos/Dropineth/dropin/actions/workflows?per_page=100' --jq '{total_count,workflows:[.workflows[]|select(.path==\".github/workflows/deploy-canopyproof-staging.yml\")|{id,name,path,state,created_at,updated_at,html_url}]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/actions/workflows?per_page=100\": EOF"
+    },
+    {
+      "key": "staging_runs",
+      "requestedAt": "2026-09-30T02:47:39.884Z",
+      "command": "gh api 'repos/Dropineth/dropin/actions/workflows/deploy-canopyproof-staging.yml/runs?per_page=10' --jq '{total_count,workflow_runs:[.workflow_runs[]|{id,event,status,conclusion,head_branch,head_sha,created_at,updated_at,html_url}]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/actions/workflows/deploy-canopyproof-staging.yml/runs?per_page=10\": EOF"
+    },
+    {
+      "key": "staging_runs_retry",
+      "requestedAt": "2026-09-30T02:49:13.605Z",
+      "command": "gh api 'repos/Dropineth/dropin/actions/workflows/deploy-canopyproof-staging.yml/runs?per_page=10' --jq '{total_count,workflow_runs:[.workflow_runs[]|{id,event,status,conclusion,head_branch,head_sha,created_at,updated_at,html_url}]}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/actions/workflows/deploy-canopyproof-staging.yml/runs?per_page=10\": EOF"
+    },
+    {
+      "key": "staging_deployments",
+      "requestedAt": "2026-09-30T02:47:39.884Z",
+      "command": "gh api 'repos/Dropineth/dropin/deployments?environment=canopyproof-staging&per_page=10' --jq '[.[]|{id,sha,ref,environment,created_at,updated_at,statuses_url,transient_environment,production_environment}]'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/deployments?environment=canopyproof-staging&per_page=10\": EOF"
+    },
+    {
+      "key": "staging_deployments_retry",
+      "requestedAt": "2026-09-30T02:49:13.605Z",
+      "command": "gh api 'repos/Dropineth/dropin/deployments?environment=canopyproof-staging&per_page=10' --jq '[.[]|{id,sha,ref,environment,created_at,updated_at,statuses_url,transient_environment,production_environment}]'",
+      "status": "observed",
+      "exitCode": 0,
+      "metadata": []
+    },
+    {
+      "key": "staging_main_source",
+      "requestedAt": "2026-09-30T02:48:29.110Z",
+      "command": "gh api 'repos/Dropineth/dropin/contents/.github/workflows/deploy-canopyproof-staging.yml?ref=main' --jq '{path,sha,size,html_url}'",
+      "status": "unverified_transport_failure",
+      "exitCode": 1,
+      "error": "Get \"https://api.github.com/repos/Dropineth/dropin/contents/.github/workflows/deploy-canopyproof-staging.yml?ref=main\": EOF"
+    },
+    {
+      "key": "staging_main_source_retry",
+      "requestedAt": "2026-09-30T02:50:11.465Z",
+      "command": "gh api 'repos/Dropineth/dropin/contents/.github/workflows/deploy-canopyproof-staging.yml?ref=main' --jq '{path,sha,size,html_url}'",
+      "status": "observed",
+      "exitCode": 0,
+      "metadata": {
+        "html_url": "https://github.com/Dropineth/dropin/blob/main/.github/workflows/deploy-canopyproof-staging.yml",
+        "path": ".github/workflows/deploy-canopyproof-staging.yml",
+        "sha": "0742460bb862e86beb8ac4f4f36c7b1da079af73",
+        "size": 11646
+      }
+    }
+  ],
+  "notes": [
+    "PR3 base.sha is PR-associated metadata, not a fresh refs/heads/main observation.",
+    "Empty GitHub environment deployment results do not establish absence of Cloudflare resources.",
+    "Transport EOF does not mean permission denial or absence of configuration."
+  ]
+}

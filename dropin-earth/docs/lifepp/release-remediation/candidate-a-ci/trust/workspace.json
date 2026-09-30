@@ -1,0 +1,46 @@
+{
+  "id": "workspace",
+  "command": [
+    "npm",
+    "run",
+    "ci"
+  ],
+  "startedAt": "2026-09-30T03:43:39.403Z",
+  "status": "PASS",
+  "before": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:43:39.542Z"
+  },
+  "commandExitCode": 0,
+  "exitCode": 0,
+  "signal": null,
+  "logSha256": "2426d8710ce4297fea0a0b02c62bd17b2ac48a3d277cbeddc5b2884eb170c295",
+  "after": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:49:48.786Z"
+  },
+  "artifacts": [
+    {
+      "path": "reports/npm-audit-moderate.json",
+      "sha256": "db53dab957789b9af5ba347a02f946f18e7bfcaa2ce70e467dc93face43a5abe",
+      "capturedAt": "2026-09-30T03:49:48.786Z"
+    }
+  ],
+  "finishedAt": "2026-09-30T03:49:48.786Z"
+}

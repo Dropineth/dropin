@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "generatedAt": "2026-09-30T03:40:49.860Z",
+  "candidateSha": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "candidateTree": "2755447ebe31c8c0087d911adbe822bf39a361c4",
+  "lockfileSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+  "dependencyTree": {
+    "name": "dropin-earth-monorepo",
+    "version": "0.1.0",
+    "status": "PASS"
+  },
+  "sbom": {
+    "format": "CycloneDX",
+    "specVersion": "1.5",
+    "components": 716,
+    "sha256": "7c1628b6a0d99ffebbdd4e7b921ca394cbe8f1ead8abb25c012b2169e70a947c"
+  },
+  "trackedFilesScanned": 1026,
+  "secretFindings": 0,
+  "trackedGeneratedArtifacts": 0,
+  "privateSigningKeyIntroduced": false
+}

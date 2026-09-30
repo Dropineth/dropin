@@ -1,0 +1,12 @@
+
+> @dropin/web@0.1.0 typecheck
+> tsc --noEmit
+
+src/components/canopyproof-os/NasaGibsEarthObservation.tsx(6,8): error TS1192: Module '"/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/apps/web/node_modules/maplibre-gl/dist/maplibre-gl"' has no default export.
+npm error Lifecycle script `typecheck` failed with error:
+npm error code 2
+npm error path /Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/apps/web
+npm error workspace @dropin/web@0.1.0
+npm error location /Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/apps/web
+npm error command failed
+npm error command sh -c tsc --noEmit

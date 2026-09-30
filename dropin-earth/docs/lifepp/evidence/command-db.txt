@@ -1,0 +1,82 @@
+
+> dropin-earth-monorepo@0.1.0 predb:verify:canopyproof
+> npm run prisma:generate:test
+
+
+> dropin-earth-monorepo@0.1.0 prisma:generate:test
+> npm --workspace services/api run generate
+
+
+> @dropin/api@0.1.0 generate
+> PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema prisma/schema.prisma
+
+Prisma schema loaded from prisma/schema.prisma
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.3 -> 8.0.0-rc.19                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 183ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+> dropin-earth-monorepo@0.1.0 db:verify:canopyproof
+> node --test --test-concurrency=1 --import tsx tests/integration/canopyproof-postgres-audit.integration.ts tests/integration/canopyproof-trust-registry-pglite.integration.ts tests/integration/canopyproof-evidence-verification-pglite.integration.ts tests/integration/canopyproof-evidence-custody-pglite.integration.ts tests/integration/canopyproof-device-attestation-adapter-pglite.integration.ts tests/integration/canopyproof-evidence-media-pglite.integration.ts tests/integration/canopyproof-visual-evidence-pglite.integration.ts tests/integration/canopyproof-nasa-gibs-pglite.integration.ts tests/integration/canopyproof-mrv-graph-pglite.integration.ts tests/integration/canopyproof-global-command-center-pglite.integration.ts tests/integration/canopyproof-global-command-center-spatial-disclosure-pglite.integration.ts tests/integration/canopyproof-mobile-sync-admission-pglite.integration.ts tests/integration/canopyproof-funding-accountability-pglite.integration.ts tests/integration/canopyproof-early-warning-pglite.integration.ts tests/integration/canopyproof-organization-lifecycle-pglite.integration.ts tests/integration/canopyproof-organization-accreditation-pglite.integration.ts tests/integration/canopyproof-root-governance-pglite.integration.ts tests/integration/canopyproof-project-lifecycle-pglite.integration.ts
+
+✔ E1a PostgreSQL authority is append-only, RLS-bound, root-parity checked, and restart-safe (1700.086917ms)
+✔ E1a rollback removes only an unused authority (1006.060375ms)
+✔ early-warning PostgreSQL authority is atomic, tenant-bound, fail-closed, and replayable (1337.827542ms)
+✔ early-warning rollback removes only an empty authority (870.361834ms)
+✔ CanopyProof evidence custody facts remain immutable, replayable, and transactionally bound (1285.643875ms)
+✔ CanopyProof evidence media custody is append-only, tenant-bound, and restart-safe (2263.161291ms)
+✔ CanopyProof evidence verification, final decision, challenge, resolution, and correction persist as one append-only authority stream (2648.975375ms)
+✔ Environmental Proof, public transparency, ESG metric, and report rollbacks remove only empty route-closed authorities (1054.189292ms)
+✔ funding accountability PostgreSQL authority is atomic, tenant-bound, fail-closed, and replayable (1213.263333ms)
+✔ funding accountability rollback removes only an empty authority (963.20025ms)
+✔ Global Command Center governed PostgreSQL publication is atomic, replayable, and append-only (1167.902875ms)
+✔ Global spatial disclosure PostgreSQL authority is atomic, tenant-bound, withdrawable, and replayable (1189.402416ms)
+✔ mobile sync admission SQL preserves root parity, append-only denial facts, and tenant isolation (1119.55075ms)
+✔ mobile sync admission rollback removes an unused contract (855.841833ms)
+✔ Digital MRV PostgreSQL authority commits, retries, replays, and rejects source-root substitution (1189.871084ms)
+✔ NASA GIBS PostgreSQL adapter persists append-only snapshots and tenant-bound interpretation records (1194.426958ms)
+✔ NASA GIBS rollback removes only an empty connector schema (875.428334ms)
+✔ organization accreditation authority is deterministic, append-only, tenant-bound, and replayable (1248.909042ms)
+✔ current membership drift rejects atomically without orphan event or receipt (906.7625ms)
+✔ revocation remains terminal after durable replay (935.819958ms)
+✔ empty organization accreditation migration rolls back without touching base schemas (869.085958ms)
+✔ organization lifecycle PostgreSQL authority is deterministic, append-only, tenant-bound, and replayable (1269.164416ms)
+✔ revoked or stale governance accreditation fails closed inside the database transaction (1004.216334ms)
+✔ registration reference drift is rejected inside the database transaction (927.50825ms)
+✔ organization lifecycle migration rollback removes only route-closed authority objects (857.4265ms)
+✔ CanopyProof PostgreSQL contract loads idempotently and emits independently replayable audit streams (1258.944708ms)
+✔ project lifecycle PostgreSQL authority is deterministic, append-only, tenant-bound, and replayable (1261.205208ms)
+✔ project lifecycle current authority drift rejects atomically (936.446292ms)
+✔ canonical project lifecycle source resolver commits only current governed registration authority (960.222875ms)
+✔ project lifecycle challenge remains adverse until an independent restore is committed (961.236875ms)
+✔ project lifecycle serializes competing transitions and preserves one canonical successor (971.078417ms)
+✔ project lifecycle migration is reversible only before durable facts exist (957.723166ms)
+✔ root governance persists a signed independent quorum with deterministic SQL parity (1272.879708ms)
+✔ current council membership drift rejects atomically (1000.442459ms)
+✔ durable succession requires both predecessor and successor council quorums (1007.610459ms)
+✔ empty root governance migration rolls back without touching base governance (876.488584ms)
+✔ CanopyProof trust registry reconstructs agreement, access, and export governance through PostgreSQL (2624.053084ms)
+✔ CanopyProof project lifecycle authority is append-only, governed, and replayable through PostgreSQL (1140.840167ms)
+✔ CanopyProof governed methodology and proof-policy authority are canonical, append-only, and restart-safe through PostgreSQL (1115.824916ms)
+✔ visual authority persists through the canonical Trust Kernel transaction and audit stream (1216.296833ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 51769.994

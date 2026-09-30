@@ -1,0 +1,22 @@
+# R3 first candidate failure and correction
+
+Candidate `1bd9416e9c4b2bb004f8d627030d4237fa44e609` is **NOT ACCEPTED**. Both complete runs retained their failure; no old green report replaces them.
+
+- [Trust Gate 36703007035](https://github.com/Dropineth/dropin/actions/runs/36703007035): clean install, supply chain, workspace (883/883 units, 40/40 PGlite/integration, raw audit zero), native PostgreSQL 2/2, unchanged coverage gates, original three-engine matrix, OpenNext build/artifact and workerd route smoke passed. Life++ workerd failed on lazy-image decoding and the desktop ecology hero overflow, so the overall gate failed.
+- [Life++ 36703007028](https://github.com/Dropineth/dropin/actions/runs/36703007028): clean install, types, lint, Life++ units/build, viewer/consultation fixtures and all three floorplan fixtures passed. Full browser runs failed: Chromium143 passed/7 failed; Firefox132/18; WebKit144/6. These are failed runs, not partial acceptance.
+- [Original Life++ artifact](https://github.com/Dropineth/dropin/actions/runs/36703007028/artifacts/11091520785): ZIP SHA-256 `f22f9e65c821e8e984e7851c44c487497010f9984f7aa58b0fc18c83cb985755`, advertised size165405201 bytes.
+- [Original Trust artifact](https://github.com/Dropineth/dropin/actions/runs/36703007035/artifacts/11091232619): ZIP SHA-256 `f415d3068899af12bf961625b6b4e09e23bd7afd2efb441f425aecc037bb7d1b`, advertised size56255916 bytes.
+
+The original job logs were read through the authorized GitHub connector and preserved locally, including failure details. GitHub advertised artifact digests are not claimed as locally recomputed ZIP digests: the local download attempts failed with transport EOF; an expiring connector copy URL returned403, with no bypass. The original artifacts remain on GitHub until2026-10-30. Later successful downloads can separately establish byte verification.
+
+## Corrective changes
+
+1. **Actual ecology layout defect:** centered desktop grid children retained their intrinsic width and could extend left of the viewport. Constrain each hero child to its grid track and use a bounded headline size/wrapping. Keep original copy, logo, globe, links, sections and sample boundaries. Local three-engine checks at375/1440 now place all observed hero/panel bounds inside the viewport; the parent visually inspected the1440 fixed view.
+2. **Lazy-image test race:** native lazy loading starts asynchronously after scrolling. The capture helper now waits up to10 seconds for actual load completion and positive dimensions before calling `decode()`. It still fails broken/missing/undecodable images and does not change `loading`, replace assets, ignore errors. A local three-engine375/1440 diagnostic loaded and decoded actual homepage/center images successfully.
+3. **Incorrect touch capability proxy:** Firefox/WebKit in this runtime expose `maxTouchPoints=0` even while Playwright native taps emit trusted `touchstart` events. The test now requires both real navigation taps to emit `isTrusted=true`, exactly one touch, and reach the correct routes. It does not fake navigator or DOM events, remove mobile cases or infer physical-device acceptance.
+4. **Firefox DPR configuration:** its context scale option left observed DPR at1. The640-CSS-pixel reflow case now starts a separate Firefox instance with native `layout.css.devPixelsPerPx=2.0`; observed DPR2 was reproduced locally. The existing DPR2 assertion stays. This is still an explicitly labeled reflow alternative, not native200% zoom or real-phone proof.
+5. **Page isolation for visual routing:** a fresh page per route retains the shared profile context/cache but separates cancelled prefetch errors from the preceding hard navigation. All runtime/CSP/hydration assertions remain; no error string is ignored. Full same-candidate browser runs must prove the correction, including WebKit.
+
+No threshold, required command, engine, width, page or original browser scenario is removed. The subsequent commit requires both entire workflows again; the successful portions of1bd9416 cannot accept the corrected HEAD. Independent review, actual scene readiness, real receiving, public preview and production approval remain open.
+
+Correction precommit checks: full `npm test`883/883, web typecheck and scoped ESLint passed under Node22.22.3/npm10.9.4. The revised touch-event and Firefox DPR behavior was observed in native Playwright diagnostics; the full compiled matrix remains pending the next commit.

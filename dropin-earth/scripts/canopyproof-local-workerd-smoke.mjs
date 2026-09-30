@@ -35,7 +35,7 @@ const rawCoordinatePatterns = Object.freeze([
   /\b-17\.4677\b/u,
 ]);
 
-export async function validateWorkerdResponse(path, response) {
+export async function validateWorkerdResponse(path, response, { preview = false } = {}) {
   const expected = WORKERD_ROUTE_CHECKS.find(
     ([candidate]) => candidate === path,
   )?.[1];
@@ -71,7 +71,12 @@ export async function validateWorkerdResponse(path, response) {
   if (path === "/" && !/CanopyProof/iu.test(body)) {
     throw new Error("Workerd homepage does not contain CanopyProof HTML.");
   }
-  if (path === "/sitemap.xml") {
+  if (preview && (path === "/sitemap.xml" || path === "/robots.txt")) {
+    if (!(response.headers.get("x-robots-tag") ?? "").includes("noindex")) throw new Error("Preview metadata must have noindex headers.");
+    if (path === "/sitemap.xml" && /<loc>/.test(body)) throw new Error("Preview sitemap must not advertise URLs.");
+    if (path === "/robots.txt" && !/Disallow:\s*\//.test(body)) throw new Error("Preview robots must disallow crawling.");
+  }
+  if (path === "/sitemap.xml" && !preview) {
     for (const requiredPath of [
       "/",
       "/dashboard/global",
@@ -131,7 +136,7 @@ export async function runLocalWorkerdSmoke({
       wranglerBin,
       "dev",
       "--config",
-      "wrangler.jsonc",
+      "wrangler.local.jsonc",
       "--local",
       "--ip",
       "127.0.0.1",
@@ -169,7 +174,7 @@ export async function runLocalWorkerdSmoke({
       const response = await fetch(`${baseUrl}${path}`, {
         redirect: "manual",
       });
-      checks.push(await validateWorkerdResponse(path, response));
+      checks.push(await validateWorkerdResponse(path, response, { preview: !(process.env.NEXT_PUBLIC_CANOPYPROOF_MODE === "production" && process.env.NEXT_PUBLIC_DROPIN_SITE_URL === "https://canopyproof.org") }));
     }
     const report = Object.freeze({
       schemaVersion: 1,

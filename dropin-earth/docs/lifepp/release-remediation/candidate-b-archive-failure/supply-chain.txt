@@ -1,0 +1,16 @@
+
+> dropin-earth-monorepo@0.1.0 gate:supply-chain
+> node scripts/canopyproof-supply-chain-gate.mjs
+
+file:///Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/scripts/canopyproof-supply-chain-gate.mjs:77
+    throw new Error(
+          ^
+
+Error: Generated artifacts are tracked: dropin-earth/docs/lifepp/release-remediation/candidate-a-ci/trust/artifacts/coverage/coverage-summary.json
+    at runSupplyChainGate (file:///Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/scripts/canopyproof-supply-chain-gate.mjs:77:11)
+    at file:///Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/scripts/canopyproof-supply-chain-gate.mjs:156:18
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:681:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.22.3

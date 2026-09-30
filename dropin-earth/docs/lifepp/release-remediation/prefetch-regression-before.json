@@ -1,0 +1,27 @@
+{
+  "observedAt": null,
+  "sourceCommit": null,
+  "sourceScope": "Prior-phase built artifacts, not yet rebuilt for this remediation. This reproduction is not candidate acceptance evidence.",
+  "command": "Start built Next on loopback:3104, then GET /life normally and with purpose:prefetch, x-life-locale:en, x-nonce:attacker; stop server.",
+  "nextNormal": {
+    "status": 200,
+    "lang": "zh-CN",
+    "nonceCsp": true,
+    "cacheControl": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  "nextForgedPrefetch": {
+    "status": 200,
+    "lang": "en",
+    "nonceCsp": false
+  },
+  "workerdForgedPrefetch": {
+    "status": 200,
+    "lang": "zh-CN",
+    "nonceCsp": true
+  },
+  "fix": "Run middleware for client-claimed prefetch requests as well; retain static homepage/assets exclusion and existing frame-src none.",
+  "regressionTest": "tests/browser/lifepp.spec.ts: Request language, prefetch, nonce and cache isolation",
+  "verification": "Await rebuilt candidate tests; before-observation is not after-fix acceptance.",
+  "collectedAt": "2026-09-30T02:54:48.674010+00:00",
+  "timePrecision": "Exact command timestamp was not captured; collectedAt is transcription time."
+}

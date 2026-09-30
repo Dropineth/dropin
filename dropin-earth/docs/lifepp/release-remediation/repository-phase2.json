@@ -1,0 +1,14 @@
+{
+  "collectedAt": "2026-09-30T03:25:09.970685+00:00",
+  "worktree": "/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930",
+  "branch": "codex/canopyproof-lifepp-full-update-20260930",
+  "baselineHead": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "fetchedRemoteMain": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
+  "fetchedRemoteBranch": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "originalCheckout": "/Users/lee/Dropin",
+  "originalStatusSnapshotSha256": "e86859fd8cc2ca284cf0064e9cba2375b95a7a0bf59ebfc8afc81ca8730cf2d7",
+  "latestOriginalStatusSnapshotSha256": "e86859fd8cc2ca284cf0064e9cba2375b95a7a0bf59ebfc8afc81ca8730cf2d7",
+  "scope": "Status snapshots establish unchanged paths/status codes, not hashes of every original file. No original checkout edit/reset was performed. Fetched refs are observations, not deployment or rollback-version proof.",
+  "productionMerged": false,
+  "productionDeployed": false
+}

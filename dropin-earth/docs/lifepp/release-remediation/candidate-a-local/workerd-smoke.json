@@ -1,0 +1,46 @@
+{
+  "id": "workerd-smoke",
+  "command": [
+    "npm",
+    "run",
+    "test:workerd"
+  ],
+  "startedAt": "2026-09-30T03:43:51.862Z",
+  "status": "PASS",
+  "before": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:43:51.993Z"
+  },
+  "commandExitCode": 0,
+  "exitCode": 0,
+  "signal": null,
+  "logSha256": "aa37496437ff699dfd7ad27fe012b292e17ee0254653d0651c681188311991d1",
+  "after": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:43:58.521Z"
+  },
+  "artifacts": [
+    {
+      "path": "reports/canopyproof-workerd-smoke.json",
+      "sha256": "b9955d7d85312ad6c132c80323b08e4a715e17814ab86558d174032308f345be",
+      "capturedAt": "2026-09-30T03:43:58.522Z"
+    }
+  ],
+  "finishedAt": "2026-09-30T03:43:58.522Z"
+}

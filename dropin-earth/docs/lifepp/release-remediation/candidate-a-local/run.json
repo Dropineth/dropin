@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "startedAt": "2026-09-30T03:42:47.064Z",
+  "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "node": "v22.22.3",
+  "npm": "10.9.4",
+  "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+  "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+  "sourceFileCount": 656,
+  "sourceStatus": "",
+  "sourceUntracked": [],
+  "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+  "observedAt": "2026-09-30T03:42:47.050Z",
+  "expectedSha": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "checkoutClean": true,
+  "checkoutStatus": "",
+  "trackedDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runId": null,
+  "runAttempt": null,
+  "workflow": null,
+  "expectedCommands": [
+    "opennext",
+    "artifact",
+    "workerd-smoke",
+    "lifepp-workerd"
+  ],
+  "productionAuthority": false,
+  "scope": "Local CI validation; real third-party scene rights and readiness remain unverified.",
+  "artifactPolicy": "Only command-owned outputs newly written during this run are copied. Existing checked-in evidence is never uploaded.",
+  "commands": [
+    {
+      "id": "opennext",
+      "command": [
+        "npm",
+        "--workspace",
+        "apps/web",
+        "run",
+        "cf:build"
+      ],
+      "startedAt": "2026-09-30T03:42:47.099Z",
+      "status": "PASS",
+      "before": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:42:47.228Z"
+      },
+      "commandExitCode": 0,
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "7979bbc0a386524e945d382be34af5adc74b7b54021c35bba2197c97d9d6b143",
+      "after": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:43:17.329Z"
+      },
+      "artifacts": [],
+      "finishedAt": "2026-09-30T03:43:17.329Z"
+    },
+    {
+      "id": "artifact",
+      "command": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "import{statSync}from\"node:fs\";import assert from\"node:assert/strict\";assert.ok(statSync(\"apps/web/.open-next/worker.js\").isFile());assert.ok(statSync(\"apps/web/.open-next/assets\").isDirectory());"
+      ],
+      "startedAt": "2026-09-30T03:43:51.543Z",
+      "status": "PASS",
+      "before": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:43:51.682Z"
+      },
+      "commandExitCode": 0,
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:43:51.835Z"
+      },
+      "artifacts": [],
+      "finishedAt": "2026-09-30T03:43:51.835Z"
+    },
+    {
+      "id": "workerd-smoke",
+      "command": [
+        "npm",
+        "run",
+        "test:workerd"
+      ],
+      "startedAt": "2026-09-30T03:43:51.862Z",
+      "status": "PASS",
+      "before": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:43:51.993Z"
+      },
+      "commandExitCode": 0,
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "aa37496437ff699dfd7ad27fe012b292e17ee0254653d0651c681188311991d1",
+      "after": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:43:58.521Z"
+      },
+      "artifacts": [
+        {
+          "path": "reports/canopyproof-workerd-smoke.json",
+          "sha256": "b9955d7d85312ad6c132c80323b08e4a715e17814ab86558d174032308f345be",
+          "capturedAt": "2026-09-30T03:43:58.522Z"
+        }
+      ],
+      "finishedAt": "2026-09-30T03:43:58.522Z"
+    },
+    {
+      "id": "lifepp-workerd",
+      "command": [
+        "node",
+        "scripts/lifepp-validation-run.mjs",
+        "workerd-browser"
+      ],
+      "startedAt": "2026-09-30T03:43:58.546Z",
+      "status": "PASS",
+      "before": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:43:58.676Z"
+      },
+      "commandExitCode": 0,
+      "exitCode": 0,
+      "signal": null,
+      "logSha256": "d4a8845dfbaaa79d70ffdfcdb0b5554622abb3c8a09218145163ad51b938c08d",
+      "after": {
+        "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+        "node": "v22.22.3",
+        "npm": "10.9.4",
+        "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+        "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+        "sourceFileCount": 656,
+        "sourceStatus": "",
+        "sourceUntracked": [],
+        "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+        "observedAt": "2026-09-30T03:45:02.478Z"
+      },
+      "artifacts": [],
+      "finishedAt": "2026-09-30T03:45:02.478Z"
+    }
+  ],
+  "finalSnapshot": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:45:02.646Z"
+  },
+  "finishedAt": "2026-09-30T03:45:02.647Z"
+}
