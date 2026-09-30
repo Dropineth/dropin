@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-30T01:49:59.589349+00:00",
+  "generatedAt": "2026-09-30T02:04:13.436266+00:00",
   "overallStatus": "REVIEW_CANDIDATE_WITH_RELEASE_BLOCKERS",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
   "branch": "codex/canopyproof-lifepp-full-update-20260930",
   "baseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
-  "implementationCommit": null,
-  "prUrl": null,
+  "implementationCommit": "e44f73449ce14523cc9e34817ad2574eed6776a9",
+  "prUrl": "https://github.com/Dropineth/dropin/pull/4",
   "productionAuthority": false,
   "runtime": {
     "model": "gpt-6-astra",
@@ -273,14 +273,22 @@
       "manualReviewScope": "Root: homepage/mobile and scene fallback; UI reviewer: desktop home and mobile center; not every screenshot."
     },
     "pullRequest": {
-      "status": "PENDING",
-      "evidence": [],
-      "blockedReason": "Commit/push/PR creation still pending at report generation."
+      "status": "CREATED_DRAFT",
+      "evidence": [
+        "https://github.com/Dropineth/dropin/pull/4",
+        "evidence/pr-and-ci-receipt.json"
+      ],
+      "blockedReason": null
     },
     "remoteCI": {
-      "status": "PENDING",
-      "evidence": [],
-      "blockedReason": "Awaiting PR check execution; local results do not establish remote CI status."
+      "status": "IN_PROGRESS_AT_SNAPSHOT",
+      "evidence": [
+        "https://github.com/Dropineth/dropin/actions/runs/36657968906",
+        "https://github.com/Dropineth/dropin/actions/runs/36657969154",
+        "https://github.com/Dropineth/dropin/pull/4/checks"
+      ],
+      "blockedReason": "Checks were running at this documentary snapshot. No all-CI-green claim; subsequent documentation-only commits may supersede these runs. Consult current PR checks.",
+      "observedHead": "e44f73449ce14523cc9e34817ad2574eed6776a9"
     },
     "supplyChain": {
       "status": "PASS",

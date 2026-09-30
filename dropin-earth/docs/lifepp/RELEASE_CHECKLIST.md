@@ -4,7 +4,7 @@ Status: **NOT DEPLOYED — REVIEW CANDIDATE**. Dependency audit failed and local
 
 ## Candidate identity and preserved boundaries
 
-- [ ] Record final commit SHA, branch, PR URL and immutable CI run links. Recheck current main and preserve user changes.
+- [x] Record implementation commit SHA, branch, PR URL and immutable observed CI run links in `delivery_status.json`. Main was reconfirmed at the recorded base; user changes stay in the original checkout. Final release approval must bind the later final PR head, not an older evidence commit.
 - [x] Confirm changes are limited to this website and necessary reports/tests; no independent protocol repository, wallet, real robot, token, payment, fund release or DNS change.
 - [x] Record actual Node/npm/browser versions and model runtime metadata only when attested. No guessed model/tier.
 - [x] Confirm original logo JPGs, ecology page, all original anchors, `#explorer`, `/explorer`, TerraProof, methodology and demo disclaimers remain.

@@ -1,6 +1,6 @@
 # CanopyProof × Life++ implementation report
 
-Status: **IMPLEMENTED FOR REVIEW — NOT PRODUCTION DEPLOYED**. The working site is part of the original `dropin-earth/apps/web`, on branch `codex/canopyproof-lifepp-full-update-20260930`, based on `b398e5772c6ff9f1e7c63bbd240214171cd0ac42`. See [delivery_status.json](delivery_status.json) for current commit/PR and item-level evidence. This report does not confer deployment, factual, commercial, scene-rights or protocol authority.
+Status: **IMPLEMENTED FOR REVIEW — NOT PRODUCTION DEPLOYED**. The working site is part of the original `dropin-earth/apps/web`, on branch `codex/canopyproof-lifepp-full-update-20260930`, based on `b398e5772c6ff9f1e7c63bbd240214171cd0ac42`. Implementation commit: `e44f73449ce14523cc9e34817ad2574eed6776a9`. Draft [PR #4](https://github.com/Dropineth/dropin/pull/4) was created successfully through the existing authenticated CLI. See [delivery_status.json](delivery_status.json) for item-level evidence. Remote checks were running at this snapshot; consult [current PR checks](https://github.com/Dropineth/dropin/pull/4/checks). This report does not confer deployment, factual, commercial, scene-rights or protocol authority.
 
 ## Implemented
 
