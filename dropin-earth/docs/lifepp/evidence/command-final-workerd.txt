@@ -1,0 +1,5 @@
+
+> dropin-earth-monorepo@0.1.0 test:workerd
+> node scripts/canopyproof-local-workerd-smoke.mjs
+
+PASS	workerd-routes	15	failed=0

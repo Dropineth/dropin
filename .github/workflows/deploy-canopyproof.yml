@@ -53,6 +53,8 @@ jobs:
       DROPIN_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'live' }}
       DROPIN_FRONTEND_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.frontend_deploy_mode || 'skip' }}
       DROPIN_CANOPYPROOF_MODE: production
+      NEXT_PUBLIC_CANOPYPROOF_MODE: production
+      NEXT_PUBLIC_DROPIN_SITE_URL: https://canopyproof.org
       DROPIN_ALLOWED_ORIGINS: https://canopyproof.org,https://www.canopyproof.org
       DROPIN_ALLOW_ADMIN_PROXY: "false"
       DROPIN_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}

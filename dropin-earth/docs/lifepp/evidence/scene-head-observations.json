@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-09-30T01:16:23.899Z",
+  "method": "HEAD",
+  "limits": {
+    "timeoutMs": 5000,
+    "maxRedirects": 2,
+    "maxHeaderBytes": 16384,
+    "maxHeaderValueChars": 1024
+  },
+  "scope": "Response headers only. No source content, subresource, model, permission or real browser embed verification.",
+  "limitations": [
+    "HTTP transport is unencrypted; HTTPS is not guessed or tested.",
+    "Redirects only follow another exact supplied source URL.",
+    "CORS does not establish iframe eligibility.",
+    "HEAD responses do not prove rights, subresource safety, engine readiness or navigation accuracy."
+  ],
+  "observations": [
+    {
+      "sourceUrl": "http://kjlying.com:8456/scenes/31",
+      "observedAt": "2026-09-30T01:16:21.047Z",
+      "status": "unverified_access_failed",
+      "requests": [
+        {
+          "url": "http://kjlying.com:8456/scenes/31",
+          "observedAt": "2026-09-30T01:16:22.529Z",
+          "error": { "code": "ECONNRESET", "message": "socket hang up" }
+        }
+      ]
+    },
+    {
+      "sourceUrl": "http://kjlying.com:8456/scenes/29",
+      "observedAt": "2026-09-30T01:16:22.529Z",
+      "status": "unverified_access_failed",
+      "requests": [
+        {
+          "url": "http://kjlying.com:8456/scenes/29",
+          "observedAt": "2026-09-30T01:16:23.899Z",
+          "error": { "code": "ECONNRESET", "message": "socket hang up" }
+        }
+      ]
+    }
+  ]
+}

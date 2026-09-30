@@ -18,7 +18,10 @@
     "build:cloudflare": "npm run cf:build",
     "deploy:cloudflare": "npm run cf:deploy",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:lifepp": "cd ../.. && node --test --import tsx tests/unit/lifepp-*.test.ts",
+    "test:lifepp:browser": "cd ../.. && node scripts/lifepp-browser-check.mjs",
+    "cf:preview:lifepp": "wrangler dev --config wrangler.local.jsonc --local --ip 127.0.0.1 --port 8788"
   },
   "dependencies": {
     "@deck.gl/core": "^9.2.11",

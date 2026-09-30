@@ -1,0 +1,198 @@
+{
+  "generatedAt": "2026-09-30T01:51:34.850448+00:00",
+  "scope": "Modified implementation/workflow/config/test file bytes after final edits, before commit. Excludes documentary evidence. Deleted duplicate public robots.txt and sitemap.xml are recorded by Git diff.",
+  "files": [
+    {
+      "path": ".github/workflows/deploy-canopyproof.yml",
+      "sha256": "b87ee6fd5f15e249b6fcc469a3881458e78b2eadd885487415a93dd68b110ec2"
+    },
+    {
+      "path": ".github/workflows/deploy-cloudflare-worker.yml",
+      "sha256": "91b797bbf060ffc462463c032a03073cd95e52c9fa65a7b38bed27cfb007d692"
+    },
+    {
+      "path": ".github/workflows/lifepp-web.yml",
+      "sha256": "00707ef7e40c223f71b79852bcd69dfe85e50beefe9ef803c03c87a9b9c8bb4d"
+    },
+    {
+      "path": "dropin-earth/apps/web/eslint.config.mjs",
+      "sha256": "1dc9d9aa5ec1aafe6765882070b117a3c9be36c371192820b99ece2bc10334d4"
+    },
+    {
+      "path": "dropin-earth/apps/web/next.config.mjs",
+      "sha256": "0bfa6c25a6fa7c37ddfacc17aec498df7453cb55903b5afc35208b112f43c997"
+    },
+    {
+      "path": "dropin-earth/apps/web/package.json",
+      "sha256": "056075bf7b976caea77e71967c56962aa98931bd81bcfd3af0f9b5afd8ef32da"
+    },
+    {
+      "path": "dropin-earth/apps/web/scripts/promote-static-homepage.mjs",
+      "sha256": "47af5dc85dbf13c654ca9231c81d0b8a4fd9cdce832de2313d385a7d2b5b5a2b"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/app/company/page.tsx",
+      "sha256": "228a7e6826376c1bfda75b7eed42a996f9e68c4aff3695166626f25b3c229b6d"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/app/en/company/page.tsx",
+      "sha256": "720720ff8574fa1feb378c72920ecd8f539a089650457781a07bf3f582f4f2d5"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/app/en/life/[[...path]]/page.tsx",
+      "sha256": "47c2919d31595a3d0f5ccfd1e2467d40c2dc0815af8d34539ec6c11b88989d4f"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/app/layout.tsx",
+      "sha256": "38c4c796a77e0be467261df8a129c1fa0e2d26df720f1b1b87cfaafd2bb49342"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/app/life/[[...path]]/page.tsx",
+      "sha256": "9b7ac287238f4551030dc557b80323e2619b6ced7aa38e44ab41bfd1fdd2c29e"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/app/robots.ts",
+      "sha256": "26170e600019d1ce38d2967a54c0812f7d10c87b47e955909677876ec15e6bd7"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/app/sitemap.ts",
+      "sha256": "2b276941be529b4bf9199fe5d09c07c3948daed397f3cafe1852d8dcddde2909"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/canopyproof/CanopyProofLanding.tsx",
+      "sha256": "519504d443505cb56bce827c71cf667f84d311968c796a0d022922375ea35f34"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/BrandSwitcher.module.css",
+      "sha256": "2dd9d162728b63a5ae28161ee3979f6a585c68792091a7cf08c3ca8bda2ba280"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/BrandSwitcher.tsx",
+      "sha256": "f5c839745e96f6172025a0fd2deb21cbb79c8a1910d7521ce828cf8842c91615"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/LeadForm.module.css",
+      "sha256": "45ec41463e05ca0646b18467c6f71eff95217dd050d28f027596da3bcb40006e"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/LeadForm.tsx",
+      "sha256": "a2893399538b4995eef1f2ba3a0c06882be2123f15b30ff0fbf07aa2b55086a3"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/LifePages.tsx",
+      "sha256": "b9bb2432afdfcd8fc16957aabafaa29bf5fb77fb0d84dc02f082236e36bf488a"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/LifeRoute.tsx",
+      "sha256": "cc38bdc719c428d221e4ac7c9b8d591114a551d7a89a06bc6e2c4be4c64364c0"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/LifeShell.tsx",
+      "sha256": "ffb2c907d158567384428e78ec704e362ea5b5dbd5268883d6129c253e4d6534"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/SceneViewer.module.css",
+      "sha256": "36647ce3c3712400786bca797ea8d112a4cac620db31f308ea554e6115386426"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/SceneViewer.tsx",
+      "sha256": "0901723e893b354fdb178ea662faa0fec4603dc66a9b7a389a252db5f30d3c0c"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/components/life/life.module.css",
+      "sha256": "d62a35847e14e60136a4136fc3d0ce045494a1aeb46b7eb03f3eea9d960354b2"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/data/life/content.ts",
+      "sha256": "92908ff7ac7b06009a4a788144eb9b1592215601bd14c4f8eb5801cad1e7717b"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/data/life/inquiry.ts",
+      "sha256": "db9fba2e0b79df5f6023b3a1da83e4e046af865e0823fbea61341d77617c173b"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/data/life/navigation.ts",
+      "sha256": "1038704901ea4ebfcd1324216608630a5a3420eacd4a678b6f70b7da92c079a9"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/data/life/scenes.ts",
+      "sha256": "2b4faa1bebbfeccd5c707bd3d912dc09a3dd512d396a019a1dd830c1a3c2b904"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/data/life/site-manifest.json",
+      "sha256": "6a9e74ae3a9fc9a7fdc87d0e3e5c1fe2940f54a1002ae4a00547335f3cf180d3"
+    },
+    {
+      "path": "dropin-earth/apps/web/src/middleware.ts",
+      "sha256": "2c6360c5306a8bcb64127e73d72a22572feea2cde78e293958164865709f4829"
+    },
+    {
+      "path": "dropin-earth/apps/web/wrangler.local.jsonc",
+      "sha256": "7b7f2ab5e30cbfa072607e4c99efd8ecbb78d7e1333dc20d9f71a9f6327b42ad"
+    },
+    {
+      "path": "dropin-earth/eslint.config.mjs",
+      "sha256": "23277d4aef2ff741f36a1ae67654219bfc9d7a079def33a743af9aacd041bb31"
+    },
+    {
+      "path": "dropin-earth/scripts/canopyproof-local-workerd-smoke.mjs",
+      "sha256": "d4b238fae7b81273fdaffb3f81eaf30098f0d1b2859d40b7c52c3398d4c144c0"
+    },
+    {
+      "path": "dropin-earth/scripts/lifepp-browser-check.mjs",
+      "sha256": "3b365cf91a220d5f49b89143bdd2f049901a1f9d033b69cf87076c267755db62"
+    },
+    {
+      "path": "dropin-earth/scripts/lifepp-scene-check.mjs",
+      "sha256": "9a1f7fb9500360653a335920e921f0fcbb3815f1c64812815bca031c8c7c68e1"
+    },
+    {
+      "path": "dropin-earth/tests/browser/lifepp-scene-viewer.spec.ts",
+      "sha256": "85ed18f77583c22d0047b9c6344561328d0e7d200656a76869b54915a6f80dd9"
+    },
+    {
+      "path": "dropin-earth/tests/browser/lifepp.spec.ts",
+      "sha256": "2baa9ccc49395690ebfff81c3358c958e4daadf10ec634283b4a92faff03906a"
+    },
+    {
+      "path": "dropin-earth/tests/helpers/lifepp-metadata.ts",
+      "sha256": "2a716ad45eb1978dc70e286e7dfd59abb833b3460ea8afd652226cc0940e3838"
+    },
+    {
+      "path": "dropin-earth/tests/unit/canopyproof-site.test.ts",
+      "sha256": "51a083c4580f471ff9e892488b4853775519191ddd911a879b7cac7006f1cd8f"
+    },
+    {
+      "path": "dropin-earth/tests/unit/canopyproof-staging-deployment.test.ts",
+      "sha256": "69c33f3d996aa3160d0a1dab76ef074809a682f928dca04c968e39f0056a0f60"
+    },
+    {
+      "path": "dropin-earth/tests/unit/canopyproof-test-suite-contract.test.ts",
+      "sha256": "5523f5b5c2d89d11bf22fd15313b7e911162c1f642353e4fb61f48d480613512"
+    },
+    {
+      "path": "dropin-earth/tests/unit/canopyproof-workerd-smoke-contract.test.ts",
+      "sha256": "2dd449756512c7cabcbd9d8542bd1b9cac7bbb919535064da56c7b3d023b704f"
+    },
+    {
+      "path": "dropin-earth/tests/unit/dropin-cloudflare-deployment.test.ts",
+      "sha256": "0cb10c38e679680e57e7e50f561f1a64a7160bd1aa3d9bd35519f2d843446687"
+    },
+    {
+      "path": "dropin-earth/tests/unit/lifepp-inputs.test.ts",
+      "sha256": "a1032478a92f82fc3f8266ef83befc41dfcfef034e5811c0aa06034a803ff6ae"
+    },
+    {
+      "path": "dropin-earth/tests/unit/lifepp-inquiry.test.ts",
+      "sha256": "7e3fc29ec10d2850832401d2ecad38098f886f4eddca4abb4651a7eab2f92116"
+    },
+    {
+      "path": "dropin-earth/tests/unit/lifepp-production-indexing.test.ts",
+      "sha256": "54dfd245961d2d0b628424e08aed41310c41ef9114b755cde2aff57528c00ac6"
+    },
+    {
+      "path": "dropin-earth/tests/unit/lifepp-scenes.test.ts",
+      "sha256": "178e7a6d81f441434563c3081b87106a990a24c885e99d7423b21d1fff0aabcb"
+    }
+  ]
+}

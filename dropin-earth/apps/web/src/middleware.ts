@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { isProductionSite } from "@/data/life/navigation";
 
 /**
  * Edge security middleware for canopyproof.org.
@@ -72,11 +73,13 @@ export function middleware(request: NextRequest): NextResponse {
   // Forward the nonce + CSP on the request so Next.js can nonce its own scripts.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("x-life-locale", /^\/(life(?:\/|$)|company$)/.test(request.nextUrl.pathname) ? "zh" : "en");
   requestHeaders.set("content-security-policy", csp);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   response.headers.set("content-security-policy", csp);
+  if (!isProductionSite) response.headers.set("x-robots-tag", "noindex, nofollow");
   response.headers.set("strict-transport-security", "max-age=63072000; includeSubDomains; preload");
   response.headers.set("x-content-type-options", "nosniff");
   response.headers.set("x-frame-options", "DENY");

@@ -1,0 +1,9 @@
+
+> dropin-earth-monorepo@0.1.0 test:fiftyone
+> python3 -m unittest discover -s integrations/fiftyone/tests -p 'test_*.py'
+
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK

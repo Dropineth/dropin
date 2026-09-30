@@ -69,3 +69,11 @@ test("Trust Gate runs workerd only after OpenNext artifact verification", () => 
     /dropin-earth\/reports\/canopyproof-workerd-smoke\.json/u,
   );
 });
+
+test("preview metadata fails closed while production sitemap assertions remain enforced", async () => {
+  await validateWorkerdResponse("/sitemap.xml", new Response('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"/>', {headers:{"x-robots-tag":"noindex, nofollow"}}), {preview:true});
+  await validateWorkerdResponse("/robots.txt", new Response('User-agent: *\nDisallow: /\n', {headers:{"x-robots-tag":"noindex, nofollow"}}), {preview:true});
+  await assert.rejects(validateWorkerdResponse("/sitemap.xml", new Response('<urlset/>')));
+  await assert.rejects(validateWorkerdResponse("/sitemap.xml", new Response('<urlset/>'), {preview:true}));
+  await assert.rejects(validateWorkerdResponse("/sitemap.xml", new Response('<urlset><loc>https://example.invalid/</loc></urlset>', {headers:{"x-robots-tag":"noindex"}}), {preview:true}));
+});

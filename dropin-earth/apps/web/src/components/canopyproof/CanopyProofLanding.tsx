@@ -1,3 +1,4 @@
+import { BrandSwitcher } from "@/components/life/BrandSwitcher";
 import type {
   CertificateCheckpoint,
   CertificateField,
@@ -37,12 +38,8 @@ import { GlassCard } from "./GlassCard";
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "CanopyProof",
+  name: "CanopyProof Limited",
   url: "https://canopyproof.org",
-  parentOrganization: {
-    "@type": "Organization",
-    name: "Dropin",
-  },
   description:
     "CanopyProof by Dropin is a deterministic environmental accountability routing protocol: it turns restoration evidence into transparent, verifiable proof records.",
   sameAs: ["https://canopyproof.org"],
@@ -56,6 +53,7 @@ export function CanopyProofLanding() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Navbar />
+      <BrandSwitcher />
       <HeroSection />
       <SectionBoundary label="metrics" fallback={<MetricsStripFallback />}>
         <InstitutionalMetricsStrip metrics={institutionalMetrics} />

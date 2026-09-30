@@ -8,6 +8,7 @@ export default tseslint.config(
       "**/dist/**",
       "**/.next/**",
       "**/.open-next/**",
+      "**/.wrangler/**",
       "**/node_modules/**",
       "**/next-env.d.ts",
     ],

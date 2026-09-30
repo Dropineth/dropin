@@ -1,0 +1,428 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-30T01:28:16.373Z",
+  "status": "FAIL",
+  "baseUrl": "http://127.0.0.1:3102/",
+  "runtime": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "browser": "154.0.8037.58",
+    "serverMode": "next-production"
+  },
+  "candidateSha": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
+  "workingTreeUnderTest": true,
+  "results": [
+    {
+      "name": "desktop /life",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/spaces",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/spaces",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/spaces/31",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/spaces/31",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/spaces/29",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/spaces/29",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/center",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/center",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/agents",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/agents",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/membership",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/membership",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/partners",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/partners",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /life/trust",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/life/trust",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /company",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop /en/company",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "desktop no form mutations",
+      "status": "PASS"
+    },
+    {
+      "name": "tablet /life",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/spaces",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/spaces",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/spaces/31",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/spaces/31",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/spaces/29",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/spaces/29",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/center",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/center",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/agents",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/agents",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/membership",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/membership",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/partners",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/partners",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /life/trust",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/life/trust",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /company",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet /en/company",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "tablet no form mutations",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile /life",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/spaces",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/spaces",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/spaces/31",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/spaces/31",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/spaces/29",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/spaces/29",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/center",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/center",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/agents",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/agents",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/membership",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/membership",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/partners",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/partners",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /life/trust",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/life/trust",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /company",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile /en/company",
+      "status": "FAIL",
+      "error": "page.evaluate: ReferenceError: __name is not defined\n    at eval (eval at evaluate (:302:30), <anonymous>:1:230)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    },
+    {
+      "name": "mobile no form mutations",
+      "status": "PASS"
+    },
+    {
+      "name": "Original ecology anchors and content",
+      "status": "FAIL",
+      "error": "The input did not match the regular expression /TerraProof/. Input:\n\n'CanopyProof\\n' +\n  'by Dropin\\n' +\n  'Protocol\\n' +\n  'How It Works\\n' +\n  'Explorer\\n' +\n  'Methodology\\n' +\n  'Open Stack\\n' +\n  'Contact\\n' +\n  'Proof Explorer\\n' +\n  '生态与地球观测 · Ecology\\n' +\n  'Life++ 生生不息 ↗\\n' +\n  '测试场景 · Test scenes\\n' +\n  'CanopyProof Limited\\n' +\n  '\\n' +\n  'CANOPYPROOF BY DROPIN\\n' +\n  '\\n' +\n  'system.status\\n' +\n  'interface preview\\n' +\n  'Routing protocol\\n' +\n  'All systems operational\\n' +\n  'Satellite feed\\n' +\n  'Reference layer\\n' +\n  'AI verification\\n' +\n  'Assistive · human-reviewed\\n' +\n  'Environmental accountability. Verified. Transparent. Restored.\\n' +\n  '\\n' +\n  'CanopyProof is an open environmental accountability routing protocol. It binds field evidence, satellite layers, community observation, and AI-assisted ecological review into a single verifiable proof system — transparent inputs, deterministic outputs, auditable records.\\n' +\n  '\\n' +\n  'Open the Proof Explorer\\n' +\n  'See How It Works\\n' +\n  'Watch 2-minute prototype demo\\n' +\n  'Public-interest infrastructure\\n' +\n  'Demo values clearly labeled\\n' +\n  'No production claims implied\\n' +\n  '\\n' +\n  'Prototype transparency: sample metrics and selected visual scenes\\n' +\n  '\\n' +\n  'Sample proof workflow\\n' +\n  '\\n' +\n  'Reported -> Verified -> Recorded -> Monitored -> Impact Confirmed\\n' +\n  '\\n' +\n  'NETWORK METRICS\\n' +\n  '\\n' +\n  'illustrative sample · not verified totals\\n' +\n  '\\n' +\n  'TREES RESTORED\\n' +\n  '24.7M\\n' +\n  '+18.2%\\n' +\n  '\\n' +\n  'vs last 30 days\\n' +\n  '\\n' +\n  'CO₂E SEQUESTERED\\n' +\n  '812,534 t\\n' +\n  '+22.1%\\n' +\n  '\\n' +\n  'vs last 30 days\\n' +\n  '\\n' +\n  'PROJECTS VERIFIED\\n' +\n  '248\\n' +\n  '+16.4%\\n' +\n  '\\n' +\n  'across 23 countries\\n' +\n  '\\n' +\n  'THE TRANSPARENCY GAP\\n' +\n  '\\n' +\n  'Restoration is happening. Trust is fragmented.\\n' +\n  '\\n' +\n  'Today, impact is scattered across paper records, spreadsheets, email threads, and unverifiable reports. CanopyProof routes that raw signal through a deterministic ingestion pipeline into one open, auditable ledger.\\n' +\n  '\\n' +\n  'Before · fragmented\\n' +\n  'UNVERIFIED\\n' +\n  'Opaque funding flows\\n' +\n  'Disconnected spreadsheets\\n' +\n  'Paper field notes\\n' +\n  'Email attachments\\n' +\n  'Unverified claims\\n' +\n  'No shared source of truth\\n' +\n  'After · routed proof\\n' +\n  'DETERMINISTIC\\n' +\n  '01\\n' +\n  'Evidence capture\\n' +\n  'Field photo, GPS, notes, community sign-off.\\n' +\n  '↓\\n' +\n  '02\\n' +\n  'Metadata / EXIF ingestion\\n' +\n  'Time, location, and device integrity extracted.\\n' +\n  '↓\\n' +\n  '03\\n' +\n  'AI verification engine\\n' +\n  'Cross-checked against satellite layers and ecological models.\\n' +\n  '↓\\n' +\n  '04\\n' +\n  'Immutable open ledger\\n' +\n  'Accepted evidence written to an append-only proof root.\\n' +\n  '■\\n' +\n  '\\n' +\n  'FIELD REALITY\\n' +\n  '\\n' +\n  'Built for the people doing the restoration work.\\n' +\n  '\\n' +\n  'Local communities, schools, NGOs, and field workers need tools that work in real conditions: changing weather, limited connectivity, shared devices, and high accountability.\\n' +\n  '\\n' +\n  'Offline-first reporting\\n' +\n  'GPS and photo metadata\\n' +\n  'Low-bandwidth sync\\n' +\n  'Community-owned evidence\\n' +\n  'Simple mobile workflows\\n' +\n  '\\n' +\n  'CANOPYPROOF SOLUTION\\n' +\n  '\\n' +\n  'From field evidence to verified environmental impact.\\n' +\n  '\\n' +\n  'CanopyProof connects mobile reports, GPS metadata, satellite imagery, community observations, and ecological models into one transparent verification workflow.\\n' +\n  '\\n' +\n  '01\\n' +\n  'Reported\\n' +\n  '\\n' +\n  'Field teams capture activity, location, notes, photos, and local context.\\n' +\n  '\\n' +\n  '02\\n' +\n  'Verified\\n' +\n  '\\n' +\n  'Evidence is cross-checked against metadata, maps, observations, and scientific review.\\n' +\n  '\\n' +\n  '03\\n' +\n  'Recorded\\n' +\n  '\\n' +\n  'Accepted proof records are written into an auditable environmental timeline.\\n' +\n  '\\n' +\n  '04\\n' +\n  'Monitored\\n' +\n  '\\n' +\n  'Restoration outcomes continue to be observed through field and remote signals.\\n' +\n  '\\n' +\n  '05\\n' +\n  'Impact Confirmed\\n' +\n  '\\n' +\n  'Certificates reference evidence sources, proof identifiers, and monitoring status.\\n' +\n  '\\n' +\n  'MOBILE REPORTING INTERFACE\\n' +\n  '\\n' +\n  'Designed for low-connectivity field conditions.\\n' +\n  '\\n' +\n  'Field workers can document restoration activities with GPS, photos, notes, and offline sync using simple mobile workflows that fit real community operations.\\n' +\n  '\\n' +\n  'Tree planting\\n' +\n  'Water restoration\\n' +\n  'Biodiversity observation\\n' +\n  'GPS location\\n' +\n  'Photo evidence\\n' +\n  'Offline mode\\n' +\n  '9:41\\n' +\n  'Offline ready\\n' +\n  'New Field Report\\n' +\n  '\\n' +\n  'Step 1 of 4 · sample interface\\n' +\n  '\\n' +\n  'Tree planting\\n' +\n  'Water restoration\\n' +\n  'Biodiversity observation\\n' +\n  'GPS location\\n' +\n  'Location captured\\n' +\n  'GPS accuracy: 5m · photo metadata saved locally\\n' +\n  'Save and Sync Later\\n' +\n  '\\n' +\n  'AI-ASSISTED VERIFICATION PIPELINE\\n' +\n  '\\n' +\n  'Multi-source verification, not blind trust.\\n' +\n  '\\n' +\n  'CanopyProof compares field submissions with location metadata, satellite imagery, community observations, and ecological models. AI-assisted checks support human and scientific review.\\n' +\n  '\\n' +\n  'Evidence inputs\\n' +\n  'Mobile reports\\n' +\n  'Satellite data\\n' +\n  'Community observations\\n' +\n  'Ecological models\\n' +\n  'Field worker evidence\\n' +\n  'Restoration maps\\n' +\n  'Verification Engine\\n' +\n  'human review · scientific context · audit trail\\n' +\n  'Verification outputs\\n' +\n  'Verified restoration record\\n' +\n  'Impact certificate\\n' +\n  'Risk flag\\n' +\n  'Environmental state transition\\n' +\n  'Proof reference\\n' +\n  'Audit-ready evidence pack\\n' +\n  '\\n' +\n  'CANONICAL PUBLIC EXPLORER\\n' +\n  '\\n' +\n  'Inspect governed publication state without exposing protected evidence.\\n' +\n  '\\n' +\n  'Query one pseudonymous public project identifier at a time. Each response is re-derived from immutable publication, lifecycle, and challenge authorities before its public fields are returned.\\n' +\n  '\\n' +\n  'GOVERNANCE GATED\\n' +\n  'No anonymous mutation path\\n' +\n  'The interface is ready; public activation remains independently governed.\\n' +\n  '\\n' +\n  'The Explorer never substitutes demo records when the canonical authority is unavailable. Protected coordinates, identities, raw evidence, signatures, and internal review rationale remain excluded.\\n' +\n  '\\n' +\n  'Current state re-derived on every read\\n' +\n  'Adverse states are never shared-cacheable\\n' +\n  'Public roots remain independently verifiable\\n' +\n  'Open canonical Explorer\\n' +\n  '\\n' +\n  'IMPACT CERTIFICATE\\n' +\n  '\\n' +\n  'Certificates with the weight of a proof token.\\n' +\n  '\\n' +\n  'Each certificate links project type, location, area, evidence sources, verification status, and a proof reference. Certificates are proof records, not certified carbon credits.\\n' +\n  '\\n' +\n  'VERIFIED PROOF RECORD\\n' +\n  'Sample certificate · demo data\\n' +\n  '\\n' +\n  'CPR-SAMPLE-0001847\\n' +\n  '\\n' +\n  'Watershed Restoration Proof\\n' +\n  '\\n' +\n  'Verified on May 18, 2026 (sample record)\\n' +\n  '\\n' +\n  'PROJECT TYPE\\n' +\n  'Watershed restoration\\n' +\n  'LOCATION\\n' +\n  'Community watershed corridor (sample)\\n' +\n  'AREA\\n' +\n  '1,245 ha (sample)\\n' +\n  'TREES PLANTED\\n' +\n  '128,450 (sample)\\n' +\n  'EVIDENCE SOURCES\\n' +\n  'Mobile report, GPS/EXIF, satellite cross-check\\n' +\n  'VERIFIED STATUS\\n' +\n  'Verified with monitoring\\n' +\n  '\\n' +\n  'IMPACT TIMELINE\\n' +\n  '\\n' +\n  'Baseline verification\\n' +\n  'Evidence root recorded\\n' +\n  'Field monitoring\\n' +\n  'Community + GPS resubmission\\n' +\n  'Satellite cross-check\\n' +\n  'NDVI delta confirmed\\n' +\n  'AI survival check\\n' +\n  'Human-reviewed survival estimate\\n' +\n  '81%\\n' +\n  '\\n' +\n  'AI SURVIVAL CHECK\\n' +\n  '\\n' +\n  'Sample baseline · assistive estimate, human-reviewed\\n' +\n  '\\n' +\n  'TERRAPROOF · EARTH OBSERVATION\\n' +\n  '\\n' +\n  'Satellite telemetry, framed as mission control.\\n' +\n  '\\n' +\n  'Restoration is monitored before and after intervention. The panel below is a sample telemetry interface — satellite, vegetation, and hydrology layers rendered as a tactical control matrix.\\n' +\n  '\\n' +\n  'TERRAPROOF.TELEMETRY\\n' +\n  'sample telemetry · demo data\\n' +\n  '\\n' +\n  'WATER RESTORATION INDEX\\n' +\n  '\\n' +\n  '24.8 km\\n' +\n  '\\n' +\n  '+396% net\\n' +\n  '\\n' +\n  'Jan 2023\\n' +\n  'May 2023\\n' +\n  'Sep 2023\\n' +\n  'Jan 2024\\n' +\n  'May 2024\\n' +\n  '\\n' +\n  'DATA LAYERS\\n' +\n  '\\n' +\n  '✓\\n' +\n  'Satellite imagery\\n' +\n  'True-color\\n' +\n  '✓\\n' +\n  'Forest health\\n' +\n  'NDVI 0.78\\n' +\n  'Carbon density\\n' +\n  'Modeled\\n' +\n  'Land cover change\\n' +\n  '2019–2024\\n' +\n  '\\n' +\n  'RESILIENCE SIGNALS\\n' +\n  '\\n' +\n  'Drought risk\\n' +\n  'Watch\\n' +\n  'Wildfire risk\\n' +\n  'Elevated\\n' +\n  'Soil moisture\\n' +\n  '36%\\n' +\n  'Rainfall\\n' +\n  '-12%\\n' +\n  'Temperature\\n' +\n  '+1.4C\\n' +\n  'Vegetation health\\n' +\n  'Recovering\\n' +\n  '\\n' +\n  'ECOSYSTEM NETWORK\\n' +\n  '\\n' +\n  'Transparent accountability across the restoration ecosystem.\\n' +\n  'CanopyProof\\n' +\n  'Communities\\n' +\n  'Schools\\n' +\n  'NGOs\\n' +\n  'Local governments\\n' +\n  'Field workers\\n' +\n  'Researchers\\n' +\n  'Funders\\n' +\n  'Restoration projects\\n' +\n  '\\n' +\n  'OPEN CLIMATE INFRASTRUCTURE\\n' +\n  '\\n' +\n  'A five-layer open stack for climate accountability.\\n' +\n  '\\n' +\n  'CanopyProof is designed as public-interest infrastructure: open standards, transparent evidence, and verifiable outputs from raw signal to application.\\n' +\n  '\\n' +\n  '01\\n' +\n  'Data sources\\n' +\n  'Satellite\\n' +\n  'In-situ IoT\\n' +\n  'Community mobile data\\n' +\n  '02\\n' +\n  'Ingestion layer\\n' +\n  'Connectors\\n' +\n  'Validation engine\\n' +\n  'Schema check\\n' +\n  '03\\n' +\n  'Protocol layer\\n' +\n  'Open Climate Protocol ocp://\\n' +\n  'Impact Accounting OIP\\n' +\n  'Verification OVP\\n' +\n  '04\\n' +\n  'Verification layer\\n' +\n  'Cross-validation\\n' +\n  'Decentralized attestation\\n' +\n  'Consensus\\n' +\n  '05\\n' +\n  'Application layer\\n' +\n  'Impact dashboards\\n' +\n  'Carbon accounting\\n' +\n  'Early warning\\n' +\n  '\\n' +\n  'DROPIN · CANOPYPROOF\\n' +\n  '\\n' +\n  'Technology for nature. Accountability for all.\\n' +\n  '\\n' +\n  'Turning environmental action into accountable evidence so trust can flow back to the people and ecosystems restoring our planet.\\n' +\n  '\\n' +\n  'View Proof Explorer\\n' +\n  'Partner With Us\\n' +\n  'Read Methodology\\n' +\n  'CanopyProof by Dropin\\n' +\n  '\\n' +\n  'Transparent. Verified. Restored.\\n' +\n  '\\n' +\n  'Public-interest climate infrastructure for people and planet.\\n' +\n  '\\n' +\n  'Prototype transparency: metrics, certificates, telemetry, and selected visual scenes on this page are sample interface data for workflow demonstration. Production proof records require approved evidence sources and review; nothing here is a certified carbon credit or a verified claim about a specific real-world project.'\n"
+    },
+    {
+      "name": "Scene 31 and 29 reachable within two homepage clicks",
+      "status": "FAIL",
+      "error": "locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a[href=\"/life\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"/life\" class=\"BrandSwitcher_life__YlLlH\">Life++ 生生不息 ↗</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <nav class=\"cp-nav-links\" aria-label=\"CanopyProof sections\">…</nav> from <header class=\"cp-nav\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <nav class=\"cp-nav-links\" aria-label=\"CanopyProof sections\">…</nav> from <header class=\"cp-nav\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <header class=\"cp-nav\">…</header> intercepts pointer events\u001b[22m\n\u001b[2m  4 × retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <nav class=\"cp-nav-links\" aria-label=\"CanopyProof sections\">…</nav> from <header class=\"cp-nav\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <nav class=\"cp-nav-links\" aria-label=\"CanopyProof sections\">…</nav> from <header class=\"cp-nav\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <header class=\"cp-nav\">…</header> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <header class=\"cp-nav\">…</header> intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <nav class=\"cp-nav-links\" aria-label=\"CanopyProof sections\">…</nav> from <header class=\"cp-nav\">…</header> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n"
+    },
+    {
+      "name": "Language switch and ecology return update document language",
+      "status": "PASS"
+    },
+    {
+      "name": "zh keyboard draft and no false receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "en keyboard draft and no false receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "Unknown scene and page routes are 404",
+      "status": "PASS"
+    },
+    {
+      "name": "Preview robots disallow and sitemap does not advertise pages",
+      "status": "PASS"
+    }
+  ],
+  "screenshots": [
+    "failure-desktop-life.png",
+    "failure-desktop-en-life.png",
+    "failure-desktop-life-spaces.png",
+    "failure-desktop-en-life-spaces.png",
+    "failure-desktop-life-spaces-31.png",
+    "failure-desktop-en-life-spaces-31.png",
+    "failure-desktop-life-spaces-29.png",
+    "failure-desktop-en-life-spaces-29.png",
+    "failure-desktop-life-center.png",
+    "failure-desktop-en-life-center.png",
+    "failure-desktop-life-agents.png",
+    "failure-desktop-en-life-agents.png",
+    "failure-desktop-life-membership.png",
+    "failure-desktop-en-life-membership.png",
+    "failure-desktop-life-partners.png",
+    "failure-desktop-en-life-partners.png",
+    "failure-desktop-life-trust.png",
+    "failure-desktop-en-life-trust.png",
+    "failure-desktop-company.png",
+    "failure-desktop-en-company.png",
+    "failure-tablet-life.png",
+    "failure-tablet-en-life.png",
+    "failure-tablet-life-spaces.png",
+    "failure-tablet-en-life-spaces.png",
+    "failure-tablet-life-spaces-31.png",
+    "failure-tablet-en-life-spaces-31.png",
+    "failure-tablet-life-spaces-29.png",
+    "failure-tablet-en-life-spaces-29.png",
+    "failure-tablet-life-center.png",
+    "failure-tablet-en-life-center.png",
+    "failure-tablet-life-agents.png",
+    "failure-tablet-en-life-agents.png",
+    "failure-tablet-life-membership.png",
+    "failure-tablet-en-life-membership.png",
+    "failure-tablet-life-partners.png",
+    "failure-tablet-en-life-partners.png",
+    "failure-tablet-life-trust.png",
+    "failure-tablet-en-life-trust.png",
+    "failure-tablet-company.png",
+    "failure-tablet-en-company.png",
+    "failure-mobile-life.png",
+    "failure-mobile-en-life.png",
+    "failure-mobile-life-spaces.png",
+    "failure-mobile-en-life-spaces.png",
+    "failure-mobile-life-spaces-31.png",
+    "failure-mobile-en-life-spaces-31.png",
+    "failure-mobile-life-spaces-29.png",
+    "failure-mobile-en-life-spaces-29.png",
+    "failure-mobile-life-center.png",
+    "failure-mobile-en-life-center.png",
+    "failure-mobile-life-agents.png",
+    "failure-mobile-en-life-agents.png",
+    "failure-mobile-life-membership.png",
+    "failure-mobile-en-life-membership.png",
+    "failure-mobile-life-partners.png",
+    "failure-mobile-en-life-partners.png",
+    "failure-mobile-life-trust.png",
+    "failure-mobile-en-life-trust.png",
+    "failure-mobile-company.png",
+    "failure-mobile-en-company.png"
+  ],
+  "measurements": [],
+  "limitations": [
+    "Lab observations from one local Chromium browser; not Lighthouse or field performance.",
+    "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.",
+    "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.",
+    "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness."
+  ]
+}

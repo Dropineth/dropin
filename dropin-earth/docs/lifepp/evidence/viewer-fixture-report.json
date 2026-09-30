@@ -1,0 +1,21 @@
+{
+  "fixture_only": true,
+  "actual_source_embedded": false,
+  "gpu_rendering_tested": false,
+  "engine": "Chromium",
+  "executable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "browserVersion": "154.0.8037.58",
+  "passed": 8,
+  "adapterRequests": 5,
+  "unexpectedRequests": [],
+  "results": [
+    { "name": "No iframe or third-party request before consent and load", "status": "passed" },
+    { "name": "Mock handshake, full screen, explicit full-screen exit and destroy", "status": "passed" },
+    { "name": "Document load and malformed handshake cannot establish ready; timeout tears down the frame", "status": "passed" },
+    { "name": "Retry starts a fresh mock session after timeout", "status": "passed" },
+    { "name": "Unexpected adapter navigation after readiness enters error and tears down the frame", "status": "passed" },
+    { "name": "375px mobile fallback makes no adapter request and does not overflow", "status": "passed" },
+    { "name": "Unavailable WebGL capability blocks loading", "status": "passed" },
+    { "name": "Component unmount during load removes iframe, readiness listener and timeout", "status": "passed" }
+  ]
+}

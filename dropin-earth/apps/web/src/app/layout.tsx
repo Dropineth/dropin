@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { isProductionSite } from "@/data/life/navigation";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -44,8 +46,8 @@ export const metadata: Metadata = {
     apple: [{ url: appleTouchIconUrl, sizes: "400x400", type: "image/jpeg" }],
   },
   robots: {
-    index: true,
-    follow: true,
+    index: isProductionSite,
+    follow: isProductionSite,
   },
 };
 
@@ -63,12 +65,12 @@ const structuredData = {
     {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,
-      name: "CanopyProof",
+      name: "CanopyProof Limited",
       url: siteUrl,
       logo: `${siteUrl}${iconUrl}`,
       description:
         "Open, public-interest environmental accountability infrastructure by Dropin: transparent, auditable proof records for ecological restoration.",
-      parentOrganization: { "@type": "Organization", name: "Dropin" },
+      brand: [{ "@type": "Brand", name: "CanopyProof" }, { "@type": "Brand", name: "Life++ 生生不息" }],
     },
     {
       "@type": "DataCatalog",
@@ -109,9 +111,12 @@ const structuredData = {
   ],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // The homepage keeps force-static. Other routes already use nonce CSP middleware;
+  // request rendering binds their language and bootstrap scripts to that request.
+  const locale = (await headers()).get("x-life-locale") === "zh" ? "zh-CN" : "en";
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body>
         <script
           type="application/ld+json"

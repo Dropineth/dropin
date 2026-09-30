@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "1.0.0",
+  "documentStatus": "execution_input_not_implemented",
+  "repo": "Dropineth/dropin",
+  "appPath": "dropin-earth/apps/web",
+  "observedBaseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
+  "proposedBranch": "codex/canopyproof-lifepp-full-update-20260930",
+  "companyName": "CanopyProof Limited",
+  "brand": "Life++ 生生不息",
+  "preserveRoutes": [
+    "/"
+  ],
+  "preserveAnchors": [
+    "#top",
+    "#protocol",
+    "#how-it-works",
+    "#explorer",
+    "#methodology",
+    "#stack",
+    "#contact"
+  ],
+  "newRoutes": [
+    "/life",
+    "/life/spaces",
+    "/life/spaces/31",
+    "/life/spaces/29",
+    "/life/center",
+    "/life/agents",
+    "/life/membership",
+    "/life/partners",
+    "/life/trust",
+    "/company"
+  ],
+  "spaces": [
+    {
+      "unit": "L112",
+      "areaSqm": 58.69,
+      "module": "Robot Fleet Garage"
+    },
+    {
+      "unit": "L203",
+      "areaSqm": 135.8,
+      "module": "Sovereign Agent & Edge Lab"
+    },
+    {
+      "unit": "L202",
+      "areaSqm": 185.99,
+      "module": "Life++ Club"
+    },
+    {
+      "unit": "L201",
+      "areaSqm": 290.78,
+      "module": "University + Spatial Arena"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "31",
+      "titleZh": "场景31",
+      "titleEn": "Scene 31",
+      "sourceUrl": "http://kjlying.com:8456/scenes/31",
+      "embedUrl": null,
+      "thumbnail": null,
+      "captureDate": null,
+      "location": null,
+      "captureProvider": null,
+      "assetFormat": null,
+      "assetVersion": null,
+      "sourceDescription": "user-provided 3D Gaussian Splatting test link",
+      "rightsStatus": "pending_confirmation",
+      "transportStatus": "http_source_provided_https_unverified",
+      "embedStatus": "disabled",
+      "navigationStatus": "not_validated",
+      "verificationStatus": "unverified_test_input"
+    },
+    {
+      "id": "29",
+      "titleZh": "场景29",
+      "titleEn": "Scene 29",
+      "sourceUrl": "http://kjlying.com:8456/scenes/29",
+      "embedUrl": null,
+      "thumbnail": null,
+      "captureDate": null,
+      "location": null,
+      "captureProvider": null,
+      "assetFormat": null,
+      "assetVersion": null,
+      "sourceDescription": "user-provided 3D Gaussian Splatting test link",
+      "rightsStatus": "pending_confirmation",
+      "transportStatus": "http_source_provided_https_unverified",
+      "embedStatus": "disabled",
+      "navigationStatus": "not_validated",
+      "verificationStatus": "unverified_test_input"
+    }
+  ],
+  "membership": {
+    "status": "proposal_not_on_sale",
+    "currency": "CNY",
+    "billingInterval": "year",
+    "tiers": [
+      {
+        "name": "Life",
+        "price": 299
+      },
+      {
+        "name": "Life+",
+        "price": 599
+      },
+      {
+        "name": "Life++",
+        "price": 1000
+      }
+    ]
+  },
+  "featureFlags": {
+    "billing": false,
+    "robotCommands": false,
+    "rwaSales": false,
+    "trainingDataSales": false,
+    "liveVideoSales": false,
+    "carbonCreditIssuance": false,
+    "thirdPartyAutoLoad": false
+  },
+  "deployment": {
+    "status": "not_deployed",
+    "mergeApprovalRequired": true,
+    "respectExistingProtectedWorkflows": true
+  },
+  "executionStatus": {
+    "branchCreate": "blocked_http_403",
+    "siteCodeChanged": false,
+    "codexTaskAcknowledged": false,
+    "issueCreate": "blocked_http_403",
+    "codeDelivered": false,
+    "taskBriefDelivered": true
+  },
+  "instructionsFile": "CanopyProof_LifePP_Codex_Full_Update.md"
+}

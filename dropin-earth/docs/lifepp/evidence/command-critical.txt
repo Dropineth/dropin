@@ -1,0 +1,91 @@
+
+> dropin-earth-monorepo@0.1.0 precoverage:critical
+> npm run prisma:generate:test
+
+
+> dropin-earth-monorepo@0.1.0 prisma:generate:test
+> npm --workspace services/api run generate
+
+
+> @dropin/api@0.1.0 generate
+> PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema prisma/schema.prisma
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 141ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+
+> dropin-earth-monorepo@0.1.0 coverage:critical
+> node scripts/canopyproof-critical-coverage-runner.mjs
+
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+....................
+...........
+
+=============================== Coverage summary ===============================
+Statements   : 99.5% ( 9572/9620 )
+Branches     : 95.72% ( 2017/2107 )
+Functions    : 93.46% ( 529/566 )
+Lines        : 99.5% ( 9572/9620 )
+================================================================================
+satellite-state-machine	statements	99.92%	threshold=95.00%	PASS
+satellite-state-machine	branches	98.18%	threshold=95.00%	PASS
+satellite-state-machine	functions	100.00%	threshold=95.00%	PASS
+satellite-state-machine	lines	99.92%	threshold=95.00%	PASS
+satellite-schema-root	statements	100.00%	threshold=95.00%	PASS
+satellite-schema-root	branches	96.88%	threshold=95.00%	PASS
+satellite-schema-root	functions	100.00%	threshold=95.00%	PASS
+satellite-schema-root	lines	100.00%	threshold=95.00%	PASS
+satellite-deterministic-adapters	statements	100.00%	threshold=95.00%	PASS
+satellite-deterministic-adapters	branches	100.00%	threshold=95.00%	PASS
+satellite-deterministic-adapters	functions	100.00%	threshold=95.00%	PASS
+satellite-deterministic-adapters	lines	100.00%	threshold=95.00%	PASS
+mobile-evidence-vault	statements	98.34%	threshold=95.00%	PASS
+mobile-evidence-vault	branches	96.58%	threshold=95.00%	PASS
+mobile-evidence-vault	functions	100.00%	threshold=95.00%	PASS
+mobile-evidence-vault	lines	98.34%	threshold=95.00%	PASS
+mobile-sync-authority	statements	99.77%	threshold=95.00%	PASS
+mobile-sync-authority	branches	96.00%	threshold=95.00%	PASS
+mobile-sync-authority	functions	100.00%	threshold=95.00%	PASS
+mobile-sync-authority	lines	99.77%	threshold=95.00%	PASS
+security-authorization	statements	99.46%	threshold=95.00%	PASS
+security-authorization	branches	97.68%	threshold=95.00%	PASS
+security-authorization	functions	100.00%	threshold=95.00%	PASS
+security-authorization	lines	99.46%	threshold=95.00%	PASS
+kms-verify-only	statements	98.92%	threshold=95.00%	PASS
+kms-verify-only	branches	97.01%	threshold=95.00%	PASS
+kms-verify-only	functions	100.00%	threshold=95.00%	PASS
+kms-verify-only	lines	98.92%	threshold=95.00%	PASS
+metadata-extraction	statements	99.38%	threshold=95.00%	PASS
+metadata-extraction	branches	96.71%	threshold=95.00%	PASS
+metadata-extraction	functions	100.00%	threshold=95.00%	PASS
+metadata-extraction	lines	99.38%	threshold=95.00%	PASS
+effective-media-orchestration	statements	100.00%	threshold=95.00%	PASS
+effective-media-orchestration	branches	97.96%	threshold=95.00%	PASS
+effective-media-orchestration	functions	100.00%	threshold=95.00%	PASS
+effective-media-orchestration	lines	100.00%	threshold=95.00%	PASS
+audit-challenge-invariants	statements	99.81%	threshold=95.00%	PASS
+audit-challenge-invariants	branches	96.63%	threshold=95.00%	PASS
+audit-challenge-invariants	functions	100.00%	threshold=95.00%	PASS
+audit-challenge-invariants	lines	99.81%	threshold=95.00%	PASS
+global-spatial-disclosure	statements	99.77%	threshold=95.00%	PASS
+global-spatial-disclosure	branches	96.03%	threshold=95.00%	PASS
+global-spatial-disclosure	functions	100.00%	threshold=95.00%	PASS
+global-spatial-disclosure	lines	99.77%	threshold=95.00%	PASS
