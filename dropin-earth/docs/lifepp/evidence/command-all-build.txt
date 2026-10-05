@@ -1,0 +1,197 @@
+
+> dropin-earth-monorepo@0.1.0 build
+> npm run build --workspaces --if-present
+
+
+> @dropin/admin@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.22
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 1921ms
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/18) ...
+   Generating static pages (4/18)
+   Generating static pages (8/18)
+   Generating static pages (13/18)
+ ✓ Generating static pages (18/18)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      122 B         103 kB
+├ ○ /_not-found                            990 B         103 kB
+├ ƒ /campaigns                             192 B         106 kB
+├ ƒ /campaigns/[campaignId]                192 B         106 kB
+├ ƒ /certificates                          192 B         106 kB
+├ ƒ /challenges                            192 B         106 kB
+├ ƒ /evidence                              192 B         106 kB
+├ ƒ /feedback                              691 B         107 kB
+├ ƒ /fund                                  192 B         106 kB
+├ ƒ /launch                                831 B         107 kB
+├ ƒ /payments                              192 B         106 kB
+├ ƒ /payments/reconciliation               192 B         106 kB
+├ ƒ /projects                              192 B         106 kB
+├ ƒ /risk                                  192 B         106 kB
+├ ƒ /settlements                           192 B         106 kB
+├ ƒ /status                                192 B         106 kB
+└ ƒ /treasury                              192 B         106 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/18-6904d02802e458a1.js        46.3 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)           1.9 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> @dropin/miniapp-ton@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.22
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 1869ms
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5)
+   Generating static pages (2/5)
+   Generating static pages (3/5)
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                    1.59 kB         107 kB
+├ ○ /_not-found                            990 B         104 kB
+├ ƒ /campaign/[campaignId]               2.59 kB         108 kB
+├ ƒ /me/forest                             161 B         106 kB
+├ ƒ /round/[roundId]                     4.51 kB         110 kB
+└ ƒ /share/[ticketId]                    1.63 kB         108 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-6904d02802e458a1.js        46.3 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          1.93 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> @dropin/web@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.22
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.2s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/24) ...
+   Generating static pages (6/24)
+   Generating static pages (12/24)
+   Generating static pages (18/24)
+ ✓ Generating static pages (24/24)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      460 B         103 kB
+├ ƒ /_not-found                            992 B         104 kB
+├ ƒ /about                                 136 B         103 kB
+├ ƒ /campaigns                             196 B         106 kB
+├ ƒ /campaigns/[campaignId]              2.96 kB         109 kB
+├ ƒ /certificates/[certificateId]          196 B         106 kB
+├ ƒ /challenges                            196 B         106 kB
+├ ƒ /challenges/[challengeId]              196 B         106 kB
+├ ƒ /company                              5.3 kB         111 kB
+├ ƒ /dashboard/global                    10.2 kB         134 kB
+├ ƒ /draw                                2.95 kB         106 kB
+├ ƒ /en/company                           5.3 kB         111 kB
+├ ƒ /en/life/[[...path]]                   130 B         117 kB
+├ ƒ /explorer                              130 B         129 kB
+├ ƒ /explorer/project/[publicProjectId]    130 B         129 kB
+├ ƒ /faq                                   196 B         106 kB
+├ ƒ /feedback                            1.27 kB         109 kB
+├ ƒ /fund                                  196 B         106 kB
+├ ƒ /fund/allocations/[allocationId]       196 B         106 kB
+├ ƒ /funding                               195 B         133 kB
+├ ƒ /governance                            195 B         133 kB
+├ ƒ /life/[[...path]]                      130 B         117 kB
+├ ƒ /lottery/[roundId]                   2.06 kB         106 kB
+├ ƒ /mobile/report                         195 B         133 kB
+├ ƒ /partners                              195 B         133 kB
+├ ƒ /payments/[paymentIntentId]            196 B         106 kB
+├ ƒ /projects                              196 B         106 kB
+├ ƒ /projects/[projectId]                  196 B         106 kB
+├ ƒ /red-team                              196 B         106 kB
+├ ƒ /reports/esg                           195 B         133 kB
+├ ƒ /risk                                  195 B         133 kB
+├ ○ /robots.txt                            136 B         103 kB
+├ ○ /sitemap.xml                           136 B         103 kB
+├ ƒ /status                                136 B         103 kB
+└ ƒ /terra                               1.54 kB         134 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-6904d02802e458a1.js        46.3 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          2.21 kB
+
+
+ƒ Middleware                             35.1 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> @dropin/crypto@0.1.0 build
+> tsc --noEmit
+
+
+> @dropin/dropin-cloudflare@0.1.0 build
+> tsc --noEmit
+
+
+> @dropin/dropin-protocol@0.1.0 build
+> tsc --noEmit
+
+
+> @dropin/schemas@0.1.0 build
+> tsc --noEmit
+
+
+> @dropin/ui@0.1.0 build
+> tsc --noEmit
+
+
+> @dropin/api@0.1.0 prebuild
+> npm run generate
+
+
+> @dropin/api@0.1.0 generate
+> PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema prisma/schema.prisma
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 216ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+> @dropin/api@0.1.0 build
+> tsc --noEmit
+
+
+> @dropin/satellite-ingestor@0.1.0 build
+> tsc --noEmit

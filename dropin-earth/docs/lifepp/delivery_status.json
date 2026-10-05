@@ -1,0 +1,419 @@
+{
+  "schemaVersion": 4,
+  "generatedAt": "2026-10-05T19:43:37.578141+00:00",
+  "overallStatus": "R3_2_1_PRECOMMIT_IN_PROGRESS_HIGH_AUDIT_OPEN_PRODUCTION_HOLD",
+  "repository": "Dropineth/dropin",
+  "application": "dropin-earth/apps/web",
+  "branch": "codex/canopyproof-lifepp-full-update-20260930",
+  "baseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
+  "phaseStartCommit": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+  "candidateCommit": null,
+  "candidateCommitResolution": "Precommit working-tree integration. This tracked document cannot embed the future SHA of the commit containing itself; resolve the final owning PR head externally, then use fresh exact-head CI receipts. The parent SHA and historical module snapshot are not current acceptance.",
+  "prUrl": "https://github.com/Dropineth/dropin/pull/4",
+  "productionAuthority": false,
+  "evidencePolicy": "A result belongs only to its recorded HEAD, source fingerprint, lock hash, command and time. Prior phase records remain historical, not current acceptance.",
+  "runtime": {
+    "model": "gpt-6-astra",
+    "reasoningEffort": "ultra",
+    "evidence": "Current root turn_context metadata 2026-09-30T09:40:34.437Z; ultra is the highest exposed supported effort. No account settings changed.",
+    "node": "22.22.3",
+    "npm": "10.9.4",
+    "localPlatform": "macOS arm64",
+    "ciPlatform": "GitHub ubuntu-latest",
+    "modelEvidenceScope": "September30 historical metadata only; current October6 model was not independently verified."
+  },
+  "items": {
+    "originalCheckout": {
+      "status": "PRESERVED",
+      "statusSha256": "e86859fd8cc2ca284cf0064e9cba2375b95a7a0bf59ebfc8afc81ca8730cf2d7",
+      "originalStatusEntries": 529,
+      "note": "All work is in the previously isolated PR4 worktree."
+    },
+    "dependencyAudit": {
+      "status": "FAIL_FOUR_HIGH_REMAIN",
+      "scanSucceeded": true,
+      "observedAt": "2026-10-05T18:46:24.746068+00:00",
+      "sourceHead": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "22.22.3",
+      "npm": "10.9.4",
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "lockUnchanged": true,
+      "findings": {
+        "moderate": 0,
+        "high": 4,
+        "critical": 0,
+        "total": 4
+      },
+      "distinctRootAdvisories": [
+        "GHSA-vfj7-8cjw-p6xm"
+      ],
+      "chain": "@next/eslint-plugin-next@15.5.26 -> fast-glob@3.3.1 -> micromatch@4.0.8 -> braces@3.0.3",
+      "decision": "NO_VERIFIED_PUBLISHED_COMPATIBLE_FIX",
+      "gateThresholdUnchanged": true,
+      "diagnosticAuditLevel": "high",
+      "repositoryGateAuditLevel": "moderate",
+      "rawAudit": "release-remediation/r3-2-1-20261006/fresh-audit.json",
+      "metadata": "release-remediation/r3-2-1-20261006/fresh-audit.meta.json",
+      "decisionRecord": "release-remediation/r3-2-1-20261006/decision.json",
+      "stdoutSha256": "9cebcc284f98f2e6ac60fa72824bab97bbffe432b16f87e1788f45ecb99bc432",
+      "waiver": false,
+      "scope": "Fresh local dependency scan before integration validation finished; not remote final-head CI."
+    },
+    "sameCandidateTrustGate": {
+      "status": "NOT_STARTED_FOR_UNCOMMITTED_INTEGRATION",
+      "head": null,
+      "note": "Both full workflows must run after candidate source and docs freeze; a9c/35c/historical green evidence does not transfer."
+    },
+    "sameCandidateLifeAcceptance": {
+      "status": "NOT_STARTED_FOR_UNCOMMITTED_INTEGRATION",
+      "head": null,
+      "note": "Both full workflows must run after candidate source and docs freeze; a9c/35c/historical green evidence does not transfer."
+    },
+    "pagesAndEcology": {
+      "status": "PRECOMMIT_CURRENT_CHROMIUM_PASS_OTHER_FINGERPRINT_HISTORY_FULL_CI_PENDING",
+      "chineseRoutes": 11,
+      "englishRoutes": 11,
+      "widths": [
+        375,
+        390,
+        768,
+        1440,
+        1920
+      ],
+      "engines": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "note": "Center gains a local software spatial workbench; Home and FourShopPlan remain. Recovered compiled review below binds35c10ef only, not this integration.",
+      "visualReports": [
+        "R3_VISUAL_REVIEW_ZH.md",
+        "R3_VISUAL_REVIEW_EN.md"
+      ],
+      "recoveredCompiledReview": {
+        "head": "35c10ef3739a888478043374e7fc83d6bce0a928",
+        "browserPass": 150,
+        "routePass": 15,
+        "originalScreensViewed": 44,
+        "panelsViewed": 103,
+        "keyFlowsPass": 7,
+        "physicalPhoneTest": false,
+        "independentHumanReview": false
+      }
+    },
+    "fourShops": {
+      "status": "SOURCE_REVIEWED_PLANNED",
+      "units": [
+        "L112",
+        "L203",
+        "L202",
+        "L201"
+      ],
+      "areaSqm": 671.26,
+      "secondFloorAreaSqm": 612.57,
+      "leaseVerified": false,
+      "openToPublic": false,
+      "source": "R3_SOURCE_ASSET_REGISTER.json",
+      "componentFixture": "30 bilingual/width/browser layout cases plus interactions passed before commit; must rerun for candidate."
+    },
+    "scene33": {
+      "status": "SAFE_FALLBACK_PRIMARY",
+      "originalUrl": "http://kjlying.com:8456/scenes/33",
+      "realSourceLoaded": false,
+      "userDisplayInstructionReceived": true,
+      "thirdPartyRightsVerified": false,
+      "verifiedHttpsUrl": null,
+      "roomBinding": null,
+      "note": "HTTP probe reset; native Chrome503; HTTPS not verified."
+    },
+    "scene29": {
+      "status": "SAFE_FALLBACK_PRIMARY",
+      "originalUrl": "http://kjlying.com:8456/scenes/29",
+      "realSourceLoaded": false,
+      "userDisplayInstructionReceived": true,
+      "thirdPartyRightsVerified": false,
+      "verifiedHttpsUrl": null,
+      "roomBinding": null,
+      "note": "A 948-byte206 SPA entry is not engine readiness; native Chrome503; HTTPS not verified."
+    },
+    "scene31": {
+      "status": "SAFE_FALLBACK_LEGACY",
+      "originalUrl": "http://kjlying.com:8456/scenes/31",
+      "realSourceLoaded": false,
+      "userDisplayInstructionReceived": false,
+      "thirdPartyRightsVerified": false,
+      "verifiedHttpsUrl": null,
+      "roomBinding": null,
+      "note": "Historical URL retained with separate status; no equivalence to33 claimed."
+    },
+    "consultation": {
+      "status": "DRAFT_ONLY",
+      "realInstitutionalReceipt": false,
+      "realPublicPersistence": false,
+      "localSyntheticPersistence": true,
+      "note": "Current source/runtime has no complete approved institutional receiver configuration. Per-request unknown receipt state now survives another request success.",
+      "evidence": "R3_CONSULTATION_REVIEW.md"
+    },
+    "publicPreview": {
+      "status": "NOT_DEPLOYED_EXISTING_AUTHORIZED_PATH_AND_APPROVAL_UNVERIFIED",
+      "url": null,
+      "noindexRequired": true,
+      "note": "No tunnel, new resource, protection change or PR3 merge.",
+      "localRecoveredUrl": "http://127.0.0.1:8788/life"
+    },
+    "production": {
+      "status": "NOT_MERGED_NOT_DEPLOYED_PRECOMMIT",
+      "targetUrl": "https://canopyproof.org",
+      "worker": "canopyproof-web",
+      "newWorkerVersion": null,
+      "rollbackWorkerVersion": null,
+      "releaseEnvironment": "canopyproof-production",
+      "evidence": "R3_2_1_INTEGRATION.md",
+      "blockers": [
+        "Fresh valid local audit retains4 high findings; no verified compatible published fix or waiver",
+        "Final integration commit and complete exact-candidate then actual-main-SHA CI pending",
+        "Real independent final-head human review absent at current observation",
+        "Current administrator evidence must resolve previously observed Cloudflare Git publishing outside approval before merge",
+        "Actual known-good active rollback version/deployment UUIDs, binding compatibility and real post-merge admin statement required",
+        "Actual production artifact review and independent existing-environment approval required"
+      ],
+      "localHttpsPreflight": "Chinese/English curl HEAD exit35 SSL_ERROR_SYSCALL; local access failure only, not proof of global public unavailability",
+      "currentOverviewRecord": "release-remediation/r3-2-1-20261006/cloudflare-overview-read.json"
+    },
+    "disabledBusinessFlags": {
+      "billing": false,
+      "rwaSales": false,
+      "robotCommands": false,
+      "trainingDataSales": false,
+      "carbonCreditIssuance": false
+    },
+    "artifactRecovery": {
+      "status": "MAC_SUBSET_VERIFIED_COMPILED_REVIEW_RESTORED",
+      "originalFullZipVerification": "supplied external-container receipt; not separately rehashed on Mac",
+      "currentDiskBlocker": false,
+      "productionArtifact": false
+    },
+    "centerSpatialIntegration": {
+      "status": "SOURCE_INTEGRATED_PRECOMMIT_VALIDATION_IN_PROGRESS",
+      "routes": [
+        "/life/center",
+        "/en/life/center"
+      ],
+      "placement": "Below retained FourShopPlan",
+      "sourceModuleFiles": 10,
+      "renderer": "Three.js geometry with Canvas2D software schematic",
+      "webglEnabled": false,
+      "webglAccepted": false,
+      "physicalGpuAcceptance": false,
+      "contractCasesRegistered": 23,
+      "mockLifecycleCasesRegistered": 17,
+      "testRegistration": "Existing tests/unit/lifepp-*.test.ts wildcard; no replaced legacy tests",
+      "browserRegistration": "Spatial subchecks inside existing ten Center locale/width route results of original150-result Next/workerd matrix",
+      "noNewDependencies": true,
+      "noNewRoutes": true,
+      "noLockChange": true,
+      "noNewPublicImages": true,
+      "homeChanged": false,
+      "fourShopPlanChanged": false,
+      "syntheticExport": {
+        "isDemo": true,
+        "signed": false,
+        "finalAuthority": false,
+        "externalActions": 0,
+        "realReceipt": false
+      },
+      "visibleStatusSnapshot": {
+        "asOf": "2026-10-05",
+        "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+        "scope": "Historical status, not current whole-app CI"
+      },
+      "record": "R3_2_1_INTEGRATION.md",
+      "mobileFit": "CORRECTED; camera20cases and finalChromium150 pass, with limited agent visual evidence; no physical-device/human acceptance",
+      "cameraCasesRegistered": 20,
+      "newUnitCasesTotal": 60
+    },
+    "releasePeople": {
+      "observedAt": "2026-10-05T18:52:36.801921+00:00",
+      "permissions": {
+        "Dropineth": "admin",
+        "poccahin": "write",
+        "xiruier": "write"
+      },
+      "productionReviewers": [
+        "poccahin",
+        "Dropineth"
+      ],
+      "preventSelfReview": true,
+      "platformAdminsCanBypass": true,
+      "runnerRequiresRealIndependentApproval": true,
+      "feasibleCombination": "poccahin or xiruier initiates; Dropineth supplies actual independent review, post-merge admin attestation and environment approval; xiruier may separately review code.",
+      "approvalReceived": false,
+      "classicBranchProtection": "NOT_VERIFIED_CURRENT_READS_EOF",
+      "humanIndependenceBoundary": "Distinct eligible account names are necessary but not proof of independent people. External human review must actually occur; an agent or author using another account cannot satisfy it."
+    }
+  },
+  "historicalEvidence": {
+    "previousTrackedDeliveryAt": "2026-09-30T06:20:57.261255+00:00",
+    "baselineTrustRun": "https://github.com/Dropineth/dropin/actions/runs/36679451381",
+    "baselineLifeRun": "https://github.com/Dropineth/dropin/actions/runs/36679451369",
+    "scope": "Prior release-remediation and final-7613ee6 reports remain historical and are not overwritten by this candidate.",
+    "r3FirstCandidate": {
+      "head": "1bd9416e9c4b2bb004f8d627030d4237fa44e609",
+      "status": "FAIL_NOT_ACCEPTED",
+      "trustRun": "https://github.com/Dropineth/dropin/actions/runs/36703007035",
+      "lifeRun": "https://github.com/Dropineth/dropin/actions/runs/36703007028",
+      "record": "R3_ACCEPTANCE_CORRECTION.md"
+    },
+    "recoveredR3Candidate": {
+      "head": "35c10ef3739a888478043374e7fc83d6bce0a928",
+      "trustRun": "https://github.com/Dropineth/dropin/actions/runs/36705240448",
+      "lifeRun": "https://github.com/Dropineth/dropin/actions/runs/36705240440",
+      "auditZeroDate": "2026-09-30",
+      "notCurrentAudit": true
+    },
+    "r3LocalPrecommitValidation": {
+      "scope": "Dirty R3 working tree over phaseStartCommit; diagnostic only, not same-candidate remote acceptance",
+      "node": "22.22.3",
+      "npm": "10.9.4",
+      "checks": [
+        {
+          "id": "units",
+          "command": "npm test",
+          "result": "PASS 883/883; zero skipped",
+          "log": "/tmp/lifepp-r3-inputs/units-all-second.log",
+          "finishedAt": "2026-09-30T10:13:21.452123+00:00",
+          "sha256": "6b9582de6ff6bca6c01ce165d55cc0eb8f3f441fae1f4ee1926e727a934dc948"
+        },
+        {
+          "id": "lint",
+          "command": "npm run lint",
+          "result": "PASS",
+          "log": "/tmp/lifepp-r3-inputs/lint-third.log",
+          "finishedAt": "2026-09-30T10:12:56.652927+00:00",
+          "sha256": "4004a2f54f845865b0b296b2ffa5557dc2bb8ab75a269926b344fac2b5628968"
+        },
+        {
+          "id": "types",
+          "command": "npm run typecheck",
+          "result": "PASS",
+          "log": "/tmp/lifepp-r3-inputs/types-workspace.log",
+          "finishedAt": "2026-09-30T10:00:24.160249+00:00",
+          "sha256": "ae2fc97727ae1f59df227a36842cb928be79fa7c5a6b84d5d1d9c5f051310588"
+        }
+      ],
+      "note": "Full unit/lint/workspace type results precede the final small mobile-focus fix. That fix has separate web types/scoped lint/10-keyboard-link checks; final full CI is still mandatory."
+    },
+    "r3_1TrackedStatus": {
+      "record": "release-remediation/r3-2-1-20261006/previous-delivery-status-r3-1.json",
+      "generatedAt": "2026-10-05T10:24:40.030415+00:00",
+      "scope": "Entire previous tracked status retained verbatim; not current integration acceptance."
+    },
+    "r3_1RemoteCandidate": {
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "observedDate": "2026-10-05",
+      "trustRun": "https://github.com/Dropineth/dropin/actions/runs/37298063380",
+      "trustStatus": "FAILURE_AUDIT_4_HIGH",
+      "trustCommandGroupsObserved": 13,
+      "trustIndividualCommandHashVerification": false,
+      "trustArtifactLimit": "Main validation ZIP ordinary GET returned EOF; complete job log and digest-verified coverage/raw-audit artifact were retrieved.",
+      "lifeRun": "https://github.com/Dropineth/dropin/actions/runs/37298063351",
+      "lifeStatus": "SUCCESS",
+      "lifeCommandLogHashesVerified": 15,
+      "lifeBrowserChecksPerEngine": 150,
+      "scope": "This preceding committed head is not the new R3.2.1 dirty integration or its future candidate."
+    }
+  },
+  "localPrecommitValidation": {
+    "status": "PRECOMMIT_LOCAL_DIAGNOSTICS_RECORDED_FULL_CI_PENDING",
+    "scope": "Distinct dirty-source runs over a9c83284, not one clean committed candidate; prior local failures retained.",
+    "node": "22.22.3",
+    "npm": "10.9.4",
+    "evidence": "release-remediation/r3-2-1-20261006/local-validation-in-progress.json",
+    "runs": [
+      {
+        "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt1/run.json",
+        "sourceRecordSha256": "fda13ed250897164e696501b5bdd33196213026a37514407abde109e99f6417c",
+        "status": "FAIL",
+        "startedAt": "2026-10-05T19:00:56.901Z",
+        "finishedAt": "2026-10-05T19:04:19.260Z",
+        "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb"
+      },
+      {
+        "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt2/run.json",
+        "sourceRecordSha256": "f80b2a617dfa8295127c381af93c8bd29a23a9113bcebfcc271677f14f478bf8",
+        "status": "FAIL",
+        "startedAt": "2026-10-05T19:05:26.256Z",
+        "finishedAt": "2026-10-05T19:14:04.433Z",
+        "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb"
+      },
+      {
+        "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/local-db/run.json",
+        "sourceRecordSha256": "fcc203a008bdeabd32472cc1f4bd4fb2c1e056fb03d7ff062fbd499adb8aaefc",
+        "status": "PASS",
+        "startedAt": "2026-10-05T19:06:19.813Z",
+        "finishedAt": "2026-10-05T19:07:24.333Z",
+        "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb"
+      },
+      {
+        "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/local-final/run.json",
+        "sourceRecordSha256": "9c8879116d9daf0893ebc8445d9895ba057ee6cde81a25ee199ca178a89391ed",
+        "status": "PASS",
+        "startedAt": "2026-10-05T19:24:50.460Z",
+        "finishedAt": "2026-10-05T19:26:47.751Z",
+        "sourceFingerprintSha256": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571"
+      },
+      {
+        "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt3/run.json",
+        "sourceRecordSha256": "f948452a1f811066e3927d183bcfd1b8e3b0ef7222da7ee03d22a44e2f9a4f42",
+        "status": "FAIL",
+        "startedAt": "2026-10-05T19:24:14.023Z",
+        "finishedAt": "2026-10-05T19:26:44.029Z",
+        "sourceFingerprintSha256": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571"
+      },
+      {
+        "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt4/run.json",
+        "sourceRecordSha256": "9c1925a16a8612a1a6c1f5f02092469e703aa0acbb20d16965d966440664af52",
+        "status": "FAIL",
+        "startedAt": "2026-10-05T19:28:00.534Z",
+        "finishedAt": "2026-10-05T19:30:29.219Z",
+        "sourceFingerprintSha256": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766"
+      },
+      {
+        "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt5/run.json",
+        "sourceRecordSha256": "15f736468ef315a83b726e4d3b5708238657ba1257da2bf239eb813ce2926869",
+        "status": "PASS",
+        "startedAt": "2026-10-05T19:34:14.669Z",
+        "finishedAt": "2026-10-05T19:37:23.323Z",
+        "sourceFingerprintSha256": "d81a9932bae16f8a7fdf1b086760355c861b2c8f3da8955235d3562666a76bdf"
+      }
+    ],
+    "latestLocalUnitResult": {
+      "passed": 943,
+      "failed": 0,
+      "skipped": 0,
+      "run": "local-final",
+      "sourceFingerprintSha256": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571"
+    },
+    "latestLocalWebTypecheck": "PASS at local-final fingerprint; browser-helper edits followed",
+    "latestLocalBrowserResult": {
+      "engine": "chromium",
+      "passed": 150,
+      "failed": 0,
+      "maplibreFixturePassed": 2,
+      "sourceFingerprintSha256": "d81a9932bae16f8a7fdf1b086760355c861b2c8f3da8955235d3562666a76bdf",
+      "run": "next-browser-attempt5",
+      "compiledBuild": "Attempt4 unchanged output; exact source reconstruction and compiled hash in reuse-build.json"
+    },
+    "earlierEngineResults": {
+      "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+      "chromium": "150PASS",
+      "firefox": "150PASS",
+      "webkit": "128PASS22FAIL; macOS keyboard navigation diagnosis, not accepted"
+    },
+    "lintBoundary": "Original npm run lint exit1 with3322 errors in ignored recovered vendor/prototype/review files. Initial525-source and final526-source diagnostics PASS; neither replaces the original gate. No ignores broadened or data removed; clean-checkout CI must run original lint.",
+    "audit": "Valid fresh scan FAIL4high; no waiver",
+    "otherDiagnostics": "Initial PGlite40/Python4 and supply chain716components/0findings passed at their own recorded scope. OpenNext/workerd final-source result pending.",
+    "candidateCommit": null,
+    "productionAuthority": false
+  }
+}

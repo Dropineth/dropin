@@ -1,0 +1,98 @@
+
+> dropin-earth-monorepo@0.1.0 pretest:webgl:browser
+> npm --workspace apps/web run build
+
+
+> @dropin/web@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.26
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 6.1s
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+   Collecting page data ...
+   Generating static pages (0/25) ...
+   Generating static pages (6/25) 
+   Generating static pages (12/25) 
+   Generating static pages (18/25) 
+ ✓ Generating static pages (25/25)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      462 B         103 kB
+├ ƒ /_not-found                            987 B         104 kB
+├ ƒ /about                                 146 B         103 kB
+├ ƒ /campaigns                             195 B         106 kB
+├ ƒ /campaigns/[campaignId]               2.9 kB         109 kB
+├ ƒ /certificates/[certificateId]          195 B         106 kB
+├ ƒ /challenges                            195 B         106 kB
+├ ƒ /challenges/[challengeId]              195 B         106 kB
+├ ƒ /company                               188 B         115 kB
+├ ƒ /dashboard/global                    10.2 kB         134 kB
+├ ƒ /draw                                 2.9 kB         106 kB
+├ ƒ /en/company                            188 B         115 kB
+├ ƒ /en/life/[[...path]]                   133 B         121 kB
+├ ƒ /explorer                              130 B         129 kB
+├ ƒ /explorer/project/[publicProjectId]    130 B         129 kB
+├ ƒ /faq                                   195 B         106 kB
+├ ƒ /feedback                            1.27 kB         109 kB
+├ ƒ /fund                                  195 B         106 kB
+├ ƒ /fund/allocations/[allocationId]       195 B         106 kB
+├ ƒ /funding                               196 B         133 kB
+├ ƒ /governance                            196 B         133 kB
+├ ƒ /life/[[...path]]                      133 B         121 kB
+├ ƒ /life/inquiries                        146 B         103 kB
+├ ƒ /life/inquiries/maintenance            146 B         103 kB
+├ ƒ /lottery/[roundId]                   2.06 kB         106 kB
+├ ƒ /mobile/report                         196 B         133 kB
+├ ƒ /partners                              196 B         133 kB
+├ ƒ /payments/[paymentIntentId]            195 B         106 kB
+├ ƒ /projects                              195 B         106 kB
+├ ƒ /projects/[projectId]                  195 B         106 kB
+├ ƒ /red-team                              195 B         106 kB
+├ ƒ /reports/esg                           196 B         133 kB
+├ ƒ /request-errors/prefetch               146 B         103 kB
+├ ƒ /risk                                  196 B         133 kB
+├ ○ /robots.txt                            146 B         103 kB
+├ ○ /sitemap.xml                           146 B         103 kB
+├ ƒ /status                                146 B         103 kB
+└ ƒ /terra                               1.55 kB         134 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-498168fb58dcd546.js        46.4 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          2.27 kB
+
+
+ƒ Middleware                             34.9 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+> dropin-earth-monorepo@0.1.0 test:webgl:browser
+> node --import tsx tests/browser/canopyproof-global-impact-webgl.spec.ts
+
+PASS	chromium	desktop-chromium	normal WebGL, InstancedMesh, pixels, controls, and privacy
+PASS	chromium	desktop-chromium	missing WebGL API renders deterministic fallback
+PASS	chromium	desktop-chromium	no WebGL renders deterministic usable fallback
+PASS	chromium	desktop-chromium	dynamic Three.js chunk failure falls back
+PASS	chromium	desktop-chromium	cold chunk deadline falls back without a late duplicate renderer
+PASS	chromium	desktop-chromium	missed first-frame deadline renders deterministic fallback
+PASS	chromium	desktop-chromium	context loss exposes controlled bounded recovery
+PASS	chromium	desktop-chromium	reduced-motion policy remains readable and nonanimated
+PASS	chromium	mobile-chromium	mobile WebGL has no viewport overflow and keeps controls operable
+PASS	firefox	desktop-firefox	missing WebGL API renders deterministic fallback
+PASS	firefox	desktop-firefox	no WebGL renders deterministic usable fallback
+PASS	firefox	desktop-firefox	dynamic Three.js chunk failure falls back
+PASS	firefox	desktop-firefox	reduced-motion policy remains readable and nonanimated
+PASS	webkit	desktop-webkit	missing WebGL API renders deterministic fallback
+PASS	webkit	desktop-webkit	no WebGL renders deterministic usable fallback
+PASS	webkit	desktop-webkit	dynamic Three.js chunk failure falls back
+PASS	webkit	desktop-webkit	cold chunk deadline falls back without a late duplicate renderer
+PASS	webkit	desktop-webkit	reduced-motion policy remains readable and nonanimated
+PASS	webkit	mobile-webkit	mobile WebKit fallback remains usable without viewport overflow
+PASS	webgl-browser-scenarios	19

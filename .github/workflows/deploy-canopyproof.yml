@@ -1,161 +1,153 @@
 name: CanopyProof Production Deploy
+run-name: Web release ${{ inputs.expected_commit_sha }} — independent approval required
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
-      deploy_mode:
-        description: "Run a dry-run validation or deploy to production."
+      expected_commit_sha:
+        description: 'Exact reviewed PR #4 merge SHA at main tip (40 lowercase hex characters).'
+        type: string
         required: true
-        default: "dry-run"
-        type: choice
-        options:
-          - dry-run
-          - live
-      frontend_deploy_mode:
-        description: "Frontend deploy path. Use skip when Cloudflare Pages Git integration owns the web deploy."
+      rollback_version_id:
+        description: 'Existing known-good canopyproof-web version UUID currently serving 100%.'
+        type: string
         required: true
-        default: "skip"
-        type: choice
-        options:
-          - skip
-          - auto
-          - pages-static
-          - opennext
+      rollback_deployment_id:
+        description: 'Existing active deployment UUID containing that rollback version.'
+        type: string
+        required: true
+      maintainer_attestation_url:
+        description: 'PR #4 maintainer JSON comment confirming Git publishing path, real rollback and visual evidence; see R3_RELEASE_AUDIT.md.'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  deployments: read
 
 concurrency:
-  group: canopyproof-production-${{ github.ref }}
+  group: canopyproof-production
   cancel-in-progress: false
 
+defaults:
+  run:
+    shell: bash
+    working-directory: dropin-earth
+
+env:
+  LIFEPP_RELEASE_SHA: ${{ inputs.expected_commit_sha }}
+  LIFEPP_ROLLBACK_VERSION: ${{ inputs.rollback_version_id }}
+  LIFEPP_ROLLBACK_DEPLOYMENT: ${{ inputs.rollback_deployment_id }}
+  LIFEPP_ATTESTATION_URL: ${{ inputs.maintainer_attestation_url }}
+  LIFEPP_RELEASE_DIR: reports/lifepp-release
+  NEXT_PUBLIC_CANOPYPROOF_MODE: production
+  NEXT_PUBLIC_DROPIN_SITE_URL: https://canopyproof.org
+  DROPIN_ALLOW_ADMIN_PROXY: 'false'
+  DROPIN_MAINNET_TRANSFERS_ENABLED: 'false'
+  DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: 'false'
+  NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS: 'false'
+  NEXT_TELEMETRY_DISABLED: '1'
+  WRANGLER_SEND_METRICS: 'false'
+
 jobs:
-  deploy-production:
-    name: Build, deploy, smoke test, and notify
+  prepare:
+    name: Prepare exact-SHA web artifact without cloud credentials
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode == 'dry-run' && 'canopyproof-dry-run' || 'canopyproof-production' }}
-    permissions:
-      contents: read
-
-    defaults:
-      run:
-        shell: bash
-        working-directory: dropin-earth
-
-    env:
-      CANOPYPROOF_DOMAIN: canopyproof.org
-      CANOPYPROOF_ZONE_NAME: canopyproof.org
-      CF_PROJECT_NAME: canopyproof
-      CF_BRANCH: ${{ github.ref_name }}
-      WORKER_NAME: canopyproof-api-proxy
-      WORKER_ROUTE: canopyproof.org/api/*
-      WORKER_ZONE_NAME: canopyproof.org
-      DROPIN_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_mode || 'live' }}
-      DROPIN_FRONTEND_DEPLOY_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.frontend_deploy_mode || 'skip' }}
-      DROPIN_CANOPYPROOF_MODE: production
-      DROPIN_ALLOWED_ORIGINS: https://canopyproof.org,https://www.canopyproof.org
-      DROPIN_ALLOW_ADMIN_PROXY: "false"
-      DROPIN_API_ORIGIN: ${{ secrets.DROPIN_API_ORIGIN }}
-      CF_API_TOKEN_PROD: ${{ secrets.CF_API_TOKEN_PROD }}
-      CF_ACCOUNT_ID_PROD: ${{ secrets.CF_ACCOUNT_ID_PROD }}
-      WORKER_ZONE_ID_PROD: ${{ secrets.WORKER_ZONE_ID_PROD }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN_PROD }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID_PROD }}
-      DROPIN_OPENNEXT_DEPLOY_COMMAND: ${{ secrets.DROPIN_OPENNEXT_DEPLOY_COMMAND }}
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      DROPIN_SKIP_CI: "true"
-      DROPIN_RUN_ANCHOR_TEST: "false"
-      DROPIN_RUN_SMOKE: "true"
-      DROPIN_SMOKE_BASE_URL: https://canopyproof.org
-      DROPIN_NOTIFY_DEPLOYMENT: "true"
-      DROPIN_NOTIFY_DRY_RUN: "false"
-
+    timeout-minutes: 35
+    outputs:
+      manifest_sha256: ${{ steps.seal.outputs.manifest_sha256 }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Fail-fast secret and mode checks
+      - name: Reject an untrusted checkout before executing repository code
+        working-directory: ${{ github.workspace }}
         run: |
-          case "$DROPIN_DEPLOY_MODE" in
-            dry-run|live) ;;
-            *)
-              echo "::error::DROPIN_DEPLOY_MODE must be dry-run or live."
-              exit 1
-              ;;
-          esac
-
-          REQUIRED_VARS=(CF_API_TOKEN_PROD CF_ACCOUNT_ID_PROD WORKER_ZONE_ID_PROD)
-          if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
-            REQUIRED_VARS+=(DROPIN_API_ORIGIN)
-          fi
-
-          for var in "${REQUIRED_VARS[@]}"; do
-            if [ -z "${!var:-}" ]; then
-              echo "::error::Required deployment secret or env var is missing: $var"
-              exit 1
-            fi
-          done
-
-          if [ -n "${DROPIN_API_ORIGIN:-}" ] && [[ "$DROPIN_API_ORIGIN" != https://* ]]; then
-            echo "::error::DROPIN_API_ORIGIN must be HTTPS for production deployment."
-            exit 1
-          fi
-
-          if [ "$DROPIN_DEPLOY_MODE" = "live" ]; then
-            echo "DROPIN_CLOUDFLARE_DEPLOY_CONFIRM=canopyproof.org" >> "$GITHUB_ENV"
-          fi
-
-          echo "CanopyProof deployment preflight passed."
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/main
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          [[ "$LIFEPP_RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$LIFEPP_RELEASE_SHA" = "$GITHUB_SHA"
+      - uses: actions/checkout@v4
         with:
-          node-version: 22
+          ref: ${{ inputs.expected_commit_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.3
           cache: npm
           cache-dependency-path: dropin-earth/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate Prisma client
-        run: npm run db:generate
-
-      - name: Run release CI
-        run: npm run ci
-
-      - name: Install Wrangler
-        run: npm install --global wrangler
-
-      - name: Verify production guardrails
+      - name: Verify main, independent PR review, maintainer declaration and complete same-SHA CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/lifepp-release-run.mjs prepare
+      - name: Pin npm and install the frozen dependency graph
         run: |
-          test "$CANOPYPROOF_DOMAIN" = "canopyproof.org"
-          test "$WORKER_ROUTE" = "canopyproof.org/api/*"
-          test "$WORKER_ZONE_NAME" = "canopyproof.org"
-          test "$DROPIN_CANOPYPROOF_MODE" = "production"
-          test "$DROPIN_ALLOW_ADMIN_PROXY" = "false"
-          test "$DROPIN_DEPLOY_MODE" = "dry-run" || test "${DROPIN_CLOUDFLARE_DEPLOY_CONFIRM:-}" = "canopyproof.org"
+          npm install --global npm@10.9.4
+          npm ci --include=optional
+      - name: Build the production OpenNext output explicitly
+        run: npm --workspace apps/web run cf:build
+      - name: Seal the artifact and display the exact approval comment
+        id: seal
+        run: node scripts/lifepp-release-run.mjs seal
+      - name: Preserve reviewable build and SHA-bound manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifepp-release-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
+          path: dropin-earth/reports/lifepp-release/
+          if-no-files-found: error
+          retention-days: 30
 
-      - name: Deploy Pages and Worker
-        run: ./deploy-canopyproof-auto.sh
-
-      - name: Smoke test production
-        if: env.DROPIN_DEPLOY_MODE == 'live'
+  deploy-production:
+    name: Approve and deploy only canopyproof-web at ${{ inputs.expected_commit_sha }}
+    needs: prepare
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1
+    environment: canopyproof-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      LIFEPP_MANIFEST_SHA256: ${{ needs.prepare.outputs.manifest_sha256 }}
+      LIFEPP_PROTECTED_JOB: canopyproof-production
+    steps:
+      - name: Reject a different or rerun checkout before exposing release credentials
+        working-directory: ${{ github.workspace }}
         run: |
-          python3 scripts/check-canopyproof.py \
-            --domain canopyproof.org \
-            --www-domain www.canopyproof.org \
-            --require-www \
-            --api-ready-path /api/ready \
-            --admin-path /api/admin/launch/readiness \
-            --json-report canopyproof-smoke-report.json
-
-      - name: Deployment summary
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          test "$GITHUB_REF" = refs/heads/main
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          [[ "$LIFEPP_RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$LIFEPP_RELEASE_SHA" = "$GITHUB_SHA"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.expected_commit_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.3
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+      - name: Install pinned deploy tools without cloud credentials
+        run: |
+          npm install --global npm@10.9.4
+          npm ci --include=optional
+      - uses: actions/download-artifact@v4
+        with:
+          name: lifepp-release-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
+          path: dropin-earth/reports/lifepp-release/
+      - name: Verify and restore the reviewed artifact without rebuilding
+        run: node scripts/lifepp-release-run.mjs restore
+      - name: Verify real environment approval, rollback and routes; deploy existing web Worker only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN_PROD }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID_PROD }}
+          WORKER_ZONE_ID_PROD: ${{ secrets.WORKER_ZONE_ID_PROD }}
+        run: node scripts/lifepp-release-run.mjs deploy
+      - name: Preserve actual deployment and failure evidence
         if: always()
-        run: |
-          echo "domain=$CANOPYPROOF_DOMAIN"
-          echo "deploy_mode=$DROPIN_DEPLOY_MODE"
-          echo "frontend_deploy_mode=$DROPIN_FRONTEND_DEPLOY_MODE"
-          echo "worker_route=$WORKER_ROUTE"
-          echo "admin_proxy=$DROPIN_ALLOW_ADMIN_PROXY"
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifepp-release-receipt-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
+          path: dropin-earth/reports/lifepp-release/
+          if-no-files-found: error
+          retention-days: 30

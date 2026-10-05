@@ -1,0 +1,14 @@
+{
+  "name": "types",
+  "command": [
+    "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+    "node_modules/typescript/bin/tsc",
+    "-p",
+    "services/api/tsconfig.json",
+    "--noEmit"
+  ],
+  "startedAt": "2026-10-05T10:19:44.733672+00:00",
+  "endedAt": "2026-10-05T10:19:49.450453+00:00",
+  "exitCode": 0,
+  "scope": "uncommitted Hono patch working tree on 35c10ef; not final committed CI"
+}

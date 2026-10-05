@@ -1,0 +1,42 @@
+{
+  "id": "native-postgres",
+  "command": [
+    "bash",
+    "-eo",
+    "pipefail",
+    "-c",
+    "\nconnection_url=\"${CANOPYPROOF_CI_DB_SCHEME}://${CANOPYPROOF_CI_DB_USER}:${CANOPYPROOF_CI_DB_PASSWORD}@${CANOPYPROOF_CI_DB_HOST}/${CANOPYPROOF_CI_DB_NAME}\"\nDATABASE_URL=\"$connection_url\" \\\nCANOPYPROOF_NATIVE_DATABASE_URL=\"$connection_url\" \\\n  npm run db:verify:canopyproof:native\n"
+  ],
+  "startedAt": "2026-09-30T03:49:48.849Z",
+  "status": "PASS",
+  "before": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:49:48.989Z"
+  },
+  "commandExitCode": 0,
+  "exitCode": 0,
+  "signal": null,
+  "logSha256": "e632be4ea1efd250a143102f7314fceb9142b4f7e73b73817d422f762390dcfd",
+  "after": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:50:20.811Z"
+  },
+  "artifacts": [],
+  "finishedAt": "2026-09-30T03:50:20.811Z"
+}

@@ -1,0 +1,290 @@
+{
+  "baselineCommit": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "localCounts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 4,
+    "high": 11,
+    "critical": 2,
+    "total": 17
+  },
+  "remoteCounts": {
+    "info": 0,
+    "low": 0,
+    "moderate": 5,
+    "high": 12,
+    "critical": 2,
+    "total": 19
+  },
+  "localOnly": [],
+  "remoteOnly": [
+    "@hono/node-server",
+    "@tailwindcss/postcss"
+  ],
+  "packages": [
+    {
+      "name": "@coral-xyz/anchor",
+      "version": "0.32.1",
+      "severity": "high",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "",
+          "spec": "0.32.1"
+        }
+      ]
+    },
+    {
+      "name": "@hono/node-server",
+      "version": "2.0.12",
+      "severity": "moderate",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "services/api",
+          "spec": "^2.0.1"
+        }
+      ]
+    },
+    {
+      "name": "@prisma/config",
+      "version": "6.19.3",
+      "severity": "high",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "node_modules/prisma",
+          "spec": "6.19.3"
+        }
+      ]
+    },
+    {
+      "name": "@tailwindcss/postcss",
+      "version": "4.3.3",
+      "severity": "high",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "apps/web",
+          "spec": "4.3.3"
+        }
+      ]
+    },
+    {
+      "name": "deepmerge-ts",
+      "version": "7.1.5",
+      "severity": "high",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "node_modules/@prisma/config",
+          "spec": "7.1.5"
+        }
+      ]
+    },
+    {
+      "name": "hono",
+      "version": "4.13.1",
+      "severity": "moderate",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "services/api",
+          "spec": "4.13.1"
+        }
+      ]
+    },
+    {
+      "name": "jayson",
+      "version": "4.3.0",
+      "severity": "moderate",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "node_modules/@solana/web3.js",
+          "spec": "^4.1.1"
+        }
+      ]
+    },
+    {
+      "name": "maplibre-gl",
+      "version": "5.24.0",
+      "severity": "critical",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "apps/web",
+          "spec": "^5.10.0"
+        }
+      ]
+    },
+    {
+      "name": "miniflare",
+      "version": "5.20260804.0-alpha",
+      "severity": "high",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "node_modules/wrangler",
+          "spec": "5.20260804.0-alpha"
+        }
+      ]
+    },
+    {
+      "name": "nanoid",
+      "version": "3.3.17",
+      "severity": "high",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "node_modules/postcss",
+          "spec": "^3.3.17"
+        }
+      ]
+    },
+    {
+      "name": "next",
+      "version": "15.5.22",
+      "severity": "critical",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "",
+          "spec": "15.5.22"
+        },
+        {
+          "node": "apps/admin",
+          "spec": "15.5.22"
+        },
+        {
+          "node": "apps/miniapp-ton",
+          "spec": "15.5.22"
+        },
+        {
+          "node": "apps/web",
+          "spec": "15.5.22"
+        }
+      ]
+    },
+    {
+      "name": "postcss",
+      "version": "8.5.26",
+      "severity": "high",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "",
+          "spec": "8.5.26"
+        },
+        {
+          "node": "apps/admin",
+          "spec": "8.5.26"
+        },
+        {
+          "node": "apps/miniapp-ton",
+          "spec": "8.5.26"
+        },
+        {
+          "node": "apps/web",
+          "spec": "8.5.26"
+        },
+        {
+          "node": "node_modules/@tailwindcss/postcss",
+          "spec": "^8.5.16"
+        },
+        {
+          "node": "node_modules/next",
+          "spec": "8.4.31"
+        }
+      ]
+    },
+    {
+      "name": "prisma",
+      "version": "6.19.3",
+      "severity": "high",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "",
+          "spec": "^6.19.3"
+        }
+      ]
+    },
+    {
+      "name": "qs",
+      "version": "6.15.3",
+      "severity": "moderate",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "node_modules/body-parser",
+          "spec": "^6.15.2"
+        },
+        {
+          "node": "node_modules/express",
+          "spec": "^6.14.0"
+        }
+      ]
+    },
+    {
+      "name": "sharp",
+      "version": "0.35.3",
+      "severity": "high",
+      "lockDevFlag": false,
+      "parents": [
+        {
+          "node": "node_modules/miniflare",
+          "spec": "0.35.2"
+        }
+      ]
+    },
+    {
+      "name": "stream-json",
+      "version": "1.9.1",
+      "severity": "moderate",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "node_modules/jayson",
+          "spec": "^1.9.1"
+        }
+      ]
+    },
+    {
+      "name": "toml",
+      "version": "3.0.0",
+      "severity": "high",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "node_modules/@coral-xyz/anchor",
+          "spec": "^3.0.0"
+        }
+      ]
+    },
+    {
+      "name": "undici",
+      "version": "7.29.0",
+      "severity": "high",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "node_modules/miniflare",
+          "spec": "7.29.0"
+        }
+      ]
+    },
+    {
+      "name": "wrangler",
+      "version": "4.120.1",
+      "severity": "high",
+      "lockDevFlag": true,
+      "parents": [
+        {
+          "node": "",
+          "spec": "4.120.1"
+        }
+      ]
+    }
+  ]
+}

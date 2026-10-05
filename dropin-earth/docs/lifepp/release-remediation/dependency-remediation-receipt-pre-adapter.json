@@ -1,0 +1,80 @@
+{
+  "observedAt": "2026-09-30T03:06:06.309Z",
+  "baselineCommit": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "installationRuntime": {
+    "node": "22.22.3",
+    "npm": "10.9.4",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "manifestHashes": {
+    "package.json": "e5c5da97db51efd9207128285db1b8975aef5533c86463ccc086c60cca61c4e8",
+    "package-lock.json": "ba56c1847f56896149201c90a4e8b4db939b67fff5223dfae5169b502f3f3636",
+    "apps/web/package.json": "5c15a10fe6029f9c5d392c6087ad77f54571fa84d5306d5adea8d01d49f9e24b",
+    "apps/admin/package.json": "3e4c5081b5e58c4b0a57a9cfd93a1fdcd0a6e855bfbd157bc02623869bd6091b",
+    "apps/miniapp-ton/package.json": "28c2b88158d41413009f8429cc61fd81cdd03f6bf42f71709c20a36b15447435",
+    "services/api/package.json": "c9c12f2bafc5881df859223f5b97a743906307689335b8446cc079d78484d9e8"
+  },
+  "commands": [
+    {
+      "command": "npm install --package-lock-only --ignore-scripts --include=optional",
+      "exitCode": 0,
+      "evidencePrefix": "lock-update"
+    },
+    {
+      "command": "npm update hono undici --package-lock-only --ignore-scripts --include=optional",
+      "exitCode": 0,
+      "evidencePrefix": "lock-refresh-transitives"
+    },
+    {
+      "command": "npm update undici --package-lock-only --ignore-scripts --include=optional",
+      "exitCode": 0,
+      "evidencePrefix": "lock-refresh-undici"
+    },
+    {
+      "command": "npm ci --include=optional",
+      "exitCode": 0,
+      "evidencePrefix": "npm-ci-final"
+    },
+    {
+      "command": "npm audit --audit-level=moderate --json",
+      "exitCode": 0,
+      "evidencePrefix": "npm-audit-after"
+    },
+    {
+      "command": "npm ls next maplibre-gl sharp hono nanoid deepmerge-ts toml jayson undici qs --all --json",
+      "exitCode": 0,
+      "evidencePrefix": "installed-dependency-tree"
+    },
+    {
+      "command": "node --test --import tsx tests/unit/dependency-remediation.test.ts",
+      "exitCode": 0,
+      "evidencePrefix": "dependency-compatibility"
+    },
+    {
+      "command": "npm --workspace apps/web run typecheck",
+      "exitCode": 0,
+      "evidencePrefix": "maplibre-typecheck"
+    },
+    {
+      "command": "eslint targeted compatibility files",
+      "exitCode": 0,
+      "evidencePrefix": "dependency-lint"
+    }
+  ],
+  "audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "compatibilityTestCount": 5,
+  "productionAuthority": false,
+  "remainingVerification": [
+    "Full workspace CI/browser/workerd and remote head-bound checks are coordinated in the parent task.",
+    "MapLibre production browser scenarios are pending a newly built server."
+  ],
+  "evidenceStage": "pre-adapter-snapshot"
+}

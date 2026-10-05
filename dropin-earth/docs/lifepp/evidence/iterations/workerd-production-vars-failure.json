@@ -1,0 +1,429 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-30T01:35:37.154Z",
+  "status": "FAIL",
+  "baseUrl": "http://127.0.0.1:8788/",
+  "runtime": {
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "browser": "154.0.8037.58",
+    "serverMode": "workerd"
+  },
+  "candidateSha": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
+  "workingTreeUnderTest": true,
+  "results": [
+    {
+      "name": "desktop /life",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/spaces",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/spaces",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/spaces/31",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/spaces/31",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/spaces/29",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/spaces/29",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/center",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/center",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/agents",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/agents",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/membership",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/membership",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/partners",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/partners",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /life/trust",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/life/trust",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /company",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop /en/company",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "desktop no form mutations",
+      "status": "PASS"
+    },
+    {
+      "name": "tablet /life",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/spaces",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/spaces",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/spaces/31",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/spaces/31",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/spaces/29",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/spaces/29",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/center",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/center",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/agents",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/agents",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/membership",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/membership",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/partners",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/partners",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /life/trust",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/life/trust",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /company",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet /en/company",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "tablet no form mutations",
+      "status": "PASS"
+    },
+    {
+      "name": "mobile /life",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/spaces",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/spaces",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/spaces/31",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/spaces/31",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/spaces/29",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/spaces/29",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/center",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/center",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/agents",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/agents",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/membership",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/membership",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/partners",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/partners",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /life/trust",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/life/trust",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /company",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile /en/company",
+      "status": "FAIL",
+      "error": "Loopback preview is not indexable"
+    },
+    {
+      "name": "mobile no form mutations",
+      "status": "PASS"
+    },
+    {
+      "name": "Original ecology anchors and content",
+      "status": "PASS"
+    },
+    {
+      "name": "Scene 31 and 29 reachable within two homepage clicks",
+      "status": "PASS"
+    },
+    {
+      "name": "Language switch and ecology return update document language",
+      "status": "PASS"
+    },
+    {
+      "name": "zh keyboard draft and no false receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "en keyboard draft and no false receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "Unknown scene and page routes are 404",
+      "status": "PASS"
+    },
+    {
+      "name": "Preview robots disallow and sitemap does not advertise pages",
+      "status": "PASS"
+    }
+  ],
+  "screenshots": [
+    "failure-desktop-life.png",
+    "failure-desktop-en-life.png",
+    "failure-desktop-life-spaces.png",
+    "failure-desktop-en-life-spaces.png",
+    "failure-desktop-life-spaces-31.png",
+    "failure-desktop-en-life-spaces-31.png",
+    "failure-desktop-life-spaces-29.png",
+    "failure-desktop-en-life-spaces-29.png",
+    "failure-desktop-life-center.png",
+    "failure-desktop-en-life-center.png",
+    "failure-desktop-life-agents.png",
+    "failure-desktop-en-life-agents.png",
+    "failure-desktop-life-membership.png",
+    "failure-desktop-en-life-membership.png",
+    "failure-desktop-life-partners.png",
+    "failure-desktop-en-life-partners.png",
+    "failure-desktop-life-trust.png",
+    "failure-desktop-en-life-trust.png",
+    "failure-desktop-company.png",
+    "failure-desktop-en-company.png",
+    "failure-tablet-life.png",
+    "failure-tablet-en-life.png",
+    "failure-tablet-life-spaces.png",
+    "failure-tablet-en-life-spaces.png",
+    "failure-tablet-life-spaces-31.png",
+    "failure-tablet-en-life-spaces-31.png",
+    "failure-tablet-life-spaces-29.png",
+    "failure-tablet-en-life-spaces-29.png",
+    "failure-tablet-life-center.png",
+    "failure-tablet-en-life-center.png",
+    "failure-tablet-life-agents.png",
+    "failure-tablet-en-life-agents.png",
+    "failure-tablet-life-membership.png",
+    "failure-tablet-en-life-membership.png",
+    "failure-tablet-life-partners.png",
+    "failure-tablet-en-life-partners.png",
+    "failure-tablet-life-trust.png",
+    "failure-tablet-en-life-trust.png",
+    "failure-tablet-company.png",
+    "failure-tablet-en-company.png",
+    "failure-mobile-life.png",
+    "failure-mobile-en-life.png",
+    "failure-mobile-life-spaces.png",
+    "failure-mobile-en-life-spaces.png",
+    "failure-mobile-life-spaces-31.png",
+    "failure-mobile-en-life-spaces-31.png",
+    "failure-mobile-life-spaces-29.png",
+    "failure-mobile-en-life-spaces-29.png",
+    "failure-mobile-life-center.png",
+    "failure-mobile-en-life-center.png",
+    "failure-mobile-life-agents.png",
+    "failure-mobile-en-life-agents.png",
+    "failure-mobile-life-membership.png",
+    "failure-mobile-en-life-membership.png",
+    "failure-mobile-life-partners.png",
+    "failure-mobile-en-life-partners.png",
+    "failure-mobile-life-trust.png",
+    "failure-mobile-en-life-trust.png",
+    "failure-mobile-company.png",
+    "failure-mobile-en-company.png",
+    "after-desktop-ecology.png",
+    "after-tablet-ecology.png",
+    "after-mobile-ecology.png"
+  ],
+  "measurements": [],
+  "limitations": [
+    "Lab observations from one local Chromium browser; not Lighthouse or field performance.",
+    "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.",
+    "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.",
+    "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness."
+  ]
+}

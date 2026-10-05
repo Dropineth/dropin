@@ -1,0 +1,19 @@
+{
+  "name": "api-routes",
+  "command": [
+    "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+    "--test",
+    "--import",
+    "tsx",
+    "tests/unit/canopyproof-public-explorer.test.ts",
+    "tests/unit/canopyproof-mobile-evidence-sync.test.ts",
+    "tests/unit/canopyproof-satellite-api.test.ts",
+    "tests/unit/canopyproof-identity-authentication.test.ts",
+    "tests/unit/canopyproof-authorization-security-critical.test.ts",
+    "tests/unit/canopyproof-visual-api-observability.test.ts"
+  ],
+  "startedAt": "2026-10-05T10:19:44.733846+00:00",
+  "endedAt": "2026-10-05T10:19:46.067966+00:00",
+  "exitCode": 0,
+  "scope": "uncommitted Hono patch working tree on 35c10ef; not final committed CI"
+}

@@ -1,0 +1,12 @@
+{
+  "status": "FAIL",
+  "passed": 71,
+  "failed": [
+    {
+      "name": "Request language, prefetch, nonce and cache isolation",
+      "status": "FAIL",
+      "error": "/life\n\n500 !== 200\n"
+    }
+  ],
+  "screenshots": 63
+}

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { isProductionSite } from "@/data/life/navigation";
 
 /**
  * Edge security middleware for canopyproof.org.
@@ -8,8 +9,8 @@ import { NextResponse, type NextRequest } from "next/server";
  * institutional transport/sniffing protections.
  *
  * Tradeoffs (documented on purpose, not hidden):
- *  - A per-request nonce opts matched routes into dynamic rendering. The landing
- *    already runs as edge SSR, so this is acceptable. Next.js automatically
+ *  - Matched pages render per request; the static ecology homepage is excluded
+ *    from this matcher. Next.js automatically
  *    propagates the nonce from the request CSP header to its own scripts.
  *  - `script-src` is strict (nonce + strict-dynamic) — that is where XSS risk
  *    actually lives. `img-src`/`connect-src`/`font-src` intentionally allow
@@ -72,11 +73,13 @@ export function middleware(request: NextRequest): NextResponse {
   // Forward the nonce + CSP on the request so Next.js can nonce its own scripts.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("x-life-locale", /^\/(life(?:\/|$)|company$)/.test(request.nextUrl.pathname) ? "zh" : "en");
   requestHeaders.set("content-security-policy", csp);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   response.headers.set("content-security-policy", csp);
+  if (!isProductionSite) response.headers.set("x-robots-tag", "noindex, nofollow");
   response.headers.set("strict-transport-security", "max-age=63072000; includeSubDomains; preload");
   response.headers.set("x-content-type-options", "nosniff");
   response.headers.set("x-frame-options", "DENY");
@@ -100,10 +103,8 @@ export const config = {
     {
       source:
         "/((?!$|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|icon.jpg|apple-touch-icon.jpg|og/).*)",
-      missing: [
-        { type: "header", key: "next-router-prefetch" },
-        { type: "header", key: "purpose", value: "prefetch" },
-      ],
+      // These are client-controlled headers. Even a claimed prefetch must have
+      // its language/CSP/nonce replaced before RootLayout reads request headers.
     },
   ],
 };

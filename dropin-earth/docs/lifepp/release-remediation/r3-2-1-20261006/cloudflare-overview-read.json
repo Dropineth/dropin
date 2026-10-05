@@ -1,0 +1,25 @@
+{
+  "recordedAt": "2026-10-05T19:26:15.134352+00:00",
+  "observationDateLocal": "2026-10-06",
+  "timezone": "Asia/Hong_Kong",
+  "method": "Existing authenticated native Chrome, cua_repl accessibility read; observation retained in this task tool transcript",
+  "worker": "canopyproof-web",
+  "dashboardPath": "/workers/services/view/canopyproof-web/production",
+  "observedTrafficPercent": 100,
+  "observedVersionPrefix": "84a01fed",
+  "fullVersionId": null,
+  "fullDeploymentId": null,
+  "latestBuildFailureLinkId": "2a698dd1-51ed-4069-941f-b61621b72c41",
+  "routesSummary": "canopyproof.org/* + 1 route",
+  "workersDevEnabled": false,
+  "bindingsVisible": [
+    "ASSETS",
+    "WORKER_SELF_REFERENCE -> canopyproof-web"
+  ],
+  "configurationEdited": false,
+  "R321Deployed": false,
+  "limitations": [
+    "Overview read does not establish current Builds command configuration or a rollback compatibility attestation.",
+    "The deployment-history tab was selected but full IDs were not obtained; no clipboard, credentials or API token extraction."
+  ]
+}

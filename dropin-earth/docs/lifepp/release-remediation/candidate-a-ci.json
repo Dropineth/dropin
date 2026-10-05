@@ -1,0 +1,227 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-30T06:20:57.261255+00:00",
+  "candidateSha": "b4e3954d89c61484ea90435129229230a03e3abf",
+  "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+  "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+  "node": "22.22.3",
+  "npm": "10.9.4",
+  "runtimeNote": "Runner initialization saw bundled npm 10.9.8. The pinned npm step changed it to 10.9.4 before install; every workload before/after snapshot confirms 10.9.4.",
+  "trustGate": {
+    "status": "PASS",
+    "url": "https://github.com/Dropineth/dropin/actions/runs/36665614889",
+    "startedAt": "2026-09-30T03:43:08.466Z",
+    "finishedAt": "2026-09-30T04:00:09.832Z",
+    "commands": [
+      {
+        "id": "pin-npm",
+        "command": [
+          "npm",
+          "install",
+          "--global",
+          "npm@10.9.4"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:43:08.531Z",
+        "finishedAt": "2026-09-30T03:43:12.937Z"
+      },
+      {
+        "id": "install",
+        "command": [
+          "npm",
+          "ci",
+          "--include=optional"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:43:12.995Z",
+        "finishedAt": "2026-09-30T03:43:36.949Z"
+      },
+      {
+        "id": "supply-chain",
+        "command": [
+          "npm",
+          "run",
+          "gate:supply-chain"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:43:37.008Z",
+        "finishedAt": "2026-09-30T03:43:39.343Z"
+      },
+      {
+        "id": "workspace",
+        "command": [
+          "npm",
+          "run",
+          "ci"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:43:39.403Z",
+        "finishedAt": "2026-09-30T03:49:48.786Z"
+      },
+      {
+        "id": "native-postgres",
+        "command": [
+          "bash",
+          "-eo",
+          "pipefail",
+          "-c",
+          "\nconnection_url=\"${CANOPYPROOF_CI_DB_SCHEME}://${CANOPYPROOF_CI_DB_USER}:${CANOPYPROOF_CI_DB_PASSWORD}@${CANOPYPROOF_CI_DB_HOST}/${CANOPYPROOF_CI_DB_NAME}\"\nDATABASE_URL=\"$connection_url\" \\\nCANOPYPROOF_NATIVE_DATABASE_URL=\"$connection_url\" \\\n  npm run db:verify:canopyproof:native\n"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:49:48.849Z",
+        "finishedAt": "2026-09-30T03:50:20.811Z"
+      },
+      {
+        "id": "coverage",
+        "command": [
+          "bash",
+          "-e",
+          "-c",
+          "\nset -o pipefail\nmkdir -p reports/ci\nnpm run test:coverage:ratchet 2>&1 | tee reports/ci/canopyproof-coverage.txt\ntest -s reports/ci/canopyproof-coverage.txt\ntest -s coverage/coverage-summary.json\n"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:50:20.869Z",
+        "finishedAt": "2026-09-30T03:55:16.550Z"
+      },
+      {
+        "id": "critical-coverage",
+        "command": [
+          "npm",
+          "run",
+          "coverage:critical"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:55:16.604Z",
+        "finishedAt": "2026-09-30T03:55:30.380Z"
+      },
+      {
+        "id": "browsers",
+        "command": [
+          "npx",
+          "playwright",
+          "install",
+          "--with-deps",
+          "chromium",
+          "firefox",
+          "webkit"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:55:30.436Z",
+        "finishedAt": "2026-09-30T03:56:23.761Z"
+      },
+      {
+        "id": "webgl",
+        "command": [
+          "npm",
+          "run",
+          "test:webgl:browser"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:56:23.821Z",
+        "finishedAt": "2026-09-30T03:57:36.448Z"
+      },
+      {
+        "id": "opennext",
+        "command": [
+          "npm",
+          "--workspace",
+          "apps/web",
+          "run",
+          "cf:build"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:57:36.503Z",
+        "finishedAt": "2026-09-30T03:58:45.336Z"
+      },
+      {
+        "id": "artifact",
+        "command": [
+          "bash",
+          "-e",
+          "-c",
+          "\ntest -f apps/web/.open-next/worker.js\ntest -d apps/web/.open-next/assets\n"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:58:45.396Z",
+        "finishedAt": "2026-09-30T03:58:45.674Z"
+      },
+      {
+        "id": "workerd-smoke",
+        "command": [
+          "npm",
+          "run",
+          "test:workerd"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:58:45.738Z",
+        "finishedAt": "2026-09-30T03:58:54.110Z"
+      },
+      {
+        "id": "lifepp-workerd",
+        "command": [
+          "node",
+          "scripts/lifepp-validation-run.mjs",
+          "workerd-browser"
+        ],
+        "status": "PASS",
+        "exitCode": 0,
+        "startedAt": "2026-09-30T03:58:54.173Z",
+        "finishedAt": "2026-09-30T04:00:09.636Z"
+      }
+    ],
+    "rawAudit": "candidate-a-ci/trust/artifacts/reports/npm-audit-moderate.json",
+    "auditVulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "unitTests": 872,
+    "pgliteIntegrationTests": 40,
+    "nativePostgresTests": 2,
+    "originalBrowserScenarios": 19,
+    "originalBrowserSkipped": 0,
+    "coveragePercent": {
+      "statements": 83.51,
+      "lines": 83.51,
+      "functions": 85.47,
+      "branches": 76.96
+    },
+    "criticalCoverage": "11 modules, all existing 95 percent thresholds pass",
+    "workerdRouteChecks": 15,
+    "lifeppWorkerdBrowserChecks": 72,
+    "maplibreFixtureScenarios": 2
+  },
+  "lifeAcceptance": {
+    "status": "PASS",
+    "url": "https://github.com/Dropineth/dropin/actions/runs/36665614977",
+    "startedAt": "2026-09-30T03:42:38Z",
+    "finishedAt": "2026-09-30T03:46:25Z",
+    "unitTests": 34,
+    "nextBrowserChecks": 72,
+    "viewerFixtureChecks": 8,
+    "consultationFixtureChecks": 6,
+    "jobLog": "candidate-a-ci/life/job-109729530976.txt",
+    "artifactDownload": "ZIP retrieval by normal authorized gh requests returned EOF. Completed exact-head workflow/job JSON and decoded job log were retrieved and archived; the ZIP was not locally verified. Trust Gate artifact was successfully downloaded and its original bytes/hashes verified."
+  },
+  "notCurrentHeadByInheritance": true,
+  "followUpSourceChange": "Subsequent revision fixes consultation uncertainty after lost responses and adds tests. It requires fresh full CI; none of these passes is relabeled as that later HEAD.",
+  "productionAuthority": false,
+  "realScenesLoaded": false,
+  "realConsultationReceipt": false,
+  "publicPreview": false
+}

@@ -1,0 +1,22 @@
+The files belonging to this database system will be owned by user "lee".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+creating directory /var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-disposable-postgres-0p6odr0e/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default "max_connections" ... 25
+selecting default "shared_buffers" ... 400kB
+selecting default time zone ... Asia/Hong_Kong
+creating configuration files ... ok
+running bootstrap script ... 2026-09-30 01:38:00.456 GMT [67631] LOG:  could not open directory "/opt/homebrew/share/postgresql@17/timezone": No such file or directory
+2026-09-30 01:38:00.456 GMT [67631] LOG:  invalid value for parameter "log_timezone": "Asia/Hong_Kong"
+2026-09-30 01:38:00.456 GMT [67631] LOG:  could not open directory "/opt/homebrew/share/postgresql@17/timezone": No such file or directory
+2026-09-30 01:38:00.456 GMT [67631] LOG:  invalid value for parameter "TimeZone": "Asia/Hong_Kong"
+2026-09-30 01:38:00.457 GMT [67631] FATAL:  configuration file "/var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-disposable-postgres-0p6odr0e/data/postgresql.conf" contains errors
+child process exited with exit code 1
+initdb: removing data directory "/var/folders/_b/7dg9gdtj7lv9mm6wn_hnynfh0000gn/T/lifepp-disposable-postgres-0p6odr0e/data"

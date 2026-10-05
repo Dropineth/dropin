@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-09-30T02:23:18Z",
+  "reviewedCodeCommit": "dc7f0ca10ba8236810b31557eb1e75170e50b941",
+  "testedPullRequestMergeCommit": "b9d6e549d983ac9bfe83918eeb2943f27da99476",
+  "prUrl": "https://github.com/Dropineth/dropin/pull/4",
+  "lifeppAcceptance": {
+    "status": "SUCCESS",
+    "runId": 36658605125,
+    "jobId": 109708169992,
+    "url": "https://github.com/Dropineth/dropin/actions/runs/36658605125",
+    "browserChecks": 70,
+    "viewerFixtures": 8,
+    "screenshots": 21,
+    "artifact": "https://github.com/Dropineth/dropin/actions/runs/36658605125/artifacts/11073228518"
+  },
+  "trustGate": {
+    "status": "FAILURE",
+    "runId": 36658605066,
+    "jobId": 109708170216,
+    "url": "https://github.com/Dropineth/dropin/actions/runs/36658605066",
+    "failedStep": "Run deterministic workspace gate",
+    "failedCommand": "npm run audit",
+    "exitCode": 1,
+    "priorPassed": [
+      "locked install",
+      "supply-chain gate",
+      "lint",
+      "workspace typecheck",
+      "852 unit tests; zero failed/skipped",
+      "FiftyOne tests",
+      "40 PGlite integration tests; zero failed/skipped",
+      "workspace builds"
+    ],
+    "subsequentNotRun": [
+      "native PostgreSQL authority checks",
+      "repository coverage ratchet",
+      "critical coverage",
+      "cross-browser matrix",
+      "OpenNext build",
+      "workerd smoke"
+    ],
+    "audit": {
+      "info": 0,
+      "low": 0,
+      "moderate": 5,
+      "high": 11,
+      "critical": 2,
+      "total": 18
+    }
+  },
+  "localAuditSnapshot": {
+    "total": 17,
+    "moderate": 4,
+    "high": 11,
+    "critical": 2,
+    "evidence": "npm-audit-moderate.json"
+  },
+  "auditComparison": "Separate observations are retained. The cause of the local/remote count difference was not established. The lockfile is unchanged.",
+  "scope": "This receipt binds the reviewed code commit. Any later documentation-only commit is not itself claimed to have completed CI. Final release requires successful applicable checks and approval at its exact final head.",
+  "productionMerged": false,
+  "productionDeployed": false
+}

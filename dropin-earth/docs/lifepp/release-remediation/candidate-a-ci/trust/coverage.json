@@ -1,0 +1,62 @@
+{
+  "id": "coverage",
+  "command": [
+    "bash",
+    "-e",
+    "-c",
+    "\nset -o pipefail\nmkdir -p reports/ci\nnpm run test:coverage:ratchet 2>&1 | tee reports/ci/canopyproof-coverage.txt\ntest -s reports/ci/canopyproof-coverage.txt\ntest -s coverage/coverage-summary.json\n"
+  ],
+  "startedAt": "2026-09-30T03:50:20.869Z",
+  "status": "PASS",
+  "before": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:50:21.015Z"
+  },
+  "commandExitCode": 0,
+  "exitCode": 0,
+  "signal": null,
+  "logSha256": "ca0643f6eab62b4ac0edc1b213fb7361329a68528c3da47ff03939c696827016",
+  "after": {
+    "head": "b4e3954d89c61484ea90435129229230a03e3abf",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "72c4a22234c701292f0541882fc8575f42c48b604aa5e5fe7d21154edaa384bd",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T03:55:16.549Z"
+  },
+  "artifacts": [
+    {
+      "path": "reports/ci/canopyproof-coverage.txt",
+      "sha256": "ca0643f6eab62b4ac0edc1b213fb7361329a68528c3da47ff03939c696827016",
+      "capturedAt": "2026-09-30T03:55:16.549Z"
+    },
+    {
+      "path": "coverage/coverage-summary.json",
+      "sha256": "f9c2a57443625aef1893471f6d4f73d6ab4e913f0f8ad62e461d7a4b50051e0c",
+      "capturedAt": "2026-09-30T03:55:16.550Z"
+    },
+    {
+      "path": "reports/canopyproof-repository-coverage.json",
+      "sha256": "12e1a76c5a3f012477263ce1d1c7f83088fd9b021ba099eae23f1dfc7000b7e9",
+      "capturedAt": "2026-09-30T03:55:16.550Z"
+    },
+    {
+      "path": "reports/canopyproof-repository-coverage.md",
+      "sha256": "3e15c9f530d256be757db2ee5b23198322c0d3cdcad9cbd3226582f19b96de75",
+      "capturedAt": "2026-09-30T03:55:16.550Z"
+    }
+  ],
+  "finishedAt": "2026-09-30T03:55:16.550Z"
+}

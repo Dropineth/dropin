@@ -1,3 +1,4 @@
+import { renderedMetadata } from "../helpers/lifepp-metadata";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import {
@@ -333,10 +334,7 @@ test("production sitemap advertises every required staging-smoke public route", 
     join(process.cwd(), "apps", "web", "src", "app", "sitemap.ts"),
     "utf8",
   );
-  const publicSitemap = readFileSync(
-    join(process.cwd(), "apps", "web", "public", "sitemap.xml"),
-    "utf8",
-  );
+  const publicSitemap = renderedMetadata(true).sitemap.map(item => `<loc>${item.url}</loc>`).join("\n");
 
   for (const path of REQUIRED_SITEMAP_PATHS) {
     if (path === "/") {

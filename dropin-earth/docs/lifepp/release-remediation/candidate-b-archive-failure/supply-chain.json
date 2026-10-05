@@ -1,0 +1,40 @@
+{
+  "id": "supply-chain",
+  "command": [
+    "npm",
+    "run",
+    "gate:supply-chain"
+  ],
+  "startedAt": "2026-09-30T06:33:07.990Z",
+  "status": "FAIL",
+  "before": {
+    "head": "83b06e6c5df399d7f745cf301a6276f94e503db5",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "d283b84570a7ed6e9a5ba0854b8678fbca0e5198741f2b96fe8a00d972cf5b21",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T06:33:08.135Z"
+  },
+  "commandExitCode": 1,
+  "exitCode": 1,
+  "signal": null,
+  "logSha256": "2f9d2e0060493f54f29d4a90c1f3a66df1d404d1b7f10a52f327e264fe12c7df",
+  "after": {
+    "head": "83b06e6c5df399d7f745cf301a6276f94e503db5",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "d283b84570a7ed6e9a5ba0854b8678fbca0e5198741f2b96fe8a00d972cf5b21",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T06:33:08.552Z"
+  },
+  "artifacts": [],
+  "finishedAt": "2026-09-30T06:33:08.553Z"
+}

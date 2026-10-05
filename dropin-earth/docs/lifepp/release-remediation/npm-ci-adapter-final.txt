@@ -1,0 +1,6 @@
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 716 packages in 3m
+
+135 packages are looking for funding
+  run `npm fund` for details

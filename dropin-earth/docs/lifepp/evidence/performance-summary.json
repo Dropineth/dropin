@@ -1,0 +1,131 @@
+{
+  "scope": "Unthrottled local lab only. Not Lighthouse, field percentiles, real scene performance or measured field INP.",
+  "observations": [
+    {
+      "serverMode": "next",
+      "generatedAt": "2026-09-30T01:49:20.294Z",
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "browser": "154.0.8037.58",
+        "serverMode": "next-production"
+      },
+      "path": "/life",
+      "profile": "desktop",
+      "lcpMs": 200,
+      "boundedCls": 0,
+      "fieldInpMs": null,
+      "maxObservedInteractionDurationMs": null,
+      "scriptTransferBytes": 117407,
+      "scriptEncodedBytes": 115607,
+      "scriptDecodedBytes": 382299,
+      "scriptCount": 6
+    },
+    {
+      "serverMode": "next",
+      "generatedAt": "2026-09-30T01:49:20.294Z",
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "browser": "154.0.8037.58",
+        "serverMode": "next-production"
+      },
+      "path": "/life",
+      "profile": "tablet",
+      "lcpMs": 92,
+      "boundedCls": 0,
+      "fieldInpMs": null,
+      "maxObservedInteractionDurationMs": null,
+      "scriptTransferBytes": 117407,
+      "scriptEncodedBytes": 115607,
+      "scriptDecodedBytes": 382299,
+      "scriptCount": 6
+    },
+    {
+      "serverMode": "next",
+      "generatedAt": "2026-09-30T01:49:20.294Z",
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "browser": "154.0.8037.58",
+        "serverMode": "next-production"
+      },
+      "path": "/life",
+      "profile": "mobile",
+      "lcpMs": 92,
+      "boundedCls": 0,
+      "fieldInpMs": null,
+      "maxObservedInteractionDurationMs": null,
+      "scriptTransferBytes": 117407,
+      "scriptEncodedBytes": 115607,
+      "scriptDecodedBytes": 382299,
+      "scriptCount": 6
+    },
+    {
+      "serverMode": "workerd",
+      "generatedAt": "2026-09-30T01:47:01.304Z",
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "browser": "154.0.8037.58",
+        "serverMode": "workerd"
+      },
+      "path": "/life",
+      "profile": "desktop",
+      "lcpMs": 272,
+      "boundedCls": 0,
+      "fieldInpMs": null,
+      "maxObservedInteractionDurationMs": null,
+      "scriptTransferBytes": 117070,
+      "scriptEncodedBytes": 115270,
+      "scriptDecodedBytes": 382299,
+      "scriptCount": 6
+    },
+    {
+      "serverMode": "workerd",
+      "generatedAt": "2026-09-30T01:47:01.304Z",
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "browser": "154.0.8037.58",
+        "serverMode": "workerd"
+      },
+      "path": "/life",
+      "profile": "tablet",
+      "lcpMs": 104,
+      "boundedCls": 0,
+      "fieldInpMs": null,
+      "maxObservedInteractionDurationMs": null,
+      "scriptTransferBytes": 117070,
+      "scriptEncodedBytes": 115270,
+      "scriptDecodedBytes": 382299,
+      "scriptCount": 6
+    },
+    {
+      "serverMode": "workerd",
+      "generatedAt": "2026-09-30T01:47:01.304Z",
+      "runtime": {
+        "node": "v24.14.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "browser": "154.0.8037.58",
+        "serverMode": "workerd"
+      },
+      "path": "/life",
+      "profile": "mobile",
+      "lcpMs": 92,
+      "boundedCls": 0,
+      "fieldInpMs": null,
+      "maxObservedInteractionDurationMs": null,
+      "scriptTransferBytes": 117070,
+      "scriptEncodedBytes": 115270,
+      "scriptDecodedBytes": 382299,
+      "scriptCount": 6
+    }
+  ]
+}

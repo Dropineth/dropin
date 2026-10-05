@@ -1,0 +1,246 @@
+{
+  "schema": "lifepp-source-assets/3.0",
+  "asOf": "2026-09-30",
+  "baselineCommit": "7613ee6b2b7e32560b49ecb5947b18aa5dc25b71",
+  "packageSha256": "03fa95cab8902730b857d98e901c63fd1f40dd7bcaeb88a01a8a36ef63f2ccd4",
+  "pageReview": [
+    {
+      "source": "sources/Floorplans_original.pdf",
+      "sourceSha256": "77e9cb2765609fb91d556b3415d06947ed63716f2be27bc932a3e0efb73c5954",
+      "page": 2,
+      "image": "floorplans-02.jpg",
+      "imageSha256": "4365cefa770588ea31ea7ca808d8570badefb9ba9682079a3413f730d13a1fc3",
+      "extractedTextChars": 28,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/Floorplans_original.pdf",
+      "sourceSha256": "77e9cb2765609fb91d556b3415d06947ed63716f2be27bc932a3e0efb73c5954",
+      "page": 3,
+      "image": "floorplans-03.jpg",
+      "imageSha256": "53945cbf4f3632137d72ddbc40fa35f8645436dfcf9328cc6da08efd9ab4d5e6",
+      "extractedTextChars": 28,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "sourceSha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "page": 2,
+      "image": "visual_plan-02.jpg",
+      "imageSha256": "4cf9b42a9746516b9714b2fae4bfa87c088ce9998a30c90377a3cae40bebf729",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "sourceSha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "page": 4,
+      "image": "visual_plan-04.jpg",
+      "imageSha256": "7e33cfd78ffe41a44253eb0e164c1aa1260979ca3380343ee0de345bc2aab906",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "sourceSha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "page": 5,
+      "image": "visual_plan-05.jpg",
+      "imageSha256": "bf39d1d1f261d79985c0119d04f95e236f1a5de8b167fb30afd961d8957928b4",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "sourceSha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "page": 6,
+      "image": "visual_plan-06.jpg",
+      "imageSha256": "3e0d23e36f507203b989dd355f28eec62dd22bbed188d0a2cc4cb2bd653b4747",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "sourceSha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "page": 7,
+      "image": "visual_plan-07.jpg",
+      "imageSha256": "751d494282408649d4c455d36d96918182af7fe82d358e985da6683bb2e92c77",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "sourceSha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "page": 8,
+      "image": "visual_plan-08.jpg",
+      "imageSha256": "bf33b85d6eea8d6a0333d77979b5cd5971ecde0cf34f1236a66db3b2903e039e",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "sourceSha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "page": 9,
+      "image": "visual_plan-09.jpg",
+      "imageSha256": "abad9da936253da184a5a939e7688b45d151ea14fd3a22bb1a6c3976eb6c0856",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/CoHERE_Roadshow_REFERENCE.pdf",
+      "sourceSha256": "8bd62519586fe66d158862f100fa207eeae2a9f009a267f77064c2ec68ca6f2f",
+      "page": 5,
+      "image": "cohere_roadshow-05.jpg",
+      "imageSha256": "e8c4a1d07f9fd1cd009c372014de589e8ddf8997a3524e2d1f2c3cc00433ed4c",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/CoHERE_Roadshow_REFERENCE.pdf",
+      "sourceSha256": "8bd62519586fe66d158862f100fa207eeae2a9f009a267f77064c2ec68ca6f2f",
+      "page": 16,
+      "image": "cohere_roadshow-16.jpg",
+      "imageSha256": "9181d07954a279ee5995057838a3d2ca456f0fc6ebaf9fcaeb55f284a110081d",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/CoHERE_Roadshow_REFERENCE.pdf",
+      "sourceSha256": "8bd62519586fe66d158862f100fa207eeae2a9f009a267f77064c2ec68ca6f2f",
+      "page": 17,
+      "image": "cohere_roadshow-17.jpg",
+      "imageSha256": "39f3dde04841f5583834db804fdc8d096f3496d9bbd6c4ae7079b5e1d080eab7",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/CoHERE_Roadshow_REFERENCE.pdf",
+      "sourceSha256": "8bd62519586fe66d158862f100fa207eeae2a9f009a267f77064c2ec68ca6f2f",
+      "page": 21,
+      "image": "cohere_roadshow-21.jpg",
+      "imageSha256": "9457fea2bab83d8ab82a85f776ca1ab13cdbaa09648c62b3ff1508a1c6f8e06f",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    },
+    {
+      "source": "sources/CoHERE_Roadshow_REFERENCE.pdf",
+      "sourceSha256": "8bd62519586fe66d158862f100fa207eeae2a9f009a267f77064c2ec68ca6f2f",
+      "page": 22,
+      "image": "cohere_roadshow-22.jpg",
+      "imageSha256": "042838e6c412a99b60e1ab26bc7c7a003c403d89f955a6c1364004e75d5cdae2",
+      "extractedTextChars": 0,
+      "visualRead": true,
+      "reviewer": "Codex visual inspection of original page render; not a human site visit",
+      "reviewRecordedAt": "2026-09-30T09:54:47Z"
+    }
+  ],
+  "originalSources": [
+    {
+      "id": "floorplans",
+      "originalFilename": "展贸馆各层平面(7).pdf",
+      "packPath": "sources/Floorplans_original.pdf",
+      "bytes": 3054853,
+      "sha256": "77e9cb2765609fb91d556b3415d06947ed63716f2be27bc932a3e0efb73c5954",
+      "assetKind": "source_diagram",
+      "publicUse": "internal_reference",
+      "pages": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "visual_plan",
+      "originalFilename": "LifePP_CoHERE_671sqm_导入期_招商体系视觉方案_V2(2).pdf",
+      "packPath": "sources/LifePP_Visual_Plan_V2_INTERNAL.pdf",
+      "bytes": 34334565,
+      "sha256": "97bff086bd1afb6fb568f96d3ca0b2fea700d046a0508db0eca420f4968b7054",
+      "assetKind": "planning_presentation",
+      "publicUse": "internal_do_not_publish_whole",
+      "pages": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    {
+      "id": "cohere_roadshow",
+      "originalFilename": "会展湾国际社区【CoHERE可会】招募路演书(5).pdf",
+      "packPath": "sources/CoHERE_Roadshow_REFERENCE.pdf",
+      "bytes": 34566279,
+      "sha256": "8bd62519586fe66d158862f100fa207eeae2a9f009a267f77064c2ec68ca6f2f",
+      "assetKind": "third_party_project_material",
+      "publicUse": "reference_selective_use",
+      "pages": [
+        5,
+        16,
+        17,
+        21
+      ]
+    },
+    {
+      "id": "concept_image",
+      "originalFilename": "可会人机共生中心(3).jpg",
+      "packPath": "sources/Robot_City_Concept_original.jpg",
+      "bytes": 243793,
+      "sha256": "e197dac70745f236ee5c4626d5809e66f8ea3f89409870e2dd204dc75af74c3a",
+      "assetKind": "concept_render",
+      "publicUse": "reference_only",
+      "pages": []
+    }
+  ],
+  "publicAssets": [
+    {
+      "path": "apps/web/public/life/floorplan-1f-reference.webp",
+      "sha256": "fec06c46bb26e2886a83bacd367800bfe6c232258b3a92e58d33e47080b2d9d1",
+      "bytes": 180166,
+      "assetKind": "source-diagram",
+      "sourceRef": "floorplans",
+      "sourcePage": 2,
+      "publicUse": "User-requested necessary derivative; original PDF remains private",
+      "represents": "Location reference only; not lease boundary, engineering approval, real scene capture or navigation"
+    },
+    {
+      "path": "apps/web/public/life/floorplan-2f-reference.webp",
+      "sha256": "273056c876ef701a7d38383a6bcf8b57479bf8bd011535bb49b2be13f508785d",
+      "bytes": 186238,
+      "assetKind": "source-diagram",
+      "sourceRef": "floorplans",
+      "sourcePage": 3,
+      "publicUse": "User-requested necessary derivative; original PDF remains private",
+      "represents": "Location reference only; not lease boundary, engineering approval, real scene capture or navigation"
+    }
+  ],
+  "originalPdfsCommitted": false,
+  "conceptPhotoPublic": false,
+  "sceneToRoomBinding": null,
+  "reviewIsLeaseOrRightsVerification": false
+}

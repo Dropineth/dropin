@@ -1,0 +1,59 @@
+
+> dropin-earth-monorepo@0.1.0 typecheck
+> npm run typecheck --workspaces --if-present
+
+
+> @dropin/admin@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/miniapp-ton@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/web@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/crypto@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/dropin-cloudflare@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/dropin-protocol@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/schemas@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/ui@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/api@0.1.0 pretypecheck
+> npm run generate
+
+
+> @dropin/api@0.1.0 generate
+> PRISMA_GENERATE_SKIP_AUTOINSTALL=1 DATABASE_URL=${DATABASE_URL:-postgresql://dropin:dropin@localhost:5432/dropin_earth} prisma generate --schema prisma/schema.prisma
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 170ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+
+> @dropin/api@0.1.0 typecheck
+> tsc --noEmit
+
+
+> @dropin/satellite-ingestor@0.1.0 typecheck
+> tsc --noEmit

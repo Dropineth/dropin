@@ -1,0 +1,40 @@
+{
+  "id": "install",
+  "command": [
+    "npm",
+    "ci",
+    "--include=optional"
+  ],
+  "startedAt": "2026-09-30T06:32:31.362Z",
+  "status": "PASS",
+  "before": {
+    "head": "83b06e6c5df399d7f745cf301a6276f94e503db5",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "d283b84570a7ed6e9a5ba0854b8678fbca0e5198741f2b96fe8a00d972cf5b21",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T06:32:31.500Z"
+  },
+  "commandExitCode": 0,
+  "exitCode": 0,
+  "signal": null,
+  "logSha256": "90ebea7576b91a320a107af8e7a769aaace7f1c9f8d2a123015c2c73ac82ac8d",
+  "after": {
+    "head": "83b06e6c5df399d7f745cf301a6276f94e503db5",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "cef93d78ea59b9d4f94b76a78f606b280516267be4d158f92cf8016b6bc245ec",
+    "sourceFingerprintSha256": "d283b84570a7ed6e9a5ba0854b8678fbca0e5198741f2b96fe8a00d972cf5b21",
+    "sourceFileCount": 656,
+    "sourceStatus": "",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-09-30T06:33:07.959Z"
+  },
+  "artifacts": [],
+  "finishedAt": "2026-09-30T06:33:07.960Z"
+}

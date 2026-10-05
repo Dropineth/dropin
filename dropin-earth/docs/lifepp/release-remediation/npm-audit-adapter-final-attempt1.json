@@ -1,0 +1,7 @@
+{
+  "message": "request to https://registry.npmjs.org/-/npm/v1/security/audits/quick failed, reason: Client network socket disconnected before secure TLS connection was established",
+  "error": {
+    "summary": "",
+    "detail": ""
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "scope": "Read-only current GitHub observations; not an approval or deployment credential",
+  "pr": {
+    "observedAt": "2026-10-05T18:51:34.763022+00:00",
+    "number": 4,
+    "state": "OPEN",
+    "isDraft": true,
+    "headRefOid": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+    "baseRefOid": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
+    "mergedAt": null
+  },
+  "independentReviews": {
+    "items": [],
+    "source": "Successful GitHub connector list_pull_request_reviews response in ignored connector-observations.json"
+  },
+  "roles": {
+    "poccahin": {
+      "role": "write",
+      "observedAt": "2026-10-05T18:47:22.288047+00:00",
+      "sourceResponseSha256": "a9090a2591909bf7ea0c204c153e02a283f2ed23644bf12384ef43a8b2fc1736"
+    },
+    "xiruier": {
+      "role": "write",
+      "observedAt": "2026-10-05T18:47:22.780855+00:00",
+      "sourceResponseSha256": "bd469083459b8e1c4ed9b16d41c12c986d99cccf8fdc148af3567e75fc37090c"
+    },
+    "Dropineth": {
+      "role": "admin",
+      "observedAt": "2026-10-05T18:52:36.801921+00:00",
+      "sourceResponseSha256": "e6f0d4c296dc01e46069db1df8aef4eb566fe79020aaa68cb82e989119f76911"
+    }
+  },
+  "productionEnvironment": {
+    "observedAt": "2026-10-05T18:47:19.904964+00:00",
+    "name": "canopyproof-production",
+    "id": 15132369115,
+    "reviewers": [
+      "poccahin",
+      "Dropineth"
+    ],
+    "preventSelfReview": true,
+    "canAdminsBypass": true,
+    "deploymentBranchPolicy": null
+  },
+  "repositoryRulesets": [],
+  "classicBranchProtection": "NOT_VERIFIED_CURRENT_READS_EOF",
+  "sourceReadErrors": "Other ordinary REST queries saw EOF; Git ls-remote saw CONNECT503; successful GraphQL supplied PR/base/head. No network settings changed.",
+  "actualApprovalReceived": false,
+  "productionAuthority": false
+}

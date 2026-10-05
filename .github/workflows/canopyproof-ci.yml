@@ -52,10 +52,17 @@ jobs:
       DROPIN_MAINNET_TRANSFERS_ENABLED: "false"
       DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED: "false"
       NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS: "false"
+      NEXT_PUBLIC_CANOPYPROOF_MODE: staging
+      NEXT_PUBLIC_DROPIN_SITE_URL: https://preview.example.invalid
+      LIFEPP_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      LIFEPP_VALIDATION_OUTPUT_DIR: reports/lifepp-validation/trust-gate-${{ github.run_id }}-${{ github.run_attempt }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -64,68 +71,114 @@ jobs:
           cache: npm
           cache-dependency-path: dropin-earth/package-lock.json
 
+      - name: Initialize candidate-bound validation evidence
+        id: evidence
+        run: node scripts/lifepp-validation-run.mjs init pin-npm,install,supply-chain,workspace,native-postgres,coverage,critical-coverage,browsers,webgl,opennext,artifact,workerd-smoke,lifepp-workerd
+
       - name: Pin npm
-        run: npm install --global npm@10.9.4
+        id: npm
+        run: node scripts/lifepp-validation-run.mjs run pin-npm -- npm install --global npm@10.9.4
 
       - name: Install locked dependencies
-        run: npm ci --include=optional
+        id: install
+        run: node scripts/lifepp-validation-run.mjs run install -- npm ci --include=optional
 
       - name: Verify supply-chain, secret, and generated artifact boundaries
-        run: npm run gate:supply-chain
+        id: supply-chain
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run supply-chain -- npm run gate:supply-chain
 
       - name: Run deterministic workspace gate
-        run: npm run ci
+        id: workspace
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run workspace -- npm run ci
 
       - name: Verify native PostgreSQL authority paths
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
         run: |
+          node scripts/lifepp-validation-run.mjs run native-postgres -- bash -eo pipefail -c '
           connection_url="${CANOPYPROOF_CI_DB_SCHEME}://${CANOPYPROOF_CI_DB_USER}:${CANOPYPROOF_CI_DB_PASSWORD}@${CANOPYPROOF_CI_DB_HOST}/${CANOPYPROOF_CI_DB_NAME}"
           DATABASE_URL="$connection_url" \
           CANOPYPROOF_NATIVE_DATABASE_URL="$connection_url" \
             npm run db:verify:canopyproof:native
+          '
 
       - name: Enforce repository source coverage ratchet
         id: coverage
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
         run: |
+          node scripts/lifepp-validation-run.mjs run coverage -- bash -e -c '
           set -o pipefail
           mkdir -p reports/ci
           npm run test:coverage:ratchet 2>&1 | tee reports/ci/canopyproof-coverage.txt
           test -s reports/ci/canopyproof-coverage.txt
           test -s coverage/coverage-summary.json
+          '
 
       - name: Enforce critical CanopyProof module coverage
-        run: npm run coverage:critical
+        id: critical-coverage
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run critical-coverage -- npm run coverage:critical
 
       - name: Install cross-browser WebGL fallback matrix
-        run: npx playwright install --with-deps chromium firefox webkit
+        id: browsers
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run browsers -- npx playwright install --with-deps chromium firefox webkit
 
       - name: Verify Chromium, Firefox, and WebKit fallback matrix
-        run: npm run test:webgl:browser
+        id: webgl
+        if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run webgl -- npm run test:webgl:browser
 
       - name: Build OpenNext Cloudflare artifact
-        run: npm --workspace apps/web run cf:build
+        id: opennext
+        if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run opennext -- npm --workspace apps/web run cf:build
 
       - name: Verify OpenNext artifact shape
+        id: artifact
+        if: ${{ always() && !cancelled() && steps.opennext.outcome == 'success' }}
         run: |
+          node scripts/lifepp-validation-run.mjs run artifact -- bash -e -c '
           test -f apps/web/.open-next/worker.js
           test -d apps/web/.open-next/assets
+          '
 
       - name: Run local OpenNext workerd route smoke
-        run: npm run test:workerd
+        id: workerd-smoke
+        if: ${{ always() && !cancelled() && steps.artifact.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run workerd-smoke -- npm run test:workerd
+
+      - name: Verify Life++ in local workerd Chromium
+        if: ${{ always() && !cancelled() && steps.artifact.outcome == 'success' && steps.browsers.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs run lifepp-workerd -- node scripts/lifepp-validation-run.mjs workerd-browser
+
+      - name: Finalize candidate-bound validation result
+        if: ${{ always() && steps.evidence.outcome == 'success' }}
+        run: node scripts/lifepp-validation-run.mjs finish
+
+      - name: Preserve staging workerd build for offline visual review
+        if: ${{ always() && steps.artifact.outcome == 'success' }}
+        run: |
+          artifact_path="$LIFEPP_VALIDATION_OUTPUT_DIR/workerd-review.tar.gz"
+          tar -czf "$artifact_path" -C apps/web .open-next
+          sha256sum "$artifact_path" > "$artifact_path.sha256"
+          printf '%s\n' "$LIFEPP_EXPECTED_SHA" > "$LIFEPP_VALIDATION_OUTPUT_DIR/workerd-review-commit.txt"
+
+      - name: Preserve command results including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canopyproof-validation-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dropin-earth/${{ env.LIFEPP_VALIDATION_OUTPUT_DIR }}/
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Preserve coverage evidence
         if: ${{ always() && steps.coverage.outcome != 'skipped' }}
         uses: actions/upload-artifact@v4
         with:
           name: canopyproof-coverage-${{ github.run_id }}
-          path: |
-            dropin-earth/reports/ci/canopyproof-coverage.txt
-            dropin-earth/reports/canopyproof-repository-coverage.json
-            dropin-earth/reports/canopyproof-repository-coverage.md
-            dropin-earth/reports/canopyproof-cross-browser-webgl.json
-            dropin-earth/reports/canopyproof-cross-browser-webgl.md
-            dropin-earth/reports/canopyproof-workerd-smoke.json
-            dropin-earth/reports/ci/canopyproof-supply-chain-gate.json
-            dropin-earth/reports/ci/canopyproof-sbom.cdx.json
-            dropin-earth/coverage/coverage-summary.json
+          path: dropin-earth/${{ env.LIFEPP_VALIDATION_OUTPUT_DIR }}/artifacts/
           if-no-files-found: error
           retention-days: 30

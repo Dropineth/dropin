@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+    "reports/lifepp-validation/r3-1-tools-20261005/node_modules/npm/bin/npm-cli.js",
+    "audit",
+    "--audit-level=moderate",
+    "--json"
+  ],
+  "startedAt": "2026-10-05T10:20:32.119245+00:00",
+  "endedAt": "2026-10-05T10:20:35.308217+00:00",
+  "exitCode": 1,
+  "baseSha": "35c10ef3739a888478043374e7fc83d6bce0a928",
+  "workingTree": "uncommitted exact Hono 4.13.7 patch only",
+  "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f"
+}

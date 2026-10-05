@@ -1,0 +1,4 @@
+npm notice This endpoint is being retired. Use the bulk advisory endpoint instead. See the following docs for more info: https://api-docs.npmjs.com/#tag/Audit
+npm warn audit 400 Bad Request - POST https://registry.npmjs.org/-/npm/v1/security/audits/quick - Bad Request
+npm error audit endpoint returned an error
+npm error A complete log of this run can be found in: /Users/lee/.npm/_logs/2026-09-30T03_00_30_225Z-debug-0.log

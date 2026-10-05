@@ -1,0 +1,36 @@
+{
+  "observedAt": "2026-09-30T02:04:13.436266+00:00",
+  "implementationCommit": "e44f73449ce14523cc9e34817ad2574eed6776a9",
+  "prUrl": "https://github.com/Dropineth/dropin/pull/4",
+  "prCreation": {
+    "command": "gh pr create --repo Dropineth/dropin --base main --head codex/canopyproof-lifepp-full-update-20260930 --draft --body-file <prepared body>",
+    "exitCode": 0,
+    "stdout": "https://github.com/Dropineth/dropin/pull/4"
+  },
+  "workflowObservation": {
+    "tool": "GitHub fetch_commit_workflow_runs",
+    "head": "e44f73449ce14523cc9e34817ad2574eed6776a9",
+    "runs": [
+      {
+        "id": 36657968906,
+        "name": "CanopyProof Trust Gate",
+        "status": "in_progress",
+        "conclusion": null
+      },
+      {
+        "id": 36657969154,
+        "name": "Life++ web acceptance",
+        "status": "in_progress",
+        "conclusion": null
+      }
+    ]
+  },
+  "priorAttempts": {
+    "restApi": "Repeated EOF; read queries and web PR listing showed no duplicate before CLI creation.",
+    "connectorCreation": "403 Resource not accessible by integration",
+    "completionMethod": "Existing authenticated gh CLI successfully created draft PR; no credential/network/security settings were changed."
+  },
+  "productionMerged": false,
+  "productionDeployed": false,
+  "externalPreviewDeployed": false
+}

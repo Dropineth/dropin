@@ -1,0 +1,15 @@
+{
+  "evidenceClass": "LOCAL_SYNTHETIC_MOCK_UI",
+  "realInstitutionalReceipt": false,
+  "status": "PASS",
+  "browserVersion": "154.0.8037.58",
+  "checks": [
+    "default draft performs GET only",
+    "503 removes send action",
+    "status recheck never POSTs",
+    "draft and dedupe UUID survive status recheck",
+    "fresh consent required",
+    "receipt wording limits itself to storage"
+  ],
+  "syntheticPostCount": 2
+}

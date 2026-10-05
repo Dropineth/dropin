@@ -50,6 +50,7 @@ test("cross-browser WebGL matrix executes Chromium, Firefox, and WebKit without 
 
 test("Trust Gate installs every official Playwright browser and preserves matrix evidence", () => {
   const workflow = readFileSync(workflowPath, "utf8");
+  const validationRunner = readFileSync(join(projectRoot, "scripts", "lifepp-validation-run.mjs"), "utf8");
 
   assert.match(
     workflow,
@@ -58,11 +59,14 @@ test("Trust Gate installs every official Playwright browser and preserves matrix
   assert.match(workflow, /npm run test:webgl:browser/u);
   assert.match(
     workflow,
-    /dropin-earth\/reports\/canopyproof-cross-browser-webgl\.json/u,
+    /path: dropin-earth\/\$\{\{ env\.LIFEPP_VALIDATION_OUTPUT_DIR \}\}\/artifacts\//u,
   );
   assert.match(
-    workflow,
-    /dropin-earth\/reports\/canopyproof-cross-browser-webgl\.md/u,
+    validationRunner,
+    /webgl:\s*\['reports\/canopyproof-cross-browser-webgl\.json', 'reports\/canopyproof-cross-browser-webgl\.md'\]/u,
   );
+  assert.match(workflow, /lifepp-validation-run\.mjs run webgl -- npm run test:webgl:browser/u);
+  assert.match(workflow, /name: Preserve coverage evidence\n\s+if: \$\{\{ always\(\) && steps\.coverage\.outcome != 'skipped' \}\}\n\s+uses: actions\/upload-artifact@v4/u);
+  assert.match(workflow, /if-no-files-found: error/u);
   assert.doesNotMatch(workflow, /continue-on-error/u);
 });

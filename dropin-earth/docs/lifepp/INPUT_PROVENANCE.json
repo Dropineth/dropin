@@ -1,0 +1,6 @@
+{
+  "manifestSha256": "6a9e74ae3a9fc9a7fdc87d0e3e5c1fe2940f54a1002ae4a00547335f3cf180d3",
+  "taskSha256": "3ccd6d6bb23fc2428f4a3f6691c62288d6663463e937d1f5cc8ce69a00f05270",
+  "baseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
+  "inputStatus": "User-authorized business inputs; not evidence of implementation or external validation"
+}

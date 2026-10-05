@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-05T19:39:54.264974+00:00",
+  "captureGeneratedAt": "2026-10-05T19:34:26.255Z",
+  "sourceFingerprintSha256": "d81a9932bae16f8a7fdf1b086760355c861b2c8f3da8955235d3562666a76bdf",
+  "sourceStable": true,
+  "buildId": "_TJAvIsImH0AP05FtVw50",
+  "buildBinding": "reuse-build.json",
+  "captureMethod": "Actual compiled local Next .ls-app DOM element screenshots, copied byte-for-byte; not generated design mockups.",
+  "screenshots": [
+    {
+      "path": "/life/center",
+      "name": "zh-center-375-workbench-element.png",
+      "captureType": "actual-workbench-element",
+      "viewportWidth": 375,
+      "sha256": "144b15387d8a86f982a392610080f66418b482287ebd963399fb1397c93b3bf0",
+      "bytes": 184067,
+      "localCopy": "screenshots/zh-center-375-workbench-element.png",
+      "source": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt5/viewport-captures/zh-center-375-workbench-element.png"
+    },
+    {
+      "path": "/en/life/center",
+      "name": "en-center-375-workbench-element.png",
+      "captureType": "actual-workbench-element",
+      "viewportWidth": 375,
+      "sha256": "2ff4bd812230b5046b6c1a2e89897c284f7f165be33d89ead2a99461d00094d9",
+      "bytes": 181529,
+      "localCopy": "screenshots/en-center-375-workbench-element.png",
+      "source": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt5/viewport-captures/en-center-375-workbench-element.png"
+    },
+    {
+      "path": "/life/center",
+      "name": "zh-center-1440-workbench-element.png",
+      "captureType": "actual-workbench-element",
+      "viewportWidth": 1440,
+      "sha256": "fc2c6a126903e6fb5847830cdb586e3be25ac8b4c7728d7feb3a5c47bb9341b3",
+      "bytes": 356201,
+      "localCopy": "screenshots/zh-center-1440-workbench-element.png",
+      "source": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt5/viewport-captures/zh-center-1440-workbench-element.png"
+    },
+    {
+      "path": "/en/life/center",
+      "name": "en-center-1440-workbench-element.png",
+      "captureType": "actual-workbench-element",
+      "viewportWidth": 1440,
+      "sha256": "2f40ecc4534bc2bbd7528f766e3f1afc98c19a6cf675b56bc1c6b48b43833328",
+      "bytes": 352988,
+      "localCopy": "screenshots/en-center-1440-workbench-element.png",
+      "source": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt5/viewport-captures/en-center-1440-workbench-element.png"
+    }
+  ],
+  "parentAgentActualVisualObservation": {
+    "source": "Parent task actual view_image observation of attempt4 viewport captures; not independent human review.",
+    "views": [
+      "zh-center-375-stage-viewport.png",
+      "en-center-1440-stage-viewport.png",
+      "ecology-375-footer-viewport.png"
+    ],
+    "findings": [
+      "Four floating markers inside canvas and outside caption",
+      "Mobile2F geometry complete",
+      "Actual ecology footer correct; viewport capture resolves overlong full-page raster artifact",
+      "Software schematic and WebGL unaccepted/disabled wording clear"
+    ]
+  },
+  "limitations": "Four representative element images and three parent-observed viewports are bounded agent visual evidence, not every screenshot reviewed, physical-phone testing, real WebGL qualification, workerd/production validation or human approval.",
+  "productionAuthority": false,
+  "additionalAgentReview": {
+    "reviewer": "scene_safety subagent",
+    "source": "Parent task actual review report from scene_safety; not human release approval",
+    "scope": "All four copied Chinese/English375/1440 actual DOM workbench captures",
+    "findings": [
+      "Four labels and geometry visually present",
+      "Software rendering and WebGL-disabled boundary visible"
+    ],
+    "limitation": "Sticky navigation covers screenshot top; do not claim the entire component is wholly unobscured. No independent human approval or physical-device qualification."
+  }
+}

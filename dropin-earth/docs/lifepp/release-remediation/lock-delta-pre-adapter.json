@@ -1,0 +1,304 @@
+{
+  "baselineCommit": "8ba02a3e7fe591b115162229510112220b4182b8",
+  "lockSha256": "ba56c1847f56896149201c90a4e8b4db939b67fff5223dfae5169b502f3f3636",
+  "changed": [
+    {
+      "path": "node_modules/@img/sharp-darwin-arm64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-darwin-x64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-freebsd-wasm32",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-darwin-arm64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-darwin-x64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-arm",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-arm64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-ppc64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-riscv64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-s390x",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linux-x64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linuxmusl-arm64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-libvips-linuxmusl-x64",
+      "before": "1.3.2",
+      "after": "1.3.3"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-arm",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-arm64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-ppc64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-riscv64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-s390x",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linux-x64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linuxmusl-arm64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-linuxmusl-x64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-wasm32",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-webcontainers-wasm32",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-win32-arm64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-win32-ia32",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@img/sharp-win32-x64",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/@next/env",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/eslint-plugin-next",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-darwin-arm64",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-darwin-x64",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-arm64-gnu",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-arm64-musl",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-x64-gnu",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-linux-x64-musl",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-win32-arm64-msvc",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/@next/swc-win32-x64-msvc",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/deepmerge-ts",
+      "before": "7.1.5",
+      "after": "8.0.0"
+    },
+    {
+      "path": "node_modules/hono",
+      "before": "4.13.1",
+      "after": "4.13.5"
+    },
+    {
+      "path": "node_modules/jayson",
+      "before": "4.3.0",
+      "after": "5.0.0"
+    },
+    {
+      "path": "node_modules/nanoid",
+      "before": "3.3.17",
+      "after": "3.3.18"
+    },
+    {
+      "path": "node_modules/next",
+      "before": "15.5.22",
+      "after": "15.5.26"
+    },
+    {
+      "path": "node_modules/qs",
+      "before": "6.15.3",
+      "after": "6.16.0"
+    },
+    {
+      "path": "node_modules/sharp",
+      "before": "0.35.3",
+      "after": "0.35.4"
+    },
+    {
+      "path": "node_modules/toml",
+      "before": "3.0.0",
+      "after": "4.2.0"
+    },
+    {
+      "path": "node_modules/undici",
+      "before": "7.29.0",
+      "after": "7.29.1"
+    }
+  ],
+  "added": [
+    {
+      "path": "apps/web/node_modules/@mapbox/unitbezier",
+      "version": "1.0.0"
+    },
+    {
+      "path": "apps/web/node_modules/@mapbox/vector-tile",
+      "version": "3.0.0"
+    },
+    {
+      "path": "apps/web/node_modules/@maplibre/maplibre-gl-style-spec",
+      "version": "26.4.4"
+    },
+    {
+      "path": "apps/web/node_modules/earcut",
+      "version": "3.2.4"
+    },
+    {
+      "path": "apps/web/node_modules/maplibre-gl",
+      "version": "6.4.1"
+    },
+    {
+      "path": "apps/web/node_modules/pbf",
+      "version": "5.1.2"
+    }
+  ],
+  "removed": [
+    {
+      "path": "node_modules/@mapbox/unitbezier",
+      "version": "0.0.1"
+    },
+    {
+      "path": "node_modules/@mapbox/vector-tile",
+      "version": "2.0.5"
+    },
+    {
+      "path": "node_modules/@mapbox/whoots-js",
+      "version": "3.1.0"
+    },
+    {
+      "path": "node_modules/@maplibre/maplibre-gl-style-spec",
+      "version": "24.10.0"
+    },
+    {
+      "path": "node_modules/@maplibre/maplibre-gl-style-spec/node_modules/@mapbox/unitbezier",
+      "version": "1.0.0"
+    },
+    {
+      "path": "node_modules/eyes",
+      "version": "0.1.8"
+    },
+    {
+      "path": "node_modules/maplibre-gl",
+      "version": "5.24.0"
+    },
+    {
+      "path": "node_modules/maplibre-gl/node_modules/earcut",
+      "version": "3.2.3"
+    },
+    {
+      "path": "node_modules/pbf",
+      "version": "4.0.2"
+    },
+    {
+      "path": "node_modules/stream-chain",
+      "version": "2.2.5"
+    },
+    {
+      "path": "node_modules/stream-json",
+      "version": "1.9.1"
+    }
+  ],
+  "evidenceStage": "pre-adapter-snapshot"
+}
