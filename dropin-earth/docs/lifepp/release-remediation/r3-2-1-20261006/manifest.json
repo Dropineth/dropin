@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "copiedAt": "2026-10-05T19:02:20.380673+00:00",
+  "scope": "R3.2.1 local audit, upstream research, distinct dirty-source diagnostics and representative compiled-app screenshots. Not final candidate CI, complete visual acceptance or production authority.",
+  "sourceHead": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+  "files": [
+    {
+      "path": "fresh-audit.json",
+      "sha256": "9cebcc284f98f2e6ac60fa72824bab97bbffe432b16f87e1788f45ecb99bc432",
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/dependencies/fresh-audit.json",
+      "copiedWithoutModification": true
+    },
+    {
+      "path": "fresh-audit.meta.json",
+      "sha256": "ef5ef117576e9aa156773b40e2573e788248b6db5a10924d26827e6b44c3d28c",
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/dependencies/fresh-audit.meta.json",
+      "copiedWithoutModification": true
+    },
+    {
+      "path": "decision.json",
+      "sha256": "e104db3209cd1db04b3309fcf0b0d64c0af69a951fe1fc5da44c054f84127677",
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/dependencies/decision.json",
+      "copiedWithoutModification": true
+    }
+  ],
+  "historicalTrackedStatus": {
+    "path": "previous-delivery-status-r3-1.json",
+    "sha256": "50244e3e3ad9fb29f9c009ccebb2483285f9c3dd2a0dfb4ade1a2e416c04cff5"
+  },
+  "secretValuesCopied": false,
+  "lockModified": false,
+  "productionAuthority": false,
+  "updatedAt": "2026-10-05T19:43:37.578141+00:00",
+  "additionalEvidence": [
+    {
+      "path": "local-validation-in-progress.json",
+      "sha256": "9a6d6f71c858c2e9693c908db06bf5e427b877b7bb77a7a1451d3ddda648ec59",
+      "bytes": 30232
+    },
+    {
+      "path": "reuse-build.json",
+      "sha256": "928c5c72ffcaf822f4a907437e09755e2d919cb41603a909b95ea21f1bc0e6e8",
+      "bytes": 1218
+    },
+    {
+      "path": "visual-evidence.json",
+      "sha256": "31ecd699a7a5d4771f68e6466f0157238ae4190e24597f0216f6dc53bba4c33d",
+      "bytes": 3965
+    },
+    {
+      "path": "cloudflare-overview-read.json",
+      "sha256": "87b1b7c915fbb4db966205a7b30c09f9f4481bd18e2b546b13ff6d5dce6526c8",
+      "bytes": 1054
+    },
+    {
+      "path": "release-permissions-observed.json",
+      "sha256": "179dea8e26bb596ebe8de2ab7a16e9bf83eb7a8da5f898443a48e45b77789145",
+      "bytes": 1805
+    },
+    {
+      "path": "change-boundary.json",
+      "sha256": "daf28cd965439129ca5a0bac2d942f6023a28978df07b46003d876173e89fc2e",
+      "bytes": 394
+    },
+    {
+      "path": "screenshots/en-center-1440-workbench-element.png",
+      "sha256": "2f40ecc4534bc2bbd7528f766e3f1afc98c19a6cf675b56bc1c6b48b43833328",
+      "bytes": 352988
+    },
+    {
+      "path": "screenshots/en-center-375-workbench-element.png",
+      "sha256": "2ff4bd812230b5046b6c1a2e89897c284f7f165be33d89ead2a99461d00094d9",
+      "bytes": 181529
+    },
+    {
+      "path": "screenshots/zh-center-1440-workbench-element.png",
+      "sha256": "fc2c6a126903e6fb5847830cdb586e3be25ac8b4c7728d7feb3a5c47bb9341b3",
+      "bytes": 356201
+    },
+    {
+      "path": "screenshots/zh-center-375-workbench-element.png",
+      "sha256": "144b15387d8a86f982a392610080f66418b482287ebd963399fb1397c93b3bf0",
+      "bytes": 184067
+    }
+  ]
+}

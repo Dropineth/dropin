@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { chromium, firefox, webkit, type Browser, type Page } from "playwright";
+import { assertSpatialOperations, prepareSpatialChecks } from "../../scripts/lifepp-spatial-browser-check.mjs";
 
 // Run against a built Next or local workerd server. Never starts a deploy or API.
 const base = new URL(process.env.LIFEPP_BROWSER_BASE_URL ?? "http://127.0.0.1:3101");
@@ -170,6 +171,7 @@ async function routeMatrix(profile: typeof profiles[number]) {
       const page = await context.newPage();
       page.setDefaultTimeout(10_000);
       await setupMetrics(page);
+      if (path.endsWith("/life/center")) await prepareSpatialChecks(page);
       await check(`${profile.name} ${path}`, async () => {
         const externalStart = external.length;
         const errors: string[] = [];
@@ -227,9 +229,15 @@ async function routeMatrix(profile: typeof profiles[number]) {
             const name = `after-${profile.name}-${path.slice(1).replaceAll("/", "-") || "ecology"}.png`;
             await page.screenshot({ path: join(output, name), fullPage: true }); screenshots.push(name);
           }
+          // Both Next and workerd execute this same route matrix. Spatial
+          // subchecks belong to the ten existing localized Center results;
+          // the original 150 checks and five-width matrix remain unchanged.
+          const spatialAcceptance = path.endsWith("/life/center")
+            ? await assertSpatialOperations(page, { locale: locale === "en" ? "en" : "zh", base })
+            : undefined;
           assert.deepEqual(external.slice(externalStart), [], "Life++ must not auto-load third-party resources");
           assert.deepEqual(errors, [], "No runtime or CSP hydration errors");
-          return { status: response!.status(), htmlLang: locale, overflow, externalRequests: 0, reducedMotion, screenshotImages };
+          return { status: response!.status(), htmlLang: locale, overflow, externalRequests: 0, reducedMotion, screenshotImages, spatialAcceptance };
         } catch (error) {
           const name = `failure-${profile.name}-${path.slice(1).replaceAll("/", "-")}.png`;
           await page.screenshot({ path: join(output, name), fullPage: true }).then(() => screenshots.push(name)).catch(() => undefined);
@@ -549,7 +557,7 @@ async function main() {
   } catch (error) { results.push({ name: `${engine} browser execution`, status: "FAIL", error: error instanceof Error ? error.stack : String(error) }); }
   finally { await browser?.close(); }
   const sourceStatus = execFileSync("git", ["status", "--porcelain", "--untracked-files=normal", "--", "apps", "packages", "services", "tests", "scripts", "package.json", "package-lock.json", "../.github/workflows"], { encoding: "utf8" }).trim();
-  const report = { schemaVersion: 2, generatedAt: new Date().toISOString(), status: results.some((item) => item.status === "FAIL") ? "FAIL" : "PASS", baseUrl: base.href, runtime: { node: process.version, platform: process.platform, arch: process.arch, engine, browser: browserVersion, serverMode: process.env.LIFEPP_BROWSER_SERVER_MODE ?? "unspecified" }, matrix: { profiles, paths, plannedRouteChecks: profiles.length * paths.length }, candidateSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), workingTreeUnderTest: sourceStatus !== "", sourceStatus, command: `LIFEPP_BROWSER_ENGINE=${engine} node --import tsx tests/browser/lifepp.spec.ts`, results, screenshots, measurements, limitations: [`Lab observations from one local ${engine} browser; not Lighthouse, field performance or a real-device review.`, "The 200% zoom alternative tests reflow at half a baseline CSS viewport with DPR 2; native browser/OS zoom is not measured.", "Unavailable-source checks inject no WebGL and offline conditions; this is fixture evidence, not provider outage diagnosis or real-scene acceptance.", "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.", "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.", "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness.", "The separate MapLibre remediation spec uses Chromium; this report does not imply MapLibre coverage on the selected Life++ engine."] };
+  const report = { schemaVersion: 2, generatedAt: new Date().toISOString(), status: results.some((item) => item.status === "FAIL") ? "FAIL" : "PASS", baseUrl: base.href, runtime: { node: process.version, platform: process.platform, arch: process.arch, engine, browser: browserVersion, serverMode: process.env.LIFEPP_BROWSER_SERVER_MODE ?? "unspecified" }, matrix: { profiles, paths, plannedRouteChecks: profiles.length * paths.length }, candidateSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(), workingTreeUnderTest: sourceStatus !== "", sourceStatus, command: `LIFEPP_BROWSER_ENGINE=${engine} node --import tsx tests/browser/lifepp.spec.ts`, results, screenshots, measurements, limitations: [`Lab observations from one local ${engine} browser; not Lighthouse, field performance or a real-device review.`, "The 200% zoom alternative tests reflow at half a baseline CSS viewport with DPR 2; native browser/OS zoom is not measured.", "Unavailable-source checks inject no WebGL and offline conditions; this is fixture evidence, not provider outage diagnosis or real-scene acceptance.", "maxObservedInteractionDurationMs is not field INP. INP was not measured; real traffic measurement remains open.", "CLS records accumulated observed layout shifts during this bounded page load, not a full-session field percentile.", "All real third-party scene embeds remain disabled. This browser suite does not validate scene assets, navigation, rights or provider readiness.", "Center spatial interactions are subchecks within the ten existing localized Center route results. They exercise the original app software schematic; WebGL acceptance stays disabled. Downloaded unsigned synthetic JSON is not a real receipt or production authority.", "The separate MapLibre remediation spec uses Chromium; this report does not imply MapLibre coverage on the selected Life++ engine."] };
   writeFileSync(join(output, "browser-report.json"), `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify({ status: report.status, passed: results.filter((item) => item.status === "PASS").length, failed: results.filter((item) => item.status === "FAIL"), screenshots: screenshots.length }, null, 2));
   if (report.status !== "PASS") process.exitCode = 1;

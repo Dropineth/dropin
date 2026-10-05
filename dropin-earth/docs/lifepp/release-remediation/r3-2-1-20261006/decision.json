@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-10-05T18:50:10.798632+00:00",
+  "decision": "NO_VERIFIED_PUBLISHED_COMPATIBLE_FIX",
+  "gate": "BLOCKED_HIGH_FINDINGS",
+  "sourceHead": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+  "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+  "freshAuditExitCode": 1,
+  "freshAuditSummary": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 4,
+    "critical": 0,
+    "total": 4
+  },
+  "distinctRootAdvisories": [
+    "GHSA-vfj7-8cjw-p6xm"
+  ],
+  "affectedPackages": [
+    "@next/eslint-plugin-next",
+    "braces",
+    "fast-glob",
+    "micromatch"
+  ],
+  "advisoryWithdrawnAt": null,
+  "firstPatchedVersion": null,
+  "latestPublishedObserved": {
+    "braces": "3.0.3",
+    "micromatch": "4.0.8",
+    "fast-glob": "3.3.3",
+    "@next/eslint-plugin-next": "16.3.8",
+    "@next/eslint-plugin-next:backport": "15.5.27"
+  },
+  "bracesPR75": {
+    "state": "closed",
+    "merged": false,
+    "closedAt": "2026-10-05T14:07:20Z",
+    "updatedAt": "2026-10-05T16:12:50Z",
+    "head": "bdb6fda18f2aba1ae63d78786cb4460b478459ba"
+  },
+  "notApplied": [
+    "npm audit fix --force",
+    "plugin downgrade 14.2.35",
+    "withdrawn PR75",
+    "rejected tinyglobby adapter",
+    "audit waiver or lowered threshold"
+  ],
+  "scope": "Read-only audit and official public metadata; writes only this ignored evidence directory. No shared manifest, lock or node_modules changes.",
+  "limits": [
+    "Canary tag was retrieved; its package metadata remained unavailable after two 503 responses and was not treated as absence of a fix.",
+    "GitHub web-rendered PR75 overview was stale (Open); live REST metadata and author comments established Closed, not merged.",
+    "Maintainer disputes the advisory and recommends bounded trusted inputs; this does not withdraw the advisory or pass the unchanged audit gate."
+  ]
+}

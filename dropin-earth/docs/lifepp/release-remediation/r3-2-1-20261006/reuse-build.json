@@ -1,0 +1,20 @@
+{
+  "status": "VERIFIED_ONLY_TEST_HELPER_CHANGED",
+  "baselineBuild": "../next-browser-attempt4/build.json",
+  "baselineSourceFingerprintSha256": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766",
+  "currentSourceFingerprintSha256": "d81a9932bae16f8a7fdf1b086760355c861b2c8f3da8955235d3562666a76bdf",
+  "reconstructedSourceFingerprintSha256": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766",
+  "method": "Recomputed complete original source fingerprint by reversing only the three-line browser callback correction in scripts/lifepp-spatial-browser-check.mjs; exact match proves all other scoped source bytes and tracked/untracked states unchanged. No build result is relabeled with a new fingerprint.",
+  "buildId": "_TJAvIsImH0AP05FtVw50",
+  "compiledBefore": {
+    "sha256": "e40c09094bceedc0440bc99d406bfc266b4ed773a977ebad167a424d7155ab0f",
+    "fileCount": 243,
+    "scope": "BUILD_ID and every file below .next/server and .next/static"
+  },
+  "compiledAfter": {
+    "sha256": "e40c09094bceedc0440bc99d406bfc266b4ed773a977ebad167a424d7155ab0f",
+    "fileCount": 243,
+    "scope": "BUILD_ID and every file below .next/server and .next/static"
+  },
+  "compiledUnchanged": true
+}

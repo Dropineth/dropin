@@ -1,3 +1,29 @@
+# R3.2.1 current gate — 2026-10-06
+
+Status: **PRECOMMIT / IN_PROGRESS; RELEASE HOLD**. [R3_2_1_INTEGRATION.md](R3_2_1_INTEGRATION.md) and the current top-level delivery status govern this phase. All older checked boxes below keep their dated/head-specific scope.
+
+- [x] Mount the software workbench below the original FourShopPlan in both Center locales; retain Home, routes, images and dependencies.
+- [x] Register23contract+17mocked lifecycle+20camera cases in the existing Life wildcard; the first Life suite85/85 and later original full943/943 units passed at their recorded scope. Center subchecks remain in the existing150-result matrix.
+- [x] Record local web types, final526tracked/nonignored JS/TS source lint (initial525) and Next build PASS separately from original lint FAIL3322; retain the ignored-files boundary and require original lint on clean CI.
+- [x] Keep WebGL unaccepted/disabled and all synthetic exports unsigned, non-authoritative and without external actions.
+- [x] Preserve the actual October6 audit JSON, command metadata and hashes: valid scan, exit1, 4 high; unchanged lock and audit gate.
+- [x] Preserve initial923units, PGlite40/Python4, supply-chain716components/0findings and attempt2Chromium/Firefox150each as earlier diagnostics; later943units/types have their own37957b51… fingerprint. Retain every attempt1–4 browser failure.
+- [x] Correct the375px software-camera/label clipping defect;20camera cases and finalChromium150/150 + MapLibre2/2 pass. Preserve build4 fingerprint, exact helper-only build-reuse proof and finald81a9932… browser identity; add four actual DOM screenshots and limited agent viewport observations. Local macOS WebKit22failures stay FAIL; final Ubuntu all-engine acceptance remains required.
+- [ ] Obtain all actual final-source lint/types/unit/build/browser/workerd results; retain every failure or unavailable check.
+- [ ] Resolve the four high dependency entries with a verified compatible treatment; no forced downgrade, withdrawn patch, rejected adapter or waiver.
+- [ ] Freeze and commit the final integration, resolve its SHA externally, then verify both full remote workflows on that same SHA. No old head acceptance carries forward.
+- [ ] Obtain actual independent external human code/visual APPROVED review of that final PR head; agent review does not satisfy this item.
+- [ ] Before merge, obtain current administrator evidence that both existing Cloudflare Git integrations cannot publish independently of approval; October5 observations showed a bypass path and failing build roots.
+- [ ] After safe merge, obtain both complete workflows and intact evidence on the actual main merge SHA.
+- [ ] Obtain real active known-good version/deployment UUIDs, binding-compatible rollback procedure/operator, and the actual post-merge admin/maintain statement on PR4.
+- [ ] Use only a fresh main dispatch of the new manual web-only workflow; no old-main or sibling-workflow shortcut. A non-Dropineth initiator leaves Dropineth eligible for independent environment approval.
+- [ ] Prepare the explicit production artifact without cloud credentials, then have Dropineth inspect and actually approve SHA + manifest digest + rollback UUID through the existing environment.
+- [ ] Revalidate live main/approvals/rollback/routes, deploy only existing canopyproof-web if every gate passes, and record full external acceptance and actual version/time.
+
+The current GitHub permission observation allows poccahin/xiruier to initiate and Dropineth to provide the real admin statement and independent environment approval; it is not an approval already given. Do not change environment protection to make the combination work. Current classic branch protection was not retrievable and must be refreshed.
+
+## Historical R3.1 checklist (retained; not current integration acceptance)
+
 # R3.1 current gate — 2026-10-05
 
 - [x] Restore and hash the recovered35c10ef noindex CI package; complete local150-browser/15-route compiled checks and44-screen bilingual visual review. This accepts that recorded package only.

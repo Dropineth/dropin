@@ -1,0 +1,707 @@
+{
+  "schemaVersion": 2,
+  "recordedAt": "2026-10-05T19:43:37.578141+00:00",
+  "status": "PRECOMMIT_LOCAL_DIAGNOSTICS_RECORDED_FULL_CANDIDATE_CI_PENDING",
+  "sourceHead": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+  "workingTreeUnderTest": true,
+  "scope": "Local diagnostic subset; not final candidate remote CI or release authority.",
+  "results": {
+    "lifeUnitTests": {
+      "passed": 85,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "exitCodeSource": "Parent task actual execution receipt; log summary independently read"
+    },
+    "webTypecheck": {
+      "exitCode": 0,
+      "exitCodeSource": "Parent task actual execution result; local log read"
+    },
+    "originalNpmRunLint": {
+      "exitCode": 1,
+      "reportedErrors": 3322,
+      "scope": "Ignored restored attachment/vendor/prototype/review packages; original command retained as FAIL"
+    },
+    "trackedAndNonignoredSourceLint": {
+      "startedAt": "2026-10-05T19:00:32.982117+00:00",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "scope": "Every tracked and nonignored untracked JS/TS source; excludes ignored restored attachment/review packages, not application files",
+      "exitCode": 0,
+      "endedAt": "2026-10-05T19:00:37.742641+00:00",
+      "fullCommandAndPathListRecord": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/source-lint.json",
+      "fullRecordSha256": "264b449f22579f4ddc76e434c5adb5acab833f9854380b872e0d6a547013781a",
+      "commandSummary": "Existing ESLint over every Git-tracked and nonignored untracked JS/TS source (525 paths); full argument list retained in source record."
+    },
+    "sourceLintFiles": 525,
+    "nextBuild": {
+      "status": "PASS",
+      "exitCode": 0,
+      "commandExitCode": 0,
+      "startedAt": "2026-10-05T19:00:56.939Z",
+      "finishedAt": "2026-10-05T19:01:21.132Z",
+      "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "logSha256": "306e903903862f6a74ecea41f508c46fb8cca4d4b042e26de19ac8fa724f62f0"
+    },
+    "remainingChecks": "Fresh committed clean-checkout Trust/Life CI, all original lint/types/audit/native/coverage/browser/OpenNext/workerd gates; local macOS WebKit remains FAIL and fresh dependency audit retains4 high.",
+    "fullWorkspaceUnits": {
+      "passed": 923,
+      "failed": 0,
+      "skipped": 0,
+      "command": "npm run test",
+      "exitCode": 0,
+      "exitCodeSource": "Parent actual execution result and independently read TAP summary"
+    },
+    "browserAttempt1": {
+      "status": "FAIL",
+      "commandExitCode": 1,
+      "exitCode": 1,
+      "logSha256": "e43ef855ee76cbe4f7c9fbd414bbca6eb6f2612fcc5fa0c48dad5e050abab507",
+      "startedAt": "2026-10-05T19:01:21.157Z",
+      "finishedAt": "2026-10-05T19:04:19.079Z",
+      "lifePassed": 150,
+      "maplibre": "response timeout10000ms; extra local API URL differed from CI"
+    },
+    "databasePython": [
+      {
+        "id": "pglite",
+        "status": "PASS",
+        "commandExitCode": 0,
+        "exitCode": 0,
+        "startedAt": "2026-10-05T19:06:20.124Z",
+        "finishedAt": "2026-10-05T19:07:23.724Z",
+        "logSha256": "42ca33e4bd8282eb027390825999eecca6d11bb55e7fbf2d835c5b59189cd04e"
+      },
+      {
+        "id": "python",
+        "status": "PASS",
+        "commandExitCode": 0,
+        "exitCode": 0,
+        "startedAt": "2026-10-05T19:07:23.724Z",
+        "finishedAt": "2026-10-05T19:07:24.193Z",
+        "logSha256": "9feb8e3a3dce9b1a37cfc2bdcc334cfb3681b709da3743033bc1cbc17b430c07"
+      }
+    ],
+    "supplyChain": {
+      "status": "PASS",
+      "components": 716,
+      "secretFindings": 0,
+      "trackedGeneratedArtifacts": 0,
+      "logSha256": "c6e911e6a730479e481175f6692f1c063a0ae303192736f5311ca9e4b7440ee1"
+    },
+    "nextAttempt2": {
+      "status": "FAIL",
+      "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+      "commands": [
+        {
+          "id": "build",
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "logSha256": "09b654decb0535978f097e0610fd548e6f3798de9ec563441b2b81da8faee498",
+          "startedAt": "2026-10-05T19:05:26.299Z",
+          "finishedAt": "2026-10-05T19:05:43.256Z"
+        },
+        {
+          "id": "browser-next-chromium",
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "logSha256": "e952966d9659c55289c76d55a4abe6b140f653c392de93c175b7323c83a73071",
+          "startedAt": "2026-10-05T19:05:43.285Z",
+          "finishedAt": "2026-10-05T19:08:39.697Z"
+        },
+        {
+          "id": "browser-next-firefox",
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "logSha256": "dfe84abd4f3541a28cdb736bc8f31952504f7b93d7b9761510c6911b72cc6d8e",
+          "startedAt": "2026-10-05T19:08:39.724Z",
+          "finishedAt": "2026-10-05T19:11:47.257Z"
+        },
+        {
+          "id": "browser-next-webkit",
+          "status": "FAIL",
+          "commandExitCode": 1,
+          "exitCode": 1,
+          "logSha256": "5c503e96bb1efea1c067d9be1387ee2827cfb6885e6c18a37df9079f4064563f",
+          "startedAt": "2026-10-05T19:11:47.284Z",
+          "finishedAt": "2026-10-05T19:14:04.263Z"
+        }
+      ],
+      "lifePassCounts": {
+        "chromium": 150,
+        "firefox": 150,
+        "webkit": 128
+      },
+      "lifeWebkitFailures": 22,
+      "maplibrePassedPerWrapper": 2
+    },
+    "scope": "These initial result fields are retained history; later per-run receipts and countsByRun below supersede no earlier failure.",
+    "finalTrackedAndNonignoredSourceLint": {
+      "startedAt": "2026-10-05T19:34:16.737574+00:00",
+      "files": 526,
+      "scope": "All tracked and nonignored new JS/TS source; ignored downloaded review packages are preserved separately",
+      "exitCode": 0,
+      "finishedAt": "2026-10-05T19:34:22.234018+00:00",
+      "fullCommandAndPathListRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/source-lint-final.json",
+      "recordSha256": "8370b19cd8d735f50aa754255b9366cc9b42df35dcb556eb9353da3024899254",
+      "log": "reports/lifepp-validation/r3-2-1-integration-20261006/source-lint-final.log",
+      "logSha256": "657c412459b6e37777607505c1b0560140e7a25561bc38219520708ccbd967b5",
+      "scopeBoundary": "Actual final diagnostic original-source lint; no uniform source-fingerprint receipt asserted. Original workspace npm run lint failure remains recorded and clean CI must run original command."
+    }
+  },
+  "logs": [
+    {
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/life-units.log",
+      "bytes": 18576,
+      "sha256": "2412fbd95ff3563d9395b0bccf524a29195c5ae2858ec96a5335ce8bd869c85b"
+    },
+    {
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/typecheck.log",
+      "bytes": 47,
+      "sha256": "06efd5496edb69625f579200535355019fa51a445aa9e669e02575f64b3bf5a2"
+    },
+    {
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/lint.log",
+      "bytes": 428483,
+      "sha256": "152716e1577484c3391a9974fdee915c1e1bad42fcadf30d513864100e8348d9"
+    },
+    {
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/source-lint.log",
+      "bytes": 893,
+      "sha256": "657c412459b6e37777607505c1b0560140e7a25561bc38219520708ccbd967b5"
+    },
+    {
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt1/build.log",
+      "bytes": 3588,
+      "sha256": "306e903903862f6a74ecea41f508c46fb8cca4d4b042e26de19ac8fa724f62f0"
+    },
+    {
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/full-units.log",
+      "bytes": 227142,
+      "sha256": "4f2427deccff3622c23b1d5f3811c462ce7afd2355fe276eab621d67c68092dd"
+    },
+    {
+      "source": "dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt1/browser-next-chromium.log",
+      "bytes": 956,
+      "sha256": "e43ef855ee76cbe4f7c9fbd414bbca6eb6f2612fcc5fa0c48dad5e050abab507"
+    }
+  ],
+  "eslintIgnoreChanged": false,
+  "restoredFilesDeleted": false,
+  "productionAuthority": false,
+  "sourceBoundary": "Each run below has its own dirty-source fingerprint. No union of successful subsets is a green committed candidate. Initial diagnostic log-only checks have no uniform before/after fingerprint claim.",
+  "runs": {
+    "next-browser-attempt1": {
+      "status": "FAIL",
+      "startedAt": "2026-10-05T19:00:56.901Z",
+      "finishedAt": "2026-10-05T19:04:19.260Z",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "v22.22.3",
+      "npm": "10.9.4",
+      "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+      "sourceFileCount": 678,
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "checkoutClean": false,
+      "expectedCommands": [
+        "build",
+        "browser-next-chromium",
+        "browser-next-firefox",
+        "browser-next-webkit"
+      ],
+      "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt1/run.json",
+      "sourceRecordSha256": "fda13ed250897164e696501b5bdd33196213026a37514407abde109e99f6417c",
+      "commands": [
+        {
+          "id": "build",
+          "command": [
+            "npm",
+            "--workspace",
+            "apps/web",
+            "run",
+            "build"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:00:56.939Z",
+          "finishedAt": "2026-10-05T19:01:21.132Z",
+          "logSha256": "306e903903862f6a74ecea41f508c46fb8cca4d4b042e26de19ac8fa724f62f0",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt1/build.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        },
+        {
+          "id": "browser-next-chromium",
+          "command": [
+            "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+            "scripts/lifepp-browser-check.mjs"
+          ],
+          "status": "FAIL",
+          "commandExitCode": 1,
+          "exitCode": 1,
+          "startedAt": "2026-10-05T19:01:21.157Z",
+          "finishedAt": "2026-10-05T19:04:19.079Z",
+          "logSha256": "e43ef855ee76cbe4f7c9fbd414bbca6eb6f2612fcc5fa0c48dad5e050abab507",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt1/browser-next-chromium.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        },
+        {
+          "id": "browser-next-firefox",
+          "command": null,
+          "status": "NOT_RUN",
+          "commandExitCode": null,
+          "exitCode": null,
+          "startedAt": null,
+          "finishedAt": null,
+          "logSha256": null,
+          "sourceLog": null,
+          "originalLogHashVerified": false,
+          "sourceFingerprintBefore": null,
+          "sourceFingerprintAfter": null,
+          "sourceStable": null
+        },
+        {
+          "id": "browser-next-webkit",
+          "command": null,
+          "status": "NOT_RUN",
+          "commandExitCode": null,
+          "exitCode": null,
+          "startedAt": null,
+          "finishedAt": null,
+          "logSha256": null,
+          "sourceLog": null,
+          "originalLogHashVerified": false,
+          "sourceFingerprintBefore": null,
+          "sourceFingerprintAfter": null,
+          "sourceStable": null
+        }
+      ]
+    },
+    "next-browser-attempt2": {
+      "status": "FAIL",
+      "startedAt": "2026-10-05T19:05:26.256Z",
+      "finishedAt": "2026-10-05T19:14:04.433Z",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "v22.22.3",
+      "npm": "10.9.4",
+      "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+      "sourceFileCount": 678,
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "checkoutClean": false,
+      "expectedCommands": [
+        "build",
+        "browser-next-chromium",
+        "browser-next-firefox",
+        "browser-next-webkit"
+      ],
+      "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt2/run.json",
+      "sourceRecordSha256": "f80b2a617dfa8295127c381af93c8bd29a23a9113bcebfcc271677f14f478bf8",
+      "commands": [
+        {
+          "id": "build",
+          "command": [
+            "npm",
+            "--workspace",
+            "apps/web",
+            "run",
+            "build"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:05:26.299Z",
+          "finishedAt": "2026-10-05T19:05:43.256Z",
+          "logSha256": "09b654decb0535978f097e0610fd548e6f3798de9ec563441b2b81da8faee498",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt2/build.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        },
+        {
+          "id": "browser-next-chromium",
+          "command": [
+            "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+            "scripts/lifepp-browser-check.mjs"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:05:43.285Z",
+          "finishedAt": "2026-10-05T19:08:39.697Z",
+          "logSha256": "e952966d9659c55289c76d55a4abe6b140f653c392de93c175b7323c83a73071",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt2/browser-next-chromium.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        },
+        {
+          "id": "browser-next-firefox",
+          "command": [
+            "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+            "scripts/lifepp-browser-check.mjs"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:08:39.724Z",
+          "finishedAt": "2026-10-05T19:11:47.257Z",
+          "logSha256": "dfe84abd4f3541a28cdb736bc8f31952504f7b93d7b9761510c6911b72cc6d8e",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt2/browser-next-firefox.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        },
+        {
+          "id": "browser-next-webkit",
+          "command": [
+            "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+            "scripts/lifepp-browser-check.mjs"
+          ],
+          "status": "FAIL",
+          "commandExitCode": 1,
+          "exitCode": 1,
+          "startedAt": "2026-10-05T19:11:47.284Z",
+          "finishedAt": "2026-10-05T19:14:04.263Z",
+          "logSha256": "5c503e96bb1efea1c067d9be1387ee2827cfb6885e6c18a37df9079f4064563f",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt2/browser-next-webkit.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        }
+      ]
+    },
+    "local-db": {
+      "status": "PASS",
+      "startedAt": "2026-10-05T19:06:19.813Z",
+      "finishedAt": "2026-10-05T19:07:24.333Z",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "v22.22.3",
+      "npm": "10.9.4",
+      "sourceFingerprintSha256": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+      "sourceFileCount": 678,
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "checkoutClean": false,
+      "expectedCommands": [
+        "pglite",
+        "python"
+      ],
+      "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/local-db/run.json",
+      "sourceRecordSha256": "fcc203a008bdeabd32472cc1f4bd4fb2c1e056fb03d7ff062fbd499adb8aaefc",
+      "commands": [
+        {
+          "id": "pglite",
+          "command": [
+            "npm",
+            "run",
+            "db:verify:canopyproof"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:06:20.124Z",
+          "finishedAt": "2026-10-05T19:07:23.724Z",
+          "logSha256": "42ca33e4bd8282eb027390825999eecca6d11bb55e7fbf2d835c5b59189cd04e",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/local-db/pglite.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        },
+        {
+          "id": "python",
+          "command": [
+            "npm",
+            "run",
+            "test:fiftyone"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:07:23.724Z",
+          "finishedAt": "2026-10-05T19:07:24.193Z",
+          "logSha256": "9feb8e3a3dce9b1a37cfc2bdcc334cfb3681b709da3743033bc1cbc17b430c07",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/local-db/python.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceFingerprintAfter": "940cf5904825b3d0c2ab2c97660c60afae4de8879a9bbcc7f5962082cf0284eb",
+          "sourceStable": true
+        }
+      ]
+    },
+    "local-final": {
+      "status": "PASS",
+      "startedAt": "2026-10-05T19:24:50.460Z",
+      "finishedAt": "2026-10-05T19:26:47.751Z",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "v22.22.3",
+      "npm": "10.9.4",
+      "sourceFingerprintSha256": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+      "sourceFileCount": 679,
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "checkoutClean": false,
+      "expectedCommands": [
+        "unit",
+        "typecheck"
+      ],
+      "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/local-final/run.json",
+      "sourceRecordSha256": "9c8879116d9daf0893ebc8445d9895ba057ee6cde81a25ee199ca178a89391ed",
+      "commands": [
+        {
+          "id": "unit",
+          "command": [
+            "npm",
+            "run",
+            "test"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:24:50.503Z",
+          "finishedAt": "2026-10-05T19:25:16.151Z",
+          "logSha256": "ba52be4dd68d222a316f7c6408fa6e41e099555969cb3bd41a5cf6d16dc22d6b",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/local-final/unit.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceFingerprintAfter": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceStable": true
+        },
+        {
+          "id": "typecheck",
+          "command": [
+            "npm",
+            "--workspace",
+            "apps/web",
+            "run",
+            "typecheck"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:26:42.798Z",
+          "finishedAt": "2026-10-05T19:26:47.582Z",
+          "logSha256": "06efd5496edb69625f579200535355019fa51a445aa9e669e02575f64b3bf5a2",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/local-final/typecheck.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceFingerprintAfter": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceStable": true
+        }
+      ]
+    },
+    "next-browser-attempt3": {
+      "status": "FAIL",
+      "startedAt": "2026-10-05T19:24:14.023Z",
+      "finishedAt": "2026-10-05T19:26:44.029Z",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "v22.22.3",
+      "npm": "10.9.4",
+      "sourceFingerprintSha256": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+      "sourceFileCount": 679,
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "checkoutClean": false,
+      "expectedCommands": [
+        "build",
+        "browser-next-chromium"
+      ],
+      "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt3/run.json",
+      "sourceRecordSha256": "f948452a1f811066e3927d183bcfd1b8e3b0ef7222da7ee03d22a44e2f9a4f42",
+      "commands": [
+        {
+          "id": "build",
+          "command": [
+            "npm",
+            "--workspace",
+            "apps/web",
+            "run",
+            "build"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:24:14.066Z",
+          "finishedAt": "2026-10-05T19:24:26.985Z",
+          "logSha256": "8927fcf3695821536f85cbd6ecc2436a5505b195765c58f51fcb52ca6c7c5118",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt3/build.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceFingerprintAfter": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceStable": true
+        },
+        {
+          "id": "browser-next-chromium",
+          "command": [
+            "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+            "scripts/lifepp-browser-check.mjs"
+          ],
+          "status": "FAIL",
+          "commandExitCode": 1,
+          "exitCode": 1,
+          "startedAt": "2026-10-05T19:24:27.011Z",
+          "finishedAt": "2026-10-05T19:26:43.835Z",
+          "logSha256": "710e8d50cd31683bfbd52e9f55d496c7e3a74477b9ed95bff1a9ecd13e8f62b5",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt3/browser-next-chromium.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceFingerprintAfter": "37957b5164e01c73f250b1dcd9f90af7dc641a8640c9d9acab586b5b44dcb571",
+          "sourceStable": true
+        }
+      ]
+    },
+    "next-browser-attempt4": {
+      "status": "FAIL",
+      "startedAt": "2026-10-05T19:28:00.534Z",
+      "finishedAt": "2026-10-05T19:30:29.219Z",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "v22.22.3",
+      "npm": "10.9.4",
+      "sourceFingerprintSha256": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766",
+      "sourceFileCount": 679,
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "checkoutClean": false,
+      "expectedCommands": [
+        "build",
+        "browser-next-chromium"
+      ],
+      "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt4/run.json",
+      "sourceRecordSha256": "9c1925a16a8612a1a6c1f5f02092469e703aa0acbb20d16965d966440664af52",
+      "commands": [
+        {
+          "id": "build",
+          "command": [
+            "npm",
+            "--workspace",
+            "apps/web",
+            "run",
+            "build"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:28:00.578Z",
+          "finishedAt": "2026-10-05T19:28:12.912Z",
+          "logSha256": "97089383f8725ae15a763ec01dbb8206eca23dcdf7971b280ccf32c360b81f27",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt4/build.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766",
+          "sourceFingerprintAfter": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766",
+          "sourceStable": true
+        },
+        {
+          "id": "browser-next-chromium",
+          "command": [
+            "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+            "scripts/lifepp-browser-check.mjs"
+          ],
+          "status": "FAIL",
+          "commandExitCode": 1,
+          "exitCode": 1,
+          "startedAt": "2026-10-05T19:28:12.939Z",
+          "finishedAt": "2026-10-05T19:30:29.055Z",
+          "logSha256": "6d8e8e7084c79f2d8ca44e8e8614d0a5e15e0691ba0a8ab69fd78334d4e96758",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt4/browser-next-chromium.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766",
+          "sourceFingerprintAfter": "290805509e474b29419cfc7f607314b15c2e2c567a1b163013acae5750f15766",
+          "sourceStable": true
+        }
+      ]
+    },
+    "next-browser-attempt5": {
+      "status": "PASS",
+      "startedAt": "2026-10-05T19:34:14.669Z",
+      "finishedAt": "2026-10-05T19:37:23.323Z",
+      "head": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+      "node": "v22.22.3",
+      "npm": "10.9.4",
+      "sourceFingerprintSha256": "d81a9932bae16f8a7fdf1b086760355c861b2c8f3da8955235d3562666a76bdf",
+      "sourceFileCount": 679,
+      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+      "checkoutClean": false,
+      "expectedCommands": [
+        "browser-next-chromium"
+      ],
+      "sourceRecord": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt5/run.json",
+      "sourceRecordSha256": "15f736468ef315a83b726e4d3b5708238657ba1257da2bf239eb813ce2926869",
+      "commands": [
+        {
+          "id": "browser-next-chromium",
+          "command": [
+            "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+            "scripts/lifepp-browser-check.mjs"
+          ],
+          "status": "PASS",
+          "commandExitCode": 0,
+          "exitCode": 0,
+          "startedAt": "2026-10-05T19:34:26.290Z",
+          "finishedAt": "2026-10-05T19:37:23.105Z",
+          "logSha256": "175b82630abb36ff747fcc743a98ff2e319286864bbc989335b6c7390c41c777",
+          "sourceLog": "reports/lifepp-validation/r3-2-1-integration-20261006/next-browser-attempt5/browser-next-chromium.log",
+          "originalLogHashVerified": true,
+          "sourceFingerprintBefore": "d81a9932bae16f8a7fdf1b086760355c861b2c8f3da8955235d3562666a76bdf",
+          "sourceFingerprintAfter": "d81a9932bae16f8a7fdf1b086760355c861b2c8f3da8955235d3562666a76bdf",
+          "sourceStable": true
+        }
+      ]
+    }
+  },
+  "countsByRun": {
+    "local-final": {
+      "unitPassed": 943,
+      "unitFailed": 0,
+      "unitSkipped": 0,
+      "newContractCases": 23,
+      "newMockLifecycleCases": 17,
+      "newCameraCases": 20
+    },
+    "next-browser-attempt1": {
+      "lifePassed": 150,
+      "maplibre": "FAIL response timeout; extra build API URL absent from CI"
+    },
+    "next-browser-attempt2": {
+      "chromiumLifePassed": 150,
+      "firefoxLifePassed": 150,
+      "webkitLifePassed": 128,
+      "webkitLifeFailed": 22,
+      "maplibrePassedEachWrapper": 2,
+      "maplibreEngine": "chromium even in other engine wrappers"
+    },
+    "next-browser-attempt3": {
+      "lifePassed": 140,
+      "lifeFailed": 10,
+      "failure": "Center test helper ReferenceError: __name is not defined"
+    },
+    "next-browser-attempt4": {
+      "lifePassed": 140,
+      "lifeFailed": 10,
+      "failure": "Center test helper: Cannot read properties of undefined (reading 'labels')"
+    },
+    "next-browser-attempt5": {
+      "lifePassed": 150,
+      "lifeFailed": 0,
+      "screenshots": 117,
+      "maplibrePassed": 2,
+      "maplibreFixtureOnly": true,
+      "maplibreEngine": "chromium",
+      "physicalGpuQualification": false
+    }
+  },
+  "finalBrowserBuildBinding": {
+    "record": "reuse-build.json",
+    "recordSha256": "928c5c72ffcaf822f4a907437e09755e2d919cb41603a909b95ea21f1bc0e6e8",
+    "scope": "Attempt5 reused the unchanged compiled app from build4 after only a browser helper correction; build4 result retains its original source fingerprint."
+  },
+  "upstreamWebkitDiagnostic": "https://github.com/microsoft/playwright/issues/41808",
+  "webkitBoundary": "Consistent with documented macOS keyboard-navigation preference behavior; local22 failures remain failures. No preference or assertion was changed. Final Ubuntu all-engine checks must actually run."
+}

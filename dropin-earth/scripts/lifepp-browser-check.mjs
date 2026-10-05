@@ -9,7 +9,7 @@ const port = '3102';
 const engine = process.env.LIFEPP_BROWSER_ENGINE ?? 'chromium';
 assert.ok(['chromium', 'firefox', 'webkit'].includes(engine), `Unsupported LIFEPP_BROWSER_ENGINE: ${engine}`);
 const env = {...process.env, LIFEPP_BROWSER_BASE_URL:`http://127.0.0.1:${port}`, LIFEPP_BROWSER_SERVER_MODE:'next-production', LIFEPP_BROWSER_ENGINE:engine, LIFEPP_BROWSER_OUTPUT_DIR:process.env.LIFEPP_BROWSER_OUTPUT_DIR ?? join(process.cwd(), 'reports/lifepp-validation/browser/next', engine)};
-console.log(JSON.stringify({ lifeppEngine: engine, lifeppViewportWidths: [375, 390, 768, 1440, 1920], maplibreEngine: 'chromium', output: env.LIFEPP_BROWSER_OUTPUT_DIR }));
+console.log(JSON.stringify({ lifeppEngine: engine, lifeppViewportWidths: [375, 390, 768, 1440, 1920], spatialAcceptance: { routes: ['/life/center', '/en/life/center'], coverage: 'subchecks within existing Center route results', renderer: 'software; WebGL unaccepted', syntheticExportNotReceipt: true }, maplibreEngine: 'chromium', output: env.LIFEPP_BROWSER_OUTPUT_DIR }));
 const server = spawn(process.execPath,['node_modules/next/dist/bin/next','start','apps/web','--hostname','127.0.0.1','--port',port],{env,stdio:['ignore','pipe','pipe']});
 let serverOutput='';
 server.stdout.on('data',data=>{serverOutput+=data;});
