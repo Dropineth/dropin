@@ -1,3 +1,7 @@
+# R3.1 recovery and release closeout — 2026-10-05
+
+Recovered compiled review is complete for35c10ef; new audit findings block release. This revision applies the minimal Hono patch, retains the unresolved braces chain without exemption, and requires fresh same-head CI. See [R3.1 evidence and remaining release gates](R3_1_RELEASE_CLOSEOUT.md). No UI redesign, merge or production deployment occurred. The following R3 record remains historical.
+
 # R3 implementation and release candidate — 2026-09-30
 
 This section supersedes the prior delivery summary for the new R3 request. Earlier evidence below is historical and must not certify this candidate. Exact candidate SHA, command times and results are emitted by the fresh CI validation runner and final PR receipt; this source document does not assert its own future checks have passed.

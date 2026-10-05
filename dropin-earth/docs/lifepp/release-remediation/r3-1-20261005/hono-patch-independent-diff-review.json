@@ -1,0 +1,60 @@
+{
+  "recordedAt": "2026-10-05T10:19:06.722491+00:00",
+  "reviewType": "Independent automated read-only diff review; NOT human review or environment approval",
+  "head": "35c10ef3739a888478043374e7fc83d6bce0a928",
+  "status": "PASS_BOUNDED_HONO_DIFF_SCOPE",
+  "scope": "Exactly three manifests/lock files and six expected scalar changes; no unrelated dependency graph keys changed",
+  "changes": [
+    {
+      "path": "package.json/overrides/hono",
+      "before": "4.13.5",
+      "after": "4.13.7"
+    },
+    {
+      "path": "services/api/package.json/dependencies/hono",
+      "before": "4.13.5",
+      "after": "4.13.7"
+    },
+    {
+      "path": "package-lock.json/packages/node_modules/hono/integrity",
+      "before": "sha512-O6+/eCYRkzzzy0rPWwKLiGBR1nFuUPZynnwjxN1MBA62NNqbT0wQEzQyK2gSO5yDIDB336sXQleAhOHrzlYyKw==",
+      "after": "sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ=="
+    },
+    {
+      "path": "package-lock.json/packages/node_modules/hono/resolved",
+      "before": "https://registry.npmjs.org/hono/-/hono-4.13.5.tgz",
+      "after": "https://registry.npmjs.org/hono/-/hono-4.13.7.tgz"
+    },
+    {
+      "path": "package-lock.json/packages/node_modules/hono/version",
+      "before": "4.13.5",
+      "after": "4.13.7"
+    },
+    {
+      "path": "package-lock.json/packages/services/api/dependencies/hono",
+      "before": "4.13.5",
+      "after": "4.13.7"
+    }
+  ],
+  "files": [
+    {
+      "path": "package.json",
+      "sha256": "2a0f68c2d5e942b17fd59ce51912c1d2e9301ee1e6ea80e6804ae76bad3284b9"
+    },
+    {
+      "path": "services/api/package.json",
+      "sha256": "eed52b76ef6c72d099a2e72f453957c9557f75aad41189f37c17bc80a047986a"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f"
+    }
+  ],
+  "sourceStatus": " M dropin-earth/package-lock.json\n M dropin-earth/package.json\n M dropin-earth/services/api/package.json\n",
+  "limits": [
+    "No fresh install/audit/build/test run by this reviewer after change. Root owns those commands and must attach their real results.",
+    "Official Hono maintainer advisory/release identifies4.13.7 as minimum patch. This review did not download the package tarball or independently verify registry integrity.",
+    "Braces chain remains unresolved; this diff cannot clear the complete audit gate.",
+    "Any resulting candidate needs complete same-head CI and real human approval; existing35c evidence cannot certify the changed graph."
+  ]
+}

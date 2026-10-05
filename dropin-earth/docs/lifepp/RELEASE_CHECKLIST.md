@@ -1,3 +1,15 @@
+# R3.1 current gate — 2026-10-05
+
+- [x] Restore and hash the recovered35c10ef noindex CI package; complete local150-browser/15-route compiled checks and44-screen bilingual visual review. This accepts that recorded package only.
+- [x] Recompute a fresh audit; preserve actual5-entry failure and the post-Hono4-high failure.
+- [x] Apply Hono4.13.7 with clean install, API types and57 existing route tests.
+- [ ] Resolve the4 remaining high braces-chain findings without exemption.
+- [ ] Complete both workflows for this new candidate; no inheritance of35c10ef green checks.
+- [ ] Obtain complete Cloudflare Git settings/logs and establish no approval bypass before merge.
+- [ ] Obtain genuine final-head human review, real rollback evidence, actual main-SHA CI, sealed production-artifact review and existing environment approval before deploy.
+
+[R3.1 detailed receipt](R3_1_RELEASE_CLOSEOUT.md) is current. Earlier checklist entries retain their historical scope; no release box is inferred from recovered files.
+
 # R3 mandatory release checklist — current candidate
 
 Previous checked boxes below apply only to their recorded historical SHA. R3 remains blocked until each fresh requirement has evidence; uploading source or a development screenshot does not check a release box.
