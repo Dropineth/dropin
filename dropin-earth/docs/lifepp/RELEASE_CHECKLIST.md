@@ -15,7 +15,8 @@ Status: **PRECOMMIT / IN_PROGRESS; RELEASE HOLD**. [R3_2_1_INTEGRATION.md](R3_2_
 - [ ] Obtain actual independent external human code/visual APPROVED review of that final PR head; agent review does not satisfy this item.
 - [ ] Before merge, obtain current administrator evidence that both existing Cloudflare Git integrations cannot publish independently of approval; October5 observations showed a bypass path and failing build roots.
 - [ ] After safe merge, obtain both complete workflows and intact evidence on the actual main merge SHA.
-- [ ] Obtain real active known-good version/deployment UUIDs, binding-compatible rollback procedure/operator, and the actual post-merge admin/maintain statement on PR4.
+- [ ] Obtain real active known-good version/deployment UUIDs, binding-compatible rollback procedure/operator, and the actual post-merge admin/maintain statement on the selected release PR (v2 includes its numeric `release_pr_number`; PR4-only legacy v1 remains supported).
+- [ ] Verify the actual release PR final-head independent review and exact main merge SHA, plus reviewed PR4 baseline ancestry via GitHub compare; bind `release_pr_number` through the manifest, statement, restore and final recheck.
 - [ ] Use only a fresh main dispatch of the new manual web-only workflow; no old-main or sibling-workflow shortcut. A non-Dropineth initiator leaves Dropineth eligible for independent environment approval.
 - [ ] Prepare the explicit production artifact without cloud credentials, then have Dropineth inspect and actually approve SHA + manifest digest + rollback UUID through the existing environment.
 - [ ] Revalidate live main/approvals/rollback/routes, deploy only existing canopyproof-web if every gate passes, and record full external acceptance and actual version/time.

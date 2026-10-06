@@ -1,0 +1,220 @@
+TAP version 13
+# Subtest: production release is manual, exact-SHA, protected and confined to the existing web Worker
+ok 1 - production release is manual, exact-SHA, protected and confined to the existing web Worker
+  ---
+  duration_ms: 86.002667
+  type: 'test'
+  ...
+# Subtest: deploy-cloudflare-worker.yml passes production public variables through to indexable promoted artifacts
+ok 2 - deploy-cloudflare-worker.yml passes production public variables through to indexable promoted artifacts
+  ---
+  duration_ms: 27.548083
+  type: 'test'
+  ...
+# Subtest: deploy-canopyproof.yml passes production public variables through to indexable promoted artifacts
+ok 3 - deploy-canopyproof.yml passes production public variables through to indexable promoted artifacts
+  ---
+  duration_ms: 26.842959
+  type: 'test'
+  ...
+# Subtest: preview artifacts remain nonindexable with an empty sitemap
+ok 4 - preview artifacts remain nonindexable with an empty sitemap
+  ---
+  duration_ms: 25.069125
+  type: 'test'
+  ...
+# Subtest: missing or mismatched build variables cannot enable indexing even with a production robots input
+ok 5 - missing or mismatched build variables cannot enable indexing even with a production robots input
+  ---
+  duration_ms: 132.526875
+  type: 'test'
+  ...
+# Subtest: promotion fails if a required metadata artifact is missing
+ok 6 - promotion fails if a required metadata artifact is missing
+  ---
+  duration_ms: 24.723042
+  type: 'test'
+  ...
+# Subtest: release context rejects push, non-main, rerun, ref/checkout drift and invented target identifiers
+ok 7 - release context rejects push, non-main, rerun, ref/checkout drift and invented target identifiers
+  ---
+  duration_ms: 4.750125
+  type: 'test'
+  ...
+# Subtest: a real final-head PR approval is required; dismissed, stale, self, bot or post-merge approvals cannot substitute
+ok 8 - a real final-head PR approval is required; dismissed, stale, self, bot or post-merge approvals cannot substitute
+  ---
+  duration_ms: 0.88975
+  type: 'test'
+  ...
+# Subtest: maintainer declaration must be authentic, specific, post-merge and fail closed on unknown independent publishing or rollback
+ok 9 - maintainer declaration must be authentic, specific, post-merge and fail closed on unknown independent publishing or rollback
+  ---
+  duration_ms: 1.6515
+  type: 'test'
+  ...
+# Subtest: workflow status must name the actual workflow, final main SHA and successful complete required steps
+ok 10 - workflow status must name the actual workflow, final main SHA and successful complete required steps
+  ---
+  duration_ms: 0.353666
+  type: 'test'
+  ...
+# Subtest: CI artifact receipt independently rejects omitted gates, stale SHA/run, failed command and changed source/lock/runtime
+ok 11 - CI artifact receipt independently rejects omitted gates, stale SHA/run, failed command and changed source/lock/runtime
+  ---
+  duration_ms: 1.215958
+  type: 'test'
+  ...
+# Subtest: environment approval must be an actual eligible independent human approval of this SHA, artifact and rollback
+ok 12 - environment approval must be an actual eligible independent human approval of this SHA, artifact and rollback
+  ---
+  duration_ms: 0.421417
+  type: 'test'
+  ...
+# Subtest: rollback must really be the currently deployed 100-percent version, not merely an uploaded version
+ok 13 - rollback must really be the currently deployed 100-percent version, not merely an uploaded version
+  ---
+  duration_ms: 0.6275
+  type: 'test'
+  ...
+# Subtest: existing web/API route ownership and resource configuration cannot silently change
+ok 14 - existing web/API route ownership and resource configuration cannot silently change
+  ---
+  duration_ms: 0.990959
+  type: 'test'
+  ...
+# Subtest: prepared release manifest and archive hashes reject tampering, and artifact inventory rejects symlinks
+ok 15 - prepared release manifest and archive hashes reject tampering, and artifact inventory rejects symlinks
+  ---
+  duration_ms: 3.496458
+  type: 'test'
+  ...
+# Subtest: release API reads fail closed on 403 HTML, redirects, malformed responses and network errors without logging bodies or credentials
+ok 16 - release API reads fail closed on 403 HTML, redirects, malformed responses and network errors without logging bodies or credentials
+  ---
+  duration_ms: 11.233292
+  type: 'test'
+  ...
+# Subtest: release PR input is explicit and canonical, and cannot borrow another PR attestation URL
+ok 17 - release PR input is explicit and canonical, and cannot borrow another PR attestation URL
+  ---
+  duration_ms: 0.510833
+  type: 'test'
+  ...
+# Subtest: baseline reachability requires the exact GitHub comparison and a nondivergent descendant, including PR4 identity
+ok 18 - baseline reachability requires the exact GitHub comparison and a nondivergent descendant, including PR4 identity
+  ---
+  duration_ms: 3.094708
+  type: 'test'
+  ...
+# Subtest: follow-up release orchestration independently reads and approves both release PR and PR4 baseline before checking ancestry
+ok 19 - follow-up release orchestration independently reads and approves both release PR and PR4 baseline before checking ancestry
+  ---
+  duration_ms: 1.213417
+  type: 'test'
+  ...
+# Subtest: explicit PR4 release remains supported and still obtains identical-SHA GitHub reachability evidence
+ok 20 - explicit PR4 release remains supported and still obtains identical-SHA GitHub reachability evidence
+  ---
+  duration_ms: 0.094292
+  type: 'test'
+  ...
+# Subtest: v2 declaration binds the actual release PR; legacy PR4 statements cannot authorize a follow-up release
+ok 21 - v2 declaration binds the actual release PR; legacy PR4 statements cannot authorize a follow-up release
+  ---
+  duration_ms: 1.150208
+  type: 'test'
+  ...
+# Subtest: environment approval remains independent of both the actual release author and the reviewed baseline author
+ok 22 - environment approval remains independent of both the actual release author and the reviewed baseline author
+  ---
+  duration_ms: 0.136417
+  type: 'test'
+  ...
+# Subtest: seal and restore reject changed release PR input before Git, extraction or credential operations
+ok 23 - seal and restore reject changed release PR input before Git, extraction or credential operations
+  ---
+  duration_ms: 63.033916
+  type: 'test'
+  ...
+# Subtest: validation evidence binds a clean actual HEAD, lock hash, runtime and successful command
+ok 24 - validation evidence binds a clean actual HEAD, lock hash, runtime and successful command
+  ---
+  duration_ms: 744.7415
+  type: 'test'
+  ...
+# Subtest: same-HEAD source mutation fails the gate while preserving actual exit code and complete command log
+ok 25 - same-HEAD source mutation fails the gate while preserving actual exit code and complete command log
+  ---
+  duration_ms: 1280.247125
+  type: 'test'
+  ...
+# Subtest: root workflow changes and new untracked source block the next command before execution
+ok 26 - root workflow changes and new untracked source block the next command before execution
+  ---
+  duration_ms: 4847.831708
+  type: 'test'
+  ...
+# Subtest: FiftyOne implementation/tests and root validation config cannot mutate under the same HEAD
+ok 27 - FiftyOne implementation/tests and root validation config cannot mutate under the same HEAD
+  ---
+  duration_ms: 2586.721209
+  type: 'test'
+  ...
+# Subtest: generated reports, documentation and ignored build output do not change the source fingerprint
+ok 28 - generated reports, documentation and ignored build output do not change the source fingerprint
+  ---
+  duration_ms: 681.716417
+  type: 'test'
+  ...
+# Subtest: failure remains nonzero while an independent command can still collect evidence; missing gates never pass
+ok 29 - failure remains nonzero while an independent command can still collect evidence; missing gates never pass
+  ---
+  duration_ms: 924.507708
+  type: 'test'
+  ...
+# Subtest: wrong actual SHA and dirty CI checkout fail initialization with persisted reason
+ok 30 - wrong actual SHA and dirty CI checkout fail initialization with persisted reason
+  ---
+  duration_ms: 506.245083
+  type: 'test'
+  ...
+# Subtest: lock mutation, changed candidate, duplicate results and stale report reuse fail closed
+ok 31 - lock mutation, changed candidate, duplicate results and stale report reuse fail closed
+  ---
+  duration_ms: 899.068167
+  type: 'test'
+  ...
+# Subtest: unchanged old reports remain intact and are never copied; fresh failures retain their new artifacts
+ok 32 - unchanged old reports remain intact and are never copied; fresh failures retain their new artifacts
+  ---
+  duration_ms: 785.905041
+  type: 'test'
+  ...
+# Subtest: workerd browser config rejects routes, remote resources, wrong service and enabled authority
+ok 33 - workerd browser config rejects routes, remote resources, wrong service and enabled authority
+  ---
+  duration_ms: 3.602791
+  type: 'test'
+  ...
+# Subtest: fixture-only workerd adapter runs Life++ then MapLibre, preserves either failure and cleans up its child
+ok 34 - fixture-only workerd adapter runs Life++ then MapLibre, preserves either failure and cleans up its child
+  ---
+  duration_ms: 1443.891291
+  type: 'test'
+  ...
+# Subtest: read-only workflows check out candidate SHA and always upload fresh failed evidence
+ok 35 - read-only workflows check out candidate SHA and always upload fresh failed evidence
+  ---
+  duration_ms: 0.662958
+  type: 'test'
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 35
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14821.653167

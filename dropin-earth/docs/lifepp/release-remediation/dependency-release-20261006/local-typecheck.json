@@ -1,0 +1,12 @@
+{
+  "exitCode": 0,
+  "command": [
+    "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+    "/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/reports/lifepp-validation/r3-1-tools-20261005/node_modules/npm/bin/npm-cli.js",
+    "run",
+    "typecheck"
+  ],
+  "startedAt": "2026-10-06T07:24:52.345021+00:00",
+  "finishedAt": "2026-10-06T07:25:04.723339+00:00",
+  "scope": "precommit existing local dependencies, not fresh CI"
+}

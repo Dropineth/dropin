@@ -1,0 +1,79 @@
+{
+  "scope": "UNCOMMITTED_FOCUSED_TESTS_NOT_REMOTE_CI",
+  "command": [
+    "node",
+    "--test",
+    "--import",
+    "tsx",
+    "tests/unit/lifepp-release-policy.test.ts",
+    "tests/unit/canopyproof-production-workflow.test.ts",
+    "tests/unit/lifepp-production-indexing.test.ts",
+    "tests/unit/lifepp-validation-run.test.ts"
+  ],
+  "cwd": "/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth",
+  "pathPrefix": [
+    "/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/reports/lifepp-validation/r3-2-1-integration-20261006/bin",
+    "/Users/lee/.nvm/versions/node/v22.22.3/bin"
+  ],
+  "nodeExecutable": "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+  "exitCode": 0,
+  "pass": 35,
+  "fail": 0,
+  "skipped": 0,
+  "startedAt": null,
+  "completedAtFromLogMtime": "2026-10-06T07:27:04.750Z",
+  "log": "/tmp/lifepp-release-policy-final-tests.log",
+  "logSha256": "122ed30632d815aa2927f9e942051ff8301cecbd5086e458f39b8e26bc38099a",
+  "sourceIdentityObservedAfterTests": {
+    "head": "118b94db828387ad418c08827b890876ddae09d8",
+    "node": "v22.22.3",
+    "npm": "10.9.4",
+    "lockSha256": "0f9dd0ff565303ba1ac5c9efb1b8f2f471f168a4b0d00bf181bb09bbd32d3a5b",
+    "sourceFingerprintSha256": "e1de5861fa55b1012156c4f2436c1761b185bb51d533c0e4bef613abda6bdac2",
+    "sourceFileCount": 679,
+    "sourceStatus": "M .github/workflows/deploy-canopyproof.yml\n M dropin-earth/package-lock.json\n M dropin-earth/scripts/lifepp-release-policy.mjs\n M dropin-earth/scripts/lifepp-release-run.mjs\n M dropin-earth/tests/unit/canopyproof-production-workflow.test.ts\n M dropin-earth/tests/unit/dependency-remediation.test.ts\n M dropin-earth/tests/unit/lifepp-release-policy.test.ts",
+    "sourceUntracked": [],
+    "sourceScope": "Git-tracked and nonignored untracked application, package, service, test, script, integration, contract and infrastructure sources; project config, package/workspace manifests, runtime/ignore rules and root workflows. Project reports/docs and ignored build/cache output are outside scope.",
+    "observedAt": "2026-10-06T07:30:19.695Z"
+  },
+  "sourceIdentityNote": "Snapshot captured after tests, not a pretended start-of-run fingerprint. Owned release files were frozen before the final command and remain unchanged; root concurrently owns other source/lock changes. This is not whole-candidate or remote-CI acceptance.",
+  "files": [
+    {
+      "path": "../.github/workflows/deploy-canopyproof.yml",
+      "sha256": "526b1964128daa901de12a309e5e38e6ffaed5e6c89d1f0efdab3727e77dfe86",
+      "mtime": "2026-10-06T07:25:38.683Z"
+    },
+    {
+      "path": "scripts/lifepp-release-policy.mjs",
+      "sha256": "ea7ed0aea66a4af9c2a226e2f985863b48af2b6c3f8fdcb05e789d1aa4a97d5b",
+      "mtime": "2026-10-06T07:22:12.260Z"
+    },
+    {
+      "path": "scripts/lifepp-release-run.mjs",
+      "sha256": "f228de2901b7b8f04bcfc9ca7a2b220efe2e46c77b2687e9ad57e26ae56b428f",
+      "mtime": "2026-10-06T07:22:12.261Z"
+    },
+    {
+      "path": "tests/unit/lifepp-release-policy.test.ts",
+      "sha256": "9d6e02f86ee0da010f35cc3037f2dac598d0b2b64957c383a2a369c9860d10b8",
+      "mtime": "2026-10-06T07:26:49.906Z"
+    },
+    {
+      "path": "tests/unit/canopyproof-production-workflow.test.ts",
+      "sha256": "31efd67ae4dc5c834a7a2394c18c446dc37a2aa7c843dfe3fb0fceba686d3fe5",
+      "mtime": "2026-10-06T07:26:49.906Z"
+    },
+    {
+      "path": "docs/lifepp/R3_RELEASE_AUDIT.md",
+      "sha256": "af243135281e4436a39ef27f860272056d0ec45916f7bfc70641d59c70d6936f",
+      "mtime": "2026-10-06T07:25:17.744Z"
+    },
+    {
+      "path": "docs/lifepp/RELEASE_CHECKLIST.md",
+      "sha256": "3e643e9d082fc94450255b9ee2a4303a1b96fb08575db7104ba564ccc2cfdcb9",
+      "mtime": "2026-10-06T07:25:17.745Z"
+    }
+  ],
+  "peerReview": "release_audit read-only review: no actionable safety regression; no tests rerun by reviewer",
+  "mutations": "No commits, pushes, cloud writes or source edits after final tests."
+}
