@@ -1,7 +1,7 @@
 {
   "schemaVersion": 5,
   "generatedAt": "2026-10-06T07:22:43.336989+00:00",
-  "overallStatus": "DEPENDENCY_FOLLOWUP_PRECOMMIT_AUDIT_OPEN_PRODUCTION_HOLD",
+  "overallStatus": "DEPENDENCY_FOLLOWUP_CANDIDATE_AUDIT_OPEN_PRODUCTION_HOLD",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
   "branch": "codex/lifepp-dependency-security-20261006",
@@ -55,12 +55,12 @@
       "decisionRecord": "DEPENDENCY_RELEASE_20261006.md"
     },
     "sameCandidateTrustGate": {
-      "status": "PENDING_FOLLOWUP_COMMIT_AND_REMOTE_CI",
+      "status": "PENDING_EXACT_HEAD_REMOTE_CI",
       "head": null,
       "note": "Existing checks belong to prior commits; do not transfer them."
     },
     "sameCandidateLifeAcceptance": {
-      "status": "PENDING_FOLLOWUP_COMMIT_AND_REMOTE_CI",
+      "status": "PENDING_EXACT_HEAD_REMOTE_CI",
       "head": null,
       "note": "Existing checks belong to prior commits; do not transfer them."
     },
@@ -157,7 +157,7 @@
       "localRecoveredUrl": "http://127.0.0.1:8788/life"
     },
     "production": {
-      "status": "PR4_MERGED_FOLLOWUP_PRECOMMIT_NOT_DEPLOYED",
+      "status": "PR4_MERGED_FOLLOWUP_CANDIDATE_NOT_DEPLOYED",
       "targetUrl": "https://canopyproof.org",
       "worker": "canopyproof-web",
       "newWorkerVersion": null,
