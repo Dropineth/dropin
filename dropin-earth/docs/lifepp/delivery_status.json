@@ -1,15 +1,15 @@
 {
-  "schemaVersion": 4,
-  "generatedAt": "2026-10-05T19:43:37.578141+00:00",
-  "overallStatus": "R3_2_1_PRECOMMIT_IN_PROGRESS_HIGH_AUDIT_OPEN_PRODUCTION_HOLD",
+  "schemaVersion": 5,
+  "generatedAt": "2026-10-06T07:22:43.336989+00:00",
+  "overallStatus": "DEPENDENCY_FOLLOWUP_CANDIDATE_AUDIT_OPEN_PRODUCTION_HOLD",
   "repository": "Dropineth/dropin",
   "application": "dropin-earth/apps/web",
-  "branch": "codex/canopyproof-lifepp-full-update-20260930",
-  "baseCommit": "b398e5772c6ff9f1e7c63bbd240214171cd0ac42",
-  "phaseStartCommit": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
+  "branch": "codex/lifepp-dependency-security-20261006",
+  "baseCommit": "118b94db828387ad418c08827b890876ddae09d8",
+  "phaseStartCommit": "118b94db828387ad418c08827b890876ddae09d8",
   "candidateCommit": null,
-  "candidateCommitResolution": "Precommit working-tree integration. This tracked document cannot embed the future SHA of the commit containing itself; resolve the final owning PR head externally, then use fresh exact-head CI receipts. The parent SHA and historical module snapshot are not current acceptance.",
-  "prUrl": "https://github.com/Dropineth/dropin/pull/4",
+  "candidateCommitResolution": "Resolve the owning follow-up PR head externally after commit; fresh candidate CI and then actual-main-SHA CI are mandatory. No historical result transfers.",
+  "prUrl": null,
   "productionAuthority": false,
   "evidencePolicy": "A result belongs only to its recorded HEAD, source fingerprint, lock hash, command and time. Prior phase records remain historical, not current acceptance.",
   "runtime": {
@@ -20,7 +20,7 @@
     "npm": "10.9.4",
     "localPlatform": "macOS arm64",
     "ciPlatform": "GitHub ubuntu-latest",
-    "modelEvidenceScope": "September30 historical metadata only; current October6 model was not independently verified."
+    "modelEvidenceScope": "Historical metadata only; current October6 model/reasoning configuration was not independently verified."
   },
   "items": {
     "originalCheckout": {
@@ -30,47 +30,42 @@
       "note": "All work is in the previously isolated PR4 worktree."
     },
     "dependencyAudit": {
-      "status": "FAIL_FOUR_HIGH_REMAIN",
-      "scanSucceeded": true,
-      "observedAt": "2026-10-05T18:46:24.746068+00:00",
-      "sourceHead": "a9c83284cf41179e2ef9935436912ba0f4f5d5d0",
-      "node": "22.22.3",
-      "npm": "10.9.4",
-      "lockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
-      "lockUnchanged": true,
-      "findings": {
-        "moderate": 0,
+      "status": "TWO_PATCHES_APPLIED_BRACES_OPEN_CURRENT_AUDIT_UNAVAILABLE",
+      "lockSha256": "0f9dd0ff565303ba1ac5c9efb1b8f2f471f168a4b0d00bf181bb09bbd32d3a5b",
+      "patches": {
+        "proxy-addr": "2.0.8",
+        "source-map-js": "1.2.2"
+      },
+      "diagnosticAt": "2026-10-06T07:18:48.493865+00:00",
+      "localScanSucceeded": false,
+      "localError": "npm audit endpoint TLS disconnected; no valid vulnerability result",
+      "cloudHistoricalDiagnostic": {
+        "buildId": "4b6cd907-6df4-422b-94d1-e7ea215de91c",
+        "sourceHead": "118b94db828387ad418c08827b890876ddae09d8",
+        "temporaryLockPatch": true,
         "high": 4,
         "critical": 0,
-        "total": 4
+        "auditPassed": false,
+        "fullCI": false
       },
-      "distinctRootAdvisories": [
-        "GHSA-vfj7-8cjw-p6xm"
-      ],
-      "chain": "@next/eslint-plugin-next@15.5.26 -> fast-glob@3.3.1 -> micromatch@4.0.8 -> braces@3.0.3",
-      "decision": "NO_VERIFIED_PUBLISHED_COMPATIBLE_FIX",
-      "gateThresholdUnchanged": true,
-      "diagnosticAuditLevel": "high",
+      "remainingChain": "@next/eslint-plugin-next@15.5.26 -> fast-glob@3.3.1 -> micromatch@4.0.8 -> braces@3.0.3",
       "repositoryGateAuditLevel": "moderate",
-      "rawAudit": "release-remediation/r3-2-1-20261006/fresh-audit.json",
-      "metadata": "release-remediation/r3-2-1-20261006/fresh-audit.meta.json",
-      "decisionRecord": "release-remediation/r3-2-1-20261006/decision.json",
-      "stdoutSha256": "9cebcc284f98f2e6ac60fa72824bab97bbffe432b16f87e1788f45ecb99bc432",
+      "gateThresholdUnchanged": true,
       "waiver": false,
-      "scope": "Fresh local dependency scan before integration validation finished; not remote final-head CI."
+      "decisionRecord": "DEPENDENCY_RELEASE_20261006.md"
     },
     "sameCandidateTrustGate": {
-      "status": "NOT_STARTED_FOR_UNCOMMITTED_INTEGRATION",
+      "status": "PENDING_EXACT_HEAD_REMOTE_CI",
       "head": null,
-      "note": "Both full workflows must run after candidate source and docs freeze; a9c/35c/historical green evidence does not transfer."
+      "note": "Existing checks belong to prior commits; do not transfer them."
     },
     "sameCandidateLifeAcceptance": {
-      "status": "NOT_STARTED_FOR_UNCOMMITTED_INTEGRATION",
+      "status": "PENDING_EXACT_HEAD_REMOTE_CI",
       "head": null,
-      "note": "Both full workflows must run after candidate source and docs freeze; a9c/35c/historical green evidence does not transfer."
+      "note": "Existing checks belong to prior commits; do not transfer them."
     },
     "pagesAndEcology": {
-      "status": "PRECOMMIT_CURRENT_CHROMIUM_PASS_OTHER_FINGERPRINT_HISTORY_FULL_CI_PENDING",
+      "status": "BASE_INTEGRATION_MERGED_NEW_DEPENDENCY_CANDIDATE_CI_PENDING",
       "chineseRoutes": 11,
       "englishRoutes": 11,
       "widths": [
@@ -85,7 +80,7 @@
         "firefox",
         "webkit"
       ],
-      "note": "Center gains a local software spatial workbench; Home and FourShopPlan remain. Recovered compiled review below binds35c10ef only, not this integration.",
+      "note": "This follow-up changes no application source. Base actual-main Life CI passed; fresh candidate acceptance remains necessary.",
       "visualReports": [
         "R3_VISUAL_REVIEW_ZH.md",
         "R3_VISUAL_REVIEW_EN.md"
@@ -162,23 +157,34 @@
       "localRecoveredUrl": "http://127.0.0.1:8788/life"
     },
     "production": {
-      "status": "NOT_MERGED_NOT_DEPLOYED_PRECOMMIT",
+      "status": "PR4_MERGED_FOLLOWUP_CANDIDATE_NOT_DEPLOYED",
       "targetUrl": "https://canopyproof.org",
       "worker": "canopyproof-web",
       "newWorkerVersion": null,
-      "rollbackWorkerVersion": null,
+      "rollbackWorkerVersion": "84a01fed-6be3-4975-892d-85c9b7f4ade7",
       "releaseEnvironment": "canopyproof-production",
-      "evidence": "R3_2_1_INTEGRATION.md",
+      "evidence": "DEPENDENCY_RELEASE_20261006.md",
       "blockers": [
-        "Fresh valid local audit retains4 high findings; no verified compatible published fix or waiver",
-        "Final integration commit and complete exact-candidate then actual-main-SHA CI pending",
-        "Real independent final-head human review absent at current observation",
-        "Current administrator evidence must resolve previously observed Cloudflare Git publishing outside approval before merge",
-        "Actual known-good active rollback version/deployment UUIDs, binding compatibility and real post-merge admin statement required",
-        "Actual production artifact review and independent existing-environment approval required"
+        "Braces chain has four historical patched-lock high findings; no verified compatible published default fix or waiver",
+        "Fresh complete candidate and resulting main-SHA CI required",
+        "Actual independent final-head follow-up PR review required",
+        "Post-merge maintainer statement must verify automatic publishing restrictions, human visual review and known-good rollback/binding compatibility",
+        "Actual sealed production artifact review and independent existing-environment approval required"
       ],
       "localHttpsPreflight": "Chinese/English curl HEAD exit35 SSL_ERROR_SYSCALL; local access failure only, not proof of global public unavailability",
-      "currentOverviewRecord": "release-remediation/r3-2-1-20261006/cloudflare-overview-read.json"
+      "currentOverviewRecord": "release-remediation/r3-2-1-20261006/cloudflare-overview-read.json",
+      "newDeploymentId": null,
+      "rollbackDeploymentId": "5213c84d-4822-4479-8b1d-3ced2d82a378",
+      "rollbackApproved": false,
+      "observedActiveDeploymentAt": "2026-10-06T07:18:18.895Z",
+      "gitTriggerRemediation": {
+        "verifiedAt": "2026-10-06T07:18:18.895Z",
+        "bothProductionCommands": "versions upload",
+        "webRoot": "dropin-earth",
+        "webBuild": "pinned clean install and original audit before build",
+        "nonproductionConfigurationAccepted": false,
+        "otherPublishingPathsAndTokenCapabilityAttested": false
+      }
     },
     "disabledBusinessFlags": {
       "billing": false,
@@ -190,11 +196,12 @@
     "artifactRecovery": {
       "status": "MAC_SUBSET_VERIFIED_COMPILED_REVIEW_RESTORED",
       "originalFullZipVerification": "supplied external-container receipt; not separately rehashed on Mac",
-      "currentDiskBlocker": false,
-      "productionArtifact": false
+      "currentDiskBlocker": true,
+      "productionArtifact": false,
+      "diskBlockerScope": "Approximately422MiB available locally; original recovery is complete, but new clean installs/builds must use existing authorized remote CI."
     },
     "centerSpatialIntegration": {
-      "status": "SOURCE_INTEGRATED_PRECOMMIT_VALIDATION_IN_PROGRESS",
+      "status": "MERGED_IN_BASE_NEW_CANDIDATE_CI_PENDING",
       "routes": [
         "/life/center",
         "/en/life/center"
@@ -211,7 +218,7 @@
       "browserRegistration": "Spatial subchecks inside existing ten Center locale/width route results of original150-result Next/workerd matrix",
       "noNewDependencies": true,
       "noNewRoutes": true,
-      "noLockChange": true,
+      "noLockChange": false,
       "noNewPublicImages": true,
       "homeChanged": false,
       "fourShopPlanChanged": false,
@@ -230,7 +237,8 @@
       "record": "R3_2_1_INTEGRATION.md",
       "mobileFit": "CORRECTED; camera20cases and finalChromium150 pass, with limited agent visual evidence; no physical-device/human acceptance",
       "cameraCasesRegistered": 20,
-      "newUnitCasesTotal": 60
+      "newUnitCasesTotal": 60,
+      "lockChangeScope": "Integration introduced no dependencies; subsequent security follow-up changes two existing transitive lock entries."
     },
     "releasePeople": {
       "observedAt": "2026-10-05T18:52:36.801921+00:00",
@@ -321,6 +329,16 @@
       "lifeCommandLogHashesVerified": 15,
       "lifeBrowserChecksPerEngine": 150,
       "scope": "This preceding committed head is not the new R3.2.1 dirty integration or its future candidate."
+    },
+    "r3_2_1_merged": {
+      "implementationHead": "ecae69b690e0e00dd1c2bb2b8f4bc50e1abd6851",
+      "mergeCommit": "118b94db828387ad418c08827b890876ddae09d8",
+      "pr": "https://github.com/Dropineth/dropin/pull/4",
+      "mainLifeRun": "https://github.com/Dropineth/dropin/actions/runs/37367297143",
+      "mainLifeConclusion": "success",
+      "mainTrustRun": "https://github.com/Dropineth/dropin/actions/runs/37367297132",
+      "mainTrustConclusion": "failure; attempts did not acquire a runner; zero steps",
+      "scope": "Historical base only; full Trust Gate did not pass."
     }
   },
   "localPrecommitValidation": {
@@ -415,5 +433,6 @@
     "otherDiagnostics": "Initial PGlite40/Python4 and supply chain716components/0findings passed at their own recorded scope. OpenNext/workerd final-source result pending.",
     "candidateCommit": null,
     "productionAuthority": false
-  }
+  },
+  "baselinePrUrl": "https://github.com/Dropineth/dropin/pull/4"
 }

@@ -1,0 +1,22 @@
+{
+  "startedAt": "2026-10-06T07:18:48.493865+00:00",
+  "finishedAt": "2026-10-06T07:19:00.236171+00:00",
+  "command": [
+    "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+    "/Users/lee/Dropin/.codex-worktrees/canopyproof-lifepp-full-update-20260930/dropin-earth/reports/lifepp-validation/r3-1-tools-20261005/node_modules/npm/bin/npm-cli.js",
+    "audit",
+    "--package-lock-only",
+    "--json",
+    "--audit-level=moderate",
+    "--fetch-timeout=20000",
+    "--fetch-retries=1"
+  ],
+  "exitCode": 1,
+  "kind": "patched-lock diagnostic; no clean installation",
+  "metadata": null,
+  "findings": {},
+  "error": {
+    "summary": "",
+    "detail": ""
+  }
+}

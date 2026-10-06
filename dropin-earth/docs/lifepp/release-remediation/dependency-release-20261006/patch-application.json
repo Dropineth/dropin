@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-06T07:13:47.425236+00:00",
+  "baseSha": "118b94db828387ad418c08827b890876ddae09d8",
+  "branch": "codex/lifepp-dependency-security-20261006",
+  "patchSha256": "8abbf0e220215ec4c0592c1fc3d5bc54583b0986e3eee9ba61f61255ffec201e",
+  "beforeLockSha256": "48cee2863747559d77587c8aae8f552ed946ec797fa1ebdbd1c71dd85328344f",
+  "afterLockSha256": "0f9dd0ff565303ba1ac5c9efb1b8f2f471f168a4b0d00bf181bb09bbd32d3a5b",
+  "packageJsonChanged": false,
+  "attachmentHashChecks": [
+    {
+      "file": "RELEASE_PROGRESS_CN.md",
+      "sha256": "edfb68d94178adb22c1345473339b99ecc2437cacda23d36da78f7ef3aa3e6c0",
+      "bytes": 5247,
+      "match": true
+    },
+    {
+      "file": "build-receipts.json",
+      "sha256": "dcdd28f955e9d524072216cdfdbb9f46dbb958469dcb9f5f644c44da53b1fd0b",
+      "bytes": 2487,
+      "match": true
+    },
+    {
+      "file": "clone.log",
+      "sha256": "218a34fc161106c151975f2b74b3a02b2a78878682c41eba9a4adae4d8fb1dba",
+      "bytes": 166,
+      "match": true
+    },
+    {
+      "file": "cloudflare-after.json",
+      "sha256": "a57d7fe5525908f17ec790057b638c2407759aeb1ad4ded7dd447c6285cc2340",
+      "bytes": 7580,
+      "match": true
+    },
+    {
+      "file": "cloudflare-before.json",
+      "sha256": "c4689c72f13575bdfa749db3fd4def6ff4e816c9af7255120250dc556b8160ec",
+      "bytes": 5865,
+      "match": true
+    },
+    {
+      "file": "cloudflare-diff.json",
+      "sha256": "7443919e5875a518d59889277f201194d07557bc7c9a82f0734c34a22619257a",
+      "bytes": 1929,
+      "match": true
+    },
+    {
+      "file": "dependency-security.patch",
+      "sha256": "8abbf0e220215ec4c0592c1fc3d5bc54583b0986e3eee9ba61f61255ffec201e",
+      "bytes": 1674,
+      "match": true
+    },
+    {
+      "file": "diagnostic-audit.parsed.json",
+      "sha256": "9cebcc284f98f2e6ac60fa72824bab97bbffe432b16f87e1788f45ecb99bc432",
+      "bytes": 2576,
+      "match": true
+    },
+    {
+      "file": "github-operation-results.json",
+      "sha256": "be34ff9a196bc13ffa491645e162d801dfe1ef4da25d566b81ced0a122c582c3",
+      "bytes": 803,
+      "match": true
+    },
+    {
+      "file": "main-audit.parsed.json",
+      "sha256": "df6876829e0a8cb65250923bc950c30e224848b0a25127e1831d106de60694b4",
+      "bytes": 4280,
+      "match": true
+    },
+    {
+      "file": "operation-history.json",
+      "sha256": "66719644a0c0ee03466974d70e0b9d25457376a653fafaf2d25dd28078f1a365",
+      "bytes": 1890,
+      "match": true
+    },
+    {
+      "file": "patch-parse-check.json",
+      "sha256": "b433666b430920d6060c622933cc88014ce3c7eb8c8b44d465aaa44b49f96afa",
+      "bytes": 349,
+      "match": true
+    },
+    {
+      "file": "production-observation.json",
+      "sha256": "95deee9eb16116e040034ebfc95508bc790230280e5cd1fa4851eb66247741db",
+      "bytes": 623,
+      "match": true
+    }
+  ],
+  "attachmentClaimsAreNotIndependentAcceptance": true
+}

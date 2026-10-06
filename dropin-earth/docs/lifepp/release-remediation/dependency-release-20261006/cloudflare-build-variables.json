@@ -1,0 +1,61 @@
+{
+  "fetchedAt": "2026-10-06T07:24:18.219Z",
+  "response": {
+    "result": {
+      "DROPIN_ALLOW_ADMIN_PROXY": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "false"
+      },
+      "DROPIN_MAINNET_TRANSFERS_ENABLED": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "false"
+      },
+      "DROPIN_PHASE16_PROTOCOL_WRITES_ENABLED": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "false"
+      },
+      "NEXT_PUBLIC_CANOPYPROOF_MODE": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "production"
+      },
+      "NEXT_PUBLIC_DROPIN_ENABLE_MAINNET_PAYMENTS": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "false"
+      },
+      "NEXT_PUBLIC_DROPIN_SITE_URL": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "https://canopyproof.org"
+      },
+      "NEXT_TELEMETRY_DISABLED": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "1"
+      },
+      "NODE_VERSION": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:30:13.423Z",
+        "value": "22.22.3"
+      },
+      "SKIP_DEPENDENCY_INSTALL": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:30:13.423Z",
+        "value": "true"
+      },
+      "WRANGLER_SEND_METRICS": {
+        "is_secret": false,
+        "created_on": "2026-10-06T06:31:46.662Z",
+        "value": "false"
+      }
+    },
+    "success": true,
+    "errors": [],
+    "messages": [],
+    "status": 200
+  }
+}
