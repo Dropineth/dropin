@@ -89,6 +89,13 @@ stability, actual button rotation, texture failure and no-Canvas fallback;
 unmount cleared RAF, eight tracked listeners, observers and image callbacks.
 This is software browser evidence, not a physical GPU or real phone acceptance.
 
+Visual review found a paused-globe blank frame after resize which the first
+pixel-rotation assertion did not catch. The component now avoids resetting an
+unchanged backing buffer and paints one static frame immediately on a real size
+change, while leaving animation visibility-gated. A regression reproduced the
+failure before the fix and passed with normal and corrupt texture inputs. The
+browser suite also asserts painted pixels after full-page preparation/resize.
+
 ## Release boundary
 
 Final-head CI, independent pre-merge human review, actual main CI, real rollback

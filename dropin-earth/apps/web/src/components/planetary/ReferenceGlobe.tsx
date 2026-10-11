@@ -243,14 +243,26 @@ export function ReferenceGlobe({ locale, compact = false }: { locale: "en" | "zh
     };
 
     function resize() {
-      width = Math.max(1, scene!.clientWidth);
-      height = Math.max(1, scene!.clientHeight);
-      dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
-      canvas!.width = Math.round(width * dpr);
-      canvas!.height = Math.round(height * dpr);
+      if (disposed) return;
+      const nextWidth = Math.max(1, scene!.clientWidth);
+      const nextHeight = Math.max(1, scene!.clientHeight);
+      const nextDpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      if (width === nextWidth && height === nextHeight && dpr === nextDpr) return;
+      width = nextWidth;
+      height = nextHeight;
+      dpr = nextDpr;
+      const pixelWidth = Math.round(width * dpr);
+      const pixelHeight = Math.round(height * dpr);
+      if (canvas!.width !== pixelWidth) canvas!.width = pixelWidth;
+      if (canvas!.height !== pixelHeight) canvas!.height = pixelHeight;
       c.setTransform(dpr, 0, 0, dpr, 0, 0);
       prepareTexture();
-      requestDraw();
+      // Resizing clears a canvas. Restore one frame immediately, even offscreen,
+      // so a paused reference never depends on the visibility-gated animation loop.
+      draw();
+      dirty = false;
+      lastDraw = performance.now();
+      if (spin) requestDraw();
     }
 
     const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;

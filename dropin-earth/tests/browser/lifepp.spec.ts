@@ -423,6 +423,15 @@ async function interactions() {
               assert.equal(await page.locator('input, [data-wallet], form').count(), 0, "Status page has no payment or entry form");
             }
             await prepareFullPageImages(page);
+            if (view === "home" || view === "earth") {
+              const painted = await page.locator("[data-reference-globe] canvas").first().evaluate(element => {
+                // A paused/offscreen resize must not clear the captured frame.
+                window.dispatchEvent(new Event("resize"));
+                const canvas = element as HTMLCanvasElement;
+                return canvas.getContext("2d")!.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height * .49), 1, 1).data[3];
+              });
+              assert.ok(painted > 0, "Paused globe remains painted after resize and full-page preparation");
+            }
             const screenshot = `planetary-${locale}-${view}-${width}.png`;
             await page.screenshot({ path: join(output, screenshot), fullPage: true }); screenshots.push(screenshot);
             assert.deepEqual(errors, [], "Planetary page has no runtime errors");
