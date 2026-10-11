@@ -7,7 +7,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, wr
 import { join, resolve } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { ENVIRONMENT, REPOSITORY, WORKER, TRUST_GATES, WEB_GATES, sha256, validateContext, validatePullRequest, validateAttestation,
+import { BASELINE_PR_NUMBER, releasePrNumber, validateBaselineReachability, ENVIRONMENT, REPOSITORY, WORKER, TRUST_GATES, WEB_GATES, sha256, validateContext, validatePullRequest, validateAttestation,
   validateWorkflowRun, validateEvidence, validateEnvironmentApproval, validateRollback, validateRoutes, validateSourceConfig } from './lifepp-release-policy.mjs';
 
 const now = () => new Date().toISOString();
@@ -15,7 +15,7 @@ const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'));
 const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 const output = () => resolve(process.env.LIFEPP_RELEASE_DIR ?? 'reports/lifepp-release');
-const inputs = () => ({ expectedSha: process.env.LIFEPP_RELEASE_SHA, rollbackVersion: process.env.LIFEPP_ROLLBACK_VERSION,
+const inputs = () => ({ releasePrNumber: process.env.LIFEPP_RELEASE_PR_NUMBER, expectedSha: process.env.LIFEPP_RELEASE_SHA, rollbackVersion: process.env.LIFEPP_ROLLBACK_VERSION,
   rollbackDeployment: process.env.LIFEPP_ROLLBACK_DEPLOYMENT, attestationUrl: process.env.LIFEPP_ATTESTATION_URL });
 const context = () => ({ repository: process.env.GITHUB_REPOSITORY, event: process.env.GITHUB_EVENT_NAME,
   ref: process.env.GITHUB_REF, sha: process.env.GITHUB_SHA, attempt: process.env.GITHUB_RUN_ATTEMPT,
@@ -56,6 +56,27 @@ async function permission(login) {
   return value.role_name ?? value.permission;
 }
 
+const prIdentity = pr => ({ number: pr.number, author: pr.user.login, headSha: pr.head.sha, mergeSha: pr.merge_commit_sha });
+
+// Injectable reads keep orchestration tests local; production uses only authenticated GitHub GETs.
+export async function verifyReleasePullRequests(target, { read = github, list = pages, reviewPermission = permission } = {}) {
+  const number = releasePrNumber(target.releasePrNumber);
+  async function reviewed(number, expectedSha) {
+    const pr = await read(`/repos/${REPOSITORY}/pulls/${number}`);
+    const approvals = validatePullRequest(pr, await list(`/repos/${REPOSITORY}/pulls/${number}/reviews`), expectedSha ?? pr.merge_commit_sha, number);
+    const qualified = [];
+    for (const review of approvals) if (['admin', 'maintain', 'write'].includes(await reviewPermission(review.reviewer))) qualified.push(review);
+    assert.ok(qualified.length, `Independent approving reviewer of PR #${number} lacks repository review permission`);
+    return { pr, reviews: qualified };
+  }
+  const release = await reviewed(number, target.expectedSha);
+  const baseline = number === BASELINE_PR_NUMBER ? release : await reviewed(BASELINE_PR_NUMBER);
+  if (number !== BASELINE_PR_NUMBER) assert.notEqual(baseline.pr.merge_commit_sha, target.expectedSha, 'A follow-up release must descend from the baseline merge');
+  const comparison = await read(`/repos/${REPOSITORY}/compare/${baseline.pr.merge_commit_sha}...${target.expectedSha}?per_page=1`);
+  const reachability = validateBaselineReachability(comparison, baseline.pr.merge_commit_sha, target.expectedSha);
+  return { ...release, baseline: { pr: prIdentity(baseline.pr), reviews: baseline.reviews, reachability } };
+}
+
 async function verifyGithub() {
   assert.equal(process.env.GITHUB_ACTIONS, 'true', 'Release commands only run inside the reviewed GitHub workflow');
   const target = inputs();
@@ -67,15 +88,11 @@ async function verifyGithub() {
   assert.equal(run.head_branch, 'main');
   assert.equal(run.path, '.github/workflows/deploy-canopyproof.yml');
   assert.equal(run.run_attempt, 1);
-  const pr = await github(`/repos/${REPOSITORY}/pulls/4`);
-  const reviews = validatePullRequest(pr, await pages(`/repos/${REPOSITORY}/pulls/4/reviews`), target.expectedSha);
-  const qualified = [];
-  for (const review of reviews) if (['admin', 'maintain', 'write'].includes(await permission(review.reviewer))) qualified.push(review);
-  assert.ok(qualified.length, 'Independent approving PR reviewer lacks repository review permission');
+  const { pr, reviews, baseline } = await verifyReleasePullRequests(target);
   const commentId = target.attestationUrl.split('issuecomment-')[1];
   const comment = await github(`/repos/${REPOSITORY}/issues/comments/${commentId}`);
   const attestation = validateAttestation(comment, await permission(comment.user?.login), target, pr);
-  return { target, pr: { number: 4, author: pr.user.login, headSha: pr.head.sha, mergeSha: pr.merge_commit_sha }, reviews: qualified, attestation };
+  return { target, pr: prIdentity(pr), reviews, baseline, attestation };
 }
 
 async function downloadEvidence(artifact, destination) {
@@ -179,6 +196,7 @@ async function prepare() {
 
 function seal() {
   const preflight = readJson(join(output(), 'preflight.json'));
+  assert.deepEqual(inputs(), preflight.target, 'Release inputs changed before sealing');
   assert.equal(git('rev-parse', 'HEAD'), preflight.target.expectedSha);
   assert.equal(git('status', '--porcelain', '--untracked-files=normal'), '', 'Prepare source changed');
   assert.equal(process.version, 'v22.22.3');
@@ -200,7 +218,7 @@ function seal() {
   const digest = sha256(readFileSync(join(output(), 'manifest.json')));
   assert.ok(process.env.GITHUB_OUTPUT && process.env.GITHUB_STEP_SUMMARY);
   writeFileSync(process.env.GITHUB_OUTPUT, `manifest_sha256=${digest}\n`, { flag: 'a' });
-  writeFileSync(process.env.GITHUB_STEP_SUMMARY, `## Prepared web release — approval required\n\nSHA: \`${preflight.target.expectedSha}\`\n\nManifest SHA-256: \`${digest}\`\n\nInspect the manifest/artifact and maintainer attestation before approval. Rollback cloud validation is still pending.\n\nRequired independent environment approval comment:\n\n\`APPROVE ${preflight.target.expectedSha} MANIFEST ${digest} ROLLBACK ${preflight.target.rollbackVersion}\`\n`, { flag: 'a' });
+  writeFileSync(process.env.GITHUB_STEP_SUMMARY, `## Prepared web release — approval required\n\nRelease PR: #${preflight.pr.number} (required reviewed baseline: #${preflight.baseline.pr.number}, merge \`${preflight.baseline.pr.mergeSha}\`)\n\nSHA: \`${preflight.target.expectedSha}\`\n\nManifest SHA-256: \`${digest}\`\n\nInspect the manifest/artifact and maintainer attestation before approval. Rollback cloud validation is still pending.\n\nRequired independent environment approval comment:\n\n\`APPROVE ${preflight.target.expectedSha} MANIFEST ${digest} ROLLBACK ${preflight.target.rollbackVersion}\`\n`, { flag: 'a' });
 }
 
 export function verifyBundle(root, expectedHash) {
@@ -213,6 +231,7 @@ export function verifyBundle(root, expectedHash) {
 
 function restore() {
   const manifest = verifyBundle(output(), process.env.LIFEPP_MANIFEST_SHA256);
+  assert.deepEqual(manifest.target, inputs(), 'Prepared artifact names different release inputs');
   assert.equal(manifest.target.expectedSha, git('rev-parse', 'HEAD'));
   assert.equal(manifest.lockSha256, sha256(readFileSync('package-lock.json')));
   assert.equal(manifest.configSha256, sourceConfig());
@@ -246,13 +265,16 @@ async function deploy() {
   const manifest = verifyBundle(output(), process.env.LIFEPP_MANIFEST_SHA256);
   const verified = await verifyGithub();
   assert.deepEqual(verified.target, manifest.target);
+  assert.deepEqual(verified.pr, manifest.pr, 'Release PR identity changed after prepare');
+  assert.deepEqual(verified.baseline.pr, manifest.baseline.pr, 'Required baseline PR identity changed after prepare');
+  assert.deepEqual(verified.baseline.reachability, manifest.baseline.reachability, 'Baseline ancestry changed after prepare');
   assert.equal(manifest.runId, process.env.GITHUB_RUN_ID, 'Prepared artifact belongs to another run');
   assert.equal(verified.attestation.bodySha256, manifest.attestation.bodySha256, 'Maintainer declaration changed after prepare');
   assert.equal(verified.attestation.author, manifest.attestation.author);
   await verifyCi(verified.target); // Recheck latest runs and complete evidence after the approval wait.
   const environment = await github(`/repos/${REPOSITORY}/environments/${ENVIRONMENT}`);
   const approvals = await github(`/repos/${REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}/approvals`);
-  const approval = validateEnvironmentApproval(environment, approvals, context(), inputs(), process.env.LIFEPP_MANIFEST_SHA256, verified.pr.author);
+  const approval = validateEnvironmentApproval(environment, approvals, context(), inputs(), process.env.LIFEPP_MANIFEST_SHA256, verified.pr.author, verified.baseline.pr.author);
   assert.equal(sourceConfig(), manifest.configSha256);
   assert.equal(git('status', '--porcelain', '--untracked-files=normal'), '', 'Protected checkout changed after install');
   assert.deepEqual(inventory('apps/web/.open-next'), manifest.files, 'Prepared artifact changed');
@@ -262,7 +284,7 @@ async function deploy() {
   validateRoutes(await cloudflare('', true));
   const smoke = await health();
   const receipt = { schemaVersion: 1, status: 'APPROVED_PREFLIGHT_ONLY', checkedAt: now(), sha: verified.target.expectedSha,
-    manifestSha256: process.env.LIFEPP_MANIFEST_SHA256, approval, attestation: verified.attestation, rollback, preReleaseHealth: smoke };
+    releasePrNumber: verified.pr.number, baseline: verified.baseline, manifestSha256: process.env.LIFEPP_MANIFEST_SHA256, approval, attestation: verified.attestation, rollback, preReleaseHealth: smoke };
   writeJson(join(output(), 'deployment-receipt.json'), receipt);
   // Re-read mutable main and cloud state immediately before the sole mutation command.
   validateContext(context(), inputs(), (await github(`/repos/${REPOSITORY}/branches/main`)).commit?.sha, git('rev-parse', 'HEAD'));

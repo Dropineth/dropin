@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 
 export const REPOSITORY = 'Dropineth/dropin';
+export const BASELINE_PR_NUMBER = 4;
 export const ENVIRONMENT = 'canopyproof-production';
 export const WORKER = 'canopyproof-web';
 export const sha256 = value => createHash('sha256').update(value).digest('hex');
@@ -12,6 +13,14 @@ const sha = /^[a-f0-9]{40}$/;
 const human = user => user?.type === 'User' && /^[A-Za-z0-9-]+$/.test(user.login ?? '');
 const loginKey = login => String(login ?? '').toLowerCase();
 const timestamp = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
+
+export function releasePrNumber(value) {
+  assert.ok(typeof value === 'string' || typeof value === 'number', 'Release PR number must be a decimal string or integer');
+  assert.match(String(value ?? ''), /^[1-9][0-9]*$/, 'Require an explicit positive release PR number');
+  const number = Number(value);
+  assert.ok(Number.isSafeInteger(number), 'Release PR number exceeds the safe integer range');
+  return number;
+}
 
 export function validateContext(context, inputs, mainSha, checkoutSha) {
   assert.equal(context.repository, REPOSITORY, 'Unexpected repository');
@@ -24,19 +33,22 @@ export function validateContext(context, inputs, mainSha, checkoutSha) {
   assert.equal(checkoutSha, inputs.expectedSha, 'Checkout SHA mismatch');
   assert.match(inputs.rollbackVersion ?? '', uuid, 'Require a real rollback version UUID');
   assert.match(inputs.rollbackDeployment ?? '', uuid, 'Require a real rollback deployment UUID');
-  assert.match(inputs.attestationUrl ?? '', /^https:\/\/github\.com\/Dropineth\/dropin\/pull\/4#issuecomment-[1-9][0-9]*$/, 'Require a maintainer attestation comment on PR #4');
+  const number = releasePrNumber(inputs.releasePrNumber);
+  assert.match(inputs.attestationUrl ?? '', new RegExp(`^https://github\\.com/Dropineth/dropin/pull/${number}#issuecomment-[1-9][0-9]*$`), 'Require a maintainer attestation comment on the actual release PR');
 }
 
-export function validatePullRequest(pr, reviews, expectedSha) {
-  assert.equal(pr.number, 4);
-  assert.equal(pr.merged, true, 'PR #4 must actually be merged');
+export function validatePullRequest(pr, reviews, expectedSha, expectedPrNumber) {
+  assert.equal(pr.number, releasePrNumber(expectedPrNumber), 'Unexpected release or baseline PR');
+  assert.equal(pr.merged, true, 'Release and baseline PRs must actually be merged');
   assert.equal(pr.state, 'closed');
   assert.equal(pr.draft, false);
   assert.equal(pr.base?.ref, 'main');
   assert.equal(pr.base?.repo?.full_name, REPOSITORY);
   assert.equal(pr.head?.repo?.full_name, REPOSITORY);
-  assert.equal(pr.merge_commit_sha, expectedSha, 'Release target must be the actual PR #4 merge result');
+  assert.match(expectedSha ?? '', sha);
+  assert.equal(pr.merge_commit_sha, expectedSha, 'Release target must be the actual release PR merge result');
   assert.match(pr.head?.sha ?? '', sha);
+  assert.ok(timestamp(pr.merged_at), 'Missing actual merge time');
   const latest = new Map();
   for (const review of [...reviews].sort((a, b) => a.id - b.id)) {
     if (['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'].includes(review.state)) latest.set(loginKey(review.user?.login), review);
@@ -49,18 +61,36 @@ export function validatePullRequest(pr, reviews, expectedSha) {
   return approved.map(review => ({ id: review.id, reviewer: review.user.login, reviewedSha: review.commit_id, submittedAt: review.submitted_at, url: review.html_url }));
 }
 
+export function validateBaselineReachability(comparison, baselineSha, expectedSha) {
+  assert.match(baselineSha ?? '', sha);
+  assert.match(expectedSha ?? '', sha);
+  assert.equal(comparison.url, `https://api.github.com/repos/${REPOSITORY}/compare/${baselineSha}...${expectedSha}`, 'Comparison must bind the exact baseline and release commits');
+  assert.equal(comparison.base_commit?.sha, baselineSha, 'Comparison uses a different baseline');
+  assert.equal(comparison.merge_base_commit?.sha, baselineSha, 'Reviewed PR #4 merge is not an ancestor of the release target');
+  assert.equal(comparison.behind_by, 0, 'Release target cannot be behind or diverged from PR #4');
+  assert.ok(Number.isSafeInteger(comparison.ahead_by) && comparison.ahead_by >= 0, 'Missing comparison distance');
+  assert.equal(comparison.status, baselineSha === expectedSha ? 'identical' : 'ahead');
+  assert.ok(baselineSha === expectedSha ? comparison.ahead_by === 0 : comparison.ahead_by > 0);
+  return { baselineSha, releaseSha: expectedSha, status: comparison.status, aheadBy: comparison.ahead_by, url: comparison.url };
+}
+
 export function validateAttestation(comment, permission, inputs, pr) {
-  assert.equal(comment.issue_url, `https://api.github.com/repos/${REPOSITORY}/issues/4`);
+  const number = releasePrNumber(inputs.releasePrNumber);
+  assert.equal(pr.number, number, 'Attestation PR differs from release input');
+  assert.equal(pr.merge_commit_sha, inputs.expectedSha, 'Attestation must describe the actual release merge');
+  assert.equal(comment.issue_url, `https://api.github.com/repos/${REPOSITORY}/issues/${number}`);
   assert.equal(comment.html_url, inputs.attestationUrl);
   assert.ok(human(comment.user), 'Attestation must be authored by a real human account');
   assert.ok(['admin', 'maintain'].includes(permission), 'Attestation requires an actual repository maintainer');
   assert.ok(timestamp(comment.created_at) && Date.parse(comment.created_at) >= Date.parse(pr.merged_at), 'Attestation must review the final main merge result');
   const value = JSON.parse(comment.body);
-  assert.deepEqual(Object.keys(value).sort(), ['kind', 'expected_commit_sha', 'worker', 'rollback_version_id', 'rollback_deployment_id', 'git_integration', 'rollback', 'visual_review'].sort(), 'Unexpected attestation fields');
+  const legacyBaseline = value.kind === 'lifepp-production-attestation-v1' && number === BASELINE_PR_NUMBER;
+  assert.equal(value.kind, legacyBaseline ? 'lifepp-production-attestation-v1' : 'lifepp-production-attestation-v2');
+  assert.deepEqual(Object.keys(value).sort(), ['kind', 'expected_commit_sha', 'worker', 'rollback_version_id', 'rollback_deployment_id', 'git_integration', 'rollback', 'visual_review', ...(legacyBaseline ? [] : ['release_pr_number'])].sort(), 'Unexpected attestation fields');
+  if (!legacyBaseline) assert.equal(value.release_pr_number, number, 'Attestation names a different release PR');
   assert.deepEqual(Object.keys(value.git_integration ?? {}).sort(), ['production_branch', 'can_publish_without_environment_approval', 'evidence_url'].sort());
   assert.deepEqual(Object.keys(value.rollback ?? {}).sort(), ['known_good', 'bindings_compatible', 'operator_login', 'evidence_url'].sort());
   assert.deepEqual(Object.keys(value.visual_review ?? {}).sort(), ['reviewed', 'evidence_url'].sort());
-  assert.equal(value.kind, 'lifepp-production-attestation-v1');
   assert.equal(value.expected_commit_sha, inputs.expectedSha);
   assert.equal(value.worker, WORKER);
   assert.equal(value.rollback_version_id, inputs.rollbackVersion);
@@ -72,7 +102,7 @@ export function validateAttestation(comment, permission, inputs, pr) {
   assert.match(value.rollback?.operator_login ?? '', /^[A-Za-z0-9-]+$/);
   assert.equal(value.visual_review?.reviewed, true);
   for (const evidence of [value.git_integration?.evidence_url, value.rollback?.evidence_url, value.visual_review?.evidence_url]) {
-    assert.match(evidence ?? '', /^https:\/\/github\.com\/Dropineth\/dropin\/(?:pull\/4(?:#|\/)|actions\/runs\/[1-9][0-9]*(?:\/|$)|blob\/[a-f0-9]{40}\/)/, 'Require reviewable same-repository evidence links');
+    assert.match(evidence ?? '', new RegExp(`^https://github\\.com/Dropineth/dropin/(?:pull/(?:${BASELINE_PR_NUMBER}|${number})(?:#|/)|actions/runs/[1-9][0-9]*(?:/|$)|blob/[a-f0-9]{40}/)`), 'Require reviewable same-repository evidence links');
   }
   return { commentId: comment.id, author: comment.user.login, url: comment.html_url, updatedAt: comment.updated_at,
     bodySha256: sha256(comment.body), declaration: value };
@@ -129,12 +159,12 @@ export function validateEvidence(report, expectedSha, run, expectedGates) {
   }
 }
 
-export function validateEnvironmentApproval(environment, approvals, context, inputs, manifestHash, prAuthor) {
+export function validateEnvironmentApproval(environment, approvals, context, inputs, manifestHash, prAuthor, baselineAuthor = prAuthor) {
   assert.equal(environment.name, ENVIRONMENT);
   const rule = environment.protection_rules?.find(item => item.type === 'required_reviewers');
   assert.equal(rule?.prevent_self_review, true, 'Self-review protection must remain enabled');
   const eligible = new Set(rule.reviewers.filter(item => item.type === 'User').map(item => loginKey(item.reviewer.login)));
-  const forbidden = new Set([context.actor, context.triggeringActor, prAuthor].map(loginKey));
+  const forbidden = new Set([context.actor, context.triggeringActor, prAuthor, baselineAuthor].map(loginKey));
   const phrase = `APPROVE ${inputs.expectedSha} MANIFEST ${manifestHash} ROLLBACK ${inputs.rollbackVersion}`;
   const review = approvals.find(item => item.state === 'approved' && human(item.user)
     && eligible.has(loginKey(item.user.login)) && !forbidden.has(loginKey(item.user.login))

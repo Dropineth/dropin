@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
-import { ENVIRONMENT, REPOSITORY, TRUST_GATES, WEB_GATES, sha256, validateContext, validatePullRequest, validateAttestation,
+import { releasePrNumber, validateBaselineReachability, ENVIRONMENT, REPOSITORY, TRUST_GATES, WEB_GATES, sha256, validateContext, validatePullRequest, validateAttestation,
   validateWorkflowRun, validateEvidence, validateEnvironmentApproval, validateRollback, validateRoutes, validateSourceConfig } from '../../scripts/lifepp-release-policy.mjs';
-import { inventory, verifyBundle, readReleaseJson } from '../../scripts/lifepp-release-run.mjs';
+import { inventory, verifyBundle, readReleaseJson, verifyReleasePullRequests } from '../../scripts/lifepp-release-run.mjs';
 
 // All identities, approvals, deployment IDs and API responses below are SYNTHETIC unit fixtures.
 // These tests perform no network requests and do not create actual release authority.
@@ -14,7 +15,7 @@ const head = 'b'.repeat(40);
 const version = '11111111-1111-4111-8111-111111111111';
 const deployment = '22222222-2222-4222-8222-222222222222';
 const manifestHash = 'c'.repeat(64);
-const input = { expectedSha: target, rollbackVersion: version, rollbackDeployment: deployment, attestationUrl: 'https://github.com/Dropineth/dropin/pull/4#issuecomment-123' };
+const input = { releasePrNumber: '4', expectedSha: target, rollbackVersion: version, rollbackDeployment: deployment, attestationUrl: 'https://github.com/Dropineth/dropin/pull/4#issuecomment-123' };
 const ctx = { repository: REPOSITORY, event: 'workflow_dispatch', ref: 'refs/heads/main', sha: target, attempt: '1', actor: 'fixture-operator', triggeringActor: 'fixture-operator' };
 const user = (login: string) => ({ login, type: 'User' });
 const pr = { number: 4, merged: true, state: 'closed', draft: false, base: { ref: 'main', repo: { full_name: REPOSITORY } },
@@ -36,11 +37,11 @@ test('release context rejects push, non-main, rerun, ref/checkout drift and inve
 });
 
 test('a real final-head PR approval is required; dismissed, stale, self, bot or post-merge approvals cannot substitute', () => {
-  assert.equal(validatePullRequest(pr, [review], target)[0].reviewer, review.user.login);
+  assert.equal(validatePullRequest(pr, [review], target, 4)[0].reviewer, review.user.login);
   for (const reviews of [[], [{ ...review, commit_id: target }], [{ ...review, user: pr.user }], [{ ...review, user: { login: 'fixture-bot', type: 'Bot' } }],
-    [review, { ...review, id: 2, state: 'DISMISSED' }], [review, { ...review, id: 2, state: 'CHANGES_REQUESTED' }], [{ ...review, submitted_at: '2026-09-30T09:00:00Z' }]]) assert.throws(() => validatePullRequest(pr, reviews, target));
-  for (const delta of [{ merged: false }, { draft: true }, { merge_commit_sha: head }]) assert.throws(() => validatePullRequest({ ...pr, ...delta }, [review], target));
-  assert.equal(validatePullRequest(pr, [review, { ...review, id: 2, state: 'COMMENTED' }], target).length, 1, 'A later comment does not erase an approval');
+    [review, { ...review, id: 2, state: 'DISMISSED' }], [review, { ...review, id: 2, state: 'CHANGES_REQUESTED' }], [{ ...review, submitted_at: '2026-09-30T09:00:00Z' }]]) assert.throws(() => validatePullRequest(pr, reviews, target, 4));
+  for (const delta of [{ merged: false }, { draft: true }, { merge_commit_sha: head }]) assert.throws(() => validatePullRequest({ ...pr, ...delta }, [review], target, 4));
+  assert.equal(validatePullRequest(pr, [review, { ...review, id: 2, state: 'COMMENTED' }], target, 4).length, 1, 'A later comment does not erase an approval');
 });
 
 test('maintainer declaration must be authentic, specific, post-merge and fail closed on unknown independent publishing or rollback', () => {
@@ -155,4 +156,147 @@ test('release API reads fail closed on 403 HTML, redirects, malformed responses 
     });
   }
   await assert.rejects(() => readReleaseJson('https://fixture.invalid/read', 'FIXTURE_TOKEN', 'Fixture read', async () => { throw new Error('PRIVATE_RESPONSE_BODY'); }), /network request failed; no bypass attempted/);
+});
+
+test('release PR input is explicit and canonical, and cannot borrow another PR attestation URL', () => {
+  assert.equal(releasePrNumber('9'), 9);
+  for (const value of [undefined, null, '', '04', '0', '-1', '4x', '1e2', ' 4', '4/../5', '9007199254740992', [4], {}]) {
+    assert.throws(() => releasePrNumber(value));
+  }
+  assert.throws(() => validateContext(ctx, { ...input, releasePrNumber: undefined }, target, target));
+  assert.throws(() => validateContext(ctx, { ...input, releasePrNumber: '9' }, target, target));
+  validateContext(ctx, { ...input, releasePrNumber: '9', attestationUrl: input.attestationUrl.replace('/4#', '/9#') }, target, target);
+});
+
+const baselineMerge = 'd'.repeat(40);
+const comparison = (base = baselineMerge, release = target) => ({
+  url: `https://api.github.com/repos/${REPOSITORY}/compare/${base}...${release}`,
+  base_commit: { sha: base }, merge_base_commit: { sha: base }, behind_by: 0,
+  ahead_by: base === release ? 0 : 3, status: base === release ? 'identical' : 'ahead',
+  // GitHub may truncate/paginate this list: reachability must not depend on it.
+  commits: [],
+});
+
+test('baseline reachability requires the exact GitHub comparison and a nondivergent descendant, including PR4 identity', () => {
+  assert.equal(validateBaselineReachability(comparison(), baselineMerge, target).status, 'ahead');
+  assert.equal(validateBaselineReachability(comparison(target, target), target, target).status, 'identical');
+  for (const delta of [{ url: comparison(target, baselineMerge).url }, { base_commit: { sha: head } },
+    { merge_base_commit: { sha: head } }, { merge_base_commit: undefined }, { behind_by: 1 }, { behind_by: undefined },
+    { status: 'behind' }, { status: 'diverged' }, { status: 'identical' }, { ahead_by: 0 }, { ahead_by: undefined }, { ahead_by: '3' }]) {
+    assert.throws(() => validateBaselineReachability({ ...comparison(), ...delta }, baselineMerge, target));
+  }
+  assert.throws(() => validateBaselineReachability({ ...comparison(target, target), ahead_by: 1 }, target, target));
+});
+
+const releasePr = { ...pr, number: 9, head: { ...pr.head, sha: 'e'.repeat(40) }, user: user('fixture-followup-author') };
+const releaseReview = { ...review, id: 9, user: user('fixture-followup-reviewer'), commit_id: releasePr.head.sha, html_url: 'https://github.com/Dropineth/dropin/pull/9#pullrequestreview-9' };
+const baselinePr = { ...pr, merge_commit_sha: baselineMerge };
+const followupInput = { ...input, releasePrNumber: '9', attestationUrl: input.attestationUrl.replace('/4#', '/9#') };
+
+function releaseReads(options: { release?: typeof releasePr; baseline?: typeof baselinePr; releaseReviews?: typeof review[]; baselineReviews?: typeof review[];
+  compare?: ReturnType<typeof comparison>; permission?: (login: string) => Promise<string> } = {}) {
+  const requests: string[] = [];
+  return { requests, reads: {
+    read: async (path: string) => {
+      requests.push(path);
+      if (path === `/repos/${REPOSITORY}/pulls/9`) return options.release ?? releasePr;
+      if (path === `/repos/${REPOSITORY}/pulls/4`) return options.baseline ?? baselinePr;
+      assert.equal(path, `/repos/${REPOSITORY}/compare/${(options.baseline ?? baselinePr).merge_commit_sha}...${target}?per_page=1`);
+      return options.compare ?? comparison();
+    },
+    list: async (path: string) => {
+      requests.push(path);
+      if (path === `/repos/${REPOSITORY}/pulls/9/reviews`) return options.releaseReviews ?? [releaseReview];
+      assert.equal(path, `/repos/${REPOSITORY}/pulls/4/reviews`);
+      return options.baselineReviews ?? [review];
+    },
+    reviewPermission: options.permission ?? (async () => 'write'),
+  } };
+}
+
+test('follow-up release orchestration independently reads and approves both release PR and PR4 baseline before checking ancestry', async () => {
+  const fixture = releaseReads();
+  const value = await verifyReleasePullRequests(followupInput, fixture.reads);
+  assert.equal(value.pr.number, 9);
+  assert.equal(value.pr.merge_commit_sha, target);
+  assert.equal(value.baseline.pr.number, 4);
+  assert.equal(value.baseline.pr.mergeSha, baselineMerge);
+  assert.equal(value.baseline.reachability.releaseSha, target);
+  assert.deepEqual(fixture.requests, [
+    `/repos/${REPOSITORY}/pulls/9`, `/repos/${REPOSITORY}/pulls/9/reviews`,
+    `/repos/${REPOSITORY}/pulls/4`, `/repos/${REPOSITORY}/pulls/4/reviews`,
+    `/repos/${REPOSITORY}/compare/${baselineMerge}...${target}?per_page=1`,
+  ]);
+  for (const options of [
+    { release: { ...releasePr, number: 4 } }, { release: { ...releasePr, merge_commit_sha: baselineMerge } },
+    { release: { ...releasePr, merged: false } }, { baseline: { ...baselinePr, merged: false } },
+    { baseline: { ...baselinePr, merge_commit_sha: target } }, { releaseReviews: [] }, { baselineReviews: [] },
+    { compare: { ...comparison(), status: 'diverged', behind_by: 2 } },
+    { permission: async (login: string) => login === review.user.login ? 'read' : 'write' },
+    { permission: async (login: string) => login === releaseReview.user.login ? 'read' : 'write' },
+  ]) await assert.rejects(() => verifyReleasePullRequests(followupInput, releaseReads(options).reads));
+  for (const reviews of [[{ ...releaseReview, commit_id: head }], [{ ...releaseReview, user: releasePr.user }],
+    [{ ...releaseReview, user: { login: 'fixture-bot', type: 'Bot' } }],
+    [releaseReview, { ...releaseReview, id: 10, state: 'DISMISSED' }], [releaseReview, { ...releaseReview, id: 10, state: 'CHANGES_REQUESTED' }],
+    [{ ...releaseReview, submitted_at: '2026-09-30T09:00:00Z' }]]) {
+    await assert.rejects(() => verifyReleasePullRequests(followupInput, releaseReads({ releaseReviews: reviews }).reads));
+  }
+});
+
+test('explicit PR4 release remains supported and still obtains identical-SHA GitHub reachability evidence', async () => {
+  const paths: string[] = [];
+  const value = await verifyReleasePullRequests(input, {
+    read: async (path: string) => { paths.push(path); return path.endsWith('/pulls/4') ? pr : comparison(target, target); },
+    list: async (path: string) => { assert.equal(path, `/repos/${REPOSITORY}/pulls/4/reviews`); return [review]; },
+    reviewPermission: async () => 'maintain',
+  });
+  assert.equal(value.pr.number, 4);
+  assert.equal(value.baseline.pr.mergeSha, target);
+  assert.equal(value.baseline.reachability.status, 'identical');
+  assert.deepEqual(paths, [`/repos/${REPOSITORY}/pulls/4`, `/repos/${REPOSITORY}/compare/${target}...${target}?per_page=1`]);
+});
+
+test('v2 declaration binds the actual release PR; legacy PR4 statements cannot authorize a follow-up release', () => {
+  const v2 = { ...declaration, kind: 'lifepp-production-attestation-v2', release_pr_number: 9,
+    visual_review: { ...declaration.visual_review, evidence_url: 'https://github.com/Dropineth/dropin/pull/9#issuecomment-99' } };
+  const actual = { ...comment, issue_url: `https://api.github.com/repos/${REPOSITORY}/issues/9`, html_url: followupInput.attestationUrl, body: JSON.stringify(v2) };
+  validateAttestation(actual, 'maintain', followupInput, releasePr);
+  validateAttestation(comment, 'maintain', input, pr);
+  validateAttestation({ ...comment, body: JSON.stringify({ ...v2, release_pr_number: 4, visual_review: declaration.visual_review }) }, 'admin', input, pr);
+  for (const value of [declaration, { ...v2, release_pr_number: 4 }, { ...v2, release_pr_number: '9' },
+    { ...v2, release_pr_number: undefined }, { ...v2, expected_commit_sha: baselineMerge },
+    { ...v2, visual_review: { ...v2.visual_review, evidence_url: 'https://github.com/Dropineth/dropin/pull/99#issuecomment-99' } }]) {
+    assert.throws(() => validateAttestation({ ...actual, body: JSON.stringify(value) }, 'admin', followupInput, releasePr));
+  }
+  assert.throws(() => validateAttestation(comment, 'admin', followupInput, releasePr));
+  assert.throws(() => validateAttestation(actual, 'admin', followupInput, pr));
+  assert.throws(() => validateAttestation({ ...actual, created_at: '2026-09-30T07:00:00Z' }, 'admin', followupInput, releasePr));
+});
+
+test('environment approval remains independent of both the actual release author and the reviewed baseline author', () => {
+  validateEnvironmentApproval(environment, [approval], ctx, followupInput, manifestHash, releasePr.user.login, baselinePr.user.login);
+  assert.throws(() => validateEnvironmentApproval(environment, [approval], ctx, followupInput, manifestHash, releasePr.user.login, 'fixture-reviewer'));
+  assert.throws(() => validateEnvironmentApproval(environment, [approval], ctx, followupInput, manifestHash, 'FIXTURE-REVIEWER', baselinePr.user.login));
+});
+
+
+test('seal and restore reject changed release PR input before Git, extraction or credential operations', () => {
+  const root = mkdtempSync(join(tmpdir(), 'lifepp-pr-binding-fixture-'));
+  try {
+    const script = resolve('scripts/lifepp-release-run.mjs');
+    writeFileSync(join(root, 'preflight.json'), JSON.stringify({ target: input }));
+    writeFileSync(join(root, 'opennext.tar.gz'), 'SYNTHETIC NOT A TAR');
+    writeFileSync(join(root, 'manifest.json'), JSON.stringify({ target: input, archiveSha256: sha256('SYNTHETIC NOT A TAR') }));
+    const hash = sha256(readFileSync(join(root, 'manifest.json')));
+    for (const mode of ['seal', 'restore']) {
+      const result = spawnSync(process.execPath, [script, mode], { cwd: root, encoding: 'utf8', env: {
+        PATH: process.env.PATH, LIFEPP_RELEASE_DIR: root, LIFEPP_MANIFEST_SHA256: hash,
+        LIFEPP_RELEASE_PR_NUMBER: '9', LIFEPP_RELEASE_SHA: target, LIFEPP_ROLLBACK_VERSION: version,
+        LIFEPP_ROLLBACK_DEPLOYMENT: deployment, LIFEPP_ATTESTATION_URL: input.attestationUrl,
+      } });
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, mode === 'seal' ? /Release inputs changed before sealing/ : /Prepared artifact names different release inputs/);
+      assert.doesNotMatch(result.stderr, /not a git repository|tar:|credential/);
+    }
+  } finally { rmSync(root, { recursive: true, force: true }); }
 });

@@ -9,7 +9,8 @@ test("production release is manual, exact-SHA, protected and confined to the exi
   const workflow = readFileSync(join(process.cwd(), "..", ".github/workflows/deploy-canopyproof.yml"), "utf8");
   const parsed = parse(workflow) as { on: Record<string, { inputs?: Record<string, { required: boolean }> }>; jobs: Record<string, { if: string; environment?: string; steps: Array<{ run?: string; env?: Record<string, string> }> }> };
   assert.deepEqual(Object.keys(parsed.on), ["workflow_dispatch"], "Main pushes must never automatically deploy");
-  for (const name of ["expected_commit_sha", "rollback_version_id", "rollback_deployment_id", "maintainer_attestation_url"]) assert.equal(parsed.on.workflow_dispatch.inputs?.[name].required, true);
+  for (const name of ["release_pr_number", "expected_commit_sha", "rollback_version_id", "rollback_deployment_id", "maintainer_attestation_url"]) assert.equal(parsed.on.workflow_dispatch.inputs?.[name].required, true);
+  assert.match(workflow, /LIFEPP_RELEASE_PR_NUMBER: \$\{\{ inputs\.release_pr_number \}\}/);
   assert.match(workflow, /CanopyProof Production Deploy/);
   assert.match(workflow, /working-directory: dropin-earth/);
   assert.match(workflow, /cache-dependency-path: dropin-earth\/package-lock\.json/);
@@ -17,6 +18,13 @@ test("production release is manual, exact-SHA, protected and confined to the exi
     assert.match(job.if, /github\.ref == 'refs\/heads\/main'/);
     assert.match(job.if, /github\.run_attempt == 1/);
     assert.match(job.steps[0].run ?? '', /test "\$LIFEPP_RELEASE_SHA" = "\$GITHUB_SHA"/, 'Reject alternate checkout input before repository code executes');
+    for (const value of ['', '0', '-1', '04', '4x', '4/../5', '4', '9']) {
+      const guard = spawnSync('bash', ['-e', '-c', job.steps[0].run!], { encoding: 'utf8', env: {
+        PATH: process.env.PATH, GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_REF: 'refs/heads/main', GITHUB_RUN_ATTEMPT: '1',
+        GITHUB_SHA: 'a'.repeat(40), LIFEPP_RELEASE_SHA: 'a'.repeat(40), LIFEPP_RELEASE_PR_NUMBER: value,
+      } });
+      assert.equal(guard.status === 0, ['4', '9'].includes(value), `Inline checkout guard validates release PR ${JSON.stringify(value)}`);
+    }
     for (const step of job.steps) if (step.run) {
       const syntax = spawnSync('bash', ['-n'], { input: step.run, encoding: 'utf8' });
       assert.equal(syntax.status, 0, syntax.stderr);

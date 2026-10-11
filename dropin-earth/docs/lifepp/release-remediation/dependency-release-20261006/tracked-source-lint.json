@@ -1,0 +1,14 @@
+{
+  "commandPrefix": [
+    "/Users/lee/.nvm/versions/node/v22.22.3/bin/node",
+    "node_modules/eslint/bin/eslint.js",
+    "--no-warn-ignored",
+    "apps/admin/next-env.d.ts"
+  ],
+  "fileCount": 526,
+  "input": "git ls-files executable JS/TS suffixes; excludes untracked historic report scripts only",
+  "startedAt": "2026-10-06T07:26:33.035493+00:00",
+  "finishedAt": "2026-10-06T07:26:38.154362+00:00",
+  "exitCode": 0,
+  "scope": "local source diagnostic, no change to original CI lint command"
+}

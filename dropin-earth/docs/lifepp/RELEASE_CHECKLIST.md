@@ -1,4 +1,23 @@
-# R3.2.1 current gate — 2026-10-06
+# Dependency follow-up release gate — 2026-10-06
+
+Status: **CANDIDATE / RELEASE HOLD**. [DEPENDENCY_RELEASE_20261006.md](DEPENDENCY_RELEASE_20261006.md), the owning follow-up PR and its exact-head CI govern this phase. PR #4 is already merged at `118b94db828387ad418c08827b890876ddae09d8`; its previous checked boxes do not approve the follow-up candidate.
+
+- [x] Verify all 13 supplied package hashes and apply only proxy-addr 2.0.8/source-map-js 1.2.2 lock changes; retain all application source and original dirty checkout.
+- [x] Verify patched-package behavior (8/8), old-version negative controls, and release/workflow/indexing/evidence tests (35/35), with local limits recorded.
+- [x] Read actual Cloudflare triggers/logs and ten current non-secret variables. Both production commands upload versions; web root/toolchain/audit-first command are corrected. No new deployment occurred.
+- [x] Bind the actual release PR and exact merge result throughout prepare/manifest/restore/deploy, while requiring reviewed PR #4 ancestry. Keep all existing CI, attestation, rollback and independent environment gates.
+- [ ] Resolve the remaining braces chain without an exemption or weakened audit, then pass both complete workflows on the final candidate.
+- [ ] Obtain genuine independent review of that final follow-up PR head; agent review cannot supply it.
+- [ ] Merge only under existing rules, then pass both complete workflows on the actual resulting main SHA.
+- [ ] Obtain the selected release PR's actual post-merge maintainer declaration: visual review, no automatic approval bypass, known-good active rollback version/deployment and binding compatibility. Current trigger command text and existing UUIDs do not replace this declaration.
+- [ ] Prepare and inspect the actual production manifest/artifact; obtain independent approval in existing canopyproof-production with the required exact SHA/manifest/rollback phrase. Do not approve through the author or agent using another account.
+- [ ] Deploy only the original web Worker, then verify Chinese/English public routes, original ecology, indexing/CSP/API boundaries and actual deployment/version IDs.
+
+The current original integration is merged but not deployed. The existing July 8 deployment is not the new release. Scene33/29/31, real consultation, billing and robot actions retain their disabled/draft boundaries. Nonproduction trigger configuration and public isolated preview have not been accepted.
+
+---
+
+# Historical R3.2.1 precommit checklist — 2026-10-06
 
 Status: **PRECOMMIT / IN_PROGRESS; RELEASE HOLD**. [R3_2_1_INTEGRATION.md](R3_2_1_INTEGRATION.md) and the current top-level delivery status govern this phase. All older checked boxes below keep their dated/head-specific scope.
 
@@ -15,7 +34,8 @@ Status: **PRECOMMIT / IN_PROGRESS; RELEASE HOLD**. [R3_2_1_INTEGRATION.md](R3_2_
 - [ ] Obtain actual independent external human code/visual APPROVED review of that final PR head; agent review does not satisfy this item.
 - [ ] Before merge, obtain current administrator evidence that both existing Cloudflare Git integrations cannot publish independently of approval; October5 observations showed a bypass path and failing build roots.
 - [ ] After safe merge, obtain both complete workflows and intact evidence on the actual main merge SHA.
-- [ ] Obtain real active known-good version/deployment UUIDs, binding-compatible rollback procedure/operator, and the actual post-merge admin/maintain statement on PR4.
+- [ ] Obtain real active known-good version/deployment UUIDs, binding-compatible rollback procedure/operator, and the actual post-merge admin/maintain statement on the selected release PR (v2 includes its numeric `release_pr_number`; PR4-only legacy v1 remains supported).
+- [ ] Verify the actual release PR final-head independent review and exact main merge SHA, plus reviewed PR4 baseline ancestry via GitHub compare; bind `release_pr_number` through the manifest, statement, restore and final recheck.
 - [ ] Use only a fresh main dispatch of the new manual web-only workflow; no old-main or sibling-workflow shortcut. A non-Dropineth initiator leaves Dropineth eligible for independent environment approval.
 - [ ] Prepare the explicit production artifact without cloud credentials, then have Dropineth inspect and actually approve SHA + manifest digest + rollback UUID through the existing environment.
 - [ ] Revalidate live main/approvals/rollback/routes, deploy only existing canopyproof-web if every gate passes, and record full external acceptance and actual version/time.

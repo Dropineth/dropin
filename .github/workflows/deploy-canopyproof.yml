@@ -1,11 +1,15 @@
 name: CanopyProof Production Deploy
-run-name: Web release ${{ inputs.expected_commit_sha }} — independent approval required
+run-name: Web release PR ${{ inputs.release_pr_number }} at ${{ inputs.expected_commit_sha }} — independent approval required
 
 on:
   workflow_dispatch:
     inputs:
+      release_pr_number:
+        description: 'Actual merged release PR number; PR #4 remains the required reviewed baseline ancestor.'
+        type: string
+        required: true
       expected_commit_sha:
-        description: 'Exact reviewed PR #4 merge SHA at main tip (40 lowercase hex characters).'
+        description: 'Exact reviewed release PR merge SHA at main tip (40 lowercase hex characters).'
         type: string
         required: true
       rollback_version_id:
@@ -17,7 +21,7 @@ on:
         type: string
         required: true
       maintainer_attestation_url:
-        description: 'PR #4 maintainer JSON comment confirming Git publishing path, real rollback and visual evidence; see R3_RELEASE_AUDIT.md.'
+        description: 'Actual release PR maintainer JSON comment confirming Git publishing path, real rollback and visual evidence; see R3_RELEASE_AUDIT.md.'
         type: string
         required: true
 
@@ -37,6 +41,7 @@ defaults:
     working-directory: dropin-earth
 
 env:
+  LIFEPP_RELEASE_PR_NUMBER: ${{ inputs.release_pr_number }}
   LIFEPP_RELEASE_SHA: ${{ inputs.expected_commit_sha }}
   LIFEPP_ROLLBACK_VERSION: ${{ inputs.rollback_version_id }}
   LIFEPP_ROLLBACK_DEPLOYMENT: ${{ inputs.rollback_deployment_id }}
@@ -66,7 +71,8 @@ jobs:
           test "$GITHUB_EVENT_NAME" = workflow_dispatch
           test "$GITHUB_REF" = refs/heads/main
           test "$GITHUB_RUN_ATTEMPT" = 1
-          [[ "$LIFEPP_RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$LIFEPP_RELEASE_PR_NUMBER" =~ ^[1-9][0-9]*$ ]] || exit 1
+          [[ "$LIFEPP_RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
           test "$LIFEPP_RELEASE_SHA" = "$GITHUB_SHA"
       - uses: actions/checkout@v4
         with:
@@ -93,7 +99,7 @@ jobs:
       - name: Preserve reviewable build and SHA-bound manifest
         uses: actions/upload-artifact@v4
         with:
-          name: lifepp-release-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
+          name: lifepp-release-pr${{ inputs.release_pr_number }}-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
           path: dropin-earth/reports/lifepp-release/
           if-no-files-found: error
           retention-days: 30
@@ -115,7 +121,8 @@ jobs:
           test "$GITHUB_EVENT_NAME" = workflow_dispatch
           test "$GITHUB_REF" = refs/heads/main
           test "$GITHUB_RUN_ATTEMPT" = 1
-          [[ "$LIFEPP_RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$LIFEPP_RELEASE_PR_NUMBER" =~ ^[1-9][0-9]*$ ]] || exit 1
+          [[ "$LIFEPP_RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]] || exit 1
           test "$LIFEPP_RELEASE_SHA" = "$GITHUB_SHA"
       - uses: actions/checkout@v4
         with:
@@ -132,7 +139,7 @@ jobs:
           npm ci --include=optional
       - uses: actions/download-artifact@v4
         with:
-          name: lifepp-release-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
+          name: lifepp-release-pr${{ inputs.release_pr_number }}-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
           path: dropin-earth/reports/lifepp-release/
       - name: Verify and restore the reviewed artifact without rebuilding
         run: node scripts/lifepp-release-run.mjs restore
@@ -147,7 +154,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lifepp-release-receipt-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
+          name: lifepp-release-receipt-pr${{ inputs.release_pr_number }}-${{ inputs.expected_commit_sha }}-${{ github.run_id }}
           path: dropin-earth/reports/lifepp-release/
           if-no-files-found: error
           retention-days: 30
