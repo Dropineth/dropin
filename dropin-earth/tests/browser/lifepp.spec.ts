@@ -641,9 +641,18 @@ async function accessibilityAndUnavailableSources() {
         assert.ok(overflow.width <= overflow.viewport + 1, "Reflow leaves the draft form within the viewport");
         if (zoomAlternative) {
           assert.equal(overflow.viewport, 640); assert.equal(overflow.dpr, 2);
+          // Keyboard traversal and reverse traversal have already been asserted
+          // with the real editor focused. End that interaction before full-page
+          // capture: WebKit's pending caret reveal can otherwise override the
+          // screenshot helper's scroll restoration. Do not relax its timeout or
+          // any keyboard, reflow, image-load or decode assertion.
+          await name.blur();
+          assert.equal(await name.evaluate((element) => element === document.activeElement), false, "Full-page capture starts after editing ends");
+          assert.equal(await name.inputValue(), "Keyboard fixture", "Ending editing preserves the entered draft");
           await prepareFullPageImages(page);
           const screenshot = `after-${profile.name}-${prefix ? "en" : "zh"}-partners.png`;
           await page.screenshot({ path: join(output, screenshot), fullPage: true }); screenshots.push(screenshot);
+          assert.equal(await page.evaluate(() => Math.abs(scrollY) < 1 && Math.abs(scrollX) < 1), true, "Full-page capture preserves the restored scroll position");
         }
         if (profile.width <= 390) {
           // Firefox/WebKit can expose maxTouchPoints=0 while native emulated
