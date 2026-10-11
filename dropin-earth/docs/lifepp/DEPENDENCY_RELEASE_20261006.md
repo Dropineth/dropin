@@ -1,5 +1,19 @@
 # R3.2.1 dependency and release follow-up — HOLD
 
+## 2026-10-11 candidate update
+
+The October 6 observations below are historical. The candidate owning this update applies the verified security-C changes: Next 15.5.27 across all three applications and the root, sharp 0.35.5 with matching optional binaries, and shell-quote 1.11.0. Application pages, business activation flags and publishing policy are unchanged.
+
+The unpatched `braces` chain is removed from the lock through the official Next lint plugin 14.2.35, with the official `@eslint/compat` 2.1.1 adapter for ESLint 10 in both existing lint configurations. This is a compatibility-tested tooling change, not an `audit fix --force` downgrade. The existing 19 enabled rules, their severity and the two existing exclusions are retained. A finite 76-case comparison per version found matching enabled-rule diagnostics apart from three message-capitalization cases. The complete 21-rule plugins are **not** equivalent: the two already-disabled rules have App Router/metadata-image differences.
+
+The plugin's glob is scoped to patched 10.5.0. Its minimatch 9.0.9 requires the function export from brace-expansion 2.1.7; the root's existing 5.0.12 override caused an actual `default is not a function` failure in directory/brace matching. The narrow plugin/glob override fixes that interface mismatch while retaining 5.0.12 elsewhere. Both are official packages under their original names. glob 10.5.0 carries an upstream deprecation notice; audit zero is not a maintenance guarantee. Revisit this bridge when the current Next lint line removes or fixes its braces dependency.
+
+Final local raw `npm audit --audit-level=moderate --json` passed for the complete 830-dependency graph with all severity counts zero, using Node 22.22.3/npm 10.9.8. The final lock SHA-256 is `fcc2893c2b973f3258ea14d091f34dfd8dd47cca21d31ac131856cee094d9586`. Ten dependency regression tests and the unchanged lint rules over 523 tracked source files passed. Intermediate network failures and the interface-failure result are retained separately; they are not overwritten by the final successful scan. Full-directory lint still encounters preserved ignored historical report scripts, so clean CI's original lint command remains authoritative. These local results are not the required Node 22.22.3/npm 10.9.4 CI.
+
+The WebKit test now preserves the original image-preparation error and scroll-restoration error, including bounded, cycle-safe diagnostic stacks and viewport/focus state. All original assertions and timeouts remain. Darwin Tab/Alt+Tab differences were reproduced in both the application and a minimal fixture. A focused form also showed a transient scroll rebound, but a subsequent bounded A/B did not reproduce it; no speculative blur, timeout increase or skipped assertion was added. The historical Linux reflow failure remains subject to the new candidate's original CI.
+
+Live read-only checks on October 11 confirm the web production and nonproduction build roots and version-upload commands are already correct. PR #5 has no submitted independent review. Its final head, actual merged main SHA, complete CI, maintainer declaration, production artifact review and existing environment approval are still required. No production deployment is asserted by this candidate update.
+
 Observation: 2026-10-06 UTC. PR #4 was merged externally as `118b94db828387ad418c08827b890876ddae09d8`; its implementation head was `ecae69b690e0e00dd1c2bb2b8f4bc50e1abd6851`. This follow-up starts from that actual main SHA in the existing isolated worktree. Its owning commit and PR checks must be resolved from GitHub; earlier green results do not transfer to it. PR #3 remains outside scope. Home, Center, FourShopPlan, all application routes and business activation flags are unchanged by this follow-up.
 
 ## Verified input and minimal change

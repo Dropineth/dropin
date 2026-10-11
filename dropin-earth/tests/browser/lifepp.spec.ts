@@ -29,9 +29,10 @@ const profiles = [
   { name: "desktop-wide", width: 1920, height: 1080 },
 ] as const;
 const screenshotRoutes = new Set(paths);
-const results: { name: string; status: "PASS" | "FAIL"; details?: unknown; error?: string }[] = [];
+const results: { name: string; status: "PASS" | "FAIL"; details?: unknown; error?: string; errorDetails?: unknown }[] = [];
 const measurements: unknown[] = [];
 const screenshots: string[] = [];
+const failureStates = new WeakMap<Error, { phase: string; state: unknown }[]>();
 let browser: Browser;
 
 async function assertReducedMotion(page: Page) {
@@ -78,9 +79,55 @@ async function assertKeyboardEntry(page: Page) {
   return indicator;
 }
 
+function describeError(error: unknown, seen = new WeakSet<Error>(), depth = 0): unknown {
+  try {
+    if (!(error instanceof Error)) return { message: String(error) };
+    if (seen.has(error) || depth >= 8) return { name: error.name, message: error.message, truncated: true };
+    seen.add(error);
+    const cause = error.cause;
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      cause: cause === undefined ? undefined : describeError(cause, seen, depth + 1),
+      errors: error instanceof AggregateError ? Array.from(error.errors, child => describeError(child, seen, depth + 1)) : undefined,
+      browserStates: failureStates.get(error),
+    };
+  } catch {
+    // Malformed error metadata must never replace the original test failure.
+    return { message: "Error diagnostics unavailable", truncated: true };
+  }
+}
+
+async function captureFailureState(page: Page, error: unknown, phase: string) {
+  const failure = error instanceof Error ? error : new Error(String(error), { cause: error });
+  let state: unknown;
+  try {
+    state = await page.evaluate(() => {
+      const active = document.activeElement;
+      const rect = active?.getBoundingClientRect();
+      return {
+        scroll: { x: scrollX, y: scrollY },
+        viewport: { width: innerWidth, height: innerHeight },
+        visualViewport: visualViewport ? { width: visualViewport.width, height: visualViewport.height, offsetLeft: visualViewport.offsetLeft, offsetTop: visualViewport.offsetTop, pageLeft: visualViewport.pageLeft, pageTop: visualViewport.pageTop, scale: visualViewport.scale } : null,
+        activeElement: active ? {
+          tag: active.tagName,
+          id: active.id,
+          rect: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height, top: rect.top, right: rect.right, bottom: rect.bottom, left: rect.left } : null,
+        } : null,
+      };
+    });
+  } catch (sampleError) {
+    // Diagnostics must not replace the assertion/load/cleanup failure.
+    state = { sampleError: describeError(sampleError) };
+  }
+  failureStates.set(failure, [...(failureStates.get(failure) ?? []), { phase, state }]);
+  return failure;
+}
+
 async function check(name: string, task: () => Promise<unknown>) {
   try { const details = await task(); results.push({ name, status: "PASS", details }); }
-  catch (error) { results.push({ name, status: "FAIL", error: error instanceof Error ? error.message : String(error) }); }
+  catch (error) { results.push({ name, status: "FAIL", error: error instanceof Error ? error.message : String(error), errorDetails: describeError(error) }); }
 }
 
 async function setupMetrics(page: Page) {
@@ -98,6 +145,7 @@ async function prepareFullPageImages(page: Page) {
   const images = page.locator("img");
   const count = await images.count();
   let hidden = 0;
+  let preparationError: Error | undefined;
   try {
     for (let index = 0; index < count; index++) {
       const image = images.nth(index);
@@ -129,10 +177,19 @@ async function prepareFullPageImages(page: Page) {
       assert.equal(await image.getAttribute("loading"), before.loading, "Screenshot preparation preserves the loading attribute");
       loaded.push(decoded);
     }
-  } finally {
+  } catch (error) {
+    preparationError = await captureFailureState(page, error, "image-preparation");
+  }
+  let restorationError: Error | undefined;
+  try {
     await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
     await page.waitForFunction(() => Math.abs(scrollY) < 1 && Math.abs(scrollX) < 1, undefined, { timeout: 2_000 });
+  } catch (error) {
+    restorationError = await captureFailureState(page, error, "scroll-restoration");
   }
+  if (preparationError && restorationError) throw new AggregateError([preparationError, restorationError], "Screenshot image preparation and scroll restoration both failed", { cause: preparationError });
+  if (preparationError) throw preparationError;
+  if (restorationError) throw restorationError;
   return { loaded, hidden, scrollRestoredToTop: true };
 }
 
@@ -239,9 +296,10 @@ async function routeMatrix(profile: typeof profiles[number]) {
           assert.deepEqual(errors, [], "No runtime or CSP hydration errors");
           return { status: response!.status(), htmlLang: locale, overflow, externalRequests: 0, reducedMotion, screenshotImages, spatialAcceptance };
         } catch (error) {
+          const failure = await captureFailureState(page, error, "route-failure");
           const name = `failure-${profile.name}-${path.slice(1).replaceAll("/", "-")}.png`;
           await page.screenshot({ path: join(output, name), fullPage: true }).then(() => screenshots.push(name)).catch(() => undefined);
-          throw error;
+          throw failure;
         } finally { page.off("pageerror", onError); page.off("console", onConsole); await page.close(); }
       });
     }

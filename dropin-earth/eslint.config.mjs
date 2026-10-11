@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import { fixupPluginRules } from "@eslint/compat";
 import nextPlugin from "@next/eslint-plugin-next";
 import tseslint from "typescript-eslint";
 
@@ -25,7 +26,7 @@ export default tseslint.config(
   {
     files: ["apps/web/**/*.{js,jsx,ts,tsx}"],
     plugins: {
-      "@next/next": nextPlugin,
+      "@next/next": fixupPluginRules(nextPlugin),
     },
     rules: {
       ...nextPlugin.configs.recommended.rules,

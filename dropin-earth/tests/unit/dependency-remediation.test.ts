@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -97,6 +97,67 @@ test("patched brace expansion keeps tooling globs working and bounds nested inpu
   let expanded: string[] = [];
   assert.doesNotThrow(() => { expanded = braceExpand(`${"{".repeat(4000)}one,two${"}".repeat(4000)}`); });
   assert.ok(expanded.length > 0 && expanded.length <= 2);
+});
+
+test("Next lint's resolved glob retains directory and brace matching with the root overrides", async () => {
+  const nextRequire = createRequire(require.resolve("@next/eslint-plugin-next/package.json"));
+  const globRequire = createRequire(nextRequire.resolve("glob/package.json"));
+  const glob = nextRequire("glob");
+  const minimatch = globRequire("minimatch");
+  assert.deepEqual(minimatch.braceExpand("apps/{web,admin}"), ["apps/web", "apps/admin"]);
+  const directory = await mkdtemp(path.join(tmpdir(), "lifepp-next-lint-glob-"));
+  try {
+    for (const app of ["web", "admin"]) {
+      await mkdir(path.join(directory, "apps", app, "pages"), { recursive: true });
+      await writeFile(path.join(directory, "apps", app, "pages", "index.jsx"), "export default function Page() { return null; }\n");
+    }
+    const appDirectories = ["admin", "web"].map((app) => path.join(directory, "apps", app));
+    assert.deepEqual(glob.sync(path.join(directory, "apps", "{web,admin}"), { nodir: false }).sort(), appDirectories);
+    assert.deepEqual(glob.sync(path.join(directory, "apps", "*", "pages"), { nodir: false }).sort(), appDirectories.map((app) => path.join(app, "pages")));
+    assert.deepEqual(glob.sync(path.join(directory, "apps", "{web,admin}", "pages", "*.{js,jsx}"), { nodir: true }).sort(), appDirectories.map((app) => path.join(app, "pages", "index.jsx")));
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("Next lint's active rules retain filename, ancestor and client-component checks on ESLint 10", () => {
+  const { Linter } = require("eslint");
+  const { fixupPluginRules } = require("@eslint/compat");
+  const nextPlugin = require("@next/eslint-plugin-next");
+  const rules = {
+    ...nextPlugin.configs.recommended.rules,
+    ...nextPlugin.configs["core-web-vitals"].rules,
+    "@next/next/no-html-link-for-pages": "off",
+    "@next/next/no-img-element": "off",
+  };
+  // These are the same two exclusions already present in both application configs.
+  assert.equal(Object.values(rules).filter((severity) => severity !== "off").length, 19);
+  const config = [{
+    files: ["**/*.jsx"],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+    plugins: { "@next/next": fixupPluginRules(nextPlugin) },
+    rules,
+  }];
+  const cases = [
+    { rule: "no-head-element", filename: "pages/index.jsx", valid: "<Head/>", invalid: "<head/>" },
+    { rule: "no-document-import-in-page", filename: "pages/index.jsx", valid: "import Head from 'next/head';", invalid: "import D from 'next/document';" },
+    { rule: "no-head-import-in-document", filename: "pages/_document.jsx", valid: "import {Head} from 'next/document';", invalid: "import Head from 'next/head';" },
+    { rule: "no-duplicate-head", filename: "pages/_document.jsx", valid: "import D from 'next/document'; class Doc extends D {render(){return <html><Head/></html>}}", invalid: "import D from 'next/document'; class Doc extends D {render(){return <html><Head/><Head/></html>}}" },
+    { rule: "no-page-custom-font", filename: "pages/_document.jsx", valid: "function Doc(){return <link href='https://fonts.googleapis.com/css?family=X&display=optional'/>} export default Doc;", invalid: "function Other(){return <link href='https://fonts.googleapis.com/css?family=X&display=optional'/>} export default function Doc(){return null;}" },
+    { rule: "no-before-interactive-script-outside-document", filename: "pages/index.jsx", valid: "import Script from 'next/script'; <Script strategy='afterInteractive'/>", invalid: "import Script from 'next/script'; <Script strategy='beforeInteractive'/>" },
+    { rule: "no-styled-jsx-in-document", filename: "pages/_document.jsx", valid: "<style>{'x{}'}</style>", invalid: "<style jsx>{'x{}'}</style>" },
+    { rule: "no-typos", filename: "pages/index.jsx", valid: "export const getStaticProps=()=>{};", invalid: "export const getStaticProp=()=>{};" },
+    { rule: "no-async-client-component", filename: "app/page.jsx", valid: "'use client'; const Page=()=>null; export default Page;", invalid: "'use client'; const Page=async()=>null; export default Page;" },
+    { rule: "no-assign-module-variable", filename: "pages/index.jsx", valid: "const localModule={};", invalid: "const module={};" },
+    { rule: "no-sync-scripts", filename: "pages/index.jsx", valid: "<script src='/x.js' async/>", invalid: "<script src='/x.js'/>" },
+  ];
+  for (const fixture of cases) {
+    for (const [kind, expectedCount] of [["valid", 0], ["invalid", 1]] as const) {
+      const messages = new Linter().verify(fixture[kind], config, { filename: path.resolve(fixture.filename) });
+      assert.equal(messages.some((message: { fatal?: boolean }) => message.fatal), false, fixture.rule);
+      assert.equal(messages.filter((message: { ruleId?: string }) => message.ruleId === `@next/next/${fixture.rule}`).length, expectedCount, `${fixture.rule}: ${kind}`);
+    }
+  }
 });
 
 test("patched TOML preserves Anchor Buffer config parsing and rejects excessive nesting", async () => {
