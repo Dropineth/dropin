@@ -73,7 +73,7 @@ for (const workflow of ["deploy-cloudflare-worker.yml", "deploy-canopyproof.yml"
     assert.match(artifact.sitemap ?? "", /<loc>https:\/\/canopyproof\.org\/en\/life\/spaces\/29<\/loc>/);
     const expectedHash = createHash("sha256").update(fixtureScript).digest("base64");
     assert.ok((artifact.headers ?? "").includes("script-src 'self' 'sha256-" + expectedHash + "'"), "Static home CSP must pin the exact built inline script");
-    assert.match(artifact.headers ?? "", /^\/\n  Content-Security-Policy:/);
+    assert.match(artifact.headers ?? "", /^\/\n {2}Content-Security-Policy:/);
     assert.match(artifact.headers ?? "", /X-Frame-Options: DENY/);
     assert.match(artifact.headers ?? "", /Strict-Transport-Security: max-age=63072000/);
     assert.doesNotMatch(artifact.headers ?? "", /X-Robots-Tag:\s*noindex/, "Approved production homepage must remain indexable");
