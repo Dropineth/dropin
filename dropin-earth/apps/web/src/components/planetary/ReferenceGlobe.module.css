@@ -1,0 +1,158 @@
+.figure {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  color: #153d40;
+  isolation: isolate;
+}
+
+.topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 16px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
+.chip {
+  padding: 7px 10px;
+  border: 1px solid #b5cbc3;
+  border-radius: 30px;
+  color: #496c6b;
+  font-size: 8px;
+  letter-spacing: 1.2px;
+}
+
+.scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.14;
+  max-height: 570px;
+  min-height: 280px;
+  background: radial-gradient(ellipse at 50% 53%, #b5d6d333 8%, #c8dce435 38%, transparent 69%);
+}
+
+.scene::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 54%;
+  height: 22px;
+  bottom: 10%;
+  left: 23%;
+  background: #356f6933;
+  border-radius: 50%;
+  filter: blur(19px);
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.canvas:active { cursor: grabbing; }
+.canvas[hidden] { display: none; }
+
+.fallback {
+  position: absolute;
+  inset: 17% 12%;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 28px;
+  text-align: center;
+  color: #e1f0e8;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 24%, #347a77, #103c47 60%, #092935);
+  box-shadow: 0 0 30px #6eafa94a;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.fallback[hidden] { display: none; }
+.fallbackIcon { font-size: 42px; line-height: 1; }
+
+.callouts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.callout {
+  position: absolute;
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  max-width: 59%;
+  padding: 13px 15px;
+  border: 1px solid #ffffff;
+  background: #f7faf5f0;
+  border-radius: 8px;
+  box-shadow: 0 12px 30px #20484112;
+  backdrop-filter: blur(9px);
+}
+
+.west { left: 0; top: 61%; }
+.east { right: 0; top: 23%; }
+.calloutIcon { color: #168172; font-size: 26px; font-weight: 300; line-height: 1; }
+.east .calloutIcon { color: #7753c1; }
+.callout strong { display: block; font-size: 9px; letter-spacing: 1px; line-height: 1.5; }
+.callout small { display: block; margin-top: 5px; color: #526f70; font-size: 10px; line-height: 1.6; }
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.status { margin: 0; font-size: 9px; line-height: 1.7; color: #476a67; }
+.status::before { content: ""; display: inline-block; width: 5px; height: 5px; margin-right: 6px; border-radius: 50%; background: #218675; }
+.controls { display: flex; gap: 6px; flex-shrink: 0; }
+.controls button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 40px; min-height: 40px; padding: 8px 11px; border: 1px solid #c8dad2; border-radius: 25px; background: #ffffffb3; color: #295653; font: inherit; font-size: 11px; cursor: pointer; }
+.controls button:hover:not(:disabled) { background: #e6f1e9; border-color: #559d8f; }
+.controls button:focus-visible { outline: 3px solid #7653b8; outline-offset: 3px; }
+.controls button:disabled { cursor: default; opacity: .55; }
+
+.caption { margin-top: 12px; padding: 0 16px; font-size: 9px; line-height: 1.8; color: #637b75; }
+.caption span { display: block; }
+.compact .scene { max-height: 460px; }
+.compact .topline { padding-top: 4px; }
+
+@media (max-width: 600px) {
+  .topline, .footer, .caption { padding-left: 0; padding-right: 0; }
+  .scene { min-height: 280px; max-height: 400px; aspect-ratio: 1.05; }
+  .compact .scene { max-height: 400px; }
+  .callout { padding: 9px 10px; gap: 7px; max-width: 65%; }
+  .callout strong { font-size: 11px; letter-spacing: .4px; }
+  .callout small { font-size: 11px; margin-top: 3px; }
+  .calloutIcon { font-size: 22px; }
+  .east { top: 16%; }
+  .west { top: 67%; }
+  .footer { align-items: center; }
+  .status { max-width: 42%; font-size: 11px; }
+  .controls button { min-width: 40px; padding: 8px 10px; font-size: 10px; }
+  .caption { font-size: 11px; }
+  .chip { font-size: 7px; padding: 6px 8px; }
+  .topline { font-size: 8px; letter-spacing: 1px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figure *, .figure *::before, .figure *::after { animation: none !important; transition: none !important; }
+}

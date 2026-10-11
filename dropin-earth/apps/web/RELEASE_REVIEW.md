@@ -1,7 +1,8 @@
 # Bilingual web release: complete-candidate independent review
 
-This is a new release review of the complete application candidate. It is not
-retroactive approval of PR #5 and does not authorize production deployment.
+This is a new release review of the complete application candidate, including
+the bilingual planetary reference UI. It is not retroactive approval of PR #5
+and does not authorize production deployment.
 
 ## Required review scope
 
@@ -13,12 +14,15 @@ PR, including all PR #5 changes. Reviewing only this document is insufficient.
 - [PR #5 code and dependency disposition](https://github.com/Dropineth/dropin/pull/5/files)
 - [Dependency compatibility and residual maintenance conditions](../../docs/lifepp/DEPENDENCY_RELEASE_20261006.md)
 - [Protected production release requirements](../../docs/lifepp/R3_RELEASE_AUDIT.md)
+- [Planetary UI scope, asset provenance and validation](./PLANETARY_INTEGRATION.md)
 
 The scope includes dependency behavior and lockfile integrity, the ESLint
 compatibility bridge, unchanged browser assertions and error diagnostics,
 release-PR/commit binding, language and CSP/cache boundaries, and the inherited
-bilingual Center integration. Existing Home, FourShopPlan and ecosystem entries
-must remain intact. Scenes 33/29, unaccepted WebGL, real consultation delivery,
+bilingual Center integration. The user subsequently authorized the new bilingual
+homepage and read-only reference views. The previous landing component remains
+unchanged at `/ecology`; original homepage anchors and ecosystem entry links,
+Life++ Center and FourShopPlan remain available. Scenes 33/29, unaccepted WebGL, real consultation delivery,
 billing and robot control remain disabled; software schematics are not captured
 3DGS scenes or real operations.
 
@@ -39,7 +43,12 @@ required independent approval before merge. The agent issued no merge command.
 The merged source tree and locally verified `9a4fb8e` source tree both equal
 `6ad337cd04f193256ede60d740962add3847e096`.
 
-Cloudflare uploaded candidate version `d21c4ef9-70fc-4ad6-9c77-b125ad442373`;
+The actual main `ef249b6` also has successful attempt-1
+[Trust 38130129303](https://github.com/Dropineth/dropin/actions/runs/38130129303)
+and [Life++ 38130129289](https://github.com/Dropineth/dropin/actions/runs/38130129289)
+evidence. These older runs do not cover the planetary UI in this PR.
+
+Cloudflare uploaded main candidate version `7d875eee-f76c-4d03-bc1f-a441cf701729`;
 this is not an approved production artifact or an active deployment. CI review
 packages are noindex. The actual production prepare artifact must be reviewed
 after the following gates; no existing upload is substituted for that artifact.

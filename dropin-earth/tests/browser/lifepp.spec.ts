@@ -326,8 +326,8 @@ async function interactions() {
     await check("Request language, prefetch, nonce and cache isolation", async () => {
       const nonces = new Set<string>();
       const observations: unknown[] = [];
-      for (const path of ["/life", "/en/life", "/company", "/en/company", "/explorer"]) {
-        const locale = /^\/(life|company)/.test(path) ? "zh-CN" : "en";
+      for (const path of ["/life", "/en/life", "/company", "/en/company", "/explorer", "/zh", "/zh/evidence", "/earth", "/ecology"]) {
+        const locale = /^\/(life|company|zh)/.test(path) ? "zh-CN" : "en";
         for (const prefetch of [{}, { purpose: "prefetch" }] as Record<string, string>[]) {
           const response = await page.request.get(new URL(path, base).href, { headers: {
             ...prefetch, "x-life-locale": locale === "en" ? "zh" : "en",
@@ -376,12 +376,102 @@ async function interactions() {
       assert.equal(icon.status(), 200); assert.match(icon.headers()["content-type"] ?? "", /image\/jpeg/);
       return observations;
     });
-    await check("Original ecology anchors and content", async () => {
+    for (const locale of ["en", "zh"] as const) {
+      for (const view of ["home", "earth", "evidence", "participation", "trust"] as const) {
+        for (const width of [375, 1440]) await check(`Planetary ${locale} ${view} ${width}px`, async () => {
+          const path = `${locale === "zh" ? "/zh" : ""}${view === "home" ? "" : `/${view}`}` || "/";
+          const errors: string[] = [];
+          const recordError = (error: Error) => errors.push(error.message);
+          page.on("pageerror", recordError);
+          try {
+            await page.setViewportSize({ width, height: 1000 });
+            const response = await page.goto(new URL(path, base).href, { waitUntil: "networkidle" });
+            assert.equal(response?.status(), 200);
+            assert.equal(await page.locator("html").getAttribute("lang"), locale === "zh" ? "zh-CN" : "en");
+            assert.equal(await page.locator("h1").count(), 1);
+            assert.equal(await page.locator("h1").isVisible(), true);
+            assert.equal(new URL(await page.locator('link[rel="canonical"]').getAttribute("href") ?? "").pathname, path);
+            assert.equal(await page.locator('meta[property="og:image"]').getAttribute("content"), "https://canopyproof.org/icon.jpg");
+            assert.equal(await page.locator('meta[name="twitter:title"]').getAttribute("content"), await page.locator('meta[property="og:title"]').getAttribute("content"));
+            const language = page.locator(`header a[hreflang="${locale === "zh" ? "en" : "zh-CN"}"]`);
+            assert.equal(await language.count(), 1);
+            assert.equal(await page.locator("iframe").count(), 0);
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+            assert.equal(overflow, false, "Planetary page stays within the viewport");
+            if (view === "home" || view === "earth") {
+              await page.locator('[data-reference-globe][data-renderer="canvas2d-reference"]').waitFor();
+              const canvas = page.locator("[data-reference-globe] canvas").first();
+              const before = await canvas.evaluate((element) => (element as HTMLCanvasElement).toDataURL());
+              await page.locator("[data-reference-globe]").first().getByRole("button", { name: /Rotate globe right|向右旋转/ }).click();
+              await page.waitForFunction(({ previous }) => document.querySelector<HTMLCanvasElement>("[data-reference-globe] canvas")!.toDataURL() !== previous, { previous: before });
+              assert.match(await page.locator("[data-reference-globe]").first().innerText(), /REFERENCE|参考/i);
+            }
+            if (view === "earth") {
+              await page.getByRole("button", { name: /Life\+\+ four-shop concept|Life\+\+ 四铺构想/ }).click();
+              for (const id of ["L112", "L203", "L202", "L201"]) assert.match(await page.locator('[data-reference-view="earth"]').innerText(), new RegExp(id));
+            }
+            if (view === "evidence") {
+              assert.equal(await page.locator('[data-evidence-state][data-status="not-established"]').count(), 5);
+              const tab = page.getByRole("tab", { name: locale === "zh" ? "记录" : "Record", exact: true });
+              await tab.focus(); await page.keyboard.press("ArrowRight");
+              assert.equal(await page.getByRole("tab", { name: locale === "zh" ? "来源链" : "Lineage", exact: true }).getAttribute("aria-selected"), "true");
+              assert.match(await page.getByRole("tabpanel").innerText(), /Not supplied|尚未提供/);
+              await page.keyboard.press("End");
+              assert.equal(await page.getByRole("tab", { name: locale === "zh" ? "边界" : "Boundaries", exact: true }).getAttribute("aria-selected"), "true");
+            }
+            if (view === "participation") {
+              assert.equal(await page.locator('input, [data-wallet], form').count(), 0, "Status page has no payment or entry form");
+            }
+            await prepareFullPageImages(page);
+            const screenshot = `planetary-${locale}-${view}-${width}.png`;
+            await page.screenshot({ path: join(output, screenshot), fullPage: true }); screenshots.push(screenshot);
+            assert.deepEqual(errors, [], "Planetary page has no runtime errors");
+          } finally { page.off("pageerror", recordError); }
+        });
+      }
+    }
+    for (const fallback of ["texture-error", "no-canvas"] as const) await check(`Planetary ${fallback} remains a bounded reference`, async () => {
+      const isolated = await browser.newContext({ viewport: { width: 375, height: 900 }, reducedMotion: "reduce" });
+      try {
+        if (fallback === "texture-error") await isolated.route("**/planetary/earth-texture.png", route => route.fulfill({ status: 200, contentType: "image/png", body: "invalid image fixture" }));
+        else await isolated.addInitScript(() => {
+          const original = HTMLCanvasElement.prototype.getContext;
+          HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: Parameters<typeof original>) {
+            if (args[0] === "2d" && this.closest("[data-reference-globe]")) return null;
+            return Reflect.apply(original, this, args);
+          } as typeof original;
+        });
+        const fallbackPage = await isolated.newPage();
+        await fallbackPage.goto(new URL("/zh", base).href, { waitUntil: "networkidle" });
+        const globe = fallbackPage.locator("[data-reference-globe]");
+        if (fallback === "no-canvas") {
+          await globe.locator('[role="status"]').filter({ hasText: "静态区域参考" }).waitFor();
+          assert.equal(await globe.getAttribute("data-renderer"), "static-reference");
+          assert.equal(await globe.locator("button:disabled").count(), 3);
+          assert.match(await globe.innerText(), /671.26/);
+        } else {
+          await fallbackPage.locator('[data-reference-globe][data-renderer="canvas2d-reference"]').waitFor();
+          const canvas = globe.locator("canvas");
+          const before = await canvas.evaluate(node => (node as HTMLCanvasElement).toDataURL());
+          assert.equal(await globe.getAttribute("data-rotation"), "paused");
+          await globe.getByRole("button", { name: "向右旋转地球" }).click();
+          await fallbackPage.waitForFunction(previous => document.querySelector<HTMLCanvasElement>("[data-reference-globe] canvas")!.toDataURL() !== previous, before);
+        }
+      } finally { await isolated.close(); }
+    });
+    await check("New homepage preserves original anchor entry points", async () => {
       const response = await page.goto(base.href, { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
+      for (const id of ["top", "protocol", "how-it-works", "explorer", "methodology", "telemetry", "stack", "contact"]) assert.equal(await page.locator(`#${id}`).count(), 1, `Preserved #${id}`);
+      assert.ok(await page.locator('a[href="/ecology"]').count() > 0);
+      assert.ok(await page.locator('a[href="/explorer"]').count() > 0);
+    });
+    await check("Original ecology anchors and content", async () => {
+      const response = await page.goto(new URL("/ecology", base).href, { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
       for (const id of ["top", "protocol", "how-it-works", "explorer", "methodology", "telemetry", "stack", "contact"]) assert.equal(await page.locator(`#${id}`).count(), 1, `Preserved #${id}`);
       const body = await page.locator("body").innerText();
       for (const copy of [/Proof Explorer/, /TerraProof/i, /Methodology/, /Open Stack/, /sample/, /not certified carbon credits|nothing here is a certified carbon credit/]) assert.match(body, copy);
       assert.ok(await page.locator('a[href="#explorer"]').count() > 0);
+      for (const selector of [".cp-hero h1", ".cp-status-terminal", ".cp-panel-heading"]) assert.ok(await page.locator(selector).count() > 0, `Original ${selector} remains present`);
       for (const profile of profiles) {
         await page.setViewportSize({ width: profile.width, height: profile.height });
         const bounds = await page.locator(".cp-hero h1, .cp-status-terminal, .cp-panel-heading").evaluateAll((elements) => elements.map((element) => {
@@ -449,7 +539,7 @@ async function interactions() {
       assert.deepEqual(writes, [], "Draft and copy must not send HTTP writes");
     });
     await check("Unknown scene and page routes are 404", async () => {
-      for (const path of ["/life/spaces/unknown", "/life/spaces/30", "/en/life/spaces/unknown", "/life/unknown", "/en/life/unknown"]) {
+      for (const path of ["/life/spaces/unknown", "/life/spaces/30", "/en/life/spaces/unknown", "/life/unknown", "/en/life/unknown", "/zh/unknown", "/zh/home", "/zh/earth/extra"]) {
         const response = await page.goto(new URL(path, base).href, { waitUntil: "domcontentloaded" });
         assert.equal(response?.status(), 404, path);
       }
