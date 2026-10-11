@@ -73,7 +73,7 @@ export function middleware(request: NextRequest): NextResponse {
   // Forward the nonce + CSP on the request so Next.js can nonce its own scripts.
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("x-life-locale", /^\/(life(?:\/|$)|company$)/.test(request.nextUrl.pathname) ? "zh" : "en");
+  requestHeaders.set("x-life-locale", /^\/(life(?:\/|$)|company$|zh(?:\/|$))/.test(request.nextUrl.pathname) ? "zh" : "en");
   requestHeaders.set("content-security-policy", csp);
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });

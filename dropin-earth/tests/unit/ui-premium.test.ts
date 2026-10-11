@@ -68,7 +68,9 @@ test("Active Draw renders prize pool and Plant & Enter CTA", () => {
   assert.match(source, /Plant & Enter/);
   const home = file("apps/web/src/app/page.tsx");
   const draw = file("apps/web/src/app/draw/page.tsx");
-  assert.match(home, /CanopyProofLanding/);
+  assert.match(home, /PlanetarySite/);
+  const ecology = file("apps/web/src/app/ecology/page.tsx");
+  assert.match(ecology, /CanopyProofLanding/);
   assert.match(draw, /RegionImpactMap/);
   assert.match(draw, /LeaderboardCard/);
   assert.match(draw, /WalletRailCard/);
