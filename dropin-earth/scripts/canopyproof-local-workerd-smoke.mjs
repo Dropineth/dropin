@@ -11,6 +11,7 @@ import { createServer } from "node:net";
 import { dirname, join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { buildStaticSecurityHeaders } from "../apps/web/scripts/static-homepage-security.mjs";
 
 export const WORKERD_ROUTE_CHECKS = Object.freeze([
   ["/", 200],
@@ -103,6 +104,22 @@ export async function validateWorkerdResponse(path, response, { preview = false 
   for (const pattern of rawCoordinatePatterns) {
     if (pattern.test(body)) {
       throw new Error(`Workerd route ${path} disclosed a raw coordinate.`);
+    }
+  }
+  if (path === "/") {
+    // Validate the served response, not just the file on disk: ASSETS bypasses
+    // Next middleware for the promoted homepage.
+    const expectedHeaders = buildStaticSecurityHeaders(body, { production: !preview });
+    const firstRootRule = expectedHeaders.split("\n/\n").at(-1).split("\n/index.html\n")[0];
+    for (const line of firstRootRule.split("\n")) {
+      const header = line.match(/^ {2}([\w-]+): (.+)$/);
+      if (header && response.headers.get(header[1]) !== header[2]) {
+        throw new Error(`Static homepage security header missing or stale: ${header[1]}`);
+      }
+    }
+    const indexing = response.headers.get("x-robots-tag") ?? "";
+    if (preview ? !indexing.includes("noindex") : /noindex/i.test(indexing)) {
+      throw new Error("Static homepage indexing header does not match the build mode");
     }
   }
   return Object.freeze({ path, status: response.status, contentType });

@@ -7,6 +7,7 @@ import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, wr
 import { join, resolve } from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
+import { buildStaticSecurityHeaders } from '../apps/web/scripts/static-homepage-security.mjs';
 import { BASELINE_PR_NUMBER, releasePrNumber, validateBaselineReachability, ENVIRONMENT, REPOSITORY, WORKER, TRUST_GATES, WEB_GATES, sha256, validateContext, validatePullRequest, validateAttestation,
   validateWorkflowRun, validateEvidence, validateEnvironmentApproval, validateRollback, validateRoutes, validateSourceConfig } from './lifepp-release-policy.mjs';
 
@@ -206,6 +207,7 @@ function seal() {
   const configHash = sourceConfig();
   const files = inventory('apps/web/.open-next');
   for (const path of ['worker.js', 'assets/index.html', 'assets/robots.txt', 'assets/sitemap.xml']) assert.ok(files.some(file => file.path === path), `Missing ${path}`);
+  verifyStaticHomepageSecurity('apps/web/.open-next/assets');
   assert.doesNotMatch(readFileSync('apps/web/.open-next/assets/robots.txt', 'utf8'), /^Disallow:\s*\/$/m, 'Production robots blocks indexing');
   assert.match(readFileSync('apps/web/.open-next/assets/sitemap.xml', 'utf8'), /https:\/\/canopyproof\.org\/life/);
   if (existsSync('apps/web/.open-next/assets/_headers')) assert.doesNotMatch(readFileSync('apps/web/.open-next/assets/_headers', 'utf8'), /noindex/i);
@@ -219,6 +221,12 @@ function seal() {
   assert.ok(process.env.GITHUB_OUTPUT && process.env.GITHUB_STEP_SUMMARY);
   writeFileSync(process.env.GITHUB_OUTPUT, `manifest_sha256=${digest}\n`, { flag: 'a' });
   writeFileSync(process.env.GITHUB_STEP_SUMMARY, `## Prepared web release — approval required\n\nRelease PR: #${preflight.pr.number} (required reviewed baseline: #${preflight.baseline.pr.number}, merge \`${preflight.baseline.pr.mergeSha}\`)\n\nSHA: \`${preflight.target.expectedSha}\`\n\nManifest SHA-256: \`${digest}\`\n\nInspect the manifest/artifact and maintainer attestation before approval. Rollback cloud validation is still pending.\n\nRequired independent environment approval comment:\n\n\`APPROVE ${preflight.target.expectedSha} MANIFEST ${digest} ROLLBACK ${preflight.target.rollbackVersion}\`\n`, { flag: 'a' });
+}
+
+export function verifyStaticHomepageSecurity(assetsRoot) {
+  const html = readFileSync(join(assetsRoot, 'index.html'), 'utf8');
+  assert.equal(readFileSync(join(assetsRoot, '_headers'), 'utf8'), buildStaticSecurityHeaders(html, { production: true }),
+    'Production static homepage headers must match the exact HTML script hashes and security policy');
 }
 
 export function verifyBundle(root, expectedHash) {

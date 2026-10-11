@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
+import { buildStaticSecurityHeaders } from "../../apps/web/scripts/static-homepage-security.mjs";
 import {
   validateWorkerdResponse,
   WORKERD_ROUTE_CHECKS,
@@ -76,4 +77,23 @@ test("preview metadata fails closed while production sitemap assertions remain e
   await assert.rejects(validateWorkerdResponse("/sitemap.xml", new Response('<urlset/>')));
   await assert.rejects(validateWorkerdResponse("/sitemap.xml", new Response('<urlset/>'), {preview:true}));
   await assert.rejects(validateWorkerdResponse("/sitemap.xml", new Response('<urlset><loc>https://example.invalid/</loc></urlset>', {headers:{"x-robots-tag":"noindex"}}), {preview:true}));
+});
+
+test("workerd rejects absent or stale static CSP while preserving preview indexing", async () => {
+  const html = '<main>CanopyProof</main><script>window.fixture = true;</script>';
+  for (const preview of [false, true]) {
+    const headers = new Headers({ "content-type": "text/html" });
+    for (const line of buildStaticSecurityHeaders(html, { production: !preview }).split("\n")) {
+      const match = line.match(/^ {2}([\w-]+): (.+)$/);
+      if (match) headers.set(match[1], match[2]);
+    }
+    await validateWorkerdResponse("/", new Response(html, { headers }), { preview });
+    await assert.rejects(validateWorkerdResponse("/", new Response(html + '<script>window.tampered = true;</script>', { headers }), { preview }), /Content-Security-Policy/);
+    const missing = new Headers(headers);
+    missing.delete("content-security-policy");
+    await assert.rejects(validateWorkerdResponse("/", new Response(html, { headers: missing }), { preview }), /Content-Security-Policy/);
+    const wrongIndexing = new Headers(headers);
+    if (preview) wrongIndexing.delete("x-robots-tag"); else wrongIndexing.set("x-robots-tag", "noindex");
+    await assert.rejects(validateWorkerdResponse("/", new Response(html, { headers: wrongIndexing }), { preview }), /indexing header/);
+  }
 });

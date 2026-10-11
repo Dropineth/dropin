@@ -6,11 +6,26 @@ import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { releasePrNumber, validateBaselineReachability, ENVIRONMENT, REPOSITORY, TRUST_GATES, WEB_GATES, sha256, validateContext, validatePullRequest, validateAttestation,
   validateWorkflowRun, validateEvidence, validateEnvironmentApproval, validateRollback, validateRoutes, validateSourceConfig } from '../../scripts/lifepp-release-policy.mjs';
-import { inventory, verifyBundle, readReleaseJson, verifyReleasePullRequests } from '../../scripts/lifepp-release-run.mjs';
+import { inventory, verifyBundle, readReleaseJson, verifyReleasePullRequests, verifyStaticHomepageSecurity } from '../../scripts/lifepp-release-run.mjs';
+import { buildStaticSecurityHeaders } from '../../apps/web/scripts/static-homepage-security.mjs';
 
 // All identities, approvals, deployment IDs and API responses below are SYNTHETIC unit fixtures.
 // These tests perform no network requests and do not create actual release authority.
 const target = 'a'.repeat(40);
+test('production sealing rejects missing, preview or stale static security headers', () => {
+  const root = mkdtempSync(join(tmpdir(), 'release-static-security-'));
+  const html = '<!doctype html><script>self.fixture=true;</script>';
+  try {
+    writeFileSync(join(root, 'index.html'), html);
+    assert.throws(() => verifyStaticHomepageSecurity(root), /ENOENT/);
+    writeFileSync(join(root, '_headers'), buildStaticSecurityHeaders(html, { production: false }));
+    assert.throws(() => verifyStaticHomepageSecurity(root), /must match the exact HTML/);
+    writeFileSync(join(root, '_headers'), buildStaticSecurityHeaders(html, { production: true }));
+    verifyStaticHomepageSecurity(root);
+    writeFileSync(join(root, 'index.html'), html.replace('true', 'false'));
+    assert.throws(() => verifyStaticHomepageSecurity(root), /must match the exact HTML/);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
 const head = 'b'.repeat(40);
 const version = '11111111-1111-4111-8111-111111111111';
 const deployment = '22222222-2222-4222-8222-222222222222';

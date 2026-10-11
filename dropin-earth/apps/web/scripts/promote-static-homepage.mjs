@@ -1,6 +1,7 @@
-import { copyFileSync, existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cwd, stdout, env } from "node:process";
+import { buildStaticSecurityHeaders } from "./static-homepage-security.mjs";
 
 const appRoot = cwd();
 const nextAppDir = join(appRoot, ".next", "server", "app");
@@ -20,6 +21,9 @@ function requireFile(path, label) {
 }
 
 requireFile(join(nextAppDir, "index.html"), "prerendered homepage HTML");
+const production = env.NEXT_PUBLIC_CANOPYPROOF_MODE === "production"
+  && env.NEXT_PUBLIC_DROPIN_SITE_URL === "https://canopyproof.org";
+const securityHeaders = buildStaticSecurityHeaders(readFileSync(join(nextAppDir, "index.html"), "utf8"), { production });
 mkdirSync(openNextAssetsDir, { recursive: true });
 
 for (const [sourceName, targetName] of assets) {
@@ -34,9 +38,7 @@ for (const [sourceName, targetName] of assets) {
 stdout.write("[CanopyProof] Promoted prerendered homepage into OpenNext Worker assets.\n");
 
 // Static assets bypass Next middleware in workerd. Preview must fail closed here too.
-const production = env.NEXT_PUBLIC_CANOPYPROOF_MODE === "production"
-  && env.NEXT_PUBLIC_DROPIN_SITE_URL === "https://canopyproof.org";
+writeFileSync(join(openNextAssetsDir, "_headers"), securityHeaders);
 if (!production) {
-  writeFileSync(join(openNextAssetsDir, "_headers"), "/*\n  X-Robots-Tag: noindex, nofollow\n");
   writeFileSync(join(openNextAssetsDir, "robots.txt"), "User-agent: *\nDisallow: /\n");
 }
