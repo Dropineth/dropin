@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -11,6 +12,7 @@ const promoteScript = join(projectRoot, "apps/web/scripts/promote-static-homepag
 const productionMetadata = renderedMetadata(true);
 const previewMetadata = renderedMetadata(false);
 const publicKeys = ["NEXT_PUBLIC_CANOPYPROOF_MODE", "NEXT_PUBLIC_DROPIN_SITE_URL"] as const;
+const fixtureScript = "window.__lifepp_fixture = true;";
 
 function workflowBuildEnvironment(name: string): Record<string, string> {
   const source = readFileSync(join(projectRoot, "../.github/workflows", name), "utf8");
@@ -30,7 +32,7 @@ function workflowBuildEnvironment(name: string): Record<string, string> {
   return environment;
 }
 
-function promotedFixture(environment: Record<string, string>, sourceIsProduction: boolean, omitRobots = false) {
+function promotedFixture(environment: Record<string, string>, sourceIsProduction: boolean, omitRobots = false, fixtureHtml = `<!doctype html><title>FIXTURE ONLY</title><script>${fixtureScript}</script>`) {
   const fixtureRoot = mkdtempSync(join(tmpdir(), "lifepp-indexing-artifacts-"));
   try {
     const next = join(fixtureRoot, ".next/server/app");
@@ -43,7 +45,7 @@ function promotedFixture(environment: Record<string, string>, sourceIsProduction
       ? `User-agent: *\nAllow: /\nSitemap: ${metadata.robots.sitemap}\n`
       : "User-agent: *\nDisallow: /\n";
     const sitemap = `<urlset>${metadata.sitemap.map((entry) => `<url><loc>${entry.url}</loc></url>`).join("")}</urlset>`;
-    writeFileSync(join(next, "index.html"), "<!doctype html><title>FIXTURE ONLY</title>");
+    writeFileSync(join(next, "index.html"), fixtureHtml);
     writeFileSync(join(next, "index.rsc"), "FIXTURE RSC");
     if (!omitRobots) writeFileSync(join(next, "robots.txt.body"), robots);
     writeFileSync(join(next, "sitemap.xml.body"), sitemap);
@@ -69,7 +71,13 @@ for (const workflow of ["deploy-cloudflare-worker.yml", "deploy-canopyproof.yml"
     assert.equal(artifact.sitemap, artifact.sourceSitemap);
     assert.match(artifact.sitemap ?? "", /<loc>https:\/\/canopyproof\.org\/life\/spaces\/31<\/loc>/);
     assert.match(artifact.sitemap ?? "", /<loc>https:\/\/canopyproof\.org\/en\/life\/spaces\/29<\/loc>/);
-    assert.equal(artifact.headers, null, "Approved production build must not acquire preview noindex headers");
+    const expectedHash = createHash("sha256").update(fixtureScript).digest("base64");
+    assert.match(artifact.headers ?? "", new RegExp("script-src 'self' 'sha256-" + expectedHash + "'"), "Static home CSP must pin the exact built inline script");
+    assert.match(artifact.headers ?? "", /^\/\n  Content-Security-Policy:/);
+    assert.match(artifact.headers ?? "", /X-Frame-Options: DENY/);
+    assert.match(artifact.headers ?? "", /Strict-Transport-Security: max-age=63072000/);
+    assert.doesNotMatch(artifact.headers ?? "", /X-Robots-Tag:\s*noindex/, "Approved production homepage must remain indexable");
+    assert.doesNotMatch(artifact.headers ?? "", /script-src[^;\n]*'unsafe-inline'/);
     assert.match(artifact.html ?? "", /FIXTURE ONLY/);
     assert.equal(artifact.rsc, "FIXTURE RSC");
   });
@@ -103,4 +111,12 @@ test("promotion fails if a required metadata artifact is missing", () => {
   const artifact = promotedFixture(workflowBuildEnvironment("deploy-cloudflare-worker.yml"), true, true);
   assert.notEqual(artifact.status, 0);
   assert.match(artifact.stderr, /Cannot promote static homepage asset: missing robots\.txt\.body/);
+});
+
+test("production static CSP fails closed when hashes exceed Cloudflare's header line limit", () => {
+  const html = '<!doctype html><title>FIXTURE ONLY</title>' +
+    Array.from({ length: 50 }, (_, i) => '<script>window.__lifepp_fixture_' + i + '=' + i + ';</script>').join("");
+  const artifact = promotedFixture(workflowBuildEnvironment("deploy-canopyproof.yml"), true, false, html);
+  assert.notEqual(artifact.status, 0, "Oversized CSP must fail the production build");
+  assert.match(artifact.stderr, /Static homepage CSP exceeds the Cloudflare _headers line limit/);
 });
