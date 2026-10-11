@@ -72,7 +72,7 @@ for (const workflow of ["deploy-cloudflare-worker.yml", "deploy-canopyproof.yml"
     assert.match(artifact.sitemap ?? "", /<loc>https:\/\/canopyproof\.org\/life\/spaces\/31<\/loc>/);
     assert.match(artifact.sitemap ?? "", /<loc>https:\/\/canopyproof\.org\/en\/life\/spaces\/29<\/loc>/);
     const expectedHash = createHash("sha256").update(fixtureScript).digest("base64");
-    assert.match(artifact.headers ?? "", new RegExp("script-src 'self' 'sha256-" + expectedHash + "'"), "Static home CSP must pin the exact built inline script");
+    assert.ok((artifact.headers ?? "").includes("script-src 'self' 'sha256-" + expectedHash + "'"), "Static home CSP must pin the exact built inline script");
     assert.match(artifact.headers ?? "", /^\/\n  Content-Security-Policy:/);
     assert.match(artifact.headers ?? "", /X-Frame-Options: DENY/);
     assert.match(artifact.headers ?? "", /Strict-Transport-Security: max-age=63072000/);
