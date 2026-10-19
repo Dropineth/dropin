@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { URL } from 'node:url';
 
 const rootSelector = '.ls-app[data-mode="review"]';
-const rooms = ['L112', 'L203', 'L202', 'L201'];
+const rooms = ['L112', 'L203', 'L202'];
 const actions = ['ASSERT', 'REASON', 'DELEGATE', 'FULFILL', 'CHALLENGE'];
 
 /** Observe actual context requests without simulating a WebGL failure. */
@@ -78,7 +78,7 @@ async function spatialFraming(page) {
     }).map(element => ({ id: element.getAttribute('data-pick'), ...relative(element.getBoundingClientRect()) }));
     return { width: stage.width, height: stage.height, labels, reserved };
   })()`);
-  assert.deepEqual(framing.labels.map(label => label.id).sort(), [...rooms].sort(), 'ALL exposes all four actual canvas room labels');
+  assert.deepEqual(framing.labels.map(label => label.id).sort(), [...rooms].sort(), 'ALL exposes the three current canvas room labels');
   for (const label of framing.labels) {
     assert.ok(label.x >= -0.5 && label.y >= -0.5 && label.x + label.width <= framing.width + 0.5
       && label.y + label.height <= framing.height + 0.5, `${label.id} label must fit inside the stage: ${JSON.stringify(framing)}`);
@@ -112,14 +112,16 @@ async function readDemoDownload(download) {
   assert.match(record.claim, /Unsigned local demonstration/);
   assert.match(record.claim, /Not a delivery receipt/);
   assert.ok(Number.isFinite(Date.parse(record.createdAt)));
-  assert.equal(record.facts.totalArea, 671.26);
-  assert.equal(record.facts.secondFloorArea, 612.57);
+  assert.equal(record.facts.totalArea, 380.48);
+  assert.equal(record.facts.secondFloorArea, 321.79);
   assert.deepEqual(record.facts.units, [
     { id: 'L112', floor: '1F', area: 58.69, sourcePage: 2 },
     { id: 'L203', floor: '2F', area: 135.8, sourcePage: 3 },
     { id: 'L202', floor: '2F', area: 185.99, sourcePage: 3 },
-    { id: 'L201', floor: '2F', area: 290.78, sourcePage: 3 },
   ]);
+  assert.equal(record.facts.planSource.asOf, '2026-10-19');
+  assert.equal(record.facts.planSource.status, 'proposal_not_accepted');
+  assert.deepEqual(record.facts.planSource.excludedUnits, ['L201']);
   assert.equal(record.facts.leaseVerified, false);
   assert.equal(record.facts.navigationApproved, false);
   assert.equal(record.snapshot.enquiry, 'DRAFT_NOT_SENT');
@@ -155,6 +157,10 @@ export async function assertSpatialOperations(page, { locale, base }) {
   assert.equal(new URL(page.url()).pathname, route);
   const root = await ready(page);
   assert.equal(await root.getAttribute('lang'), locale === 'en' ? 'en' : 'zh-CN');
+  assert.match(await root.locator('.ls-heading').innerText(), /Life\+\+HERE/);
+  assert.doesNotMatch(await root.locator('.ls-kpis').innerText(), /671\.26|612\.57/);
+  assert.match(await root.locator('.ls-kpis').innerText(), /380\.48/);
+  assert.match(await root.locator('.ls-kpis').innerText(), /321\.79/);
   const initialFraming = await spatialFraming(page);
   const stage = root.locator('[data-scene-state]');
   const initialCameraDistance = Number(await stage.getAttribute('data-camera-distance'));
@@ -186,7 +192,7 @@ export async function assertSpatialOperations(page, { locale, base }) {
   await attribute(page, rootSelector, 'data-selected', 'L203');
   assert.equal(await root.locator('[data-room="L203"]').evaluate(element => element === document.activeElement), true,
     'Keyboard room selection preserves focus after updating the list');
-  for (const [floor, expected] of [['1F', ['L112']], ['2F', ['L203', 'L202', 'L201']], ['ALL', rooms]]) {
+  for (const [floor, expected] of [['1F', ['L112']], ['2F', ['L203', 'L202']], ['ALL', rooms]]) {
     await root.locator(`[data-floor="${floor}"]`).focus();
     await page.keyboard.press('Enter');
     assert.equal(await root.locator(`[data-floor="${floor}"]`).getAttribute('aria-pressed'), 'true');
@@ -198,7 +204,7 @@ export async function assertSpatialOperations(page, { locale, base }) {
 
   const imageSources = () => page.locator('main img').evaluateAll(elements => elements.map(element => element.getAttribute('src')));
   const imagesBefore = await imageSources();
-  assert.ok(imagesBefore.some(src => src?.includes('floorplan-')), 'Original four-unit source plan remains in Center');
+  assert.ok(imagesBefore.some(src => src?.includes('floorplan-')), 'Original source plan images remain in Center');
   assert.equal(await root.locator('img').count(), 0, 'Schematic does not publish additional attachment images');
   await root.locator('[data-action="plan"]').click();
   const dialog = root.locator('dialog');
@@ -213,7 +219,7 @@ export async function assertSpatialOperations(page, { locale, base }) {
   await root.locator('[data-tab="space"]').focus();
   await page.keyboard.press('ArrowRight');
   await selectedTab(page, 'network');
-  assert.deepEqual(await visibleIds(root, 'data-node'), ['human', 'cai', 'L112', 'L203', 'L202', 'L201', 'evidence']);
+  assert.deepEqual(await visibleIds(root, 'data-node'), ['human', 'cai', 'L112', 'L203', 'L202', 'evidence']);
   await root.locator('[data-node="cai"]').focus();
   await page.keyboard.press('Shift+Tab');
   assert.equal(await root.locator('[data-node="human"]').evaluate(element => element === document.activeElement), true);
