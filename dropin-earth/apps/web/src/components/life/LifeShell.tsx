@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { lifePath, navigation, t, type LifeLocale } from '@/data/life/content';
+import { LIFEPP_PUBLIC_BRAND, lifeBrandHomeLabel } from '@/data/life/public-brand';
 import styles from './life.module.css';
 import { LifeMobileNav } from './LifeMobileNav';
 
@@ -17,7 +18,7 @@ export function LifeShell({ locale, path = '/life', children }: { locale: LifeLo
       </div>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href={lifePath(locale)} className={styles.wordmark} aria-label={locale === 'zh' ? 'Life++ 生生不息首页' : 'Life++ home'}><span>Life<span className={styles.plus}>++</span></span><small>{locale === 'zh' ? '生生不息' : 'LIFE, CONNECTED'}</small></Link>
+          <Link href={lifePath(locale)} className={styles.wordmark} aria-label={lifeBrandHomeLabel(locale)}><span>{LIFEPP_PUBLIC_BRAND}</span><small>{locale === 'zh' ? '人机共生' : 'HUMAN–ROBOT SYMBIOSIS'}</small></Link>
           <nav className={styles.desktopNav} aria-label={locale === 'zh' ? '主导航' : 'Main navigation'}>{navigation.map((item) => <Link key={item.path} href={lifePath(locale, item.path)} aria-current={path === item.path || path.startsWith(`${item.path}/`) ? 'page' : undefined}>{t(locale, item.label)}</Link>)}</nav>
           <div className={styles.headerActions}>
             <a href={lifePath(otherLocale, path)} hrefLang={otherLocale === 'zh' ? 'zh-CN' : 'en'} lang={otherLocale === 'zh' ? 'zh-CN' : 'en'} className={styles.languageLink}>{locale === 'zh' ? 'EN' : '中文'}</a>
@@ -29,10 +30,10 @@ export function LifeShell({ locale, path = '/life', children }: { locale: LifeLo
       <main id="life-main" tabIndex={-1}>{children}</main>
       <footer className={styles.footer}>
         <div className={styles.footerTop}>
-          <div><Link href={lifePath(locale)} className={styles.footerLogo}>Life<span>++</span></Link><p>{locale === 'zh' ? '让现实可感知，让协作可问责，' : 'Make reality perceptible. Make collaboration accountable.'}<br />{locale === 'zh' ? '让生命生生不息。' : 'Let life keep flourishing.'}</p></div>
-          <div className={styles.footerLinks}><div><strong>{locale === 'zh' ? '开始探索' : 'Explore'}</strong><Link href={lifePath(locale, '/life/spaces')}>{locale === 'zh' ? '测试场景' : 'Test scenes'}</Link><Link href={lifePath(locale, '/life/center')}>{locale === 'zh' ? '四铺导入期' : 'Four-unit plan'}</Link><Link href={lifePath(locale, '/life/agents')}>{locale === 'zh' ? '数字分身' : 'Digital agents'}</Link></div><div><strong>{locale === 'zh' ? '与我们连接' : 'Connect'}</strong><Link href={lifePath(locale, '/life/partners')}>{locale === 'zh' ? '合作意向' : 'Partnership enquiries'}</Link><Link href={lifePath(locale, '/life/trust')}>{locale === 'zh' ? '数据权限与责任' : 'Permissions & responsibility'}</Link><Link href={lifePath(locale, '/company')}>{locale === 'zh' ? '关于主体' : 'About the company'}</Link></div><div><strong>{locale === 'zh' ? '另一个入口' : 'Our other entry point'}</strong><a href="/">{locale === 'zh' ? '生态与地球观测 ↗' : 'Ecology & Earth observation ↗'}</a><a href="/#explorer">Proof Explorer ↗</a><a href="/#methodology">Methodology ↗</a></div></div>
+          <div><Link href={lifePath(locale)} className={styles.footerLogo}>{LIFEPP_PUBLIC_BRAND}</Link><p>{locale === 'zh' ? '让现实可感知，让协作可问责，' : 'Make reality perceptible. Make collaboration accountable.'}<br />{locale === 'zh' ? '让人机协作融入真实生活。' : 'Bring human–robot collaboration into everyday life.'}</p></div>
+          <div className={styles.footerLinks}><div><strong>{locale === 'zh' ? '开始探索' : 'Explore'}</strong><Link href={lifePath(locale, '/life/spaces')}>{locale === 'zh' ? '测试场景' : 'Test scenes'}</Link><Link href={lifePath(locale, '/life/center')}>{locale === 'zh' ? '共生中心导入期' : 'Symbiosis center plan'}</Link><Link href={lifePath(locale, '/life/agents')}>{locale === 'zh' ? '数字分身' : 'Digital agents'}</Link></div><div><strong>{locale === 'zh' ? '与我们连接' : 'Connect'}</strong><Link href={lifePath(locale, '/life/partners')}>{locale === 'zh' ? '合作意向' : 'Partnership enquiries'}</Link><Link href={lifePath(locale, '/life/trust')}>{locale === 'zh' ? '数据权限与责任' : 'Permissions & responsibility'}</Link><Link href={lifePath(locale, '/company')}>{locale === 'zh' ? '关于主体' : 'About the company'}</Link></div><div><strong>{locale === 'zh' ? '另一个入口' : 'Our other entry point'}</strong><a href="/">{locale === 'zh' ? '生态与地球观测 ↗' : 'Ecology & Earth observation ↗'}</a><a href="/#explorer">Proof Explorer ↗</a><a href="/#methodology">Methodology ↗</a></div></div>
         </div>
-        <div className={styles.footerBottom}><span>CanopyProof Limited · Life++</span><span>{locale === 'zh' ? '导入期规划 · 测试输入 · 订阅尚未开放收费' : 'Introductory planning · Test inputs · Subscriptions not on sale'}</span></div>
+        <div className={styles.footerBottom}><span>CanopyProof Limited · {LIFEPP_PUBLIC_BRAND}</span><span>{locale === 'zh' ? '导入期规划 · 测试输入 · 订阅尚未开放收费' : 'Introductory planning · Test inputs · Subscriptions not on sale'}</span></div>
       </footer>
     </div>
   );
