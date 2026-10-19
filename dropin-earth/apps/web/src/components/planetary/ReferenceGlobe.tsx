@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { referenceLand } from "./referenceLand";
+import { LIFEPP_PUBLIC_BRAND } from "@/data/life/public-brand";
+import manifest from "@/data/life/site-manifest.json";
 import styles from "./ReferenceGlobe.module.css";
 
 type GlobeControls = { rotate: (degrees: number) => void; toggle: () => void };
@@ -356,7 +358,7 @@ export function ReferenceGlobe({ locale, compact = false }: { locale: "en" | "zh
           </li>
           <li className={`${styles.callout} ${styles.east}`}>
             <span className={styles.calloutIcon} aria-hidden="true">+</span>
-            <div><strong>{zh ? "深圳 · LIFE++" : "SHENZHEN · LIFE++"}</strong><small>{zh ? "671.26 ㎡ · 四铺规划" : "671.26 m² · four-unit planning"}</small></div>
+            <div><strong style={{ textTransform: "none" }}>{zh ? "深圳" : "SHENZHEN"} · {LIFEPP_PUBLIC_BRAND}</strong><small>{manifest.currentPlan.totalAreaSqm.toFixed(2)} {zh ? "㎡ · 三铺规划" : "m² · three-unit planning"}</small></div>
           </li>
         </ul>
       </div>

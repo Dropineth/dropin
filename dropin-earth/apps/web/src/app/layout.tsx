@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { isProductionSite } from "@/data/life/navigation";
+import { LIFEPP_PUBLIC_BRAND } from "@/data/life/public-brand";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 
@@ -70,7 +71,7 @@ const structuredData = {
       logo: `${siteUrl}${iconUrl}`,
       description:
         "Open, public-interest environmental accountability infrastructure by Dropin: transparent, auditable proof records for ecological restoration.",
-      brand: [{ "@type": "Brand", name: "CanopyProof" }, { "@type": "Brand", name: "Life++ 生生不息" }],
+      brand: [{ "@type": "Brand", name: "CanopyProof" }, { "@type": "Brand", name: LIFEPP_PUBLIC_BRAND }],
     },
     {
       "@type": "DataCatalog",
