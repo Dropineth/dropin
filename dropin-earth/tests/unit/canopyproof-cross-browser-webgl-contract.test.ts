@@ -65,7 +65,7 @@ test("Trust Gate installs every official Playwright browser and preserves matrix
     validationRunner,
     /webgl:\s*\['reports\/canopyproof-cross-browser-webgl\.json', 'reports\/canopyproof-cross-browser-webgl\.md'\]/u,
   );
-  assert.match(workflow, /lifepp-validation-run\.mjs run webgl -- npm run test:webgl:browser/u);
+  assert.match(workflow, /lifepp-validation-run\.mjs run webgl -- bash -eo pipefail -c 'npm run test:webgl:browser && npm run test:child-stewardship:browser'/u);
   assert.match(workflow, /name: Preserve coverage evidence\n\s+if: \$\{\{ always\(\) && steps\.coverage\.outcome != 'skipped' \}\}\n\s+uses: actions\/upload-artifact@v4/u);
   assert.match(workflow, /if-no-files-found: error/u);
   assert.doesNotMatch(workflow, /continue-on-error/u);

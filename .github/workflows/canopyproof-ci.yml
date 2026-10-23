@@ -128,7 +128,7 @@ jobs:
       - name: Verify Chromium, Firefox, and WebKit fallback matrix
         id: webgl
         if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
-        run: node scripts/lifepp-validation-run.mjs run webgl -- npm run test:webgl:browser
+        run: node scripts/lifepp-validation-run.mjs run webgl -- bash -eo pipefail -c 'npm run test:webgl:browser && npm run test:child-stewardship:browser'
 
       - name: Build OpenNext Cloudflare artifact
         id: opennext

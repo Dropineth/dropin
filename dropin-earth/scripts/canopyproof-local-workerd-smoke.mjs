@@ -23,6 +23,7 @@ export const WORKERD_ROUTE_CHECKS = Object.freeze([
   ["/funding", 200],
   ["/risk", 200],
   ["/reports/esg", 200],
+  ["/stewardship", 200],
   ["/robots.txt", 200],
   ["/sitemap.xml", 200],
   ["/icon.jpg", 200],
@@ -70,6 +71,11 @@ export async function validateWorkerdResponse(path, response, { preview = false 
   const body = await response.text();
   if (path === "/" && !/CanopyProof/iu.test(body)) {
     throw new Error("Workerd homepage does not contain CanopyProof HTML.");
+  }
+  if (path === "/stewardship" &&
+      (!body.includes("全程合成演示") || !body.includes("不采集真实身份") ||
+       !/<meta\s+name="robots"\s+content="noindex,\s*nofollow"\s*\/?\s*>/iu.test(body))) {
+    throw new Error("Workerd stewardship must disclose synthetic scope and retain noindex metadata.");
   }
   if (preview && (path === "/sitemap.xml" || path === "/robots.txt")) {
     if (!(response.headers.get("x-robots-tag") ?? "").includes("noindex")) throw new Error("Preview metadata must have noindex headers.");
