@@ -12,6 +12,7 @@ import {ChildRightsVerifier} from '../../services/api/src/domain/child-stewardsh
 // Actual production store and Hono routes against native PostgreSQL; no in-memory store.
 test('native authority: exact signed payments serialize budgets/nonces; failed receipt persistence rolls back all facts',async t=>{
   const pool=nativeChildPool();
+  const started=performance.now();const clock=()=>new Date(Date.parse(now)+performance.now()-started).toISOString();
   let scoped:Awaited<ReturnType<typeof scopedNativeChildPool>>|undefined;
   let verifierScope:Awaited<ReturnType<typeof scopedNativeChildPool>>|undefined;
   try {
@@ -37,7 +38,7 @@ test('native authority: exact signed payments serialize budgets/nonces; failed r
       await db.query("SELECT set_config('app.child_session_id',$1,true),set_config('app.child_actor_role','bootstrap',true),set_config('app.child_operation','create-synthetic-session',true)",[id]);
       await db.query("INSERT INTO child_stewardship.session_tokens(token_hash,session_id,actor_id,device_id,epoch) VALUES($1,$2::uuid,'demo-operator','demo-device-operator',1)",['a'.repeat(64),id]);
     }),/CHILD_TOKEN_BOOTSTRAP_CLOSED/);
-    const app=createChildStewardshipRoutes({mode:'synthetic-demo',store,now:()=>now});
+    const app=createChildStewardshipRoutes({mode:'synthetic-demo',store,now:clock});
     const external=t.mock.method(globalThis,'fetch',async()=>{throw new Error('unexpected provider request');});
     let sequence=0;
     async function submit(op:ReturnType<typeof rights.payment>,version=0,key=`native-payment-${++sequence}`){
@@ -46,10 +47,10 @@ test('native authority: exact signed payments serialize budgets/nonces; failed r
     }
     const failed=rights.payment(60,{details:{payoutId:'native-failed'}});
     const forged=rights.approvals(failed,['g','r1','t']);forged[0]!.signatureBase64=Buffer.alloc(64).toString('base64');
-    await assert.rejects(verifier.admit(id,failed,forged,now),/INVALID_SIGNATURE/);
+    await assert.rejects(verifier.admit(id,failed,forged,clock()),/INVALID_SIGNATURE/);
     assert.equal((await pool.query('SELECT count(*)::int AS count FROM child_stewardship.verification_admissions WHERE session_id=$1',[id])).rows[0].count,0);
     assert.equal((await submit(failed)).status,503,'valid signatures cannot bypass missing independent verifier admission');
-    await verifier.admit(id,failed,rights.approvals(failed,['g','r1','t']),now);
+    await verifier.admit(id,failed,rights.approvals(failed,['g','r1','t']),clock());
     crash=true;
     assert.equal((await submit(failed)).status,503);
     const afterFailure=await store.transact(id,now,tx=>structuredClone(tx.snapshot));
@@ -57,8 +58,8 @@ test('native authority: exact signed payments serialize budgets/nonces; failed r
     assert.equal(Object.keys(afterFailure.rights.payments).length,0);
     assert.ok(!afterFailure.rights.consumedNonces.includes(failed.nonce));
     const a=rights.payment(60,{details:{payoutId:'native-a'}}),b=rights.payment(60,{details:{payoutId:'native-b'}});
-    await verifier.admit(id,a,rights.approvals(a,['g','r1','t']),now);
-    await verifier.admit(id,b,rights.approvals(b,['g','r1','t']),now);
+    await verifier.admit(id,a,rights.approvals(a,['g','r1','t']),clock());
+    await verifier.admit(id,b,rights.approvals(b,['g','r1','t']),clock());
     const results=await Promise.all([submit(a,0,'native-concurrent-a'),submit(b,0,'native-concurrent-b')]);
     assert.deepEqual(results.map(r=>r.status).sort(),[200,409]);
     const winner=results[0]!.status===200?a:b;const loser=winner===a?b:a;

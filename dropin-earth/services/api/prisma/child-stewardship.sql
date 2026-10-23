@@ -51,6 +51,7 @@ COMMIT;
 BEGIN;
 ALTER TABLE child_stewardship.sessions ALTER COLUMN snapshot DROP NOT NULL;
 ALTER TABLE child_stewardship.sessions ADD COLUMN IF NOT EXISTS storage_format text NOT NULL DEFAULT 'uninitialized';
+ALTER TABLE child_stewardship.session_tokens ADD COLUMN IF NOT EXISTS generation bigint NOT NULL DEFAULT 0 CHECK(generation>=0);
 CREATE TABLE IF NOT EXISTS child_stewardship.state_records (
   session_id uuid NOT NULL REFERENCES child_stewardship.sessions(id),
   domain text NOT NULL CHECK (domain IN ('learning','rights')),
@@ -83,7 +84,12 @@ BEGIN
   IF NEW.storage_format='normalized-v2' AND NOT EXISTS(
     SELECT 1 FROM child_stewardship.state_records WHERE session_id=NEW.id AND revision=NEW.revision
       AND xmin::text::numeric=mod(pg_current_xact_id()::text::numeric,4294967296)
-  ) THEN RAISE EXCEPTION 'CHILD_SESSION_MUTATION_REQUIRED' USING ERRCODE='23514'; END IF;
+  ) THEN
+    IF to_regprocedure('child_stewardship.privacy_revision_authorized(uuid)') IS NOT NULL THEN
+      IF child_stewardship.privacy_revision_authorized(NEW.id) THEN RETURN NEW; END IF;
+    END IF;
+    RAISE EXCEPTION 'CHILD_SESSION_MUTATION_REQUIRED' USING ERRCODE='23514';
+  END IF;
   RETURN NEW;
 END $$;
 DROP TRIGGER IF EXISTS session_metadata_guard ON child_stewardship.sessions;
@@ -97,14 +103,24 @@ CREATE TRIGGER immutable_audit BEFORE UPDATE OR DELETE ON child_stewardship.audi
 DROP TRIGGER IF EXISTS immutable_receipts ON child_stewardship.receipts;
 CREATE TRIGGER immutable_receipts BEFORE UPDATE OR DELETE ON child_stewardship.receipts FOR EACH ROW EXECUTE FUNCTION child_stewardship.forbid_history_change();
 CREATE OR REPLACE FUNCTION child_stewardship.guard_state_record() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE role_name text := current_setting('app.child_actor_role',true); operation_name text := current_setting('app.child_operation',true);
+DECLARE role_name text := current_setting('app.child_actor_role',true); operation_name text := current_setting('app.child_operation',true); previous_profile jsonb;
 BEGIN
-  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'CHILD_HISTORY_APPEND_ONLY' USING ERRCODE='42501'; END IF;
+  IF TG_OP='DELETE' THEN
+    IF to_regprocedure('child_stewardship.privacy_delete_permitted(uuid,text,text,text,jsonb)') IS NOT NULL THEN
+      IF child_stewardship.privacy_delete_permitted(OLD.session_id,OLD.domain,OLD.collection,OLD.record_id,OLD.payload) THEN RETURN OLD; END IF;
+    END IF;
+    RAISE EXCEPTION 'CHILD_HISTORY_APPEND_ONLY' USING ERRCODE='42501';
+  END IF;
   IF role_name IS NULL OR role_name NOT IN ('bootstrap','guardian','child','reviewer','protector','operator') THEN RAISE EXCEPTION 'CHILD_ROLE_DENIED' USING ERRCODE='42501'; END IF;
   IF NEW.domain='rights' AND role_name NOT IN ('bootstrap','operator','protector') THEN RAISE EXCEPTION 'CHILD_RIGHTS_ROLE_DENIED' USING ERRCODE='42501'; END IF;
   IF role_name <> 'bootstrap' AND NEW.domain='learning' THEN
     IF NEW.collection IN ('reviews','assessments','contributions') AND role_name NOT IN ('reviewer','protector') THEN RAISE EXCEPTION 'CHILD_REVIEW_ROLE_DENIED' USING ERRCODE='42501'; END IF;
-    IF NEW.collection IN ('profiles','guardianLinks') AND role_name NOT IN ('guardian','protector') THEN RAISE EXCEPTION 'CHILD_IDENTITY_ROLE_DENIED' USING ERRCODE='42501'; END IF;
+    IF NEW.collection IN ('profiles','guardianLinks') AND role_name NOT IN ('guardian','protector') THEN
+      IF NEW.collection='profiles' AND role_name='child' AND operation_name='request-privacy' THEN
+        SELECT payload INTO previous_profile FROM child_stewardship.state_records WHERE session_id=NEW.session_id AND domain='learning' AND collection='profiles' AND record_id=NEW.record_id;
+        IF previous_profile IS NULL OR previous_profile->>'actorId' IS DISTINCT FROM current_setting('app.child_actor_id',true) OR previous_profile->>'status' IS DISTINCT FROM 'active' OR NEW.payload->>'status' IS DISTINCT FROM 'paused' OR (NEW.payload-'status') IS DISTINCT FROM (previous_profile-'status') THEN RAISE EXCEPTION 'CHILD_IDENTITY_ROLE_DENIED' USING ERRCODE='42501';END IF;
+      ELSE RAISE EXCEPTION 'CHILD_IDENTITY_ROLE_DENIED' USING ERRCODE='42501';END IF;
+    END IF;
     IF NEW.collection IN ('trees','tasks') AND role_name NOT IN ('operator','protector') THEN RAISE EXCEPTION 'CHILD_PROJECT_ROLE_DENIED' USING ERRCODE='42501'; END IF;
   END IF;
   IF TG_OP='UPDATE' THEN

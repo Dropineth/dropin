@@ -4,6 +4,49 @@ This records local engineering evidence, not production approval. The authoritat
 private specification stays outside the repository. Its restored SHA-256 is
 `d7bca48c07c7a04ce12efb5a8f33604b6b86cc69d7fffd9abf13f98ef8a8f503`.
 
+## Remote checkpoint status
+
+The parent coordinator independently read the existing connected GitHub source
+for draft PR 16 at `0ef47103d447feb5c9677c72f021bad66f345baf`:
+[Life++ web run 39891681950](https://github.com/Dropineth/dropin/actions/runs/39891681950)
+and [Trust Gate run 39891681989](https://github.com/Dropineth/dropin/actions/runs/39891681989)
+both completed with **failure**. The parent inspected their logs: checkout,
+dependency installation, build, database and coverage prerequisites passed.
+The Life++ browser runs and Trust workerd run each reported 149 passed and
+24 failed checks: 22 English LifeShell mobile-width checks (375/390 px viewport,
+394 px document width) and two English partners-page reflow-width checks.
+The latter failed on width, not on typing or Tab behavior. These remote failures
+are distinct from this container's denied Prisma binary download. The true
+overflow element was measured and the UI owner applied a wrapping correction.
+The old-artifact CSS-injection diagnostic is not final artifact acceptance; no test is waived.
+These are not passes, nor results for later uncommitted source. No rerun was
+requested here and the earlier denied Actions query was not repeated.
+
+## Current suite ownership checkpoint
+
+The native script now registers all 14 currently existing child-stewardship
+integration files, including both distinct `draft-authority` (direct SQL) and
+`draft-authorization` (Hono) suites, admission-clock, media, agent-gateway,
+rate-limit and restore. A filesystem reconciliation found no unregistered file
+and no registered nonexistent path. Recheck this inventory at the final source
+freeze.
+
+The actual built Next/OpenNext privacy probe now runs against the existing
+workerd browser runner's owned loopback server after Life++ and MapLibre.
+`CHILD_NEXT_PRIVACY_REQUIRE_GUARD=1` makes privacy headers mandatory, and the
+JSON report is retained inside candidate-bound `browser-workerd` evidence.
+The acceptance runner rejects a system-Chromium override. The collector
+positive-control probe is included in the existing synthetic browser matrix as
+a clearly labelled component fixture; it is not a substitute for the artifact
+probe. No existing browser route or release gate is removed.
+
+Runner and suite ownership contracts pass 18/18, including propagation of a
+failure from each of the three workerd browser children and shutdown cleanup;
+scoped lint passes. Evidence: `privacy-runner-contracts.log` and
+`privacy-runner-lint.log` outside the repository. These are runner checks while
+application writers remain active, not final application acceptance. Full
+current-source tests/build still await the explicit write freeze.
+
 ## Supported dependency update
 
 On 2026-10-23, the installed baseline OpenNext AWS 4.1.0 helper returned `false`
@@ -50,6 +93,53 @@ The driver installation used `--ignore-scripts`; it does not repair or bypass th
 blocked Prisma generator. The official node-postgres guidance requires
 [parameterized values](https://node-postgres.com/features/queries) and a
 [single checked-out client per transaction](https://node-postgres.com/features/transactions).
+
+## Post-checkpoint WebAuthn dependency
+
+After checkpoint `0ef47103d447feb5c9677c72f021bad66f345baf`, the API adds exact
+`@simplewebauthn/server@14.0.3`. The [official release](https://github.com/MasterKale/SimpleWebAuthn/releases/tag/v14.0.3)
+was published to npm on 2026-09-25T17:10:28.463Z. The
+[server documentation](https://simplewebauthn.dev/docs/packages/server) supports
+Node 22 and higher; package metadata requires Node >=20, so pinned Node 22.22.3
+satisfies both. The package has no lifecycle scripts; none of the 25 added or
+changed lock records declares an install script. Installation used
+`npm install --workspace services/api --save-exact --ignore-scripts --no-audit
+--no-fund @simplewebauthn/server@14.0.3`. Runtime import confirms all four
+registration/authentication option and verification functions are available.
+
+The new lock SHA-256 is
+`f476496fc4f332c997f83e7dc949feb0d02a5b3860268bbc17afd808eb8670df`.
+The new audit passes with zero vulnerabilities and supply-chain gate passes
+with 759 SBOM components. Evidence files are `simplewebauthn-metadata.json`,
+`simplewebauthn-install.log`, `simplewebauthn-import.log`,
+`webauthn-lock-delta.json`, `audit-webauthn.log`, and
+`supply-chain-webauthn.log` in the external build report directory.
+
+The prior build results below predate this lock and the subsequent modules;
+they do not validate these new changes. A build started at the checkpoint was
+subsequently classified by its owner as mixed-source because UI source changed
+before its end fingerprint. No fixed-SHA seal was asserted. Final module tests
+and a build with all source writes frozen remain pending.
+
+## Native media dependency and suite registration
+
+The synthetic media module uses `sharp@0.35.5`, already present in the locked
+Next dependency tree. It is now an exact direct API runtime dependency so API
+production installation does not rely on a web transitive dependency. The
+[official installation guidance](https://sharp.pixelplumbing.com/install/) and
+[0.35.5 release](https://github.com/lovell/sharp/releases/tag/v0.35.5) support the
+pinned Node environment. Installation used `--ignore-scripts` and added no
+packages. An actual 8×8 synthetic PNG encode/decode passed with Sharp 0.35.5 and
+libvips 8.18.7 (`sharp-runtime-smoke.json`); this is a dependency smoke test, not
+media-pipeline or real-upload acceptance.
+
+The current lock SHA-256 is
+`91a6fb5be842a5aab07a0a2e5ba1b100412c7f6760e7017b4950ceeb95f24e5b`.
+The WebAuthn, privacy, privacy-authority and resume native suites are registered
+under the existing native gate. Suite ownership contracts pass 6/6. The normal
+Prisma prerequisite is unchanged and blocked: no private generator,
+`skipDownload`, preflight modification, fabricated client, checksum suppression,
+alternate engine download, or experimental engine migration is used.
 
 ## Reproduction environment
 
@@ -166,3 +256,111 @@ labelled local diagnostic, but cannot replace three-engine acceptance.
 Final staging validation scanned all 55 changed/new files as tracked inputs: zero
 secret findings or generated artifacts; 735 SBOM components. Its report records
 the pre-commit base SHA, so it is a staging diagnostic, not candidate-bound CI.
+
+## Durable synthetic API quota evidence
+
+The additive `child-stewardship-rate-limit.sql` migration stores only fixed
+quota kind, minimal bucket identifier, minute window, count and expiry. Global
+creation capacity is 1,200/minute; authenticated requests have 120/minute per
+actor within a session. The previous shared-session design was corrected after
+independent review identified a guardian-visible quota oracle and denial risk.
+Guardian, child and protector counters are separate. SQL validates current
+connection identity, registered role, tenant, actor status and expiry after
+actual bucket lock waits. Broad ordinary table grants cannot reset counters.
+
+Owner-only, invoker-rights internal helpers support fixed suspend/resume
+capacities of 12/minute and agent capacity of 120/minute. They reject arbitrary
+quota kinds, raw capability values and direct runtime calls even with broad
+function grants. Capability wrappers must derive their bucket from verified
+authority, lock it, recheck authority using the returned database clock and
+commit the security counter independently of business rejection. Cancellation
+has no quota kind, preserving its separate revocation lane. Wrapper integration
+is owned and tested separately; owner-fixture helper tests alone do not prove it.
+
+Counters expire logically after two minutes; eligible admissions reclaim at most
+256 expired rows. Idle expired rows may remain until subsequent traffic or
+trusted cleanup. This is synthetic capacity protection, not provider acceptance.
+
+Direct native command:
+`node --test --test-concurrency=1 --import tsx tests/integration/child-stewardship-rate-limit.integration.ts`
+passed **13/13**, with eight real PostgreSQL client connections, fixed capacity,
+actor isolation, forbidden writes, current revocation and post-lock expiry.
+Scoped strict TypeScript and ESLint passed with zero diagnostics. Evidence is
+`child-rate-limit-native-purpose.tap`, `child-rate-limit-typecheck.log` and
+`child-rate-limit-lint.log` outside the repository. An earlier test-fixture run
+failed on PostgreSQL's invalid timezone spelling `UTC+00:00:30`; the fixture now
+uses valid `Asia/Kathmandu`. No capacity or clock validation was relaxed.
+
+These results precede the final writer freeze. No final fixed-source build,
+release seal or production approval is claimed.
+
+## Process-local storage circuit evidence
+
+`dependency-guard.ts` supplies a bounded, per-authenticated-actor dependency
+circuit around the main database transaction. Three explicit transport or
+database-unavailable failures open that actor's circuit for 15 seconds, followed
+by one concurrent recovery probe. Domain denials, including authority-related
+503 responses, never trip it. A rejected recovery probe releases its slot;
+stale concurrent completions cannot close a newer circuit. Other actors and
+sessions have independent state, and cancellation remains a separate route.
+
+The helper signal payload contains only fixed category/code/count/time fields,
+never exceptions, paths, tokens, session IDs, actor IDs or protection details.
+The application uses its existing global service logger, whose standard envelope
+adds service/process metadata; no request logger or request context is used.
+Sink failure does
+not alter transaction outcomes. Its bounded tracking map neither evicts another
+actor's active circuit nor substitutes cached authority or data: when tracking
+is full, new actors still execute the normal database path. This is local load
+protection, not distributed authorization or readiness. No external alert
+recipient is configured or claimed to have received a notification.
+
+The direct root command `node --test --import tsx
+tests/unit/child-stewardship-dependency-guard.test.ts` passed **7/7**, including
+paired guardian/protected-actor isolation, real concurrent half-open probes,
+logging sanitization and failure, stale completion, and bounded-map exhaustion.
+Scoped strict TypeScript and ESLint passed with zero diagnostics. Logs are
+`child-dependency-guard-unit.tap`, `child-dependency-guard-typecheck.log` and
+`child-dependency-guard-lint.log` outside the repository. Actual route/logger
+wiring and native storage-fault evidence are recorded separately by their owner;
+these helper tests alone do not establish integration or delivered alerts.
+
+## Unified local candidate validation (2026-10-23)
+
+The settled-source direct run of all 14 registered child native integration
+files passed **161/161**, zero skipped. The normal root command for all child
+unit files passed **118/118**. These are the unified totals; the smaller module
+receipts above overlap and must not be added together. Runner/service ownership
+contracts passed **18/18**. Native restoration uses the existing PostgreSQL 17
+GitHub service container ID supplied by the native job step, not a local container
+name or newly provisioned infrastructure.
+
+The first combined native attempt was 151/161: the isolated draft test database
+omitted the newly required rate migration, so nine cases plus their parent failed
+on the missing quota function. Only that fixture migration list changed; the
+complete failed receipt remains `phase2-native-all-final.tap`, and the successful
+rerun is `phase2-native-all-candidate-2.tap`. Focused units and runner receipts are
+`phase2-focused-all-final.tap` and `phase2-final-runner-service-contracts.tap`.
+
+The complete direct unit diagnostic was **1,085 tests: 1,068 passed, 17 failed,
+zero skipped**. All 17 failure names match the previous generated-Prisma-blocked
+checkpoint; no new failure names appeared. This is not a passing normal workspace
+gate. `phase2-unit-summary.json` preserves every failure. Direct API TypeScript
+has 1,278 diagnostics, exactly matching the previous diagnostic after normalizing
+line/column positions, with no child module paths and no new messages; see
+`phase2-api-typecheck-delta.json`. Root lint and web TypeScript passed; focused
+changed-module strict TypeScript and ESLint also passed.
+
+All receipts are outside the repository under
+`/workspace/canopyproof-audit-report/build/`. Earlier accounting fixture attempts
+included an unsafe-number signing error and a malformed-input 400 versus 403
+expectation. The latter full TAP is preserved. The earlier full accounting TAP
+was overwritten by its owner; the failure-history note identifies that loss and
+does not fabricate a recovered log.
+
+These checks precede the new local candidate commit. The subsequent clean fixed-HEAD
+build, complete artifact inventory, actual Next privacy/mobile diagnostics and
+new-head remote CI receipt must be attached to the draft PR. No old dirty-source
+build or old-head CI result is accepted for this candidate. Independent AI review
+closed the reported code findings, including cross-payout receipt reuse and
+post-lock role expiry; human final-head release approval remains outstanding.

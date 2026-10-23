@@ -2,18 +2,20 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { Hono } from "hono";
 import { createChildStewardshipRoutes } from "../../services/api/src/routes/child-stewardship/index.js";
-import { TestChildStore } from "../../services/api/src/domain/child-stewardship/store.js";
+import { TestChildStore, childDigest } from "../../services/api/src/domain/child-stewardship/store.js";
 import { childBoundaryDenies } from "../../services/api/src/domain/child-stewardship/runtime-boundary.js";
+
+import { TestChildResumeStore } from "../fixtures/child-stewardship-resume.ts";
 
 const time = "2026-10-23T02:00:00.000Z";
 async function fixture() {
-  const store = new TestChildStore();
+  const store = new TestChildResumeStore(() => time);
   const app = createChildStewardshipRoutes({ mode: "synthetic-demo", store, now: () => time });
   const response = await app.request("/demo-sessions", { method: "POST" });
   assert.equal(response.status, 201);
   const created = await response.json();
   const tokens = created.data.tokens as Record<string, string>;
-  let serial = 0;
+  let serial = 0; const uploadProofs = new Map<string, string>();
   async function view(role = "child") {
     const response = await app.request("/view", { headers: { authorization: `Bearer ${tokens[role]}` } });
     assert.equal(response.status, 200);
@@ -21,8 +23,16 @@ async function fixture() {
   }
   async function command(role: string, fields: Record<string, unknown>, overrides: { key?: string; version?: number } = {}) {
     const current = overrides.version ?? (await view(role)).version;
-    const id = overrides.key ?? `demo-command-${++serial}`;
-    const response = await app.request("/commands", { method: "POST", headers: { authorization: `Bearer ${tokens[role]}`, "content-type": "application/json", "idempotency-key": id, "if-match": String(current) }, body: JSON.stringify({ commandId: id, expectedVersion: current, ...fields }) });
+    const id = overrides.key ?? (fields.type === "submit-observation" ? `demo-${crypto.randomUUID()}` : `demo-command-${++serial}`);
+    const packet = { commandId: id, expectedVersion: current, ...fields };
+    let proof = uploadProofs.get(id);
+    if (fields.type === "submit-observation" && !proof) {
+      const currentView = await view(role); const assignment = currentView.data.assignments.find((item: { id: string }) => item.id === fields.assignmentId);
+      const eligibility = currentView.data.uploadEligibility.find((item: { profileId: string }) => item.profileId === assignment?.profileId);
+      const admission = await app.request("/draft-authorizations", { method: "POST", headers: { authorization: `Bearer ${tokens[role]}`, "content-type": "application/json" }, body: JSON.stringify({ draftId: id.replace(/^demo-/, ""), intentDigest: childDigest(packet), assignmentId: fields.assignmentId, originalSessionId: created.data.sessionId, originalConsentEpoch: eligibility?.consentEpoch, purpose: "synthetic-learning-upload", schemaVersion: "CanopyProof-SyntheticDraft/2", policyVersion: currentView.data.policyVersion, expectedVersion: currentView.version }) });
+      if (admission.status === 201) { proof = (await admission.json()).data.authorizationToken; uploadProofs.set(id, proof!); }
+    }
+    const response = await app.request("/commands", { method: "POST", headers: { authorization: `Bearer ${tokens[role]}`, "content-type": "application/json", "idempotency-key": id, "if-match": String(current), ...(proof ? { "x-child-upload-authorization": proof } : {}) }, body: JSON.stringify(packet) });
     return { response, body: await response.json() };
   }
   async function setup() {
@@ -51,11 +61,11 @@ test("AT-06/11/13/16 full API learning flow remains E0; withdrawal prevents late
   const assignmentId = await f.setup();
   const fields = { type: "submit-observation", assignmentId, sampleId: "demo-leaf-green", answer: "uncertain", capturedAtClaimed: time };
   const version = (await f.view()).version;
-  const first = await f.command("child", fields, { key: "demo-observation-one", version });
+  const first = await f.command("child", fields, { key: "demo-51d2a9cf-37fb-47d4-9af2-0dad4f472c7d", version });
   assert.equal(first.response.status, 200);
-  const duplicate = await f.command("child", fields, { key: "demo-observation-one", version });
+  const duplicate = await f.command("child", fields, { key: "demo-51d2a9cf-37fb-47d4-9af2-0dad4f472c7d", version });
   assert.deepEqual(duplicate.body.data, first.body.data);
-  assert.equal((await f.command("child", { ...fields, answer: "yellow" }, { key: "demo-observation-one", version })).response.status, 409);
+  assert.equal((await f.command("child", { ...fields, answer: "yellow" }, { key: "demo-51d2a9cf-37fb-47d4-9af2-0dad4f472c7d", version })).response.status, 409);
   const observationId = first.body.data.id;
   assert.equal((await f.command("reviewer", { type: "review-observation", observationId, decision: "insufficient_for_survival", reason: "synthetic_source" })).response.status, 200);
   assert.equal((await f.command("reviewer", { type: "grant-contribution", observationId, policyVersion: "child-learning-demo-v1" })).response.status, 200);

@@ -63,7 +63,7 @@ export function verifyProvenance(envelope: ChildAgentEnvelope, approval: ChildAg
   const credential = credentials[approval.keyId];
   const actor = state.actors[envelope.actorId];
   if (!credential || credential.revoked || credential.actorId !== envelope.actorId || credential.epoch !== envelope.epoch
-    || !actor || actor.revoked || actor.epoch !== envelope.epoch || Date.parse(credential.expiresAt) <= Date.parse(now)) reject("SIGNER_REVOKED");
+    || !actor || actor.revoked || actor.epoch !== envelope.epoch || !Number.isFinite(Date.parse(credential.expiresAt)) || Date.parse(credential.expiresAt) <= Date.parse(now)) reject("SIGNER_REVOKED");
   const verification = verifyChildSignatureBytes({ algorithm: approval.algorithm,
     expectedPayload: canonicalChildAgentEnvelope(envelope), signedPayload: approval.signedPayload,
     signature: approval.signature, registeredPublicKey: credential.publicKey });

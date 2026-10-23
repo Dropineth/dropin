@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CHILD_DRAFT_SCHEMA, ChildDraftSync, ChildDraftVault, IndexedChildDraftStorage, type ChildDraft, type ObservationChoice } from "@/lib/child-stewardship-offline";
-import { ChildDemoApi } from "@/lib/child-stewardship-api";
+import { CHILD_DRAFT_SCHEMA, ChildDraftSync, ChildDraftVault, IndexedChildDraftStorage, type ChildDraft, type ChildDemoSession, type ObservationChoice } from "@/lib/child-stewardship-offline";
+import { ChildDemoApi, type DraftAuthorizationProposal } from "@/lib/child-stewardship-api";
 import { stewardshipScreens, type StewardshipScreenId } from "@/lib/child-stewardship-screens";
+import { translateChildNode, type ChildLocale } from "@/lib/child-stewardship-locale";
 import styles from "./Stewardship.module.css";
 
 const answers: Record<ObservationChoice, string> = { green_leaves: "我看到了绿色的叶片", yellow_leaves: "我看到了黄色的叶片", not_sure: "我还不确定" };
-function TreeDrawing() {
-  return <svg viewBox="0 0 270 300" role="img" aria-label="合成树木插画，不表示实时健康"><ellipse cx="137" cy="271" rx="91" ry="12" fill="#ccd5b9"/><path d="M132 263l7-128m-4 68l-37-38m39 17l38-43" stroke="#817056" strokeWidth="11" fill="none" strokeLinecap="round"/><path d="M67 170C22 154 47 89 77 87C73 24 148 11 173 54C226 49 249 113 214 144C228 200 158 221 135 189C103 207 75 199 67 170Z" fill="#789867"/><path d="M81 141C56 111 88 74 114 86C119 49 160 48 174 81C206 76 217 119 192 137C197 169 158 181 143 155C115 174 92 165 81 141Z" fill="#96ad7d"/><path d="M90 252l-6-14m99 20l6-19m-21 23l-3-11" stroke="#718753" strokeWidth="4" strokeLinecap="round"/></svg>;
+function TreeDrawing({ locale }: { locale: ChildLocale }) {
+  return translateChildNode(<svg viewBox="0 0 270 300" role="img" aria-label="合成树木插画，不表示实时健康"><ellipse cx="137" cy="271" rx="91" ry="12" fill="#ccd5b9"/><path d="M132 263l7-128m-4 68l-37-38m39 17l38-43" stroke="#817056" strokeWidth="11" fill="none" strokeLinecap="round"/><path d="M67 170C22 154 47 89 77 87C73 24 148 11 173 54C226 49 249 113 214 144C228 200 158 221 135 189C103 207 75 199 67 170Z" fill="#789867"/><path d="M81 141C56 111 88 74 114 86C119 49 160 48 174 81C206 76 217 119 192 137C197 169 158 181 143 155C115 174 92 165 81 141Z" fill="#96ad7d"/><path d="M90 252l-6-14m99 20l6-19m-21 23l-3-11" stroke="#718753" strokeWidth="4" strokeLinecap="round"/></svg>, locale);
 }
-function Leaves() {
-  return <div className={styles.leaves}>{["#6e9256", "#b69d4f"].map((color, index) => <figure key={color}><svg viewBox="0 0 100 120" role="img" aria-label={index ? "黄色示意叶片" : "绿色示意叶片"}><path d="M48 104C4 91 14 25 78 12C91 70 80 95 48 104Z" fill={color}/><path d="M37 115L71 29M48 88L29 70M55 69L76 60M62 50L47 38" stroke="#4d623c" strokeWidth="3" fill="none" strokeLinecap="round"/></svg><figcaption>合成示意 {index ? "B" : "A"}</figcaption></figure>)}</div>;
+function Leaves({ locale }: { locale: ChildLocale }) {
+  return translateChildNode(<div className={styles.leaves}>{["#6e9256", "#b69d4f"].map((color, index) => <figure key={color}><svg viewBox="0 0 100 120" role="img" aria-label={index ? "黄色示意叶片" : "绿色示意叶片"}><path d="M48 104C4 91 14 25 78 12C91 70 80 95 48 104Z" fill={color}/><path d="M37 115L71 29M48 88L29 70M55 69L76 60M62 50L47 38" stroke="#4d623c" strokeWidth="3" fill="none" strokeLinecap="round"/></svg><figcaption>合成示意 {index ? "B" : "A"}</figcaption></figure>)}</div>, locale);
 }
 export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN_API_URL ?? "" }: { apiBase?: string }) {
+  const [locale, setLocale] = useState<ChildLocale>("zh-CN");
   const [screen, setScreen] = useState<StewardshipScreenId>("S01");
   const [profile, setProfile] = useState<ChildDraft["profile"]>("synthetic-a");
   const [ageBand, setAgeBand] = useState<"6-8" | "9-12" | "13-17">("9-12");
@@ -26,6 +28,17 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
   const [busy, setBusy] = useState(false);
   const [storageReady, setStorageReady] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [privacyRequest, setPrivacyRequest] = useState<string | null>(null);
+  const [privacyExport, setPrivacyExport] = useState<unknown>(null);
+  const [resumeAvailable, setResumeAvailable] = useState(false);
+  const [withdrawalRequested, setWithdrawalRequested] = useState(false);
+  const [withdrawalServer, setWithdrawalServer] = useState<"none" | "pending" | "consent" | "ticket" | "unknown">("none");
+  const [withdrawalLocal, setWithdrawalLocal] = useState<"none" | "pending" | "cleared" | "unknown">("none");
+  const [currentApprovals, setCurrentApprovals] = useState<Record<string, boolean>>({});
+  const [authorizationProposal, setAuthorizationProposal] = useState<{ draft: ChildDraft; scope: DraftAuthorizationProposal } | null>(null);
+  const [authorizationChoice, setAuthorizationChoice] = useState(false);
+  const pendingAuthority = useRef<AbortController | null>(null);
+  const pendingCancellation = useRef<ChildDemoSession | null>(null);
   const [received, setReceived] = useState<Record<string, string>>({});
   const [localReviewed, setLocalReviewed] = useState(false);
   const [serverReviewed, setServerReviewed] = useState(false);
@@ -50,17 +63,18 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
   useEffect(() => {
     if (!storageReady || !vault.current) return;
     let active = true;
+    void vault.current.loadSession(profile).then(session => { if (active) setResumeAvailable(Boolean(session)); }).catch(() => { if (active) setResumeAvailable(false); });
     void vault.current.list(profile).then(result => { if (active) setDrafts(result); }).catch(() => { if (active) setMessage("本机草稿暂时无法读取。请保留这台设备，尚未确认清除或上传。"); });
     return () => { active = false; };
   }, [profile, storageReady]);
-  function storedEpoch(value: ChildDraft["profile"]): number {
-    try { const epoch = Number(localStorage.getItem(`cp-synthetic-epoch:${value}`) ?? 0); return Number.isSafeInteger(epoch) && epoch >= 0 ? epoch : 0; } catch { return 0; }
+  function storedEpoch(value: ChildDraft["profile"]): number | null {
+    try { const epoch = Number(localStorage.getItem(`cp-synthetic-epoch:${value}`) ?? 0); return Number.isSafeInteger(epoch) && epoch >= 0 ? epoch : null; } catch { return null; }
   }
   useEffect(() => {
-    sync.current = new ChildDraftSync(profile, storedEpoch(profile));
+    sync.current = new ChildDraftSync(profile, storedEpoch(profile) ?? 0);
     const onStorage = (event: StorageEvent) => {
       if (event.key === `cp-synthetic-epoch:${profile}` && Number(event.newValue) > sync.current.currentEpoch) {
-        sync.current.withdraw(Number(event.newValue)); setLearning(false); setUpload(false); setPermissionCheck(false);
+        sync.current.withdraw(Number(event.newValue)); pendingAuthority.current?.abort(); api.current?.clearUploadAuthorizations(); setCurrentApprovals({}); setAuthorizationProposal(null); setAuthorizationChoice(false); setPrivacyExport(null); setLearning(false); setUpload(false); setPermissionCheck(false);
         setMessage("另一个标签页已暂停这个演示档案。本页不会继续发送。");
       }
     };
@@ -69,14 +83,34 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
   }, [profile]);
   useEffect(() => { if (initialScreen.current) { initialScreen.current = false; return; } heading.current?.focus({ preventScroll: true }); }, [screen]);
   function go(next: StewardshipScreenId) { setScreen(next); setMessage(""); }
-  function revokeLocal() {
+  function revokeLocal(preserveTicket = false) {
+    setPrivacyExport(null); setCurrentApprovals({}); setAuthorizationProposal(null); setAuthorizationChoice(false);
+    pendingAuthority.current?.abort(); api.current?.clearUploadAuthorizations();
     sync.current.withdraw();
+    setResumeAvailable(false);
+    if (!preserveTicket) void vault.current?.forgetSession(profile).catch(() => setMessage("本机已停止发送，但恢复票据尚未确认清除。若票据尚未使用且服务端也未收到撤回，重启后的停止状态无法保证。请保持页面打开并重试；不要交出共享设备。"));
     try { localStorage.setItem(`cp-synthetic-epoch:${profile}`, String(sync.current.currentEpoch)); } catch { /* Local stop still applies; no persisted permission is ever granted. */ }
   }
   function stop() {
-    revokeLocal(); setLearning(false); setUpload(false); setPermissionCheck(false);
-    setScreen("S26"); setMessage("本机已暂停：不再发送新的草稿。已发送内容的服务端处置需另行确认。");
-    if (connected && api.current) void api.current.withdraw().then(() => setMessage("本机与合成服务端均已确认暂停新的学习和上传。此前接收的记录尚未确认删除，既有学习贡献不因此清零。")).catch(() => setMessage("本机已暂停。服务端暂停未确认，请保留已有回执；不会继续发送草稿。"));
+    revokeLocal(true); setLearning(false); setUpload(false); setPermissionCheck(false);
+    setWithdrawalRequested(true); setWithdrawalServer("pending"); setWithdrawalLocal("pending");
+    setScreen("S26"); setMessage("撤回已请求，本页立即停止发送。服务端确认与本地清除将分别显示。");
+    void (async () => {
+      try {
+        if (connected && api.current) { await api.current.withdraw(); setWithdrawalServer("consent"); }
+        else {
+          const ticket = pendingCancellation.current ?? await vault.current?.loadSession(profile);
+          if (!ticket) throw new Error("NO_CANCELLATION_PROOF");
+          pendingCancellation.current = ticket;
+          const service = new ChildDemoApi(new URL(apiBase || window.location.origin, window.location.origin).href.replace(/\/$/, ""), fetch, profile === "synthetic-a" ? "demo-profile-a" : "demo-profile-b");
+          await service.cancelResume(ticket); pendingCancellation.current = null; setWithdrawalServer("ticket");
+        }
+      } catch { setWithdrawalServer("unknown"); }
+      finally {
+        if (!vault.current) setWithdrawalLocal("unknown");
+        else { try { await vault.current.forgetSession(profile); setWithdrawalLocal("cleared"); } catch { setWithdrawalLocal("unknown"); } }
+      }
+    })();
   }
   function setPermission(purpose: "learning" | "upload", value: boolean) {
     if (!value) {
@@ -87,16 +121,16 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     setPermissionCheck(false);
   }
   function confirmPermissions() {
-    if (learning && upload) sync.current.grant();
     setPermissionCheck(true); go("S05");
   }
   async function saveDraft() {
     if (!learning || !permissionCheck || !vault.current) { setMessage("先在权限说明中选择愿意学习；不愿意也可以继续阅读。"); return; }
     setBusy(true);
     try {
-      const draft: ChildDraft = savingDraft.current ?? { schema: CHILD_DRAFT_SCHEMA, id: crypto.randomUUID(), profile, task: "synthetic-indoor-comparison", answer, source: "synthetic_reference", createdAt: new Date().toISOString(), consentEpoch: sync.current.currentEpoch, serverBinding: null };
-      savingDraft.current = draft;
-      await vault.current.save(draft);
+      const draft: ChildDraft = savingDraft.current ?? { schema: CHILD_DRAFT_SCHEMA, id: crypto.randomUUID(), profile, task: "synthetic-indoor-comparison", answer, source: "synthetic_reference", createdAt: new Date().toISOString(), consentEpoch: sync.current.currentEpoch, submissionVersion: null, serverBinding: null };
+      const boundDraft = connected && api.current ? api.current.bindDraft(draft, true) : draft;
+      savingDraft.current = boundDraft;
+      await vault.current.save(boundDraft);
       currentPageDrafts.current.add(draft.id);
       setDrafts(await vault.current.list(profile)); savingDraft.current = null;
       setScreen("S15"); setMessage("已加密保存在这台设备，还没有发出。你可以离开这一步。");
@@ -106,19 +140,84 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
   async function connect() {
     if (!learning || !upload || !permissionCheck) { setMessage("发送练习需要学习和上传两项选择。现在仍可使用本机观察册。"); return; }
     setBusy(true);
-    const service = new ChildDemoApi(apiBase.replace(/\/$/, ""), fetch, profile === "synthetic-a" ? "demo-profile-a" : "demo-profile-b");
+    const service = new ChildDemoApi(new URL(apiBase || window.location.origin, window.location.origin).href.replace(/\/$/, ""), fetch, profile === "synthetic-a" ? "demo-profile-a" : "demo-profile-b");
+    const startingEpoch = sync.current.currentEpoch;
     try {
       await service.start(); await service.setup(ageBand, true);
-      api.current = service; setConnected(true); sync.current.grant();
+      if (sync.current.currentEpoch !== startingEpoch) throw new Error("CONSENT_WITHDRAWN");
+      api.current = service; setConnected(true);
       setMessage("合成服务已连接。演示角色已完成练习授权；这不证明真实身份或监护关系。草稿尚未发送。");
     } catch { service.close(); setConnected(false); setMessage("合成服务暂不可用，尚未确认接收任何草稿。加密草稿仍在本机。部分初始化是否完成未知，不代表真实账户已创建。"); }
     finally { setBusy(false); }
   }
+  async function suspendSession() {
+    if (!api.current || !connected || !vault.current || busy) return;
+    setBusy(true); setCurrentApprovals({}); setAuthorizationProposal(null); setAuthorizationChoice(false); const startingEpoch = sync.current.currentEpoch;
+    try {
+      const ticket = await api.current.suspend(startingEpoch);
+      if (sync.current.currentEpoch !== startingEpoch) throw new Error("CONSENT_WITHDRAWN");
+      await vault.current.saveSession(profile, ticket);
+      if (sync.current.currentEpoch !== startingEpoch) { await vault.current.forgetSession(profile); throw new Error("CONSENT_WITHDRAWN"); }
+      setResumeAvailable(true); setMessage("合成会话已安全挂起。活跃凭据已失效；仅保存一次性恢复票据。下次恢复仍需服务器核验。");
+    } catch { setResumeAvailable(false); setMessage("没有确认安全挂起。活跃连接已关闭；旧草稿仅供本机阅读，不会自动获得新权限。"); }
+    finally { setConnected(false); api.current?.close(); setBusy(false); }
+  }
+  async function resumeSession() {
+    if (!vault.current || busy) return;
+    setBusy(true);
+    const startingEpoch = sync.current.currentEpoch;
+    const service = new ChildDemoApi(new URL(apiBase || window.location.origin, window.location.origin).href.replace(/\/$/, ""), fetch, profile === "synthetic-a" ? "demo-profile-a" : "demo-profile-b");
+    try {
+      const session = await vault.current.loadSession(profile);
+      const durableEpoch = storedEpoch(profile);
+      if (!session || durableEpoch === null || sync.current.currentEpoch > session.localEpoch || durableEpoch > session.localEpoch) throw new Error("CONSENT_WITHDRAWN");
+      await service.resume(session);
+      setResumeAvailable(false);
+      // The server has consumed this ticket. Deletion failure cannot restore its authority.
+      await vault.current.forgetSession(profile).catch(() => undefined);
+      if (sync.current.currentEpoch !== startingEpoch) throw new Error("CONSENT_WITHDRAWN");
+      sync.current = new ChildDraftSync(profile, sync.current.currentEpoch);
+      setCurrentApprovals({}); setAuthorizationProposal(null); setAuthorizationChoice(false);
+      api.current = service; setConnected(true); setLearning(false); setUpload(false); setPermissionCheck(false);
+      setMessage("仅恢复了原始资料来源与只读连接，没有恢复上传权。请逐份在线核验对象、用途与版本，再明确选择本次授权。");
+    } catch {
+      service.close(); setConnected(false);
+      setMessage("原会话无法安全恢复：可能已过期、撤回、变更或暂时离线。旧草稿保持原绑定，不会转入新授权。可以继续查看本机记录。");
+    } finally { setBusy(false); }
+  }
+  async function inspectAuthorization(draft: ChildDraft) {
+    if (!api.current || !connected || busy) return;
+    setBusy(true); setAuthorizationChoice(false); setAuthorizationProposal(null);
+    const startingEpoch = sync.current.currentEpoch;
+    try {
+      const bound = await api.current.prepareDraft(draft, currentPageDrafts.current.has(draft.id));
+      if (bound !== draft) {
+        if (!vault.current) throw new Error("LOCAL_STORAGE_UNAVAILABLE");
+        await vault.current.save(bound); setDrafts(previous => previous.map(item => item.id === bound.id ? bound : item));
+      }
+      const scope = await api.current.inspectDraftAuthorization(bound);
+      if (sync.current.currentEpoch !== startingEpoch) throw new Error("CONSENT_WITHDRAWN");
+      setAuthorizationProposal({ draft: bound, scope }); setMessage("当前状态已在线核验。请阅读对象、用途与版本；核验本身没有授予上传权。");
+    } catch (error) { setMessage(error instanceof Error && error.message === "DRAFT_REAUTHORIZATION_REQUIRED" ? "这份未绑定草稿来自较早的页面会话，只能在本机查看。不能恢复旧授权；你可以重新选择权限后创建一份新的合成观察。" : "未完成当前在线核验，没有授予上传权。请联网后重新核验；旧草稿仍可在本机阅读。"); }
+    finally { setBusy(false); }
+  }
+  async function confirmDraftAuthorization() {
+    if (!api.current || !authorizationProposal || !authorizationChoice || busy) return;
+    const pending = authorizationProposal; const startingEpoch = sync.current.currentEpoch;
+    const controller = new AbortController(); pendingAuthority.current = controller; setBusy(true);
+    try {
+      await api.current.authorizeDraft(pending.draft, pending.scope, controller.signal);
+      if (controller.signal.aborted || sync.current.currentEpoch !== startingEpoch) throw new Error("CONSENT_WITHDRAWN");
+      sync.current.authorize(pending.draft); setCurrentApprovals(previous => ({ ...previous, [pending.draft.id]: true }));
+      setAuthorizationProposal(null); setAuthorizationChoice(false); setMessage("已确认这一份对象的本次上传授权。只在当前页面有效，观察内容尚未发送；重启、暂停或挂起后须重新核验与选择。");
+    } catch { setCurrentApprovals(previous => ({ ...previous, [pending.draft.id]: false })); setAuthorizationProposal(null); setAuthorizationChoice(false); setMessage("本次授权未确认。没有发送草稿；请重新在线核验后作出选择。"); }
+    finally { pendingAuthority.current = null; setBusy(false); }
+  }
   async function sendDraft(draft: ChildDraft) {
-    if (!api.current || !connected) { setMessage("服务未连接。草稿仍在本机，没有接收回执。"); return; }
+    if (!api.current || !connected || !currentApprovals[draft.id]) { setMessage("没有当前页面的逐份授权。草稿仍在本机，请先在线核验并明确选择。"); return; }
     setBusy(true);
     try {
-      const bound = api.current.bindDraft(draft, currentPageDrafts.current.has(draft.id));
+      const bound = await api.current.prepareDraft(draft, currentPageDrafts.current.has(draft.id));
       if (bound !== draft) {
         if (!vault.current) throw new Error("LOCAL_STORAGE_UNAVAILABLE");
         await vault.current.save(bound);
@@ -151,18 +250,45 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     } catch { setMessage("未收到异议接收回执，不能确认已发送。真实安全问题请找可信的大人。"); }
     finally { setBusy(false); }
   }
+  async function requestPrivacy(kind: "export_learning" | "delete_learning") {
+    if (!api.current || !connected || busy) return;
+    if (kind === "delete_learning") { revokeLocal(); setLearning(false); setUpload(false); setPermissionCheck(false); }
+    setBusy(true); setPrivacyExport(null);
+    try { const result = await api.current.command("guardian", { type: "request-privacy", profileId: api.current.profileId, kind }); setPrivacyRequest(result.id); setMessage("合成隐私请求已进入处理队列。尚未确认删除任何副本；可查询当前处理状态。"); }
+    catch { setMessage("没有收到隐私请求回执，处理状态未知。本机停止仍然有效。"); }
+    finally { setBusy(false); }
+  }
+  async function checkPrivacy() {
+    if (!api.current || !privacyRequest || busy) return;
+    setBusy(true); setPrivacyExport(null);
+    try { const result = await api.current.privacyStatus(privacyRequest); setPrivacyExport(result.export ?? null); setMessage(result.export ? "合成学习导出已准备。仅包含当前档案的普通学习记录。" : "请求状态已核对：学习访问限制与保留要求仍适用。没有确认所有副本删除；处理可能仍在排队。"); }
+    catch { setMessage("无法核对隐私请求状态。没有完成或删除确认。"); }
+    finally { setBusy(false); }
+  }
+  async function downloadPrivacy() {
+    if (!privacyExport || !api.current || !privacyRequest || busy) return;
+    const startingEpoch = sync.current.currentEpoch; setBusy(true);
+    try {
+      const fresh = await api.current.privacyStatus(privacyRequest);
+      if (!fresh.export || sync.current.currentEpoch !== startingEpoch) throw new Error("CONSENT_WITHDRAWN");
+      const url = URL.createObjectURL(new Blob([JSON.stringify(fresh.export, null, 2)], { type: "application/json" }));
+      const link = document.createElement("a"); link.href = url; link.download = "synthetic-learning-export.json"; link.click(); URL.revokeObjectURL(url);
+    } catch { setPrivacyExport(null); setMessage("无法核对隐私请求状态。没有完成或删除确认。"); }
+    finally { setBusy(false); }
+  }
   async function clearDrafts() {
     revokeLocal(); setLearning(false); setUpload(false); setPermissionCheck(false);
     if (!vault.current) { setMessage("本机存储不可用，未确认清除。"); return; }
     setBusy(true);
-    try { await vault.current?.clear(profile); setDrafts([]); setMessage("当前演示档案的本机草稿与加密密钥已清除。服务端记录和其他设备副本不包含在这次清除中。"); }
+    try { await vault.current?.clear(profile); setResumeAvailable(false); api.current?.close(); setConnected(false); setDrafts([]); setMessage("当前演示档案的本机草稿与加密密钥已清除。服务端记录和其他设备副本不包含在这次清除中。"); }
     catch { setMessage("清除未确认完成，请不要把设备交给其他人。你可以再次尝试。"); }
     finally { setBusy(false); }
   }
   function changeProfile(value: ChildDraft["profile"]) {
-    revokeLocal(); api.current?.close(); api.current = null;
-    sync.current = new ChildDraftSync(value, storedEpoch(value)); setProfile(value); setDrafts([]); setReceived({});
-    setConnected(false); setLearning(false); setUpload(false); setPermissionCheck(false); setLocalReviewed(false); setServerReviewed(false); setChallenge(""); savingDraft.current = null;
+    if (busy) return;
+    revokeLocal(); pendingCancellation.current = null; setWithdrawalRequested(false); setWithdrawalServer("none"); setWithdrawalLocal("none"); api.current?.close(); api.current = null;
+    sync.current = new ChildDraftSync(value, storedEpoch(value) ?? 0); setProfile(value); setDrafts([]); setReceived({});
+    setConnected(false); setPrivacyRequest(null); setPrivacyExport(null); setResumeAvailable(false); setLearning(false); setUpload(false); setPermissionCheck(false); setLocalReviewed(false); setServerReviewed(false); setChallenge(""); savingDraft.current = null;
   }
   const button = (label: string, next: StewardshipScreenId) => <button className={styles.primary} onClick={() => go(next)}>{label}</button>;
   const learningRecord = localReviewed || serverReviewed;
@@ -170,20 +296,37 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     switch (screen) {
       case "S01": return <><div className={styles.card}><h2>小小观察，慢慢认识</h2><p>你不需要拥有一棵树，也不需要证明什么。看一看、说「不知道」、选择休息，都可以。</p><p className={styles.note}>全程合成演示 · 不采集真实身份 · 不需要相机与定位</p></div><div className={styles.actions}>{button("和大人一起开始", "S02")}<button className={styles.secondary} onClick={() => go("S08")}>先看看学习材料</button></div></>;
       case "S02": return <><div className={styles.card}><h2>这里不创建真实账户</h2><p>Passkey 注册、法定监护核验与正式恢复尚未开放。你可以了解流程，再使用固定演示档案。</p><p className={styles.note}>设备的 PIN 或系统解锁方式不等于网站收集生物模板。此演示不调用身份验证器。</p></div><div className={styles.actions}>{button("使用合成演示档案", "S03")}{button("跳过，直接学习", "S08")}</div></>;
-      case "S03": return <><div className={styles.card}><label htmlFor="demo-profile">合成观察者</label><select id="demo-profile" className={styles.select} value={profile} onChange={event => changeProfile(event.target.value as ChildDraft["profile"])}><option value="synthetic-a">小叶子 A（虚构）</option><option value="synthetic-b">小叶子 B（虚构）</option></select><label htmlFor="reading-age">阅读方式，不是法律年龄核验</label><select id="reading-age" className={styles.select} value={ageBand} onChange={event => setAgeBand(event.target.value as typeof ageBand)}><option value="6-8">6–8 岁 · 一起阅读</option><option value="9-12">9–12 岁 · 慢慢探索</option><option value="13-17">13–17 岁 · 看看依据</option></select><label className={styles.choice}><input type="checkbox" checked={large} onChange={event => setLarge(event.target.checked)}/><span>放大文字</span></label></div>{button("看看权限说明", "S04")}</>;
+      case "S03": return <><div className={styles.card}><label htmlFor="demo-profile">合成观察者</label><select id="demo-profile" disabled={busy} className={styles.select} value={profile} onChange={event => changeProfile(event.target.value as ChildDraft["profile"])}><option value="synthetic-a">小叶子 A（虚构）</option><option value="synthetic-b">小叶子 B（虚构）</option></select><label htmlFor="reading-age">阅读方式，不是法律年龄核验</label><select id="reading-age" className={styles.select} value={ageBand} onChange={event => setAgeBand(event.target.value as typeof ageBand)}><option value="6-8">6–8 岁 · 一起阅读</option><option value="9-12">9–12 岁 · 慢慢探索</option><option value="13-17">13–17 岁 · 看看依据</option></select><label className={styles.choice}><input type="checkbox" checked={large} onChange={event => setLarge(event.target.checked)}/><span>放大文字</span></label></div>{button("看看权限说明", "S04")}</>;
       case "S04": return <><div className={styles.card}><fieldset><legend>先问问自己愿不愿意</legend><label className={styles.choice}><input type="checkbox" checked={learning} onChange={event => setPermission("learning", event.target.checked)}/><span>愿意进行这次合成学习，并在本机保存一个预设描述。</span></label><label className={styles.choice}><input type="checkbox" checked={upload} onChange={event => setPermission("upload", event.target.checked)}/><span>愿意在明确点击发送后，把合成描述发给可用的演示服务。</span></label></fieldset><p className={styles.note}>不公开、不用于模型训练、不自动发送。正式地区、数据保留与儿童保护服务未获准前，不接收真实儿童资料。</p></div><div className={styles.actions}><button className={styles.primary} onClick={confirmPermissions}>保存我的选择</button>{button("都不选择，继续阅读", "S08")}</div></>;
       case "S05": return <><div className={styles.card}><h2>样例学习园 · 小树 01</h2><dl><dt>材料来源</dt><dd>应用内合成插画与预设描述</dd><dt>真实管理许可</dt><dd>未核验；无现场任务</dd><dt>守护关系</dt><dd>学习参与，不是树木产权</dd></dl></div>{button("打开树的观察页", "S06")}</>;
       case "S06": return <><div className={styles.card}><span className={styles.badge}>当前未知 · 合成示例</span><h2>先看看我们有哪些记录</h2><p>没有真实现场观察，没有实时传感器，也没有碳核证。</p><p className={styles.note}>最后真实观察：未接入。这里的插画不反映树的当下状态。</p></div><div className={styles.actions}>{button("认识讲解员", "S07")}{button("选一次室内观察", "S10")}</div></>;
       case "S07": return <><div className={styles.card}><h2>讲解员能知道树现在的一切吗？</h2><div className={styles.actions}><button className={styles.secondary} onClick={() => setQuestion("还不能。讲解只能依据已有材料，不能看见没有记录的当下。你可以再选一次。")}>能</button><button className={styles.primary} onClick={() => { setQuestion("对，我们可以一起看来源，也可以说不知道。"); go("S08"); }}>不能，只能看已有记录</button></div>{question && <p role="status">{question}</p>}</div></>;
       case "S08": return <><div className={styles.card}><h2>选择一个问题</h2><div className={styles.actions}><button className={styles.secondary} onClick={() => setQuestion("叶片颜色可能不同。这里只展示两张合成插画，不能判断真实树是否缺水或生病。来源：合成学习材料 v1。")}>叶子为什么不一样？</button><button className={styles.secondary} onClick={() => setQuestion("我们还不知道真实树在哪里、什么时候被观察、现在是什么状态。对话不会生成存活证明或碳信用。来源：合成学习材料 v1。")}>我们还不知道什么？</button></div>{question && <p role="status" className={styles.status}>{question}</p>}<p className={styles.note}>静态批准内容 · 产品侧演示适配器 · PoCC / ChainRank 未接入</p></div>{button("看材料的来源", "S09")}</>;
-      case "S09": return <><div className={styles.card}><Leaves/><p><strong>来源：</strong>应用内合成示意，版本 1。</p><p><strong>观察时间：</strong>无真实拍摄时间。</p><p><strong>能说明：</strong>我们在比较两张示意叶片。</p><p><strong>不能说明：</strong>现场身份、持续存活、碳移除或法律权益。</p><p className={styles.note}>E0 学习表达。图像完整性不等于现实真实性。</p></div>{button("用这些材料做观察", "S10")}</>;
+      case "S09": return <><div className={styles.card}><Leaves locale={locale}/><p><strong>来源：</strong>应用内合成示意，版本 1。</p><p><strong>观察时间：</strong>无真实拍摄时间。</p><p><strong>能说明：</strong>我们在比较两张示意叶片。</p><p><strong>不能说明：</strong>现场身份、持续存活、碳移除或法律权益。</p><p className={styles.note}>E0 学习表达。图像完整性不等于现实真实性。</p></div>{button("用这些材料做观察", "S10")}</>;
       case "S10": return <><div className={styles.card}><h2>在室内比较两片叶子</h2><p>任务：选一个你看到的颜色，或选择不确定。</p><p>来源：合成材料 · 风险：低 · 随时可退出</p><p className={styles.note}>真实户外任务未开放。无需设备权限，不影响基本学习参与。</p></div>{button("看看安全约定", "S11")}</>;
       case "S11": return <><div className={styles.card}><h2>今天只看屏幕里的示意图</h2><p>不去外面找树，不使用工具、药剂，不靠近虫巢或野生动物。浇水、施肥、修剪由有资格的大人按现场方案判断。</p><p>如果不舒服，随时点「停一停」。</p></div>{button("开始室内比较", "S12")}</>;
-      case "S12": return <><div className={styles.card}><Leaves/><fieldset><legend>选择你的观察</legend>{Object.entries(answers).map(([value, label]) => <label className={styles.choice} key={value}><input type="radio" name="observation" value={value} checked={answer === value} onChange={() => { setAnswer(value as ObservationChoice); savingDraft.current = null; }}/><span>{label}</span></label>)}</fieldset></div>{button("预览我的记录", "S13")}</>;
+      case "S12": return <><div className={styles.card}><Leaves locale={locale}/><fieldset><legend>选择你的观察</legend>{Object.entries(answers).map(([value, label]) => <label className={styles.choice} key={value}><input type="radio" name="observation" value={value} checked={answer === value} onChange={() => { setAnswer(value as ObservationChoice); savingDraft.current = null; }}/><span>{label}</span></label>)}</fieldset></div>{button("预览我的记录", "S13")}</>;
       case "S13": return <><div className={styles.card}><h2>{answers[answer]}</h2><p>来源：已提供的合成材料，不是现场采集。</p><p>预设描述、合成任务、随机草稿编号和本机保存时间。</p><p className={styles.note}>不含照片、位置、设备指纹、姓名或自由文字。时间是本机声明，不能证明拍摄时点。</p></div><div className={styles.actions}>{button("继续保存", "S14")}{button("换一个描述", "S12")}</div></>;
       case "S14": return <><div className={styles.card}><h2>还没有发出</h2><p>当前浏览器支持安全存储：{storageReady ? "已初始化，保存时仍会检查" : "尚未确认"}</p><p>共享设备上的加密不替代退出与清除。没有确认保存成功时，请不要依赖草稿恢复。</p></div><button className={styles.primary} disabled={busy || !storageReady} onClick={() => void saveDraft()}>{busy ? "正在保存…" : "加密保存到本机"}</button>{!permissionCheck && <div className={styles.actions}>{button("先选择学习权限", "S04")}</div>}</>;
-      case "S15": return <><div className={styles.card}><h2>{drafts.length ? `${drafts.length} 份本机草稿` : "还没有本机草稿"}</h2>{drafts.map(draft => <article key={draft.id}><h3>{answers[draft.answer]}</h3><p className={styles.note}>{received[draft.id] ? "合成服务已接收；本机保留副本" : "保存在本机，尚无接收回执"} · 非现场材料</p><button className={styles.quiet} disabled={busy} onClick={() => void vault.current?.storage.remove(draft.id, profile).then(() => setDrafts(previous => previous.filter(item => item.id !== draft.id))).catch(() => setMessage("移除尚未确认完成。"))}>移除这份本机草稿</button></article>)}</div><div className={styles.actions}>{button("查看发送状态", "S16")}{button("再做一次观察", "S10")}</div></>;
-      case "S16": return <><div className={styles.card}><h2>{connected ? "合成服务已连接" : "当前只有本机草稿"}</h2><p>发送前会重新查询当前授权。服务不可用或权限已撤回时，不发送草稿内容。</p>{!connected && <button className={styles.secondary} disabled={busy} onClick={() => void connect()}>检查并连接合成服务</button>}{drafts.map(draft => <div className={styles.card} key={draft.id}><strong>{answers[draft.answer]}</strong><p className={styles.note}>{received[draft.id] ? `已收到 · ${received[draft.id]}` : "没有接收回执"}</p><button className={styles.primary} disabled={busy || !connected || !upload || !learning} onClick={() => void sendDraft(draft)}>{received[draft.id] ? "核对同一请求回执" : "发送这份合成草稿"}</button></div>)}<p className={styles.note}>服务端返回接收不等于审核通过。关闭页面后的旧草稿可继续读取，但演示不恢复旧身份或上传授权，不能自动绑定新会话。</p></div>{button("看看审核步骤", "S17")}</>;
+      case "S15": return <><div className={styles.card}><h2>{drafts.length ? (locale === "en" ? `${drafts.length} local drafts` : `${drafts.length} 份本机草稿`) : "还没有本机草稿"}</h2>{drafts.map(draft => <article key={draft.id}><h3>{answers[draft.answer]}</h3><p className={styles.note}>{received[draft.id] ? "合成服务已接收；本机保留副本" : "保存在本机，尚无接收回执"} · 非现场材料</p><button className={styles.quiet} disabled={busy} onClick={() => void vault.current?.storage.remove(draft.id, profile).then(() => setDrafts(previous => previous.filter(item => item.id !== draft.id))).catch(() => setMessage("移除尚未确认完成。"))}>移除这份本机草稿</button></article>)}</div><div className={styles.actions}>{button("查看发送状态", "S16")}{button("再做一次观察", "S10")}</div></>;
+      case "S16": return <><div className={styles.card}><h2>{connected ? "合成服务已连接" : "当前只有本机草稿"}</h2>
+        <p>重新登录或恢复票据只恢复只读资料来源，不授予上传权。每份草稿均须在线核验，并明确确认对象、用途与版本；发送仍需单独点击。</p><p>授权请求仅传递对象编号、原始绑定、用途、版本与内容摘要；观察答案、样例与记录时间只在点击发送后传出。</p>
+        {!connected && <><button className={styles.secondary} disabled={busy} onClick={() => void connect()}>检查并连接合成服务</button>{resumeAvailable && <button className={styles.secondary} disabled={busy} onClick={() => void resumeSession()}>核验并恢复原合成会话</button>}</>}
+        {connected && <button className={styles.secondary} disabled={busy} onClick={() => void suspendSession()}>安全挂起并保存一次性恢复票据</button>}
+        {drafts.map(draft => <div className={styles.card} key={draft.id}><strong>{answers[draft.answer]}</strong><p className={styles.note}>{received[draft.id] ? `已收到 · ${received[draft.id]}` : "没有接收回执"}</p>
+          <p>{currentApprovals[draft.id] ? "当前页面已逐份授权，尚需点击发送" : "只读草稿，没有当前上传授权"}</p>
+          <button className={styles.secondary} disabled={busy || !connected} onClick={() => void inspectAuthorization(draft)}>在线核验这份草稿的用途与版本</button>
+          <button className={styles.primary} disabled={busy || !connected || !currentApprovals[draft.id]} onClick={() => void sendDraft(draft)}>{received[draft.id] ? "核对同一请求回执" : "发送这份合成草稿"}</button></div>)}
+        {authorizationProposal && <section className={styles.card} aria-label="本次逐份上传授权"><h2>请确认这一次的对象与用途</h2><dl>
+          <dt>对象编号</dt><dd>{authorizationProposal.draft.id}</dd><dt>对象内容</dt><dd>{answers[authorizationProposal.draft.answer]}</dd>
+          <dt>用途</dt><dd>仅合成学习观察上传</dd><dt>数据格式版本</dt><dd>{authorizationProposal.scope.schemaVersion}</dd>
+          <dt>当前政策版本</dt><dd>{authorizationProposal.scope.policyVersion}</dd><dt>当前服务端状态版本</dt><dd>{authorizationProposal.scope.currentVersion}</dd>
+          <dt>原始授权来源</dt><dd>仅作审计来源，不是当前上传权限</dd></dl>
+          <label className={styles.choice}><input type="checkbox" checked={authorizationChoice} onChange={event => setAuthorizationChoice(event.target.checked)}/><span>我现在同意仅将上面这一份对象用于所示用途与版本；这不是恢复旧授权。</span></label>
+          <button className={styles.primary} disabled={busy || !authorizationChoice} onClick={() => void confirmDraftAuthorization()}>确认这份对象的本次授权</button></section>}
+        <p className={styles.note}>恢复旧草稿不会恢复上传权；原始绑定与版本仅保留作审计来源。即使撤回记录写入失败，重启后仍须新的在线核验与明确逐份授权。服务端收到不等于审核通过。</p>
+        <p className={styles.note}>若未使用票据的本地清除与远端取消都失败，无法保证记录旧撤回事件；当前逐份授权屏障仍保持关闭。请联网后重试取消，勿将未清理设备交给他人。</p>
+      </div>{button("看看审核步骤", "S17")}</>;
       case "S17": return <><div className={styles.card}><h2>{learningRecord ? "不足以确认存活" : "尚未审核"}</h2><p>{serverReviewed ? "合成服务记录了演示角色的审核和学习反馈。" : localReviewed ? "仅本页模拟，没有服务端审核回执。" : "没有真实审阅员接单，不承诺处理时间。"}</p><button className={styles.secondary} disabled={busy} onClick={() => void review()}>{observationId ? "演示审阅角色：核对合成记录" : "本地演练：为什么不足以确认存活"}</button></div>{button("看看任务回执", "S18")}</>;
       case "S18": return <><div className={styles.card}><h2>练习内容：比较与描述</h2><p>真实现场行动：没有执行。</p><p>服务接收：{observationId ? "已有合成接收回执" : "没有回执"}。</p><p>生态结论：未知；合成材料不足以确认存活。</p></div>{button("放进我的观察册", "S19")}</>;
       case "S19": return <><div className={styles.card}><h2>{learningRecord ? "你练习了认真描述，也保留了未知" : "观察册可以慢慢积累"}</h2><p>{serverReviewed ? "合成学习反馈已记录在演示服务。" : localReviewed ? "这条反馈只在本页演练，不是签发凭据。" : "本机草稿与接收、审核状态分别展示。"}</p><p>可以不显示积分。暂停、树死亡或不再登录，不会把你的善意学习变成债务。</p></div><div className={styles.actions}>{button("看看学习记录的范围", "S20")}<button className={styles.secondary} onClick={stop}>今天到这里</button></div></>;
@@ -193,7 +336,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
       case "S23": return <><div className={styles.card}><label htmlFor="challenge-reason">演练一个异议类别</label><select id="challenge-reason" className={styles.select} value={challengeReason} onChange={event => setChallengeReason(event.target.value)}><option value="wrong_time">记录的时间可能不对</option><option value="wrong_tree">可能不是同一棵树</option><option value="do_not_share">我不想公开</option><option value="not_understood">我没有看懂</option></select><p className={styles.note}>不填写真实事件或个人信息。真实危险或不安全成人问题不进入这个演示，请使用帮助出口。被指涉成人不应自动收到求助内容。</p></div><button className={styles.primary} disabled={busy} onClick={() => void openChallenge()}>提交合成异议练习</button><div className={styles.actions}>{button("真实安全问题：查看帮助", "S30")}</div></>;
       case "S24": return <><div className={styles.card}><h2>{challenge || "还没有异议练习"}</h2><p>处理责任：需要独立人工复核。真实处置团队：尚未开放。没有处理期限承诺。</p><p>投诉不会自动减少学习贡献，也不会没收依法已有权益。</p></div>{button("返回观察册", "S19")}</>;
       case "S25": return <><div className={styles.card}><h2>当前演示范围</h2><p>档案：{profile === "synthetic-a" ? "小叶子 A" : "小叶子 B"}（虚构）</p><p>本机学习意愿：{learning ? "愿意" : "未同意或已暂停"}</p><p>本机上传意愿：{upload ? "愿意，仍需逐次点击" : "未同意或已暂停"}</p><p>真实监护关系：未核验。正式 Passkey：未开放。</p><p className={styles.note}>家庭视图不展示保护举报、举报计数或安全联系方式。</p></div><div className={styles.actions}>{button("调整权限", "S26")}{button("设备与恢复", "S27")}{button("了解权益", "S31")}</div></>;
-      case "S26": return <><div className={styles.card}><h2>停止新的发送，保留你的选择</h2><p>本机学习：{learning ? "当前愿意" : "已停止或未选择"}；上传：{upload ? "当前愿意" : "已停止或未选择"}。</p><p>本机暂停不会假装抹去已经传出的字节。服务端删除与合法保留需要单独确认；正式隐私请求服务未开放。</p><button className={styles.secondary} onClick={stop}>立即暂停学习与上传</button></div><div className={styles.actions}>{button("重新查看分项权限", "S04")}{button("管理本机草稿", "S27")}</div></>;
+      case "S26": return <><div className={styles.card}><h2>停止新的发送，保留你的选择</h2><p>本机学习：{learning ? "当前愿意" : "已停止或未选择"}；上传：{upload ? "当前愿意" : "已停止或未选择"}。</p><p>本机暂停不会抹去已经传出的字节。合成服务可排队处理学习导出或删除；没有连接时不能接收请求。法定保留与保护记录不会在家庭视图显示。若未使用的恢复票据无法清除且服务端撤回未确认，重启后的停止状态未知。</p><dl aria-label="撤回处理状态"><dt>撤回请求</dt><dd>{withdrawalRequested ? "已请求，本页停止发送" : "尚未请求"}</dd><dt>服务端确认</dt><dd>{withdrawalServer === "consent" ? "学习与上传撤回已确认" : withdrawalServer === "ticket" ? "恢复票据取消已确认" : withdrawalServer === "pending" ? "等待服务端确认" : withdrawalServer === "unknown" ? "未确认，请联网后重试" : "尚无确认"}</dd><dt>本地恢复票据清除</dt><dd>{withdrawalLocal === "cleared" ? "已确认清除本机恢复票据" : withdrawalLocal === "pending" ? "清除处理中" : withdrawalLocal === "unknown" ? "未确认清除，请重试或保留设备" : "尚未请求清除"}</dd></dl><p>下一步：联网后重试撤回或取消；在设备管理中清除本机草稿。重启仅可读取草稿，上传仍需重新在线核验并逐份明确授权。</p><button className={styles.secondary} onClick={stop}>立即暂停学习与上传</button><div className={styles.actions}><button className={styles.secondary} disabled={busy || !connected} onClick={() => void requestPrivacy("export_learning")}>申请合成学习导出</button><button className={styles.secondary} disabled={busy || !connected} onClick={() => void requestPrivacy("delete_learning")}>申请删除合成学习记录</button>{privacyRequest && <button className={styles.secondary} disabled={busy || !connected} onClick={() => void checkPrivacy()}>查询隐私请求状态</button>}{privacyExport !== null && <button className={styles.secondary} disabled={busy} onClick={() => void downloadPrivacy()}>下载合成学习导出</button>}</div></div><div className={styles.actions}>{button("重新查看分项权限", "S04")}{button("管理本机草稿", "S27")}</div></>;
       case "S27": return <><div className={styles.card}><h2>清除当前演示档案</h2><p>删除当前浏览器里的草稿和对应加密密钥，不删除其他演示档案。已传到服务端的记录不在本机清除范围内。</p><p className={styles.note}>加密无法保护仍然解锁的共享浏览器。正式设备撤销、恢复及跨设备删除尚未开放。</p><button className={styles.secondary} disabled={busy} onClick={() => void clearDrafts()}>清除当前档案的本机草稿</button></div>{button("回到欢迎页", "S01")}</>;
       case "S28": return <><div className={styles.card}><label className={styles.choice}><input type="checkbox" checked={large} onChange={event => setLarge(event.target.checked)}/><span>放大文字</span></label><p>默认没有声音、视频或三维下载，没有只靠颜色表达的状态。可以用键盘操作全部步骤。</p><p>中文朗读与真实辅助技术共创尚待验收。浏览器离线缓存未就绪时，不能保证离线首次打开页面；已保存草稿仍保留在设备。</p></div>{button("继续室内观察", "S10")}</>;
       case "S29": return <><div className={styles.card}><h2>四类记录，分别核对</h2><div className={styles.ledger}><div><strong>E · 生态证据</strong>记录了什么，不是碳信用。</div><div><strong>C · 学习贡献</strong>贡献署名，不是钱。</div><div><strong>R · 法律义务</strong>有效依据下的应付，不是到账。</div><div><strong>F · 资金履约</strong>机构真实回执，不是未来估值。</div></div><p className={styles.note}>PoCC、ChainRank、碳登记簿、钱包与支付机构均未接入此体验。</p></div>{button("查看权益来源边界", "S31")}</>;
@@ -205,11 +348,11 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
       case "S35": return <><div className={styles.card}><h2>变化的是有效控制，不是孩子的权益</h2><p>换学校、恢复设备或监护变化，不应复制余额、改变受益主体或复活旧权限。法定身份纠错需要独立的特殊程序。</p><p>真实移交尚未开放；不提供年龄开关或自动交易入口。</p></div>{button("回到成人视图", "S25")}</>;
     }
   }
-  return <div className={`${styles.shell} ${large ? styles.large : ""}`} lang="zh-CN" data-synthetic-only="true">
+  return translateChildNode(<div className={`${styles.shell} ${large ? styles.large : ""}`} lang="zh-CN" data-synthetic-only="true">
     <a className={styles.skip} href="#stewardship-main">跳到主要内容</a>
-    <header className={styles.header}><a className={styles.brand} href="/" aria-label="CanopyProof 首页"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 22C3 11 11 3 26 4C26 18 19 26 9 25M8 27L22 9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>CanopyProof <span className={styles.note}>树木观察册</span></a><div className={styles.headerActions}><button className={styles.secondary} onClick={stop}>停一停</button><button className={styles.quiet} onClick={() => go("S30")}>找帮助</button></div></header>
+    <header className={styles.header}><a className={styles.brand} href="/" aria-label="CanopyProof 首页"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 22C3 11 11 3 26 4C26 18 19 26 9 25M8 27L22 9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>CanopyProof <span className={styles.note}>树木观察册</span></a><div className={styles.headerActions}><label className={styles.note}>语言<select aria-label="语言" className={styles.select} value={locale} onChange={event => setLocale(event.target.value as ChildLocale)}><option value="zh-CN">中文</option><option value="en">English</option></select></label><button className={styles.secondary} onClick={stop}>停一停</button><button className={styles.quiet} onClick={() => go("S30")}>找帮助</button></div></header>
     <div className={styles.banner}><strong>合成演示</strong> · 虚构角色与树木 · 真实身份、现场任务、资金和碳交易未开放</div>
-    <div className={styles.content}><div className={styles.topline}><button className={styles.quiet} onClick={() => go(screen === "S01" ? "S01" : stewardshipScreens[Math.max(0, stewardshipScreens.findIndex(item => item[0] === screen) - 1)]![0])}>← 返回</button><span>{connected ? "合成服务已连接" : "本机体验 · 服务未连接"}</span></div><div className={styles.layout}><main id="stewardship-main" className={styles.main}><p className={styles.eyebrow}>{selection[3]} · {screen}</p><h1 ref={heading} tabIndex={-1}>{selection[1]}</h1><p className={styles.intro}>{selection[2]}</p>{message && <div role="status" aria-live="polite" className={styles.status}>{message}</div>}{screenContent()}</main><aside className={styles.art} aria-label="合成树木材料"><TreeDrawing/><div><h2>慢慢观察就好</h2><p>合成插画 · 不是实时画面</p><span className={styles.badge}>近况未知</span></div><dl className={styles.treeMeta}><dt>材料</dt><dd>样例学习园 / 小树 01</dd><dt>来源与时点</dt><dd>合成示意 / 无真实观察时间</dd><dt>今天可以做</dt><dd>看一看，提个问题，或休息</dd></dl></aside></div><details className={styles.details}><summary>成人演示导览 · 全部 35 个屏幕与状态</summary><p className={styles.note}>此导览用于检查产品边界；查看某个页面不会取得真实权限或创建账户。</p><div className={styles.screenList}>{stewardshipScreens.map(item => <button key={item[0]} onClick={() => go(item[0])}>{item[0]} · {item[1]}</button>)}</div></details></div>
+    <div className={styles.content}><div className={styles.topline}><button className={styles.quiet} onClick={() => go(screen === "S01" ? "S01" : stewardshipScreens[Math.max(0, stewardshipScreens.findIndex(item => item[0] === screen) - 1)]![0])}>← 返回</button><span>{connected ? "合成服务已连接" : "本机体验 · 服务未连接"}</span></div><div className={styles.layout}><main id="stewardship-main" className={styles.main}><p className={styles.eyebrow}>{selection[3]} · {screen}</p><h1 ref={heading} tabIndex={-1}>{selection[1]}</h1><p className={styles.intro}>{selection[2]}</p>{message && <div role="status" aria-live="polite" className={styles.status}>{message}</div>}{screenContent()}</main><aside className={styles.art} aria-label="合成树木材料"><TreeDrawing locale={locale}/><div><h2>慢慢观察就好</h2><p>合成插画 · 不是实时画面</p><span className={styles.badge}>近况未知</span></div><dl className={styles.treeMeta}><dt>材料</dt><dd>样例学习园 / 小树 01</dd><dt>来源与时点</dt><dd>合成示意 / 无真实观察时间</dd><dt>今天可以做</dt><dd>看一看，提个问题，或休息</dd></dl></aside></div><details className={styles.details}><summary>成人演示导览 · 全部 35 个屏幕与状态</summary><p className={styles.note}>此导览用于检查产品边界；查看某个页面不会取得真实权限或创建账户。</p><div className={styles.screenList}>{stewardshipScreens.map(item => <button key={item[0]} onClick={() => go(item[0])}>{item[0]} · {item[1]}</button>)}</div></details></div>
     <nav className={styles.nav} aria-label="主要导航">{([["S06", "我的树", "M12 21V10m0 6L7 12m5 1l5-5M5 10a7 7 0 0114 0"], ["S19", "观察册", "M4 4h7l1 2 1-2h7v16h-7l-1 1-1-1H4zM12 6v14"], ["S08", "一起学习", "M3 5h6l3 3 3-3h6v14h-6l-3 2-3-2H3z"], ["S30", "帮助", "M9 9a3 3 0 016 0c0 2-3 2-3 5m0 3h.01M12 2a10 10 0 100 20 10 10 0 000-20"]] as const).map(([id, label, path]) => <button key={id} aria-current={screen === id ? "page" : undefined} onClick={() => go(id)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path}/></svg>{label}</button>)}</nav>
-  </div>;
+  </div>, locale);
 }

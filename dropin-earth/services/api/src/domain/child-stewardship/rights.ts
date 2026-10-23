@@ -2,6 +2,7 @@ import { assertDelegationNarrower, authorizeRightsOperation, assertRightsReferen
 import type { RightsApproval, RightsContext, RightsEntitlement, RightsFundingLot, RightsOperation, RightsState } from './rights-types.js';
 export * from './rights-types.js';
 export { ChildRightsError, authorizeRightsOperation, canonicalRightsJson, rightsDigest };
+export const RIGHTS_CONTRIBUTION_ADMISSION_MS=60_000;
 
 export function createEmptyRightsState(): RightsState {
   return { schemaVersion: 1, mode: 'synthetic-demo', beneficiaries: {}, destinations: {}, entitlements: {}, fundingLots: {}, contributions: {}, outcomeBudgets: {}, payments: {}, delegations: {}, consumedNonces: [], executedOperations: {}, approvalRecords: {}, economicKeys: [], cumulativeAmounts: {}, outbox: [], audit: [] };
@@ -61,7 +62,10 @@ export function assertRightsInvariants(state: RightsState): void {
   }
   requireRights(rightsReconciliation(state).differenceMinor === 0, 'CONSERVATION_FAILED');
   requireRights(new Set(state.consumedNonces).size === state.consumedNonces.length && new Set(state.economicKeys).size === state.economicKeys.length, 'REPLAY_STATE_CORRUPTED');
+  const providerOperations = new Set<string>(), providerReceipts = new Set<string>();
   for (const payment of Object.values(state.payments)) {
+    if (payment.providerOperationRef) { requireRights(!providerOperations.has(payment.providerOperationRef), 'PROVIDER_OPERATION_REUSED'); providerOperations.add(payment.providerOperationRef); }
+    for (const receipt of payment.receiptRefs) { requireRights(!providerReceipts.has(receipt), 'PROVIDER_RECEIPT_REUSED'); providerReceipts.add(receipt); }
     rightsInteger(payment.amountMinor); rightsInteger(payment.refundedMinor);
     requireRights(payment.refundedMinor <= payment.amountMinor && payment.submissionCount === 1, 'INVALID_PAYMENT');
     requireRights(!!state.entitlements[payment.entitlementId] && !!state.fundingLots[payment.fundingLotId], 'ORPHAN_PAYMENT');
@@ -71,13 +75,28 @@ function noticeWait(operation: RightsOperation, context: RightsContext, kind: 'r
   const notice = context.notices[requiredRef(operation.details.notificationEvidenceRef)];
   requireRights(notice?.kind === kind && notice.beneficiaryRef === operation.beneficiaryRef && notice.operationDigest === rightsDigest(operation) && rightsTime(context.now) - rightsTime(notice.issuedAt) >= minimum, 'WAIT_PERIOD');
 }
+/** Read only from an immutable verifier admission, never from an HTTP field. */
+export function admittedRightsRecordedAt(mutations:unknown,operationId:string):string {
+  requireRights(Array.isArray(mutations),'ADMISSION_TIMESTAMP_INVALID');
+  const matches=mutations.filter((item:unknown)=>item&&typeof item==='object'&&'collection' in item&&item.collection==='audit'
+    &&'record_id' in item&&item.record_id===operationId);
+  requireRights(matches.length===1,'ADMISSION_TIMESTAMP_INVALID');
+  const payload=matches[0]?.payload as Record<string,unknown>|undefined;
+  requireRights(payload?.operationId===operationId&&typeof payload.at==='string','ADMISSION_TIMESTAMP_INVALID');
+  rightsTime(payload.at);return payload.at;
+}
 /** Pure, atomic transition. Persist result and outbox in one transaction after comparing state version.
  * No network request, production credential or provider adapter exists in this module.
  * A successful synthetic transition is never proof of an external legal/funding fact.
  */
-export function applyRightsOperation(input: RightsState, operation: RightsOperation, approvals: RightsApproval[], context: RightsContext): RightsState {
+export function applyRightsOperation(input: RightsState, operation: RightsOperation, approvals: RightsApproval[], context: RightsContext, recordedAt?:string): RightsState {
   assertRightsInvariants(input);
   const authorization = authorizeRightsOperation(operation, approvals, context, input);
+  const decisionAt=recordedAt??context.now;
+  // The admitted decision timestamp stabilizes output fields only. Every
+  // authorization/business-time condition below continues to use context.now.
+  requireRights(rightsTime(decisionAt)<=rightsTime(context.now)&&rightsTime(decisionAt)>=rightsTime(operation.validAfter)
+    &&rightsTime(decisionAt)<rightsTime(operation.expiresAt),'ADMISSION_TIMESTAMP_INVALID');
   const state = structuredClone(input);
   const details = operation.details;
   const amount = operation.amountMinor;
@@ -90,6 +109,10 @@ export function applyRightsOperation(input: RightsState, operation: RightsOperat
       break;
     }
     case 'CONFIRM_CONTRIBUTION': {
+      rightsInteger(context.policy.contributionObjectionMs,'OBJECTION_POLICY_INVALID');
+      requireRights(context.policy.contributionObjectionMs>=7*86_400_000,'OBJECTION_POLICY_INVALID');
+      const admissionAllowance=recordedAt===undefined?0:RIGHTS_CONTRIBUTION_ADMISSION_MS;
+      if(recordedAt!==undefined)requireRights(rightsTime(context.now)<rightsTime(decisionAt)+admissionAllowance,'CONTRIBUTION_ADMISSION_EXPIRED');
       const id = requiredRef(details.contributionId), outcomeId = requiredRef(details.outcomeId), plan = requiredRef(details.fundingPlanId), participant = requiredRef(details.participantCanonicalRef);
       requireRights(!state.contributions[id], 'CONTRIBUTION_EXISTS');
       const numerator = details.attributionNumerator, denominator = details.attributionDenominator, budget = details.outcomeBudgetMinor;
@@ -109,7 +132,7 @@ export function applyRightsOperation(input: RightsState, operation: RightsOperat
       // This ref must come from the protected project-local canonical subject map.
       requireRights(participant === beneficiary!.legalSubjectRef, 'CANONICAL_PARTICIPANT_MISMATCH');
       economicKey(state, ['contribution',outcomeId,plan,participant]);
-      state.contributions[id] = { id, beneficiaryRef: operation.beneficiaryRef, participantCanonicalRef: participant, outcomeId, fundingPlanId: plan, amountMinor: amount, numerator, denominator, outcomeBudgetMinor: budget, policyVersion: operation.policyVersion, confirmedAt: context.now, objectionEndsAt: new Date(rightsTime(context.now) + context.policy.contributionObjectionMs).toISOString() };
+      state.contributions[id] = { id, beneficiaryRef: operation.beneficiaryRef, participantCanonicalRef: participant, outcomeId, fundingPlanId: plan, amountMinor: amount, numerator, denominator, outcomeBudgetMinor: budget, policyVersion: operation.policyVersion, confirmedAt: decisionAt, objectionEndsAt: new Date(rightsTime(decisionAt) + context.policy.contributionObjectionMs + admissionAllowance).toISOString() };
       break;
     }
     case 'RECORD_OBLIGATION': {
@@ -205,6 +228,10 @@ export function applyRightsOperation(input: RightsState, operation: RightsOperat
       requireRights(!payout.receiptRefs.includes(receipt), 'RECEIPT_REPLAY');
       if (payout.status === 'processing') requireRights(status !== 'accepted', 'STALE_RECEIPT');
       if (payout.status === 'unknown') requireRights(status === 'settled' || status === 'failed' || status === 'unknown', 'RECONCILIATION_REQUIRED');
+      requireRights(!Object.values(state.payments).some(other => other.id !== payout.id && other.providerOperationRef === providerRef), 'PROVIDER_OPERATION_REUSED');
+      requireRights(!Object.values(state.payments).some(other => other.receiptRefs.includes(receipt)), 'PROVIDER_RECEIPT_REUSED');
+      if (!payout.providerOperationRef) economicKey(state, ['provider-operation',providerRef]);
+      economicKey(state, ['provider-receipt',receipt]);
       payout.providerOperationRef = providerRef; payout.receiptRefs.push(receipt);
       const lot = state.fundingLots[payout.fundingLotId]!, bucket = allocation(lot,payout.entitlementId), item = state.entitlements[payout.entitlementId]!;
       if (status === 'settled') { bucket.submittedMinor -= amount; lot.clearedAssetsMinor -= amount; item.paidMinor += amount; }
@@ -219,7 +246,10 @@ export function applyRightsOperation(input: RightsState, operation: RightsOperat
       const item = state.entitlements[payout.entitlementId]!, lot = state.fundingLots[payout.fundingLotId]!;
       requireRights(item.beneficiaryRef === operation.beneficiaryRef && amount > 0 && payout.refundedMinor + amount <= payout.amountMinor, 'INVALID_REFUND');
       requireRights(operation.recipientBindingRef === payout.recipientBindingRef && operation.recipientBindingVersion === payout.recipientBindingVersion && operation.recipientDestinationDigest === payout.recipientDestinationDigest, 'REFUND_DESTINATION_CHANGED');
-      economicKey(state, ['refund',payout.id,requiredRef(details.receiptRef)]);
+      const refundReceipt=requiredRef(details.receiptRef);
+      requireRights(!Object.values(state.payments).some(other => other.receiptRefs.includes(refundReceipt)), 'PROVIDER_RECEIPT_REUSED');
+      economicKey(state, ['provider-receipt',refundReceipt]);
+      economicKey(state, ['refund',payout.id,refundReceipt]);payout.receiptRefs.push(refundReceipt);
       payout.refundedMinor += amount; payout.status = 'returned';
       item.paidMinor -= amount; lot.clearedAssetsMinor += amount; allocation(lot,item.id).vestedMinor += amount;
       break;
@@ -316,6 +346,6 @@ export function applyRightsOperation(input: RightsState, operation: RightsOperat
   state.approvalRecords[operation.operationId] = { operation: structuredClone(operation), approvals: structuredClone(approvals), approvalDigest: authorization.digest };
   state.consumedNonces.push(operation.nonce); state.executedOperations[operation.operationId] = authorization.digest;
   assertRightsInvariants(state);
-  state.audit.push({ operationId: operation.operationId, type: operation.operationType, digest: authorization.digest, previousDigest: rightsDigest(input), stateDigest: rightsDigest(state), at: context.now, result: 'synthetic-applied' });
+  state.audit.push({ operationId: operation.operationId, type: operation.operationType, digest: authorization.digest, previousDigest: rightsDigest(input), stateDigest: rightsDigest(state), at: decisionAt, result: 'synthetic-applied' });
   return state;
 }

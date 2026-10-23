@@ -14,5 +14,10 @@ for (const engine of ["chromium", "firefox", "webkit"]) {
   results.push({ engine, status: result.status === 0 && !result.error ? "PASS" : "FAIL" });
   if (result.error) console.error(result.error.message);
 }
+const collector = spawnSync(process.execPath,
+  ["--import", "tsx", "tests/browser/child-stewardship-collector-privacy.spec.ts"],
+  { env: process.env, stdio: "inherit", timeout: 180_000 });
+results.push({ engine: "chromium-collector-component", status: collector.status === 0 && !collector.error ? "PASS" : "FAIL" });
+if (collector.error) console.error(collector.error.message);
 console.log(JSON.stringify({ scope: "synthetic-Hono-TestChildStore-browser-matrix", results }));
 if (results.some(result => result.status !== "PASS")) process.exitCode = 1;

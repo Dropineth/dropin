@@ -236,10 +236,10 @@
   .container,.businessInner,.headerInner,.footerTop,.footerBottom { width: calc(100% - 40px); }
   .businessInner { min-height: 44px; }
   .companyLink { display: none; }
-  .headerInner { gap: 8px; min-height: 72px; }
+  .headerInner { gap: 8px; min-height: 72px; flex-wrap: wrap; padding-block: 8px; }
   .wordmark > span { font-size: 28px; }
   .wordmark small,.shell:lang(en) .wordmark small { display: none; }
-  .headerActions { gap: 4px; }
+  .headerActions { gap: 4px; flex-wrap: wrap; max-width: 100%; }
   .headerCta { font-size: 14px; padding: 10px 12px; gap: 8px; }
   .mobileNav { padding-inline: 20px; gap: 24px; }
   .hero { gap: 32px; }

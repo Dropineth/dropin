@@ -76,11 +76,11 @@ This documentation is not one of those approvals.
 
 | Boundary | Current implementation | What it does not establish |
 | --- | --- | --- |
-| M01 identity/consent | `learning-types.ts`, `learning.ts`: fixed synthetic actors, scoped profiles, link/consent versions, separate assent, device/epoch revocation | Real guardianship, age assurance, WebAuthn enrollment/recovery, or regional admission |
+| M01 identity/consent | `learning-types.ts`, `learning.ts`: fixed synthetic actors, scoped profiles, link/consent versions, separate assent, device/epoch revocation | Real guardianship, age assurance or regional admission; actual ES256 WebAuthn fixture ceremonies exist separately but real enrollment remains unmounted |
 | M02 tree directory | Stable tree/slot IDs, replacement history, identity uncertainty, coarse synthetic region | Real tree ownership, globally unique registration, forestry validation |
 | M03 tasks | Approved low-risk indoor comparison, age-band policy, expiry/cancellation, remote path | Field risk assessment, real supervision, weather or land-access authorization |
-| M04 offline/evidence | AES-GCM IndexedDB drafts, profile isolation, stable intents, consent preflight and abort, closed synthetic references | Real-image decoding/sanitization, metadata stripping, object-store quarantine, media deletion acceptance |
-| M05 agent gateway | Real Ed25519 byte verification, current consent/credential checks, bounded delegation, static answers, no tools or ledger authority | Live model service, official AHIN network, persistent gateway nonce consumer unless integrated by caller |
+| M04 offline/evidence | AES-GCM IndexedDB drafts, profile isolation, stable intents, consent preflight and abort, closed synthetic references | Real user-media intake and safety acceptance; fixed synthetic images undergo actual decoding, metadata stripping, quarantine and native local deletion |
+| M05 agent gateway | Real Ed25519 byte verification, current consent/credential checks, bounded delegation, static answers, no tools or ledger authority | Live model service or official AHIN network; separate native gateway provides signed current-authority verification and durable nonce consumption, with its optional router unmounted |
 | M06 review | Synthetic E0 review, explicit unknown survival, append-only review lineage and independent dispute handling | Real E2/E3 field review or E4 standard certification |
 | M07 contribution | Canonical activity deduplication, alias continuity, append-only corrections, no transfer/cash value | Verified legal identity across sessions/projects or financial entitlement creation |
 | M08 rights/funds | Deterministic signed synthetic rights kernel, separate R/F state, reservations, reconciliation, bounded governance/recovery | Real institutions, legal validity, settled cash, carbon registry verification, or external provider acceptance |
@@ -128,21 +128,57 @@ TypeScript and ESLint checks pass. Current observed receipts also record 34
 rights unit tests and seven Hono API tests passing. These results predate the
 final integrated release SHA and must be rerun after relevant changes.
 
-The offline/client suite records 18 passing tests, including actual Hono/domain
-race and replay tests with `TestChildStore`. A preinstalled Chromium diagnostic
-traversed all 35 screens, exercised encrypted draft reopen/isolation/cleanup,
-replayed two identical submissions into one observation, and blocked restored
-draft upload when localStorage was unavailable. It recorded zero third-party
-requests and zero page errors. This is not Firefox/WebKit, native database,
-human accessibility, controlled low-bandwidth, or sealed-artifact acceptance.
+The client v5 receipt records 27 offline tests, seven API tests and two route-privacy tests (36 total) using explicit test stores.
+The Chromium v5 diagnostic traversed all 35 Chinese/English screens, encrypted
+draft reopen/isolation/cleanup, lost-response replay into one observation, clean
+ticket resumption, and both consumed-ticket and unused-ticket restart barriers after failed durable writes.
+It records zero third-party requests/page errors, fixture loading at 400 kbps and
+400 ms latency, mobile zoom, focus/target checks, and sampled text contrast.
+These are fixture diagnostics, not Firefox/WebKit, native database, human WCAG,
+or full Next/OpenNext sealed-artifact acceptance.
 
-The initial native SQL test passed schema creation, transaction contention,
-receipt/outbox atomicity, and non-destructive rollback on disposable PostgreSQL.
-It explicitly did not execute the production adapter. Normalized relational
-constraints and actual adapter execution require their own updated receipts.
+[Native suspend/resume](./SESSION-RESUME.md) records 15 passing tests with actual
+main Hono routes and PostgreSQL; [isolated WebAuthn](./WEBAUTHN.md) records 14
+with actual signatures and separate verifier authority. Active demo bearers
+are never persisted; only a one-use ticket is saved after explicit suspension.
+An already suspended unused ticket can still survive a lost withdrawal if every
+local durable write and server cancellation request fails. It restores read-only
+access, never draft upload authority. Each restart restores drafts and original
+provenance only; a new explicit per-object choice and current online
+[draft authorization](./DRAFT_AUTHORIZATION.md) are mandatory before sending.
+The v5 diagnostic covers all durable writes failing, offline withdrawal, an unused
+ticket surviving restart, and denial of sending the old draft even after login
+and a generic permission check. Lost withdrawal events themselves remain
+unrecoverable under total communication/storage failure; no durable-withdrawal
+guarantee is claimed.
 
-Privacy requests accurately remain pending while downstream deletion is
-unimplemented; local draft cleanup is not erasure from every storage system.
+The initial native SQL receipt covered schema/atomicity only. Later normalized
+authority and actual adapter/Hono receipts are recorded separately in
+[TRACEABILITY.md](./TRACEABILITY.md) and the implementation/build evidence; the
+initial receipt must not be used to claim those later checks.
+
+Privacy completion requires the current worker/storage receipt for each target;
+local draft cleanup alone is not erasure from every storage system. The native
+privacy lifecycle/worker receipt records 12 passing tests: actual local copies
+and expired exports are deleted, immutable receipts preserve evidence, retained
+rights/protection facts remain, external processors remain waiting, and ordinary
+views do not disclose protected retention. A bounded durable-job drain exists,
+but no production scheduler or external processor adapter is enabled. Worker
+readiness requires a separate actual LOGIN, live latest admission, no ownership,
+bypass, role membership or conflicting authority scopes. Installed optional
+scope registries must be readable; unavailable separation evidence fails closed.
+The separate [privacy authority](./PRIVACY-WORKER.md) receipt records ten native
+passes, including preservation of bytes and pending jobs when current restore
+evidence is unavailable. Old restored state may omit a newer retention hold;
+quarantine blocks deletion as well as exports. Current admitted retention evidence allows expired-session cleanup through a separate gate, while interactive export stays closed. Mixed queues cannot let expired pending exports starve eligible deletion.
+
+The [durable signed static gateway](./AGENT-GATEWAY.md) records 12 native passes
+with actual Ed25519 verification, current registry/delegation checks, atomic
+nonce/output-digest/audit persistence and real privacy deletion integration.
+The optional router is tested with actual Hono/PostgreSQL but unmounted in the
+production application; the UI does not claim signed-gateway connectivity.
+Restore-sensitive services reread an independent outside-backup anchor provider,
+never a cached request or restored-database assertion.
 No child co-design study, screen-reader user acceptance, independent full
 WCAG 2.2 AA audit, local safeguarding exercise, institutional custody test,
 or jurisdiction-specific legal approval has been performed by this work.
@@ -171,8 +207,10 @@ does not reverse an external payment or establish database compatibility.
 
 - [WCAG 2.2](https://www.w3.org/TR/WCAG22/) defines the intended accessibility
   baseline; this project does not claim conformance from automated checks alone.
-- [WebAuthn](https://www.w3.org/TR/webauthn-3/) is a future authentication
-  implementation reference, not current age/guardianship verification.
+- [WebAuthn](https://www.w3.org/TR/webauthn-3/) guides the isolated
+  [synthetic authenticator implementation](./WEBAUTHN.md). Its actual signature
+  verification and native persistence tests do not enable real enrollment,
+  product sessions, or age/guardianship verification.
 - [W3C VC Data Model 2.0](https://www.w3.org/TR/vc-data-model-2.0/) distinguishes
   verifiable statements from trust in their issuer and meaning.
 - [RFC 9052](https://www.rfc-editor.org/rfc/rfc9052.html) is an evidence-envelope

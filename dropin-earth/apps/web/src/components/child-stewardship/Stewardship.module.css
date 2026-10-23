@@ -1,6 +1,6 @@
 .shell { min-height: 100vh; color-scheme: light; background: #f6f3e9; color: #263e32; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 17px; line-height: 1.75; padding-bottom: 110px; }
 .shell a { color: inherit; text-decoration: none; }
-.shell * { box-sizing: border-box; }
+.shell * { overflow-wrap: anywhere; box-sizing: border-box; }
 .shell button, .shell select, .shell input { font: inherit; }
 .shell button, .shell a, .shell select { touch-action: manipulation; }
 .shell button, .shell select { min-height: 48px; }
@@ -9,7 +9,7 @@
 .skip { position: absolute; left: 12px; top: -100px; padding: 12px; background: white; z-index: 20; }
 .skip:focus { top: 12px; }
 .header { max-width: 1120px; margin: auto; padding: 24px 28px 18px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-.brand { display: flex; gap: 10px; align-items: center; font-size: 18px; font-weight: 750; letter-spacing: -.03em; }
+.brand { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-size: 18px; font-weight: 750; letter-spacing: -.03em; }
 .brand svg { width: 34px; height: 34px; }
 .headerActions { display: flex; gap: 10px; flex-wrap: wrap; }
 .badge { display: inline-block; border: 1px solid #6d8065; background: #edf0e1; border-radius: 30px; padding: 3px 12px; font-size: 13px; font-weight: 700; }

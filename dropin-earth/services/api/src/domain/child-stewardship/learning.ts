@@ -453,16 +453,18 @@ export function executeLearningCommand(original: LearningState, input: unknown, 
 /** Returns no precise locations, canonical aliases, private case metadata, or financial balances. */
 export function readChildLearningView(state: LearningState, principal: LearningPrincipal, now: string) {
   const actor = authenticate(state, principal, now);
-  const ownProfiles = Object.values(state.profiles).filter(profile => actor.id === profile.actorId || actor.id === profile.guardianActorId);
+  const suppressedProfiles=new Set(Object.values(state.privacyRequests).filter(request=>request.kind==='delete_learning').map(request=>request.profileId));
+  const originalProfiles = Object.values(state.profiles).filter(profile => actor.id === profile.actorId || actor.id === profile.guardianActorId);
+  const ownProfiles = originalProfiles.filter(profile=>!suppressedProfiles.has(profile.id));
   const profileIds = new Set(ownProfiles.map(profile => profile.id));
   const reviewAccess = actor.role === "reviewer" || actor.role === "protector";
   const assignments = Object.values(state.assignments).filter(item => profileIds.has(item.profileId));
   const assignmentIds = new Set(assignments.map(item => item.id));
-  const observations = Object.values(state.observations).filter(item => reviewAccess || assignmentIds.has(item.assignmentId));
+  const observations = Object.values(state.observations).filter(item => !suppressedProfiles.has(state.assignments[item.assignmentId]?.profileId??'')&&(reviewAccess || assignmentIds.has(item.assignmentId)));
   const observationIds = new Set(observations.map(item => item.id));
   const disputes = Object.values(state.disputes).filter(item => item.kind === "protection"
     ? actor.role === "protector" || item.openedBy === actor.id && item.implicatedActorId !== actor.id
-    : reviewAccess || profileIds.has(item.profileId));
+    : !suppressedProfiles.has(item.profileId)&&(reviewAccess || profileIds.has(item.profileId)));
   const visibleResources = new Set([...profileIds, ...assignmentIds, ...observationIds,
     ...disputes.map(item => item.id)]);
   const consents = Object.values(state.consents).filter(item => profileIds.has(item.profileId));
@@ -491,7 +493,7 @@ export function readChildLearningView(state: LearningState, principal: LearningP
       receivedAt: item.receivedAt, captureTimeVerified: item.captureTimeVerified, state: item.state,
       evidenceLevel: item.evidenceLevel, duplicateOf: item.duplicateOf })),
     reviews: Object.values(state.reviews).filter(item => observationIds.has(item.observationId)),
-    assessments: Object.values(state.assessments).map(item => ({ ...item, currentState: "unknown",
+    assessments: Object.values(state.assessments).filter(item=>item.reviewIds.some(id=>observationIds.has(state.reviews[id]?.observationId??''))).map(item => ({ ...item, currentState: "unknown",
       freshness: epochTime(item.validUntil) <= epochTime(now) ? "expired_for_current_claim" : "current" })),
     contributions: state.contributions.filter(item => ownProfiles.some(profile => profile.canonicalParticipantRef === item.canonicalParticipantRef))
       .map(entry => ({ id: entry.id, sourceObservationId: entry.sourceObservationId, reviewId: entry.reviewId,
@@ -499,6 +501,9 @@ export function readChildLearningView(state: LearningState, principal: LearningP
         acceptedScope: entry.acceptedScope, amount: entry.amount, unit: entry.unit, entryType: entry.entryType,
         correctionOf: entry.correctionOf, reason: entry.reason, attributedAt: entry.attributedAt,
         transferable: entry.transferable, cashValue: entry.cashValue })),
+    // Request status is authorized by its durable requester binding in the
+    // dedicated endpoint. Ordinary views must not reveal whether a suppressed
+    // profile was physically erased or retained under a confidential hold.
     disputes, privacyRequests: Object.values(state.privacyRequests).filter(item => profileIds.has(item.profileId)),
     audit: state.audit.filter(event => event.audience === "protection" ? actor.role === "protector"
       : (reviewAccess || visibleResources.has(event.resourceId) || event.actorId === actor.id))

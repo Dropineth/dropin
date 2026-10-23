@@ -94,6 +94,8 @@ jobs:
         run: node scripts/lifepp-validation-run.mjs run workspace -- npm run ci
 
       - name: Verify native PostgreSQL authority paths
+        env:
+          CANOPYPROOF_NATIVE_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
         if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
         run: |
           node scripts/lifepp-validation-run.mjs run native-postgres -- bash -eo pipefail -c '

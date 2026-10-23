@@ -89,6 +89,10 @@ CREATE TRIGGER session_birth AFTER INSERT ON child_stewardship.sessions FOR EACH
 CREATE OR REPLACE FUNCTION child_stewardship.guard_session_token() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE permitted boolean; actor jsonb; BEGIN
   IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'CHILD_TOKEN_MAPPING_IMMUTABLE' USING ERRCODE='42501'; END IF;
+  -- Serialize even direct concurrent record writers, not merely application callback execution.
+  PERFORM 1 FROM child_stewardship.sessions WHERE id=NEW.session_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'CHILD_SESSION_UNAVAILABLE' USING ERRCODE='23503'; END IF;
+  -- Evaluate current role authority after any lock wait; signing-time/pre-wait scope is insufficient.
   SELECT enabled AND expires_at>clock_timestamp() INTO permitted FROM child_stewardship.service_role_scopes
     WHERE database_role=current_user AND actor_role='bootstrap' ORDER BY scope_version DESC LIMIT 1;
   IF permitted IS DISTINCT FROM true OR current_setting('app.child_actor_role',true) IS DISTINCT FROM 'bootstrap'
@@ -118,6 +122,11 @@ CREATE TABLE IF NOT EXISTS child_stewardship.signed_approvals (
   PRIMARY KEY (session_id,operation_id),
   FOREIGN KEY(session_id,operation_id,approval_digest) REFERENCES child_stewardship.rights_operations(session_id,operation_id,approval_digest) DEFERRABLE INITIALLY DEFERRED
 );
+DO $$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='child_stewardship.signed_approvals'::regclass AND conname='child_zero_fee_policy') THEN
+  ALTER TABLE child_stewardship.signed_approvals ADD CONSTRAINT child_zero_fee_policy CHECK(envelope->'feesMinor' IS NOT DISTINCT FROM '0'::jsonb);
+ END IF;
+END $$;
 CREATE TABLE IF NOT EXISTS child_stewardship.rights_nonces (
   session_id uuid NOT NULL REFERENCES child_stewardship.sessions(id), nonce text NOT NULL,
   operation_id text, PRIMARY KEY(session_id,nonce),
@@ -221,6 +230,9 @@ DO $$ DECLARE relation text; BEGIN
   END LOOP;
 END $$;
 
+-- Provider operation identity is unique across payouts, independent of request/policy IDs.
+CREATE UNIQUE INDEX IF NOT EXISTS child_payment_provider_operation ON child_stewardship.state_records(session_id,(payload->>'providerOperationRef')) WHERE domain='rights' AND collection='payments' AND payload->>'providerOperationRef' IS NOT NULL;
+
 CREATE OR REPLACE FUNCTION child_stewardship.mirror_canonical_authority() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,child_stewardship AS $$
 DECLARE
@@ -231,17 +243,23 @@ DECLARE
   reserved bigint:=0; vested bigint:=0; submitted bigint:=0; outcomes bigint:=0;
   previous text; pd text; chain text; database_actor name; permitted boolean; registry_publisher boolean; decision text; admission child_stewardship.verification_admissions%ROWTYPE; use_tx text;
 BEGIN
-  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'CHILD_CANONICAL_DELETE_FORBIDDEN' USING ERRCODE='23514'; END IF;
+  IF TG_OP='DELETE' THEN
+    IF to_regprocedure('child_stewardship.privacy_delete_permitted(uuid,text,text,text,jsonb)') IS NOT NULL THEN
+      IF child_stewardship.privacy_delete_permitted(OLD.session_id,OLD.domain,OLD.collection,OLD.record_id,OLD.payload) THEN RETURN OLD; END IF;
+    END IF;
+    RAISE EXCEPTION 'CHILD_CANONICAL_DELETE_FORBIDDEN' USING ERRCODE='23514';
+  END IF;
   IF NEW.session_id::text IS DISTINCT FROM current_setting('app.child_session_id',true) THEN RAISE EXCEPTION 'CHILD_TENANT_MISMATCH' USING ERRCODE='42501'; END IF;
   database_actor:=CASE WHEN coalesce(current_setting('role',true),'none') IN ('none','') THEN session_user ELSE current_setting('role',true)::name END;
+  -- Serialize even direct concurrent record writers, not merely application callback execution.
+  PERFORM 1 FROM child_stewardship.sessions WHERE id=NEW.session_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'CHILD_SESSION_UNAVAILABLE' USING ERRCODE='23503'; END IF;
+  -- Evaluate current role authority after any lock wait; signing-time/pre-wait scope is insufficient.
   SELECT enabled AND expires_at>clock_timestamp() INTO permitted FROM child_stewardship.service_role_scopes
     WHERE database_role=database_actor AND actor_role=actor ORDER BY scope_version DESC LIMIT 1;
   IF permitted IS DISTINCT FROM true THEN RAISE EXCEPTION 'CHILD_DATABASE_ROLE_SCOPE_DENIED' USING ERRCODE='42501'; END IF;
   SELECT enabled AND expires_at>clock_timestamp() INTO registry_publisher FROM child_stewardship.service_role_scopes WHERE database_role=database_actor AND actor_role='registry-publisher' ORDER BY scope_version DESC LIMIT 1;
   IF registry_publisher IS TRUE AND (NEW.domain<>'rights' OR NEW.collection<>'securityContext') THEN RAISE EXCEPTION 'CHILD_REGISTRY_PUBLISHER_SCOPE_ONLY' USING ERRCODE='42501'; END IF;
-  -- Serialize even direct concurrent record writers, not merely application callback execution.
-  PERFORM 1 FROM child_stewardship.sessions WHERE id=NEW.session_id FOR UPDATE;
-  IF NOT FOUND THEN RAISE EXCEPTION 'CHILD_SESSION_UNAVAILABLE' USING ERRCODE='23503'; END IF;
   IF TG_OP='UPDATE' AND (NEW.session_id<>OLD.session_id OR NEW.domain<>OLD.domain OR NEW.collection<>OLD.collection OR NEW.record_id<>OLD.record_id OR NEW.revision<=OLD.revision) THEN
     RAISE EXCEPTION 'CHILD_RECORD_IDENTITY_OR_REVISION_CHANGED' USING ERRCODE='23514';
   END IF;
@@ -333,6 +351,12 @@ BEGIN
       INSERT INTO child_stewardship.funding_balances VALUES(NEW.session_id,NEW.record_id,p->>'currency',p->>'clearingReceiptRef',(p->>'clearedAssetsMinor')::bigint,(p->>'unallocatedMinor')::bigint,reserved,vested,submitted,outcomes,p->'allocations',NEW.revision)
       ON CONFLICT(session_id,funding_lot_id) DO UPDATE SET cleared_assets_minor=EXCLUDED.cleared_assets_minor,unallocated_minor=EXCLUDED.unallocated_minor,reserved_minor=EXCLUDED.reserved_minor,vested_minor=EXCLUDED.vested_minor,submitted_minor=EXCLUDED.submitted_minor,outcome_reserved_minor=EXCLUDED.outcome_reserved_minor,allocations=EXCLUDED.allocations,revision=EXCLUDED.revision;
     WHEN 'payments' THEN
+      IF oldp->>'providerOperationRef' IS NOT NULL AND (p->>'providerOperationRef') IS DISTINCT FROM (oldp->>'providerOperationRef') THEN RAISE EXCEPTION 'CHILD_PROVIDER_OPERATION_IMMUTABLE' USING ERRCODE='23514';END IF;
+      IF jsonb_typeof(p->'receiptRefs') IS DISTINCT FROM 'array' OR (oldp IS NOT NULL AND NOT((p->'receiptRefs') @> (oldp->'receiptRefs'))) THEN RAISE EXCEPTION 'CHILD_PROVIDER_RECEIPT_HISTORY' USING ERRCODE='23514';END IF;
+      IF (SELECT count(*) FROM jsonb_array_elements_text(p->'receiptRefs'))<>(SELECT count(DISTINCT value) FROM jsonb_array_elements_text(p->'receiptRefs')) THEN RAISE EXCEPTION 'CHILD_PROVIDER_RECEIPT_REUSED' USING ERRCODE='23514';END IF;
+      FOR item IN SELECT value FROM jsonb_array_elements_text(p->'receiptRefs') LOOP
+        IF EXISTS(SELECT 1 FROM child_stewardship.state_records r WHERE r.session_id=NEW.session_id AND r.domain='rights' AND r.collection='payments' AND r.record_id<>NEW.record_id AND r.payload->'receiptRefs' ? item.value) THEN RAISE EXCEPTION 'CHILD_PROVIDER_RECEIPT_REUSED' USING ERRCODE='23514';END IF;
+      END LOOP;
       IF oldp IS NOT NULL AND (p->>'operationId'<>oldp->>'operationId' OR p->>'recipientBindingRef'<>oldp->>'recipientBindingRef' OR p->>'recipientDestinationDigest'<>oldp->>'recipientDestinationDigest' OR p->>'recipientBindingVersion'<>oldp->>'recipientBindingVersion' OR p->>'amountMinor'<>oldp->>'amountMinor' OR p->>'entitlementId'<>oldp->>'entitlementId' OR p->>'fundingLotId'<>oldp->>'fundingLotId') THEN RAISE EXCEPTION 'CHILD_PAYMENT_BINDING_IMMUTABLE' USING ERRCODE='23514'; END IF;
       IF oldp->>'status' IN ('settled','returned','failed') AND p->>'status'<>oldp->>'status' AND NOT(oldp->>'status'='settled' AND p->>'status'='returned' AND op='REFUND') THEN RAISE EXCEPTION 'CHILD_PAYMENT_FINALITY_ROLLBACK' USING ERRCODE='23514'; END IF;
       IF oldp->>'status'='unknown' AND p->>'status' NOT IN ('unknown','settled','failed') THEN RAISE EXCEPTION 'CHILD_PAYMENT_RECONCILIATION_REQUIRED' USING ERRCODE='23514'; END IF;

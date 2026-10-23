@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import pg from 'pg';
 import { createSyntheticRightsFixture, now } from '../fixtures/child-stewardship-rights.js';
-import { createSyntheticLearningState } from '../../services/api/src/domain/child-stewardship/learning.js';
-import { PostgresChildStore, type ChildSqlClient, type ChildSqlConnection } from '../../services/api/src/domain/child-stewardship/postgres-store.js';
+import { createSyntheticLearningState, executeLearningCommand } from '../../services/api/src/domain/child-stewardship/learning.js';
+import { PostgresChildStore, reconstructChildSnapshot, type ChildSqlClient, type ChildSqlConnection } from '../../services/api/src/domain/child-stewardship/postgres-store.js';
+import { createChildStewardshipRoutes } from '../../services/api/src/routes/child-stewardship/index.js';
+import { createDemoTokens } from '../../services/api/src/domain/child-stewardship/store.js';
 import { ChildRightsVerifier } from '../../services/api/src/domain/child-stewardship/verifier-admission.js';
-import type { RightsOperation, RightsState } from '../../services/api/src/domain/child-stewardship/rights-types.js';
+import { rightsReconciliation } from '../../services/api/src/domain/child-stewardship/rights.js';
+import type { RightsOperation, RightsState, RightsDelegation } from '../../services/api/src/domain/child-stewardship/rights-types.js';
 
 type Fixture = ReturnType<typeof createSyntheticRightsFixture>;
 type Mutation = {collection:string;record_id:string;payload:unknown};
@@ -39,14 +42,18 @@ const message=(expected:string)=>(error:unknown)=>error instanceof Error&&error.
 test('native PostgreSQL independently admitted canonical authority and isolation',{timeout:120_000},async t=>{
   const url=disposableUrl(),admin=new pg.Client({connectionString:url.toString()});await admin.connect();
   const suffix=randomUUID().replaceAll('-',''),database=`child_authority_${suffix}`;
-  const runtimeRole=`child_runtime_${suffix}`,registryRole=`child_registry_${suffix}`,verifierRole=`child_verifier_${suffix}`;
+  const runtimeRole=`child_runtime_${suffix}`,registryRole=`child_registry_${suffix}`,verifierRole=`child_verifier_${suffix}`,expiryRole=`child_expiring_${suffix}`;
   await admin.query(`CREATE DATABASE ${database}`);url.pathname=`/${database}`;
-  const owner=new pg.Client({connectionString:url.toString()});await owner.connect();const clients:pg.Client[]=[];
+  const owner=new pg.Client({connectionString:url.toString()});await owner.connect();const clients:pg.Client[]=[];const passwords=new Map<string,string>();
   try{
     await owner.query(await readFile('services/api/prisma/child-stewardship.sql','utf8'));
     await owner.query(await readFile('services/api/prisma/child-stewardship-authority.sql','utf8'));
+    await owner.query(await readFile('services/api/prisma/child-stewardship-privacy.sql','utf8'));
+    await owner.query(await readFile('services/api/prisma/child-stewardship-rate-limit.sql','utf8'));
+    await owner.query(await readFile('services/api/prisma/child-stewardship-resume.sql','utf8'));
+    await owner.query(await readFile('services/api/prisma/child-stewardship-draft-authorization.sql','utf8'));
     async function scoped(role:string,scopes:string[]){
-      await owner.query(`CREATE ROLE ${role} NOLOGIN NOSUPERUSER NOBYPASSRLS`);
+      const password=randomBytes(32).toString('hex');passwords.set(role,password);await owner.query(`CREATE ROLE ${role} LOGIN PASSWORD '${password}' NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE`);
       // Deliberately broad local fixture grants exercise the restrictive trigger/RLS boundary.
       await owner.query(`GRANT USAGE ON SCHEMA child_stewardship TO ${role}`);
       await owner.query(`GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA child_stewardship TO ${role}`);
@@ -56,7 +63,7 @@ test('native PostgreSQL independently admitted canonical authority and isolation
     }
     await scoped(runtimeRole,['bootstrap','guardian','child','reviewer','protector','operator']);
     await scoped(registryRole,['operator','registry-publisher']);await scoped(verifierRole,['operation-verifier']);
-    async function connect(role:string){const client=new pg.Client({connectionString:url.toString()});await client.connect();await client.query(`SET ROLE ${role}`);clients.push(client);return client;}
+    async function connect(role:string){const login=new URL(url);login.username=role;login.password=passwords.get(role)!;const client=new pg.Client({connectionString:login.toString()});await client.connect();clients.push(client);return client;}
     const a=await connect(runtimeRole),b=await connect(runtimeRole),publisher=await connect(registryRole),verification=await connect(verifierRole);
     const verifier=new ChildRightsVerifier(sql(verification));
     async function seed(f= createSyntheticRightsFixture(),state?:RightsState){
@@ -65,8 +72,8 @@ test('native PostgreSQL independently admitted canonical authority and isolation
       return {session,f,state:rights};
     }
     async function count(session:string,table:string){return transaction(a,session,'operator','read','',async()=>Number((await a.query(`SELECT count(*) FROM child_stewardship.${table} WHERE session_id=$1`,[session])).rows[0].count));}
-    async function admit(session:string,f:Fixture,op:RightsOperation,ids=['g','r1','t']):Promise<Admission>{
-      await verifier.admit(session,op,f.approvals(op,ids),now);
+    async function admit(session:string,f:Fixture,op:RightsOperation,ids=['g','r1','t'],moment=now):Promise<Admission>{
+      await verifier.admit(session,op,f.approvals(op,ids),moment);
       return transaction(a,session,'operator','read','',async()=>(await a.query('SELECT approved_mutations,expected_revision::text FROM child_stewardship.verification_admissions WHERE session_id=$1 AND operation_id=$2',[session,op.operationId])).rows[0] as Admission);
     }
     async function persist(client:pg.Client,session:string,op:RightsOperation,admission:Admission,options:{mutations?:Mutation[];after?:()=>Promise<unknown>}={}){
@@ -80,6 +87,10 @@ test('native PostgreSQL independently admitted canonical authority and isolation
         await options.after?.();
       });
     }
+    async function readRights(id:string):Promise<RightsState>{const rows=(await owner.query("SELECT domain,collection,record_id,payload,position FROM child_stewardship.state_records WHERE session_id=$1 ORDER BY domain,collection,position,record_id",[id])).rows;return reconstructChildSnapshot(rows,0).rights;}
+    async function execute(x:{session:string;f:Fixture},op:RightsOperation,ids=['r1','t'],moment=now){const admitted=await admit(x.session,x.f,op,ids,moment);await persist(a,x.session,op,admitted);return readRights(x.session);}
+    async function fingerprint(id:string){const result:Record<string,unknown>={};for(const table of ['sessions','state_records','entitlement_balances','funding_balances','payment_facts','economic_keys','rights_nonces','authority_journal','verification_admissions','verification_uses','receipts']){result[table]=(await owner.query(`SELECT encode(sha256(convert_to(coalesce(jsonb_agg(to_jsonb(r) ORDER BY to_jsonb(r)::text),'[]'::jsonb)::text,'UTF8')),'hex') digest FROM child_stewardship.${table} r WHERE ${table==='sessions'?'id':'session_id'}=$1`,[id])).rows[0].digest;}return result;}
+    async function unchangedReject(x:{session:string;f:Fixture},op:RightsOperation,ids=['r1','t'],pattern?:RegExp){const before=await fingerprint(x.session);if(pattern)await assert.rejects(()=>admit(x.session,x.f,op,ids),pattern);else await assert.rejects(()=>admit(x.session,x.f,op,ids));assert.deepEqual(await fingerprint(x.session),before);}
     const initial=await seed(),session=initial.session,other=(await seed()).session;
     await t.test('normalized obligations, funding and bootstrap signatures persist without aggregate authority',async()=>{
       assert.equal(await count(session,'entitlement_balances'),1);assert.equal(await count(session,'funding_balances'),1);assert.equal(await count(session,'signed_approvals'),4);
@@ -201,6 +212,107 @@ test('native PostgreSQL independently admitted canonical authority and isolation
       await assert.rejects(()=>transaction(publisher,x.session,'operator','PAY_PROTECTED','fake',()=>insert(publisher,x.session,'rights','economicKeys','fake','fake')),code('42501'));
       assert.equal(await count(x.session,'credential_revocations'),1);
     });
+    await t.test('EX-16 exact unfunded/funded/settled/failed/refunded native ledger buckets and zero-fee policy',async()=>{
+      const f=createSyntheticRightsFixture(),x=await seed(f,f.state);
+      async function check(expected:number[]){const r=rightsReconciliation(await readRights(x.session));assert.deepEqual([r.assetsMinor,r.unallocatedMinor,r.reservedMinor,r.vestedMinor,r.submittedMinor,r.legalOutstandingMinor,r.unfundedMinor,r.differenceMinor],expected);const rows=(await owner.query('SELECT coalesce(sum(cleared_assets_minor),0)::text assets,coalesce(sum(unallocated_minor),0)::text unallocated,coalesce(sum(reserved_minor+outcome_reserved_minor),0)::text reserved,coalesce(sum(vested_minor),0)::text vested,coalesce(sum(submitted_minor),0)::text submitted FROM child_stewardship.funding_balances WHERE session_id=$1',[x.session])).rows[0];assert.deepEqual(Object.values(rows).map(Number),expected.slice(0,5));assert.equal(Number((await owner.query('SELECT coalesce(sum(amount_minor-paid_minor),0)::text owed FROM child_stewardship.entitlement_balances WHERE session_id=$1',[x.session])).rows[0].owed),expected[5]);}
+      await execute(x,f.operation('RECORD_OBLIGATION',{amountMinor:100,entitlementIds:['entitlement-a'],details:{rightKind:'contractual_grant',obligorRef:'obligor-a',dueAt:'2027-01-01T00:00:00Z',contributionRequired:false}}));await execute(x,f.operation('VEST',{amountMinor:100,entitlementIds:['entitlement-a']}));await check([0,0,0,0,0,100,100,0]);
+      await execute(x,f.operation('RECORD_CLEARED_FUNDING',{amountMinor:100,details:{fundingLotId:'funding-a',clearingReceiptRef:'native-clear'}}));await check([100,100,0,0,0,100,100,0]);
+      await execute(x,f.operation('RESERVE_FUNDING',{amountMinor:100,entitlementIds:['entitlement-a'],fundingLotIds:['funding-a']}));await check([100,0,0,100,0,100,0,0]);
+      await execute(x,f.payment(40),['g','r1','t']);await check([100,0,0,60,40,100,0,0]);
+      await execute(x,f.operation('PAYMENT_RESULT',{amountMinor:40,details:{payoutId:'payout-a',paymentStatus:'settled',providerOperationRef:'native-provider-a',receiptRef:'native-settled-a'}}),['t']);await check([60,0,0,60,0,60,0,0]);
+      await execute(x,f.payment(20,{details:{payoutId:'payout-failed'}}),['g','r1','t']);await check([60,0,0,40,20,60,0,0]);
+      await execute(x,f.operation('PAYMENT_RESULT',{amountMinor:20,details:{payoutId:'payout-failed',paymentStatus:'failed',providerOperationRef:'native-provider-failed',receiptRef:'native-failed'}}),['t']);await check([60,0,0,60,0,60,0,0]);
+      await execute(x,f.operation('REFUND',{amountMinor:10,recipientBindingRef:'destination-a',recipientBindingVersion:1,recipientDestinationDigest:'a'.repeat(64),details:{payoutId:'payout-a',receiptRef:'native-refund-a'}}));await check([70,0,0,70,0,70,0,0]);
+      for(const fee of [1,-1,Number.MAX_SAFE_INTEGER+1])await unchangedReject(x,f.payment(10,{feesMinor:fee,details:{payoutId:`fee-${String(fee).replace('-','negative')}`}}),['g','r1','t']);
+      await unchangedReject(x,{...f.payment(10),currency:'USD'} as unknown as RightsOperation,['g','r1','t'],/REAL_VALUE_DISABLED/);
+      await unchangedReject(x,f.operation('RECORD_OBLIGATION',{amountMinor:10,entitlementIds:['fake-education-money'],details:{rightKind:'EDU_POINT' as never,obligorRef:'obligor-a',dueAt:'2027-01-01T00:00:00Z',contributionRequired:false}}),['r1','t'],/RIGHT_KIND_INVALID/);
+      assert.equal((await readRights(x.session)).entitlements['entitlement-a']!.paidMinor,30);
+    });
+    await t.test('provider operation and receipt source identities cannot settle or refund two different payouts',async()=>{
+      const x=await seed(),f=x.f;for(const id of ['one','two'])await execute(x,f.payment(30,{details:{payoutId:id}}),['g','r1','t']);
+      await execute(x,f.operation('PAYMENT_RESULT',{amountMinor:30,details:{payoutId:'one',paymentStatus:'accepted',providerOperationRef:'provider-one',receiptRef:'accepted-one'}}),['t']);
+      await unchangedReject(x,f.operation('PAYMENT_RESULT',{amountMinor:30,details:{payoutId:'two',paymentStatus:'settled',providerOperationRef:'provider-one',receiptRef:'forged-second-source'}}),['t'],/PROVIDER_OPERATION_REUSED/);
+      await unchangedReject(x,f.operation('PAYMENT_RESULT',{amountMinor:30,details:{payoutId:'two',paymentStatus:'settled',providerOperationRef:'provider-two',receiptRef:'accepted-one'}}),['t'],/PROVIDER_RECEIPT_REUSED/);
+      await execute(x,f.operation('PAYMENT_RESULT',{amountMinor:30,details:{payoutId:'one',paymentStatus:'processing',providerOperationRef:'provider-one',receiptRef:'processing-one'}}),['t']);
+      for(const id of ['one','two'])await execute(x,f.operation('PAYMENT_RESULT',{amountMinor:30,details:{payoutId:id,paymentStatus:'settled',providerOperationRef:`provider-${id}`,receiptRef:`settled-${id}`}}),['t']);
+      const refund=(id:string,receipt:string)=>f.operation('REFUND',{amountMinor:10,recipientBindingRef:'destination-a',recipientBindingVersion:1,recipientDestinationDigest:'a'.repeat(64),details:{payoutId:id,receiptRef:receipt}});
+      await execute(x,refund('one','refund-source'));await unchangedReject(x,refund('two','refund-source'),['r1','t'],/PROVIDER_RECEIPT_REUSED/);await unchangedReject(x,refund('two','settled-one'),['r1','t'],/PROVIDER_RECEIPT_REUSED/);await execute(x,refund('two','refund-two'));
+      const state=await readRights(x.session);assert.equal(state.entitlements['entitlement-a']!.paidMinor,40);assert.equal(rightsReconciliation(state).assetsMinor,60);assert.equal(new Set(Object.values(state.payments).flatMap(p=>p.receiptRefs)).size,6);
+      const bad=structuredClone(state);bad.payments.two!.providerOperationRef='provider-one';await assert.rejects(()=>seed(createSyntheticRightsFixture(),bad),code('23505'));
+      const reused=structuredClone(state);reused.payments.two!.receiptRefs.push('accepted-one');await assert.rejects(()=>seed(createSyntheticRightsFixture(),reused),message('CHILD_PROVIDER_RECEIPT_REUSED'));
+    });
+    await t.test('concurrent use of one provider settlement source has at most one financial effect',async()=>{
+      const x=await seed(),f=x.f;for(const id of ['one','two'])await execute(x,f.payment(30,{details:{payoutId:id}}),['g','r1','t']);const ops=['one','two'].map(id=>f.operation('PAYMENT_RESULT',{amountMinor:30,details:{payoutId:id,paymentStatus:'settled',providerOperationRef:'same-provider-operation',receiptRef:'same-provider-receipt'}}));const admissions:Admission[]=[];for(const op of ops)admissions.push(await admit(x.session,f,op,['t']));const result=await Promise.allSettled(ops.map((op,i)=>persist(i?a:b,x.session,op,admissions[i]!)));assert.equal(result.filter(r=>r.status==='fulfilled').length,1);const state=await readRights(x.session);assert.equal(state.entitlements['entitlement-a']!.paidMinor,30);assert.equal(rightsReconciliation(state).assetsMinor,70);assert.equal(rightsReconciliation(state).submittedMinor,30);assert.equal(Object.values(state.payments).filter(p=>p.providerOperationRef==='same-provider-operation').length,1);
+    });
+    await t.test('EX-29 native financial types and zero-fee constraint reject malformed bootstrap state atomically',async()=>{
+      const countBefore=Number((await owner.query('SELECT count(*) n FROM child_stewardship.sessions')).rows[0].n);
+      for(const change of ['currency','right-kind','fee','negative-fee','overflow-fee']){const f=createSyntheticRightsFixture(),state=f.funded();if(change==='currency')state.fundingLots['funding-a']!.currency='USD' as never;else if(change==='right-kind')state.entitlements['entitlement-a']!.rightKind='EDU_FEEDBACK' as never;else Object.values(state.approvalRecords)[0]!.operation.feesMinor=change==='fee'?1:change==='negative-fee'?-1:Number.MAX_SAFE_INTEGER+1;await assert.rejects(()=>seed(f,state),code('23514'));}
+      assert.equal(Number((await owner.query('SELECT count(*) n FROM child_stewardship.sessions')).rows[0].n),countBefore);
+    });
+    await t.test('EX-21 current policy and alias changes cannot duplicate a canonical financial contribution',async()=>{
+      const f=createSyntheticRightsFixture();let state=f.apply(f.state,f.operation('RECORD_CLEARED_FUNDING',{amountMinor:100,details:{fundingLotId:'funding-a',clearingReceiptRef:'policy-replay-clear'}}),['r1','t']);state=f.apply(state,f.operation('RESERVE_OUTCOME',{amountMinor:100,fundingLotIds:['funding-a'],details:{outcomeId:'policy-replay-outcome',fundingPlanId:'policy-replay-plan'}}),['r1','t']);const details={contributionId:'original-contribution',outcomeId:'policy-replay-outcome',fundingPlanId:'policy-replay-plan',participantCanonicalRef:'canonical-a',attributionNumerator:1,attributionDenominator:3,outcomeBudgetMinor:100};state=f.apply(state,f.operation('CONFIRM_CONTRIBUTION',{amountMinor:33,details}),['v1','v3']);state.beneficiaries['beneficiary-alias']={...state.beneficiaries['beneficiary-a']!,ref:'beneficiary-alias'};f.context.entitlementPolicies['policy-v1']=structuredClone(f.context.policy);f.context.policy.version='policy-v2';const x=await seed(f,state);
+      for(const beneficiary of ['beneficiary-a','beneficiary-alias'])await unchangedReject(x,f.operation('CONFIRM_CONTRIBUTION',{beneficiaryRef:beneficiary,amountMinor:33,details:{...details,contributionId:`replay-${beneficiary}`}}),['v1','v3'],/ECONOMIC_REPLAY/);assert.equal(Object.keys((await readRights(x.session)).contributions).length,1);
+    });
+    await t.test('EX-23 thirds round deterministically, remainder stays in funded child pool and independent plans do not duplicate an outcome claim',async()=>{
+      const f=createSyntheticRightsFixture();for(const id of ['b','c','d'])f.state.beneficiaries[`beneficiary-${id}`]={...f.state.beneficiaries['beneficiary-a']!,ref:`beneficiary-${id}`,legalSubjectRef:`canonical-${id}`};const x=await seed(f,f.state);
+      for(const [plan,lot]of [['plan-one','funding-a'],['plan-two','funding-b']]as const){await execute(x,f.operation('RECORD_CLEARED_FUNDING',{amountMinor:100,details:{fundingLotId:lot,clearingReceiptRef:`distinct-sponsor-source-${plan}`}}));await execute(x,f.operation('RESERVE_OUTCOME',{amountMinor:100,fundingLotIds:[lot],details:{outcomeId:'one-real-outcome-reference',fundingPlanId:plan}}));}
+      function contribution(id:string,plan='plan-one',numerator=1,denominator=3){return f.operation('CONFIRM_CONTRIBUTION',{beneficiaryRef:`beneficiary-${id}`,amountMinor:Math.floor(100*numerator/denominator),details:{contributionId:`contribution-${plan}-${id}`,outcomeId:'one-real-outcome-reference',fundingPlanId:plan,participantCanonicalRef:`canonical-${id}`,attributionNumerator:numerator,attributionDenominator:denominator,outcomeBudgetMinor:100}});}
+      for(const id of ['a','b','c']){await execute(x,contribution(id),['v1','v3']);await execute(x,f.operation('RECORD_OBLIGATION',{beneficiaryRef:`beneficiary-${id}`,amountMinor:33,entitlementIds:[`third-${id}`],details:{rightKind:'contractual_grant',obligorRef:'obligor-a',dueAt:'2027-01-01T00:00:00Z',contributionRequired:true,contributionId:`contribution-plan-one-${id}`}}));await execute(x,f.operation('RESERVE_FUNDING',{beneficiaryRef:`beneficiary-${id}`,amountMinor:33,entitlementIds:[`third-${id}`],fundingLotIds:['funding-a']}));await execute(x,f.operation('VEST',{beneficiaryRef:`beneficiary-${id}`,amountMinor:33,entitlementIds:[`third-${id}`]}),['r1','t'],'2026-11-02T12:00:00Z');}
+      const vested=(await readRights(x.session)).entitlements;await unchangedReject(x,contribution('d'),['v1','v3'],/ATTRIBUTION_LIMIT/);assert.deepEqual((await readRights(x.session)).entitlements,vested);
+      await execute(x,contribution('a','plan-two',1,1),['v1','v3']);const state=await readRights(x.session);assert.equal(Object.values(state.contributions).filter(c=>c.fundingPlanId==='plan-one').reduce((n,c)=>n+c.amountMinor,0),99);assert.deepEqual(Object.values(state.fundingLots).flatMap(lot=>Object.values(lot.outcomeReserves)).sort((a,b)=>a-b),[1,100]);assert.equal(rightsReconciliation(state).differenceMinor,0);assert.equal(new Set(Object.values(state.contributions).map(c=>c.outcomeId)).size,1);
+      const replay=contribution('a','plan-one');replay.details.contributionId='new-id-same-economic-grant';await unchangedReject(x,replay,['v1','v3']);
+    });
+    await t.test('EX-23 concurrent competing shares cannot exceed a single outcome pool',async()=>{
+      const f=createSyntheticRightsFixture();f.state.beneficiaries['beneficiary-b']={...f.state.beneficiaries['beneficiary-a']!,ref:'beneficiary-b',legalSubjectRef:'canonical-b'};const x=await seed(f,f.state);await execute(x,f.operation('RECORD_CLEARED_FUNDING',{amountMinor:100,details:{fundingLotId:'funding-a',clearingReceiptRef:'share-race-clear'}}));await execute(x,f.operation('RESERVE_OUTCOME',{amountMinor:100,fundingLotIds:['funding-a'],details:{outcomeId:'share-race',fundingPlanId:'race-plan'}}));
+      const ops=['a','b'].map(id=>f.operation('CONFIRM_CONTRIBUTION',{beneficiaryRef:`beneficiary-${id}`,amountMinor:60,details:{contributionId:`share-${id}`,outcomeId:'share-race',fundingPlanId:'race-plan',participantCanonicalRef:`canonical-${id}`,attributionNumerator:3,attributionDenominator:5,outcomeBudgetMinor:100}}));const admissions:Admission[]=[];for(const op of ops)admissions.push(await admit(x.session,f,op,['v1','v3']));const results=await Promise.allSettled(ops.map((op,i)=>persist(i?a:b,x.session,op,admissions[i]!)));assert.equal(results.filter(r=>r.status==='fulfilled').length,1);const loser=results.findIndex(r=>r.status==='rejected');await unchangedReject(x,ops[loser]!,['v1','v3']);assert.equal(Object.values((await readRights(x.session)).contributions).reduce((n,c)=>n+c.amountMinor,0),60);
+    });
+    await t.test('EX-25 whole-entitlement bundle split and merge preserve paid history, debt and original allocations',async()=>{
+      const f=createSyntheticRightsFixture();let state=f.funded();for(const id of ['b','c'])state.beneficiaries[`beneficiary-${id}`]={...state.beneficiaries['beneficiary-a']!,ref:`beneficiary-${id}`,legalSubjectRef:`canonical-${id}`};
+      for(const [id,beneficiary,amount]of [['entitlement-b','beneficiary-b',80],['entitlement-c','beneficiary-a',60]]as const){state=f.apply(state,f.operation('RECORD_OBLIGATION',{beneficiaryRef:beneficiary,amountMinor:amount,entitlementIds:[id],details:{rightKind:'contractual_grant',obligorRef:'obligor-a',dueAt:'2027-01-01T00:00:00Z',contributionRequired:false}}),['r1','t']);state=f.apply(state,f.operation('VEST',{beneficiaryRef:beneficiary,amountMinor:amount,entitlementIds:[id]}),['r1','t']);}
+      const x=await seed(f,state);await execute(x,f.payment(40),['g','r1','t']);await execute(x,f.operation('PAYMENT_RESULT',{amountMinor:40,details:{payoutId:'payout-a',paymentStatus:'settled',providerOperationRef:'paid-before-correction',receiptRef:'paid-before-correction-receipt'}}),['t']);const before=await readRights(x.session),totals=rightsReconciliation(before),approvers=['a','b','r1','r2','t'];
+      const split=f.operation('LEGAL_CORRECTION',{entitlementIds:['entitlement-a'],amountMinor:100,details:{replacesBeneficiaryRef:'beneficiary-b',legalDecisionRef:'decision-synthetic'}});
+      await unchangedReject(x,{...split,amountMinor:101},approvers,/CORRECTION_AMOUNT_MISMATCH/);await unchangedReject(x,{...split,entitlementIds:['entitlement-b'],amountMinor:80},approvers,/CORRECTION_SCOPE_INVALID/);await unchangedReject(x,{...split,details:{...split.details,legalDecisionRef:'unregistered-decision'}},approvers,/LEGAL_DECISION_UNVERIFIED/);await unchangedReject(x,split,['b','r1','r2','t'],/ROLE_QUORUM_MISSING/);
+      const exactBefore=await fingerprint(x.session);await assert.rejects(()=>verifier.admit(x.session,{...split,details:{...split.details,replacesBeneficiaryRef:'beneficiary-c'}},f.approvals(split,approvers),now),/INVALID_SIGNATURE/);assert.deepEqual(await fingerprint(x.session),exactBefore);
+      await execute(x,split,approvers);await unchangedReject(x,split,approvers,/OPERATION_REPLAY|VERIFICATION_ADMISSION_CONFLICT/);
+      await execute(x,f.operation('LEGAL_CORRECTION',{authorizationEpoch:1,entitlementIds:['entitlement-c'],amountMinor:60,details:{replacesBeneficiaryRef:'beneficiary-c',legalDecisionRef:'decision-synthetic'}}),approvers);
+      await execute(x,f.operation('LEGAL_CORRECTION',{beneficiaryRef:'beneficiary-b',authorizationEpoch:1,entitlementIds:['entitlement-a','entitlement-b'],amountMinor:180,details:{replacesBeneficiaryRef:'beneficiary-c',legalDecisionRef:'decision-synthetic'}}),approvers);
+      const after=await readRights(x.session);assert.deepEqual(rightsReconciliation(after),totals);assert.deepEqual(after.payments,before.payments);assert.deepEqual(after.fundingLots,before.fundingLots);assert.equal(Object.keys(after.entitlements).length,3);assert.equal(after.entitlements['entitlement-a']!.paidMinor,40);assert.ok(Object.values(after.entitlements).every(e=>e.beneficiaryRef==='beneficiary-c'));assert.ok(Object.values(after.entitlements).every(e=>e.amountMinor-e.paidMinor>=0));
+    });
+    await t.test('EX-25 concurrent legal correction and payout cannot both execute from old authority',async()=>{
+      const f=createSyntheticRightsFixture(),state=f.funded();state.beneficiaries['beneficiary-b']={...state.beneficiaries['beneficiary-a']!,ref:'beneficiary-b',legalSubjectRef:'canonical-b'};const x=await seed(f,state),correct=f.operation('LEGAL_CORRECTION',{entitlementIds:['entitlement-a'],amountMinor:100,details:{replacesBeneficiaryRef:'beneficiary-b',legalDecisionRef:'decision-synthetic'}}),pay=f.payment(40);const ca=await admit(x.session,f,correct,['a','b','r1','r2','t']),pa=await admit(x.session,f,pay);const results=await Promise.allSettled([persist(a,x.session,correct,ca),persist(b,x.session,pay,pa)]);assert.equal(results.filter(r=>r.status==='fulfilled').length,1);const final=await readRights(x.session);assert.equal(Object.keys(final.entitlements).length,1);assert.equal(rightsReconciliation(final).legalOutstandingMinor,100);assert.equal(rightsReconciliation(final).assetsMinor,100);assert.equal(Object.keys(final.payments).length,results[1]!.status==='fulfilled'?1:0);await unchangedReject(x,results[0]!.status==='fulfilled'?pay:correct,results[0]!.status==='fulfilled'?['g','r1','t']:['a','b','r1','r2','t']);
+    });
+    await t.test('RT-03 two independently approved delegations share one authoritative period budget',async()=>{
+      const f=createSyntheticRightsFixture();f.context.policy.beneficiaryPeriodLimitMinor=100;f.context.policy.destinationPeriodLimitMinor=100;const x=await seed(f,f.funded(200));
+      for(const id of ['one','two']){const delegation:RightsDelegation={id:`delegation-${id}`,parentId:null,issuerActorRef:'actor-g',delegateActorRef:'actor-x',beneficiaryRef:'beneficiary-a',epoch:0,operationTypes:['PAY_PROTECTED'],entitlementIds:['entitlement-a'],destinationRefs:['destination-a'],purposeCodes:['LEARNING_SUPPORT'],currency:'XTS',validAfter:'2026-10-23T12:01:00Z',expiresAt:'2026-11-01T00:00:00Z',perCallLimitMinor:60,cumulativeLimitMinor:100,maximumCalls:2,consumedMinor:0,consumedCalls:0,revoked:false,allowRedelegation:false,approvalDigest:''};await execute(x,f.operation('GRANT_DELEGATION',{details:{delegation}}),['g','r1','t']);}
+      const ops=['one','two'].map(id=>f.payment(60,{delegationId:`delegation-${id}`,details:{payoutId:`delegated-${id}`}}));const admissions:Admission[]=[];for(const op of ops)admissions.push(await admit(x.session,f,op,['g','r1','t'],'2026-10-23T12:02:00Z'));const result=await Promise.allSettled(ops.map((op,i)=>persist(i?a:b,x.session,op,admissions[i]!)));assert.equal(result.filter(r=>r.status==='fulfilled').length,1);const state=await readRights(x.session);assert.equal(rightsReconciliation(state).submittedMinor,60);assert.equal(Object.values(state.delegations).reduce((n,d)=>n+d.consumedMinor,0),60);assert.equal(state.outbox.length,1);
+    });
+    await t.test('RT-05 crash after native outbox writes rolls back all effects and exact retry creates one submission intent',async()=>{
+      const x=await seed(),op=x.f.payment(),admission=await admit(x.session,x.f,op),before=await fingerprint(x.session);await assert.rejects(()=>persist(a,x.session,op,admission,{after:async()=>{throw new Error('LOCAL_CRASH_BEFORE_COMMIT');}}),/LOCAL_CRASH_BEFORE_COMMIT/);assert.deepEqual(await fingerprint(x.session),before);await persist(a,x.session,op,admission);const state=await readRights(x.session);assert.equal(state.outbox.length,1);assert.equal(state.payments['payout-a']!.submissionCount,1);await unchangedReject(x,op,['g','r1','t'],/OPERATION_REPLAY|VERIFICATION_ADMISSION_CONFLICT/);
+    });
+    await t.test('EX-16 actual Hono and PostgreSQL execute the complete accounting sequence and reject reused source receipts without effects',async()=>{
+      const f=createSyntheticRightsFixture(),id=randomUUID(),tokens=createDemoTokens(id),store=new PostgresChildStore(sql(a));assert.equal(await store.ready(),true);await store.create({id,expiresAt:'2027-01-01T00:00:00Z',snapshot:{version:0,learning:createSyntheticLearningState(now),rights:f.state,rightsContext:f.context}},tokens.records);const started=performance.now(),clock=()=>new Date(Date.parse(now)+performance.now()-started).toISOString(),app=createChildStewardshipRoutes({mode:'synthetic-demo',store,now:clock});let version=0;
+      const external=t.mock.method(globalThis,'fetch',async()=>{throw new Error('UNEXPECTED_REAL_PROVIDER_REQUEST');});
+      async function post(op:RightsOperation,ids:string[],key=`http-${op.operationId}`,expected=version){return app.request('/rights/operations',{method:'POST',headers:{authorization:`Bearer ${tokens.publicTokens.operator}`,'content-type':'application/json','idempotency-key':key,'if-match':String(expected)},body:JSON.stringify({operation:op,approvals:f.approvals(Number.isSafeInteger(op.feesMinor)?op:{...op,feesMinor:0},ids)})});}
+      async function send(op:RightsOperation,ids=['r1','t']){await verifier.admit(id,op,f.approvals(op,ids),clock());const response=await post(op,ids),body=await response.json();assert.equal(response.status,200,JSON.stringify(body));version=body.version;return op;}
+      async function check(assets:number,vested:number,submitted:number,owed:number){const state=await readRights(id),r=rightsReconciliation(state);assert.deepEqual([r.assetsMinor,r.vestedMinor,r.submittedMinor,r.legalOutstandingMinor,r.differenceMinor],[assets,vested,submitted,owed,0]);}
+      await send(f.operation('RECORD_OBLIGATION',{amountMinor:100,entitlementIds:['entitlement-a'],details:{rightKind:'contractual_grant',obligorRef:'obligor-a',dueAt:'2027-01-01T00:00:00Z',contributionRequired:false}}));await send(f.operation('VEST',{amountMinor:100,entitlementIds:['entitlement-a']}));await check(0,0,0,100);
+      await send(f.operation('RECORD_CLEARED_FUNDING',{amountMinor:100,details:{fundingLotId:'funding-a',clearingReceiptRef:'http-cleared-source'}}));await send(f.operation('RESERVE_FUNDING',{amountMinor:100,entitlementIds:['entitlement-a'],fundingLotIds:['funding-a']}));await check(100,100,0,100);
+      await send(f.payment(40),['g','r1','t']);await check(100,60,40,100);const settled=await send(f.operation('PAYMENT_RESULT',{amountMinor:40,details:{payoutId:'payout-a',paymentStatus:'settled',providerOperationRef:'http-provider-one',receiptRef:'http-settled-source'}}),['t']);await check(60,60,0,60);
+      await send(f.payment(20,{details:{payoutId:'http-failed'}}),['g','r1','t']);await check(60,40,20,60);
+      for(const details of [{payoutId:'http-failed',paymentStatus:'settled' as const,providerOperationRef:'http-provider-one',receiptRef:'http-new-source'},{payoutId:'http-failed',paymentStatus:'settled' as const,providerOperationRef:'http-provider-two',receiptRef:'http-settled-source'}]){const reused=f.operation('PAYMENT_RESULT',{amountMinor:20,details}),before=await fingerprint(id);await assert.rejects(()=>verifier.admit(id,reused,f.approvals(reused,['t']),clock()),/PROVIDER_(OPERATION|RECEIPT)_REUSED/);const denied=await post(reused,['t']);assert.equal(denied.status,403);assert.deepEqual(await fingerprint(id),before);}
+      await send(f.operation('PAYMENT_RESULT',{amountMinor:20,details:{payoutId:'http-failed',paymentStatus:'failed',providerOperationRef:'http-provider-two',receiptRef:'http-failed-source'}}),['t']);await check(60,60,0,60);
+      await send(f.operation('REFUND',{amountMinor:10,recipientBindingRef:'destination-a',recipientBindingVersion:1,recipientDestinationDigest:'a'.repeat(64),details:{payoutId:'payout-a',receiptRef:'http-refund-source'}}));await check(70,70,0,70);
+      const beforeRetry=await fingerprint(id);assert.equal((await post(settled,['t'],`http-${settled.operationId}`,5)).status,200);assert.deepEqual(await fingerprint(id),beforeRetry);
+      for(const fee of [1,-1,Number.MAX_SAFE_INTEGER+1]){const op=f.payment(1,{feesMinor:fee}),before=await fingerprint(id);assert.equal((await post(op,['g','r1','t'])).status,Number.isSafeInteger(fee)?403:400);assert.deepEqual(await fingerprint(id),before);}
+      assert.equal(external.mock.callCount(),0);external.mock.restore();assert.equal((await count(id,'receipts')),version);assert.equal((await readRights(id)).outbox.length,2);assert.equal((await readRights(id)).entitlements['entitlement-a']!.paidMinor,30);
+    });
+    await t.test('actual restricted SQL login cannot retain pre-lock authority after its role scope expires',async()=>{
+      const f=createSyntheticRightsFixture(),id=randomUUID();let learning=createSyntheticLearningState(now);learning=executeLearningCommand(learning,{type:'create-profile',commandId:'demo-expiry-profile-create',expectedVersion:0,profileId:'demo-expiry-profile',ageBand:'9-12',nickname:'leaf',locale:'en'},{actorId:'demo-guardian',deviceId:'demo-device-guardian',epoch:1},now).state;
+      await new PostgresChildStore(sql(a)).create({id,expiresAt:'2027-01-01T00:00:00Z',snapshot:{version:0,learning,rights:f.state,rightsContext:f.context}},[]);await scoped(expiryRole,['child']);const expiring=await connect(expiryRole),pid=Number((await expiring.query('SELECT pg_backend_pid() pid')).rows[0].pid),before=await fingerprint(id);
+      await owner.query("INSERT INTO child_stewardship.service_role_scopes VALUES($1,'child',2,true,'local-short-lived-scope',clock_timestamp()+interval '400 milliseconds')",[expiryRole]);await owner.query('BEGIN');await owner.query('SELECT id FROM child_stewardship.sessions WHERE id=$1 FOR UPDATE',[id]);
+      const pending=transaction(expiring,id,'child','request-privacy','',async()=>{await expiring.query("SELECT set_config('app.child_actor_id','demo-child',true)");await expiring.query("UPDATE child_stewardship.state_records SET payload=jsonb_set(payload,'{status}','\"paused\"'::jsonb),revision=1 WHERE session_id=$1 AND domain='learning' AND collection='profiles' AND record_id='demo-expiry-profile'",[id]);}).then(()=>({ok:true as const,error:null}),error=>({ok:false as const,error}));
+      let waiting=false;for(let attempt=0;attempt<40;attempt++){waiting=(await owner.query("SELECT wait_event_type='Lock' waiting FROM pg_stat_activity WHERE pid=$1",[pid])).rows[0]?.waiting===true;if(waiting)break;await new Promise(resolve=>setTimeout(resolve,10));}await new Promise(resolve=>setTimeout(resolve,600));await owner.query('COMMIT');const result=await pending;assert.equal(waiting,true,'query actually waited for locked current session');assert.equal(result.ok,false);assert.match(String(result.error),/CHILD_DATABASE_ROLE_SCOPE_DENIED/);assert.deepEqual(await fingerprint(id),before);
+    });
     await t.test('rollback retains obligations, nonce checkpoints and independent admission history',async()=>{
       const liabilities=await count(session,'entitlement_balances'),nonces=await count(session,'rights_nonces');
       await owner.query(await readFile('services/api/prisma/child-stewardship-authority.rollback.sql','utf8'));
@@ -208,6 +320,6 @@ test('native PostgreSQL independently admitted canonical authority and isolation
     });
   }finally{
     await Promise.all(clients.map(client=>client.end()));await owner.end();await admin.query(`DROP DATABASE ${database}`);
-    for(const role of [runtimeRole,registryRole,verifierRole])await admin.query(`DROP ROLE IF EXISTS ${role}`);await admin.end();
+    for(const role of [runtimeRole,registryRole,verifierRole,expiryRole])await admin.query(`DROP ROLE IF EXISTS ${role}`);await admin.end();
   }
 });

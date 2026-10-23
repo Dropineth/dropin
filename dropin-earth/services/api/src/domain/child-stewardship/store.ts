@@ -9,7 +9,12 @@ export type DemoSession = { id: string; expiresAt: string; snapshot: ChildSnapsh
 export type DemoToken = { hash: string; sessionId: string; principal: LearningPrincipal };
 export type ChildReceipt = { key: string; digest: string; actorId: string; result: unknown; version: number };
 export type ChildTransaction = {
+  draftAuthorization?: {proof:string;command:unknown;actorId:string};
   actorRole?: LearningRole;
+  actorId?: string;
+  sessionGeneration?:number;
+  executionTime?:string;
+  rightsRecordedAt?:Record<string,string>;
   operation?: string;
   snapshot: ChildSnapshot;
   receipts: ChildReceipt[];
@@ -17,9 +22,12 @@ export type ChildTransaction = {
   outbox: { id: string; kind: string; resourceId: string; audience: string }[];
 };
 export type ChildStore = {
+  consumeRateLimit?(kind:'session_creation'|'session_request',sessionId?:string,actorId?:string):Promise<void>;
+  issueDraftAuthorization?(rawBearer:string,proposal:unknown):Promise<string>;
   ready(): Promise<boolean>;
   create(session: DemoSession, tokens: DemoToken[]): Promise<void>;
   resolveToken(hash: string, now: string): Promise<{ sessionId: string; principal: LearningPrincipal } | null>;
+  privacyResult?(sessionId: string, principal: LearningPrincipal, requestId: string, now:string): Promise<unknown>;
   transact<T>(sessionId: string, now: string, run: (tx: ChildTransaction) => T): Promise<T>;
 };
 export class ChildApiError extends Error {

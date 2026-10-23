@@ -54,14 +54,53 @@ environment approval and rollback checks. No such approval is manufactured.
   role scopes, or unavailable authority produce unavailable status and HTTP 503.
   Migrations create no production roles or grants. Database-owner control and
   institutionally independent evidence remain external trust boundaries.
-- `/stewardship` provides 35 Chinese synthetic screens, camera-free tasks,
+- `/stewardship` provides 35 Chinese/English synthetic screens, camera-free tasks,
   visible unavailable capabilities, stop/help, AES-GCM IndexedDB drafts and
   current scoped consent checks before the first POST byte. Withdraw/regrant
   cannot revive old draft authority. Restored drafts remain readable but cannot
-  automatically acquire new upload authority across sessions.
-- The agent gateway implements bounded local product contracts and proposal-only
-  responses. It does not claim live-model, official AHIN, PoCC or ChainRank
-  interoperability. The CAI ontology is not treated as product authorization.
+  automatically acquire new upload authority across sessions. One-use suspend
+  tickets invalidate active generations; resuming restores context only. Every
+  observation, including an exact receipt retry, requires a current per-object
+  upload capability. Its issuance sends only disclosed metadata and a digest;
+  the payload is checked against that digest in the atomic submission transaction.
+- The isolated WebAuthn fixture verifies actual ES256 registration/assertion
+  signatures, RP/origin, UV, challenge, counters and current revocation with a
+  separate verifier LOGIN. It does not establish real guardianship or expose
+  production enrollment. See [WEBAUTHN.md](./WEBAUTHN.md).
+- The privacy worker uses a separate restricted LOGIN and a bounded durable job
+  drain. It removes actual local source/derived/index/cache/export/mirror copies,
+  expires export bytes and backup copies, preserves C/R/F and minimal immutable
+  receipts, and reprocesses expired holds. External processor copies remain
+  waiting. Ordinary views and status do not reveal confidential holds. See the
+  privacy SQL and native lifecycle tests; no production scheduler is enabled.
+- The media fixture decodes real server-owned synthetic images with Sharp,
+  applies orientation and strips metadata, limits dimensions/bytes, quarantines
+  results, flags conservative pixel/perceptual duplicates, and requires a
+  separate reviewer role before sanitized reads. An immutable complete fixture
+  manifest prevents a SQL caller substituting arbitrary derived bytes. Raw or
+  real user uploads remain unavailable. See [MEDIA.md](./MEDIA.md).
+- The separate agent gateway verifies actual Ed25519 signatures and current
+  ancestor delegation, consent and revocation before atomic durable nonce/output
+  receipts. It returns bounded static, proposal-only product responses and retains
+  minimal hashes rather than duplicate evidence content. Its optional router is
+  unmounted. It does not claim live-model, official AHIN, PoCC or ChainRank
+  interoperability. The CAI ontology is not product authorization.
+- Restore admission verifies signed canonical checkpoint roots against a freshly
+  read independent external checkpoint. Native tests actually dump and restore
+  both a different database and the same database OID; stale admitted backups,
+  old schema, revoked authority and stale deletion/hold evidence are rejected.
+  Controlled restoration withholds runtime access until quarantine is committed.
+  The external checkpoint cannot be supplied by the restored database itself;
+  absent production evidence keeps this optional integration unavailable.
+- Main API capacity is stored in PostgreSQL and isolated per authenticated actor.
+  Two Hono instances share that actor's allowance; a hidden protection complaint
+  neither changes the guardian's allowance nor lets guardian exhaustion block
+  child/protector access. Rejected business operations do not refund capacity.
+  Purpose-bound suspend/resume and gateway quotas commit independently of failed
+  business work; cancellation remains a separate revocation lane. A bounded
+  process-local storage circuit isolates actors and uses no cached authority or
+  data fallback. Its fixed metadata-only signals use the existing global logger;
+  actual alert routing and staffed response are not configured or claimed.
 
 ## Validation and reproducibility
 
@@ -71,9 +110,7 @@ normal repository gates:
 ```sh
 node --import tsx --test tests/unit/child-stewardship-*.test.ts
 node --import tsx --test --test-concurrency=1 \
-  tests/integration/child-stewardship-sql.integration.ts \
-  tests/integration/child-stewardship-authority.integration.ts \
-  tests/integration/child-stewardship-postgres.integration.ts
+  tests/integration/child-stewardship-*.integration.ts
 npm run lint
 npm --workspace apps/web run cf:build
 ```
@@ -85,7 +122,7 @@ exercise actual PostgreSQL, production store code and Hono. They do not use a
 production connection, generated Prisma client, or an in-memory SQL emulator.
 The existing `db:verify:native` gate retains its normal Prisma prerequisite.
 
-The final focused checkpoint passed 94/94 tests. Native normalized SQL,
+The first committed checkpoint (`0ef47103`) passed 94/94 focused tests. Native normalized SQL,
 actual adapter/Hono, concurrent budget/idempotency, rollback, tenant and direct
 mutation tests passed 23/23 after independent-review fixes (20 authority,
 two adapter/Hono, one SQL contract). Isolated strict TypeScript and scoped
@@ -97,7 +134,7 @@ Independent review found and prompted regressions for complaint probes,
 appeal recusal, old-policy obligations, notice replay, pre-byte withdrawal,
 database identity rewrites, registry publication and deferred role changes.
 
-Final web validation passed root lint, web TypeScript, production Next/OpenNext
+That checkpoint's web validation passed root lint, web TypeScript, production Next/OpenNext
 and 16 local workerd routes. The artifact is a local dirty-source diagnostic,
 not a release seal. The complete direct unit checkpoint was 1,061 tests:
 1,044 passed, 17 failed, zero skipped. Missing generated Prisma symbols and
@@ -109,8 +146,12 @@ System Chromium separately exercised all 35 screens against actual Hono/domain
 code with an explicit `TestChildStore`: duplicate requests stored one observation,
 withdrawal sent zero unauthorized observations, failed storage/reload did not
 rebind old drafts, and there were zero third-party requests or page errors.
-This is not the pinned three-browser suite, native-DB browser coverage, human
-accessibility acceptance, or controlled weak-network acceptance. The original
+The later v5 fixture records Chinese/English screens, 400 kbps/400 ms network
+diagnostics, mobile text zoom, contrast/focus samples, and all persistent writes
+failing during offline withdrawal followed by restart. It requires fresh
+object-specific approval even when an unused old resume ticket still works.
+These checks are not the pinned three-browser suite, native-DB browser coverage,
+actual Next artifact verification or human accessibility acceptance. The original
 nine-test `VALIDATION.tap` is historical primitive-only evidence.
 
 Audit receipts are outside the repository in
@@ -120,6 +161,24 @@ Audit receipts are outside the repository in
 `child-ui/chromium-diagnostic.jsonl`. Failed test/fixture attempts remain in
 external logs; subsequent focused passes do not rewrite them.
 
+## Unified current validation
+
+All 14 child native integration files passed **161/161** in one serial run;
+all child unit files passed **118/118** using the normal root invocation.
+These totals replace overlapping module counts as the current aggregate receipt.
+Root lint, web TypeScript and 18 runner contracts passed. The full direct unit
+suite remains **1,068/1,085 passing**, with the same 17 prior failures; API
+TypeScript diagnostics likewise have no new normalized messages. These failures
+remain release blockers. [BUILD.md](./BUILD.md) records exact receipts, first-run
+fixture failures and the distinction from normal generated-Prisma gates.
+
+The settled implementation includes native and actual Hono accounting, distinct
+sponsor pools, deterministic retained rounding, whole-entitlement legal split/merge,
+receipt/provider uniqueness and current post-lock scope checks. Synthetic policy
+supports XTS and zero fees only; positive fees, other currencies and fractional
+subdivision of a single entitlement remain unsupported. Real provider execution
+is unavailable. [RIGHTS-ACCOUNTING.md](./RIGHTS-ACCOUNTING.md) defines the coverage.
+
 ## Remaining acceptance and release blockers
 
 The normal Prisma generation/native/typecheck gate is blocked by denied engine
@@ -128,12 +187,22 @@ Chromium archive. Neither denial is retried through mirrors or bypass flags.
 The prior denied GitHub Actions query and denied production configuration
 reads are not retried. BUILD.md records exact targets and outcomes.
 
-Real WebAuthn, verified guardianship/age/jurisdiction admission, independently
-verified institutions, media sanitization, live-model evaluation, full deletion
-processing, safe resumed upload across sessions, staffed protection operations,
+Real enrollment and verified guardianship/age/jurisdiction admission, independently
+verified institutions, real-media safety and human review acceptance, live-model
+evaluation, external processor/backup deletion receipts, staffed protection operations,
 external funding/payment/carbon verification, human accessibility research and
 real pilot acceptance remain unavailable or unverified. The traceability matrix
 marks each boundary; synthetic fixtures do not satisfy these requirements.
+
+WebAuthn cryptography, local media processing, native deletion and explicit
+per-draft resumed-upload authorization are implemented and locally exercised;
+they must not be described as missing code or as real-world acceptance. The
+separate module documents record the newer checks. Final combined validation
+has completed as recorded above; the clean fixed-HEAD build and new remote CI receipt are the next candidate checks.
+The privacy/media rollback templates require an operator to stop the dedicated
+workers and disable their scopes first; revoking PUBLIC grants alone does not
+stop an explicitly granted service role. Draft and resume rollback functions
+actively deny issuance/redemption while preserving histories.
 
 Production durable storage, isolated service/verifier scopes and registry
 provenance have not been demonstrated. The web Worker and API origin are

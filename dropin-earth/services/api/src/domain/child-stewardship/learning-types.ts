@@ -2,7 +2,7 @@
 export type LearningRole = "guardian" | "child" | "reviewer" | "protector" | "operator";
 export type LearningPurpose = "learning" | "upload" | "sharing";
 export type AgeBand = "6-8" | "9-12" | "13-17";
-export type LearningPrincipal = { actorId: string; deviceId: string; epoch: number };
+export type LearningPrincipal = { actorId: string; deviceId: string; epoch: number; sessionGeneration?:number };
 export type LearningActor = {
   id: string; role: LearningRole; controlDomain: string; epoch: number;
   revoked: boolean; deviceIds: string[]; expiresAt: string;

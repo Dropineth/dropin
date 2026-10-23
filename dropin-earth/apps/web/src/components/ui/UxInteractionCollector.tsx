@@ -18,6 +18,8 @@ function sessionIdFor(surface: Surface) {
 }
 
 function postEvent(event: Record<string, unknown>) {
+  // Defense in depth: no child-route events even if a prior route cleanup fires after navigation.
+  if (/^\/stewardship(?:\/|$)/.test(window.location.pathname) || typeof event.page === "string" && /^\/stewardship(?:\/|$)/.test(event.page)) return;
   const body = JSON.stringify(event);
   const url = `${apiBaseUrl}/ux-experience/events`;
   if (navigator.sendBeacon) {
@@ -45,6 +47,8 @@ export function UxInteractionCollector({
   const startedAt = useMemo(() => Date.now(), []);
 
   useEffect(() => {
+    // Check before creating a persistent ID, sending events or attaching handlers.
+    if (/^\/stewardship(?:\/|$)/.test(pathname) || /^\/stewardship(?:\/|$)/.test(window.location.pathname)) return;
     const sessionId = sessionIdFor(surface);
     postEvent({
       sessionId,
