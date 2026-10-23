@@ -1,5 +1,6 @@
 import { CanopyProofLogo } from "../canopyproof/CanopyProofLogo";
 import { planetaryHref, planetaryTitles, type PlanetaryLocale, type PlanetaryView } from "@/data/planetary";
+import { LIFEPP_PUBLIC_BRAND } from "@/data/life/public-brand";
 import { ReferenceGlobe } from "./ReferenceGlobe";
 import { ReferencePanels } from "./ReferencePanels";
 import styles from "./PlanetarySite.module.css";
@@ -13,11 +14,11 @@ export function PlanetarySite({ locale = "en", view = "home" }: { locale?: Plane
     <header className={styles.header}>
       <a className={styles.brand} href={planetaryHref(locale)} aria-label={copy("CanopyProof 首页", "CanopyProof home")}>
         <CanopyProofLogo loading="eager" size={46} />
-        <span>CanopyProof<small>BY DROPIN · LIFE++ ECOSYSTEM</small></span>
+        <span>CanopyProof<small style={{ textTransform: "none" }}>BY DROPIN · {LIFEPP_PUBLIC_BRAND} ECOSYSTEM</small></span>
       </a>
       <nav className={styles.nav} aria-label={copy("主导航", "Primary navigation")}>
         {(["home", "earth", "evidence", "participation"] as const).map(key => <a key={key} href={planetaryHref(locale, key)} aria-current={view === key ? "page" : undefined}>{planetaryTitles[locale][key]}</a>)}
-        <a href={life}>{copy("人机共生", "Life++")}</a>
+        <a href={life}>{copy("人机共生", LIFEPP_PUBLIC_BRAND)}</a>
       </nav>
       <div className={styles.headerActions}>
         <a href={planetaryHref(zh ? "en" : "zh", view)} hrefLang={zh ? "en" : "zh-CN"} lang={zh ? "en" : "zh-CN"}>{zh ? "EN" : "中文"}</a>
@@ -34,7 +35,7 @@ export function PlanetarySite({ locale = "en", view = "home" }: { locale?: Plane
             <p className={styles.lead}>{copy("从一片森林，到一座共生社区。", "From a forest to a symbiotic community.")}<br />{copy("连接空间证据、生态修复与可信的协作。", "Connect spatial evidence, restoration and accountable action.")}</p>
             <div className={styles.actions}>
               <a className={styles.button} href={planetaryHref(locale, "earth")}>{copy("探索地球证据", "Explore the evidence")} ↗</a>
-              <a className={styles.quiet} href={life}>{copy("走进 Life++", "Discover Life++")} →</a>
+              <a className={styles.quiet} href={life}>{copy(`走进 ${LIFEPP_PUBLIC_BRAND}`, `Discover ${LIFEPP_PUBLIC_BRAND}`)} →</a>
             </div>
             <p className={styles.proofLine}><span>01 / OBSERVE</span><span>02 / TRACE</span><span>03 / VERIFY</span></p>
             <p className={styles.micro}>{copy("可视化不是核证。所有结论都应回到来源、方法与责任人。", "Visualization is not verification. Every claim needs sources, methods and accountable review.")}</p>
@@ -46,7 +47,7 @@ export function PlanetarySite({ locale = "en", view = "home" }: { locale?: Plane
             { key: "earth", icon: "◎", number: "01 / PLANET", title: copy("地球数字孪生", "Planetary twin"), note: copy("区域 · 参考底图 · 项目边界", "Regions · reference geography · project boundaries") },
             { key: "evidence", icon: "⠿", number: "02 / EVIDENCE", title: copy("3DGS 与碳证据", "Spatial carbon evidence"), note: copy("现场重建 · 测量 · 来源核验", "Capture · measurement · provenance") },
             { key: "participation", icon: "◇", number: "03 / PARTICIPATION", title: copy("可复核的参与", "Accountable participation"), note: copy("当前状态 · 适用范围 · 责任边界", "Current status · scope · responsibility") },
-            { key: "life", icon: "++", number: "04 / SYMBIOSIS", title: copy("Life++ 生生不息", "Life++ symbiosis"), note: copy("人 · 智能体 · 机器人 · 社区", "People · agents · robots · communities") },
+            { key: "life", icon: "++", number: "04 / SYMBIOSIS", title: LIFEPP_PUBLIC_BRAND, note: copy("人 · 智能体 · 机器人 · 社区", "People · agents · robots · communities") },
           ].map(card => <a className={`${styles.portal} ${card.key === "life" ? styles.life : ""}`} href={card.key === "life" ? life : planetaryHref(locale, card.key as PlanetaryView)} key={card.key}>
             <span className={styles.number}>{card.number}</span><span className={styles.portalIcon} aria-hidden="true">{card.icon}</span><h2>{card.title}</h2><p>{card.note}</p><span className={styles.arrow} aria-hidden="true">↗</span>
           </a>)}
@@ -65,7 +66,7 @@ export function PlanetarySite({ locale = "en", view = "home" }: { locale?: Plane
           <div id="methodology"><h2>Methodology</h2><p>{copy("来源、方法、公开状态与原有核验流程。", "Sources, methods, public status and the existing review workflow.")}</p><a href="/ecology#methodology">{copy("查看原有方法说明", "Read the methodology")} ↗</a><a href="/explorer">Proof Explorer ↗</a></div>
           <div id="telemetry"><h2>TerraProof</h2><p>{copy("原遥测示例仍单独标记，不是项目实测数据。", "Original sample telemetry remains labeled, separate from measured project data.")}</p><a href="/ecology#telemetry">{copy("查看示例与边界", "View samples and boundaries")} ↗</a></div>
           <div id="stack"><h2>Open Stack</h2><p>{copy("保留原有工作台、技术栈与生态内容。", "Retain the existing workbenches, technology stack and ecology content.")}</p><a href="/ecology#stack">{copy("查看原生态页面", "Explore the original ecology site")} ↗</a><a href="#explorer">{copy("回到探索入口", "Back to exploration")} ↑</a></div>
-          <div id="contact"><h2>{copy("联系与合作", "Contact and collaboration")}</h2><p>{copy("从具体需求开始，明确当前接入状态。", "Start with a concrete need and the current integration status.")}</p><a href={`${life}/partners`}>{copy("合作咨询", "Partnership enquiries")} ↗</a><a href="/life">Life++ · 中文 ↗</a></div>
+          <div id="contact"><h2>{copy("联系与合作", "Contact and collaboration")}</h2><p>{copy("从具体需求开始，明确当前接入状态。", "Start with a concrete need and the current integration status.")}</p><a href={`${life}/partners`}>{copy("合作咨询", "Partnership enquiries")} ↗</a><a href="/life">{LIFEPP_PUBLIC_BRAND} · 中文 ↗</a></div>
         </section>
       </> : <div className={styles.workspace}>
         <div className={styles.workspaceHeading}><p className={styles.eyebrow}>CANOPYPROOF / {view.toUpperCase()}</p><h1>{planetaryTitles[locale][view]}</h1><p>{copy("参考、示意与真实接入，分别呈现。", "Reference material, examples and live integration are shown separately.")}</p></div>

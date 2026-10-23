@@ -1,10 +1,12 @@
 import manifest from './site-manifest.json';
+import { LIFEPP_PUBLIC_BRAND } from './public-brand';
 
 export type LifeLocale = 'zh' | 'en';
 export type LifePageId = 'home' | 'spaces' | 'center' | 'agents' | 'membership' | 'partners' | 'trust' | 'company';
 export type Bilingual = { zh: string; en: string };
 export const t = (locale: LifeLocale, value: Bilingual) => value[locale];
 export const lifePath = (locale: LifeLocale, path = '/life') => `${locale === 'en' ? '/en' : ''}${path}`;
+export const currentPlan = manifest.currentPlan;
 
 export const navigation: { path: string; label: Bilingual }[] = [
   { path: '/life/spaces', label: { zh: '探索空间', en: 'Spaces' } },
@@ -18,19 +20,15 @@ export const rooms = manifest.spaces.map((room) => {
   const labels: Record<string, { title: Bilingual; description: Bilingual }> = {
     L112: {
       title: { zh: '机器人机库', en: 'Robot Fleet Garage' },
-      description: { zh: '面向设备展示、维护与物业场景讨论的拟议试点基地。真实服务须完成设备、路线、保险及安全验收。', en: 'A proposed base for equipment demonstrations, maintenance and property pilots. Real services require approved devices, routes, insurance and safety acceptance.' },
+      description: { zh: '规划机器人回库、自检、自动回充与任务派发，日常无人值守，异常有远程处理和维修响应。装卸自动化另行验证；真实服务须完成设备、路线、保险及安全验收。', en: 'Plan robot return, self-checks, automatic charging and dispatch, with unattended daily operation, remote exception handling and maintenance response. Loading automation needs separate validation; real services require approved devices, routes, insurance and safety acceptance.' },
     },
     L203: {
-      title: { zh: '数字分身与边缘计算', en: 'Agent & Edge Lab' },
-      description: { zh: '探索有明确授权的数字分身，以及边缘终端与云服务的协作方式。当前接受定制需求与内测意向。', en: 'Explore explicitly authorized digital agents and collaboration between edge devices and cloud services. Customization and pilot enquiries are open.' },
+      title: { zh: '3DGS体验、空间采集与设备展售', en: '3DGS experience, capture & equipment showcase' },
+      description: { zh: '以付费体验、空间采集演示连接数采设备租售咨询与企业应用。运动装置用于体验，不作为本项目的设备销售品类；培训与较长活动共享L202。无穹创新产品引入及合作条件以正式约定为准。', en: 'Connect paid experiences and spatial-capture demonstrations with capture-equipment rental/sales enquiries and enterprise use cases. Sports installations are for experiences, not the equipment sold by this project. Training and longer events share L202; Wuqiong Innovation product introduction and cooperation require a formal agreement.' },
     },
     L202: {
-      title: { zh: '会所与闭门交流', en: 'Life++ Club' },
-      description: { zh: '为社区交流、主题分享与高质量闭门讨论规划的聚会空间。活动排期、服务规则与开放条件待确认。', en: 'A planned gathering space for community conversations, themed sessions and focused private discussions. Schedules, terms and opening conditions remain to be confirmed.' },
-    },
-    L201: {
-      title: { zh: '共学、课程与空间赛事', en: 'Learning & Spatial Arena' },
-      description: { zh: '共学课程、企业工作坊，以及高尔夫、划船、骑行等空间赛事的拟议空间。当前仅收集参与意向。', en: 'A proposed space for collaborative learning, business workshops and spatial golf, rowing and cycling events. Participation is currently an expression of interest.' },
+      title: { zh: '数字分身、共学与生活方式体验', en: 'Digital agents, shared learning & lifestyle experiences' },
+      description: { zh: '规划授权数字分身、社区共学、酒咖交流，以及高尔夫、划船、骑行模拟体验。与L203共享培训和活动；两铺贯通仅为设计意向，须先核查现场、机电、消防和经营条件。', en: 'Plan authorized digital agents, shared learning, café/social activities and simulated golf, rowing and cycling. Share training and events with L203. Connecting the two units is a design intention pending site, building-services, fire-safety and operating checks.' },
     },
   };
   const content = labels[room.unit];
@@ -60,12 +58,12 @@ export const tiers = manifest.membership.tiers.map((tier, index) => ({
 }));
 
 export const pageMeta: Record<LifePageId, { title: Bilingual; description: Bilingual }> = {
-  home: { title: { zh: 'Life++ 生生不息', en: 'Life++ — Life, connected' }, description: { zh: '让数字智能，走进真实生活。以会展湾671.26㎡四铺导入期为起点，探索数字分身、三维空间与社区服务的可问责协作。', en: 'Bring digital agents into everyday life. Explore spatial reconstruction, community services and accountable collaboration.' } },
+  home: { title: { zh: LIFEPP_PUBLIC_BRAND, en: LIFEPP_PUBLIC_BRAND }, description: { zh: '让数字智能，走进真实生活。以会展湾380.48㎡三铺导入期为起点，连接空间采集、数字分身、共学体验与机器人执行。', en: 'Bring digital intelligence into everyday life. A planned 380.48 m², three-unit introduction connects spatial capture, digital agents, shared learning and robot execution.' } },
   spaces: { title: { zh: '探索空间', en: 'Explore spaces' }, description: { zh: '两个用户提供的三维高斯测试输入，清楚呈现来源、权限与验证状态。', en: 'Two user-provided Gaussian splatting test inputs, with explicit source, permission and verification status.' } },
-  center: { title: { zh: '共生中心', en: 'The Life++ center' }, description: { zh: '以671.26㎡四铺导入期规划，探索空间、数字分身、共学与机器人服务。', en: 'A 671.26 m², four-unit introductory plan for spatial experiences, agents, collaborative learning and robot services.' } },
+  center: { title: { zh: '共生中心', en: `The ${LIFEPP_PUBLIC_BRAND} center` }, description: { zh: '三铺不是三家孤立门店，而是一套协作系统。L112、L203、L202合计380.48㎡，二层两铺321.79㎡；本轮不纳入L201。', en: 'Three units form one collaboration system: L112, L203 and L202 total 380.48 m², with 321.79 m² on the second floor. L201 is excluded from this phase.' } },
   agents: { title: { zh: '数字分身与边缘计算', en: 'Agents & edge computing' }, description: { zh: '在明确授权、任务边界与可撤回条件下，探索数字分身、边缘终端与云服务。', en: 'Explore digital agents, edge devices and cloud services with explicit authorization, bounded tasks and withdrawal.' } },
   membership: { title: { zh: '参与计划', en: 'Participation plans' }, description: { zh: 'Life、Life+、Life++拟议年度订阅方案。尚未开放收费。', en: 'Proposed annual Life, Life+ and Life++ plans. Payments are not open.' } },
   partners: { title: { zh: '一起，让想法落地', en: 'Build the next step together' }, description: { zh: '面向物业、商户、展商、设备与研究伙伴的合作意向入口。', en: 'An enquiry route for property managers, merchants, exhibitors, equipment partners and researchers.' } },
   trust: { title: { zh: '每一次协作，都有边界', en: 'Every collaboration has boundaries' }, description: { zh: '了解空间来源、独立授权、责任主体、审阅、申诉与撤回。', en: 'Understand sources, separate permissions, responsible parties, review, challenges and withdrawal.' } },
-  company: { title: { zh: 'CanopyProof Limited', en: 'CanopyProof Limited' }, description: { zh: '一个主体，两个业务入口：生态与地球观测，以及Life++生生不息。', en: 'One company, two business entry points: ecology and Earth observation, and Life++.' } },
+  company: { title: { zh: 'CanopyProof Limited', en: 'CanopyProof Limited' }, description: { zh: `一个主体，两个业务入口：生态与地球观测，以及${LIFEPP_PUBLIC_BRAND}。`, en: `One company, two business entry points: ecology and Earth observation, and ${LIFEPP_PUBLIC_BRAND}.` } },
 };
