@@ -1096,6 +1096,8 @@ export const poccAhinEvidenceSourceSchema = z.object({
 });
 
 export const poccAhinConsensusReceiptSchema = z.object({
+  verificationScope: z.literal("local-evidence-projection"),
+  finalAuthority: z.literal(false),
   id: z.string().min(1),
   subjectType: z.enum(["round", "campaign", "tree", "certificate", "anchor", "payment"]),
   subjectId: z.string().min(1),
