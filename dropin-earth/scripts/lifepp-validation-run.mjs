@@ -167,6 +167,8 @@ async function availablePort() {
 }
 
 export async function workerdBrowser() {
+  assert.equal(process.env.CANOPYPROOF_CHROMIUM_EXECUTABLE, undefined,
+    'Workerd acceptance requires the installed Playwright browser; use a direct probe for system-browser diagnostics.');
   const webRoot = resolve('apps/web');
   validateLocalConfig(JSON.parse(readFileSync(join(webRoot, 'wrangler.local.jsonc'), 'utf8')));
   for (const path of ['.open-next/worker.js', '.open-next/assets']) assert.ok(existsSync(join(webRoot, path)), `Missing ${path}`);
@@ -179,7 +181,12 @@ export async function workerdBrowser() {
   Object.assign(env, { WRANGLER_SEND_METRICS: 'false', BROWSER: 'none', NO_COLOR: '1',
     LIFEPP_BROWSER_BASE_URL: `http://127.0.0.1:${port}`, LIFEPP_BROWSER_SERVER_MODE: 'workerd',
     LIFEPP_BROWSER_OUTPUT_DIR: join(outputRoot(), 'browser-workerd'),
-    LIFEPP_MAPLIBRE_OUTPUT_DIR: join(outputRoot(), 'browser-workerd') });
+    LIFEPP_MAPLIBRE_OUTPUT_DIR: join(outputRoot(), 'browser-workerd'),
+    CHILD_NEXT_BASE_URL: `http://127.0.0.1:${port}`,
+    CHILD_NEXT_PRIVACY_REQUIRE_GUARD: '1',
+    CHILD_NEXT_ARTIFACT_STATE: 'candidate-workerd-gate',
+    CHILD_NEXT_PRIVACY_OUTPUT: join(outputRoot(), 'browser-workerd', 'child-stewardship-privacy.json') });
+  mkdirSync(env.LIFEPP_BROWSER_OUTPUT_DIR, { recursive: true });
   const command = [process.execPath, resolve('node_modules/wrangler/bin/wrangler.js'), 'dev', '--config', 'wrangler.local.jsonc',
     '--local', '--ip', '127.0.0.1', '--port', String(port), '--inspector-port', '0'];
   process.stdout.write(`${JSON.stringify({ localServerCommand: command, browserBaseUrl: env.LIFEPP_BROWSER_BASE_URL, serverMode: env.LIFEPP_BROWSER_SERVER_MODE })}\n`);
@@ -201,7 +208,7 @@ export async function workerdBrowser() {
     }
     assert.ok(ready, `Local workerd readiness timeout: ${serverOutput}`);
     let exitCode = 0;
-    for (const spec of ['tests/browser/lifepp.spec.ts', 'tests/browser/maplibre-remediation.spec.ts']) {
+    for (const spec of ['tests/browser/lifepp.spec.ts', 'tests/browser/maplibre-remediation.spec.ts', 'tests/browser/child-stewardship-next-privacy.spec.ts']) {
       const browserCommand = [process.execPath, '--import', 'tsx', spec];
       process.stdout.write(`${JSON.stringify({ browserCommand, startedAt: now() })}\n`);
       const child = spawn(browserCommand[0], browserCommand.slice(1), { env, stdio: 'inherit' });

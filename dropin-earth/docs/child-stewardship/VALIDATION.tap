@@ -1,0 +1,68 @@
+TAP version 13
+# (node:1139) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspace/canopyproof-audit/dropin-earth/tests/unit/child-stewardship-signature.test.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /workspace/canopyproof-audit/dropin-earth/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: EX-33 primitive: real ephemeral Ed25519 signature verifies exact bytes
+ok 1 - EX-33 primitive: real ephemeral Ed25519 signature verifies exact bytes
+  ---
+  duration_ms: 2.079281
+  type: 'test'
+  ...
+# Subtest: EX-33 primitive: public PEM works without accepting private keys
+ok 2 - EX-33 primitive: public PEM works without accepting private keys
+  ---
+  duration_ms: 1.580141
+  type: 'test'
+  ...
+# Subtest: EX-33 primitive: wrong key, forged and truncated signatures fail closed
+ok 3 - EX-33 primitive: wrong key, forged and truncated signatures fail closed
+  ---
+  duration_ms: 0.683017
+  type: 'test'
+  ...
+# Subtest: EX-33 primitive: algorithm substitution is rejected
+ok 4 - EX-33 primitive: algorithm substitution is rejected
+  ---
+  duration_ms: 70.097415
+  type: 'test'
+  ...
+# Subtest: EX-33 primitive: authorization-field and cross-environment tampering fails
+ok 5 - EX-33 primitive: authorization-field and cross-environment tampering fails
+  ---
+  duration_ms: 2.013733
+  type: 'test'
+  ...
+# Subtest: EX-33 primitive: verified=true cannot authorize forged signature
+ok 6 - EX-33 primitive: verified=true cannot authorize forged signature
+  ---
+  duration_ms: 0.265877
+  type: 'test'
+  ...
+# Subtest: EX-33 primitive: digest-only substitution is rejected
+ok 7 - EX-33 primitive: digest-only substitution is rejected
+  ---
+  duration_ms: 0.209969
+  type: 'test'
+  ...
+# Subtest: EX-33 primitive: empty and oversized inputs reject
+ok 8 - EX-33 primitive: empty and oversized inputs reject
+  ---
+  duration_ms: 0.225181
+  type: 'test'
+  ...
+# Subtest: external rights: funds, carbon and legal verification cannot simulate success
+ok 9 - external rights: funds, carbon and legal verification cannot simulate success
+  ---
+  duration_ms: 0.500849
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 183.831344

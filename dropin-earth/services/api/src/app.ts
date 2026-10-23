@@ -216,6 +216,11 @@ import { InMemoryStatusRepository, PrismaStatusRepository, StatusService } from 
 import { ReadinessService } from "./domain/status/readiness-service.js";
 import { MetricsService } from "./domain/status/metrics-service.js";
 import { getPrisma } from "./lib/prisma.js";
+import { createChildStewardshipRoutes } from "./routes/child-stewardship/index.js";
+import { prismaChildSqlClient } from "./domain/child-stewardship/prisma-sql.js";
+import { PostgresChildStore } from "./domain/child-stewardship/postgres-store.js";
+import {PostgresChildResumeStore} from './domain/child-stewardship/resume-store.js';
+import { childBoundaryDenies } from "./domain/child-stewardship/runtime-boundary.js";
 
 const logger = pino({
   name: "dropin-api",
@@ -1351,6 +1356,24 @@ app.use(
     allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
   }),
 );
+
+// Mount the isolated synthetic namespace before legacy authentication/telemetry.
+// Production requires explicit mode AND an already migrated durable authority.
+app.use("*", async (c, next) => {
+  if (childBoundaryDenies(c.req.path, c.req.header("authorization") ?? "", process.env.CHILD_STEWARDSHIP_MODE)) {
+    c.header("cache-control", "private, no-store");
+    return c.json({ error: { code: "CHILD_DOMAIN_ISOLATED", retryable: false } }, 403);
+  }
+  await next();
+});
+app.route("/canopyproof/child-stewardship/v1", createChildStewardshipRoutes({
+  onOperationalSignal: signal => logger.warn({signal}, "child storage dependency signal"),
+  mode: process.env.CHILD_STEWARDSHIP_MODE,
+  store: process.env.CHILD_STEWARDSHIP_MODE === "synthetic-demo" && Boolean(process.env.DATABASE_URL)
+    ? new PostgresChildStore(prismaChildSqlClient(getPrisma())) : null,
+  resumeStore:process.env.CHILD_STEWARDSHIP_MODE === "synthetic-demo" && Boolean(process.env.DATABASE_URL)
+    ? new PostgresChildResumeStore(prismaChildSqlClient(getPrisma())):null,
+}));
 
 app.onError((error, c) => {
   logger.error({ error: error.message, path: c.req.path }, "request failed");

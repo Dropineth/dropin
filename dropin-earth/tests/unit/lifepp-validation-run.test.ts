@@ -187,8 +187,8 @@ test('workerd browser config rejects routes, remote resources, wrong service and
   ]) assert.throws(() => validateLocalConfig({ ...original, ...change }));
 });
 
-test('fixture-only workerd adapter runs Life++ then MapLibre, preserves either failure and cleans up its child', () => {
-  for (const [lifeExit, mapExit] of [[7, 0], [0, 8], [0, 0]]) {
+test('fixture-only workerd adapter runs all browser checks, preserves each failure and cleans up its child', () => {
+  for (const [lifeExit, mapExit, privacyExit] of [[7, 0, 0], [0, 8, 0], [0, 0, 9], [0, 0, 0]]) {
   const f = fixture();
   try {
     for (const path of ['apps/web/.open-next/assets', 'node_modules/wrangler/bin', 'node_modules/tsx', 'tests/browser']) mkdirSync(join(f.cwd, path), { recursive: true });
@@ -216,12 +216,20 @@ test('fixture-only workerd adapter runs Life++ then MapLibre, preserves either f
       fs.writeFileSync('fixture-maplibre-output.txt', process.env.LIFEPP_MAPLIBRE_OUTPUT_DIR);
       process.exit(${mapExit});
     `);
+    writeFileSync(join(f.cwd, 'tests/browser/child-stewardship-next-privacy.spec.ts'), `
+      const fs = require('node:fs');
+      if(process.env.CHILD_NEXT_BASE_URL !== process.env.LIFEPP_BROWSER_BASE_URL || process.env.CHILD_NEXT_PRIVACY_REQUIRE_GUARD !== '1') process.exit(10);
+      fs.appendFileSync('fixture-browser-order.txt', 'privacy\\n');
+      fs.writeFileSync(process.env.CHILD_NEXT_PRIVACY_OUTPUT, '{"fixtureOnly":true}');
+      process.exit(${privacyExit});
+    `);
     const result = f.call(['workerd-browser'], { CLOUDFLARE_API_TOKEN: 'fixture-only-not-a-secret' });
-    assert.equal(result.status, lifeExit || mapExit, result.stderr);
+    assert.equal(result.status, lifeExit || mapExit || privacyExit, result.stderr);
     const observed = JSON.parse(readFileSync(join(f.cwd, 'fixture-browser-env.json'), 'utf8'));
     assert.equal(observed.mode, 'workerd'); assert.match(observed.base, /^http:\/\/127\.0\.0\.1:\d+$/);
     assert.equal(observed.output, join(f.out, 'browser-workerd')); assert.equal(observed.tokenPresent, false);
-    assert.equal(readFileSync(join(f.cwd, 'fixture-browser-order.txt'), 'utf8'), 'lifepp\nmaplibre\n');
+    assert.equal(readFileSync(join(f.cwd, 'fixture-browser-order.txt'), 'utf8'), 'lifepp\nmaplibre\nprivacy\n');
+    assert.deepEqual(JSON.parse(readFileSync(join(f.out, 'browser-workerd/child-stewardship-privacy.json'), 'utf8')), {fixtureOnly:true});
     assert.equal(readFileSync(join(f.cwd, 'fixture-maplibre-output.txt'), 'utf8'), join(f.out, 'browser-workerd'));
     assert.equal(readFileSync(join(f.cwd, 'fixture-child-stopped'), 'utf8'), 'true');
   } finally { f.close(); }

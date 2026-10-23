@@ -116,6 +116,9 @@ test("browser tests have an explicit runner and CanopyProof CI preserves every g
 
   assert.deepEqual(browserTests, [
     "tests/browser/canopyproof-global-impact-webgl.spec.ts",
+    "tests/browser/child-stewardship-collector-privacy.spec.ts",
+    "tests/browser/child-stewardship-next-privacy.spec.ts",
+    "tests/browser/child-stewardship.spec.ts",
     "tests/browser/lifepp-consultation.spec.ts",
     "tests/browser/lifepp-floorplan.spec.ts",
     "tests/browser/lifepp-scene-viewer.spec.ts",
@@ -126,8 +129,18 @@ test("browser tests have an explicit runner and CanopyProof CI preserves every g
     requireScript(manifest, "test:webgl:browser"),
     /canopyproof-global-impact-webgl\.spec\.ts/,
   );
+  assert.match(requireScript(manifest, "test:child-stewardship:browser"), /child-stewardship-browser-matrix\.mjs/);
+  assert.match(workflow, /npm run test:child-stewardship:browser/);
+  const childBrowserRunner = readFileSync(join(ROOT, "scripts/child-stewardship-browser-matrix.mjs"), "utf8");
+  assert.match(childBrowserRunner, /tests\/browser\/child-stewardship\.spec\.ts/);
+  assert.match(childBrowserRunner, /tests\/browser\/child-stewardship-collector-privacy\.spec\.ts/);
+  const workerdRunner = readFileSync(join(ROOT, "scripts/lifepp-validation-run.mjs"), "utf8");
+  assert.match(workerdRunner, /tests\/browser\/child-stewardship-next-privacy\.spec\.ts/);
+  assert.match(workerdRunner, /CHILD_NEXT_PRIVACY_REQUIRE_GUARD: '1'/);
+  for (const engine of ["chromium", "firefox", "webkit"]) assert.ok(childBrowserRunner.includes(`"${engine}"`));
   assert.match(workflow, /npm run ci/);
   assert.match(workflow, /npm run db:verify:canopyproof:native/);
+  assert.match(workflow, /CANOPYPROOF_NATIVE_POSTGRES_CONTAINER: \$\{\{ job\.services\.postgres\.id \}\}/);
   assert.match(workflow, /npm run test:coverage:ratchet/);
   assert.match(workflow, /npm run coverage:critical/);
   assert.match(workflow, /npm run test:webgl:browser/);

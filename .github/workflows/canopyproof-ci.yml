@@ -94,6 +94,8 @@ jobs:
         run: node scripts/lifepp-validation-run.mjs run workspace -- npm run ci
 
       - name: Verify native PostgreSQL authority paths
+        env:
+          CANOPYPROOF_NATIVE_POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
         if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
         run: |
           node scripts/lifepp-validation-run.mjs run native-postgres -- bash -eo pipefail -c '
@@ -128,7 +130,7 @@ jobs:
       - name: Verify Chromium, Firefox, and WebKit fallback matrix
         id: webgl
         if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
-        run: node scripts/lifepp-validation-run.mjs run webgl -- npm run test:webgl:browser
+        run: node scripts/lifepp-validation-run.mjs run webgl -- bash -eo pipefail -c 'npm run test:webgl:browser && npm run test:child-stewardship:browser'
 
       - name: Build OpenNext Cloudflare artifact
         id: opennext

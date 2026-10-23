@@ -287,8 +287,8 @@ test("GitHub Actions deploy workflow is manual, approved, and keeps guardrails",
 
   assert.match(rootPackage, /deploy:web:cloudflare/);
   assert.equal(webPackageJson.scripts?.["build:cloudflare"], "npm run cf:build");
-  assert.equal(rootPackageJson.devDependencies?.["@opennextjs/cloudflare"], "1.20.2");
-  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.120.1");
+  assert.equal(rootPackageJson.devDependencies?.["@opennextjs/cloudflare"], "1.20.13");
+  assert.equal(rootPackageJson.devDependencies?.wrangler, "4.148.0");
 
 });
 
