@@ -310,10 +310,15 @@ completion definition also requires versioned contracts, authoritative migration
 and rollback, access/error tests, accessible pages, minimum telemetry, runbooks,
 and applicable independent acceptance evidence. Remaining blockers include:
 
-- Final normalized authority migration, actual PostgreSQL adapter/API concurrency,
-  constraints, recovery/reconciliation and outbox receipts after the active rewrite.
-- Build/Prisma/browser download blockers documented in BUILD; final same-SHA
-  existing CI, sealed artifact, workerd, route/binding and rollback checks.
+- Production acceptance of the implemented normalized authority migration,
+  PostgreSQL adapter, concurrency/constraints, recovery and outbox contracts.
+  The unified local native receipt covers all 14 suites (161/161); earlier
+  per-module counts above are historical, overlapping evidence snapshots.
+- Normal Prisma generation and pinned-browser downloads remain locally blocked
+  as documented in BUILD. Local Next/OpenNext compilation is verified; final
+  candidate CI, sealed release artifact, production route/binding and rollback
+  acceptance remain separate gates. Fixed-HEAD build and browser receipts are
+  recorded outside the repository and linked from the draft PR.
 - Real media processing, real external processors and operational deletion
   lifecycle; local synthetic byte-erasure receipts are not global acceptance.
 - Real Passkey, guardianship/age assurance, protocol/provider contracts, legal
