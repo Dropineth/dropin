@@ -1,29 +1,30 @@
 import assert from "node:assert/strict";
-import { spawnSync, execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import process from "node:process";
-import { sourceSnapshot } from "./lifepp-validation-run.mjs";
+import { snapshot } from "./lifepp-validation-run.mjs";
 
 const config = JSON.parse(readFileSync("config/accountability-adversarial.json", "utf8"));
 assert.ok(config.files.length > 0 && new Set(config.cases).size === config.cases.length);
-const before = sourceSnapshot();
-const head = execFileSync("git", ["rev-parse", "HEAD"], {encoding:"utf8"}).trim();
+const before = snapshot();
+const head = before.head;
 const command = ["--test", "--test-reporter=tap", "--import", "tsx", ...config.files];
 const run = spawnSync(process.execPath, command, {encoding:"utf8", timeout:config.timeoutMs,maxBuffer:5_000_000});
 const log = (run.stdout ?? "") + (run.stderr ?? "");
 process.stdout.write(log);
-const after = sourceSnapshot();
+const after = snapshot();
 const passed = [...log.matchAll(/^ok \d+ - (.+)$/gm)].map(match=>match[1]);
 const exact = passed.length === config.cases.length && new Set(passed).size === passed.length
   && [...passed].sort().every((name,index)=>name===[...config.cases].sort()[index]);
 const success = !run.error && run.signal === null && run.status === 0 && exact && !/^not ok /m.test(log)
   && /# skipped 0\b/.test(log) && /# cancelled 0\b/.test(log)
-  && before.sourceFingerprintSha256 === after.sourceFingerprintSha256;
+  && before.sourceStatus === "" && after.sourceStatus === ""
+  && ["head", "node", "npm", "lockSha256", "sourceFingerprintSha256"].every(key => before[key] === after[key]);
 const github = process.env.GITHUB_ACTIONS === "true";
 const result = {targetSha:head,runnerId:github ? `${process.env.GITHUB_REPOSITORY}:${process.env.GITHUB_RUN_ID}:${process.env.GITHUB_RUN_ATTEMPT}:${process.env.GITHUB_JOB}` : "local-diagnostic",
   phase:process.env.GITHUB_EVENT_NAME === "pull_request" ? "pull_request" : "merge_candidate",
-  completedAt:new Date().toISOString(),conclusion:success?"success":"failure",sourceDirty:before.sourceStatus!=="",
+  completedAt:new Date().toISOString(),conclusion:success?"success":"failure",sourceDirty:before.sourceStatus!=="" || after.sourceStatus!=="",
   before,after,command:[process.execPath,...command],seedRange:config.seedRange,mutants:config.mutants,
   tests:config.cases.map(id=>({id,executed:passed.includes(id),status:passed.includes(id)?"passed":"not-passed",assertions:passed.includes(id)?1:0})),
   assertionCountMeaning:"Lower bound of one designated assertion oracle per completed case; not an instrumented assertion total.",

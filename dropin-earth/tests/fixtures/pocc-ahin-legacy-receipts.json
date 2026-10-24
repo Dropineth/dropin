@@ -1,0 +1,133 @@
+{
+  "provenance": {
+    "repository": "Dropineth/dropin",
+    "commit": "77712ef54ea8331d188c2fad33e486124bb9b785",
+    "builderPath": "dropin-earth/packages/crypto/src/index.ts",
+    "builderGitBlob": "aed4419e42692e151e6e922cb08605b489c07674",
+    "builderSha256": "ab0ccc2fa668611c986ac57f3772b06f465c744e86bd6a2170d40d099f49f77a",
+    "publicInputPath": "dropin-earth/tests/unit/pocc-ahin-anchor.test.ts",
+    "publicInputGitBlob": "8bffa05760098ff6a647fc67412f6e0cc77cb469",
+    "method": "Executed the unchanged public historical builder. First input is the historical public unit-test input; second repeats its oracle source to exercise historical acceptance. Neither receipt was made by deleting fields from a current receipt.",
+    "reproductionDocument": "dropin-earth/docs/POCC-AHIN-RECEIPT-COMPATIBILITY.md#offline-fixture-reproduction"
+  },
+  "cases": [
+    {
+      "name": "historical-public-unit-input",
+      "input": {
+        "subjectType": "round",
+        "subjectId": "round_v1_ggw_demo",
+        "requiredWeight": 67,
+        "sources": [
+          {
+            "id": "oracle_satellite",
+            "kind": "oracle",
+            "hash": "2a10543b7befdb7d48fb0a0bb426a2a69e8acf8aa219ca359ad3971c6cd3f196",
+            "signer": "satellite-validator-1",
+            "weight": 35
+          },
+          {
+            "id": "ngo_report",
+            "kind": "evidence",
+            "hash": "5d51740972304f11dcf1579c73274ec24e08328d091c2a41c80423a38a4e7e4a",
+            "signer": "ngo-validator-1",
+            "weight": 35
+          },
+          {
+            "id": "anchor_trace",
+            "kind": "anchor",
+            "hash": "41db834f3e63d6780c1c7feaf0e77fd1c1366231ddc52ee56e0cee980b9640f0",
+            "signer": "solana-anchor-agent",
+            "weight": 30
+          }
+        ],
+        "createdAt": "2026-05-10T00:00:00.000Z"
+      },
+      "receipt": {
+        "id": "pocc_ahin_be335e722a69e0aae9782ad9",
+        "subjectType": "round",
+        "subjectId": "round_v1_ggw_demo",
+        "evidenceRoot": "f6f0441d69e06b5f152f63e7fed3cdf51a7b3e54518502dd1a0e224cdde0ec33",
+        "quorumWeight": 100,
+        "requiredWeight": 67,
+        "accepted": true,
+        "sources": [
+          {
+            "id": "anchor_trace",
+            "kind": "anchor",
+            "hash": "41db834f3e63d6780c1c7feaf0e77fd1c1366231ddc52ee56e0cee980b9640f0",
+            "signer": "solana-anchor-agent",
+            "weight": 30
+          },
+          {
+            "id": "ngo_report",
+            "kind": "evidence",
+            "hash": "5d51740972304f11dcf1579c73274ec24e08328d091c2a41c80423a38a4e7e4a",
+            "signer": "ngo-validator-1",
+            "weight": 35
+          },
+          {
+            "id": "oracle_satellite",
+            "kind": "oracle",
+            "hash": "2a10543b7befdb7d48fb0a0bb426a2a69e8acf8aa219ca359ad3971c6cd3f196",
+            "signer": "satellite-validator-1",
+            "weight": 35
+          }
+        ],
+        "warnings": [],
+        "createdAt": "2026-05-10T00:00:00.000Z"
+      }
+    },
+    {
+      "name": "historical-duplicate-source-accepted",
+      "input": {
+        "subjectType": "round",
+        "subjectId": "round_v1_ggw_demo",
+        "requiredWeight": 67,
+        "sources": [
+          {
+            "id": "oracle_satellite",
+            "kind": "oracle",
+            "hash": "2a10543b7befdb7d48fb0a0bb426a2a69e8acf8aa219ca359ad3971c6cd3f196",
+            "signer": "satellite-validator-1",
+            "weight": 35
+          },
+          {
+            "id": "oracle_satellite",
+            "kind": "oracle",
+            "hash": "2a10543b7befdb7d48fb0a0bb426a2a69e8acf8aa219ca359ad3971c6cd3f196",
+            "signer": "satellite-validator-1",
+            "weight": 35
+          }
+        ],
+        "createdAt": "2026-05-10T00:00:00.000Z"
+      },
+      "receipt": {
+        "id": "pocc_ahin_3b1e43c98e493c614aa194a2",
+        "subjectType": "round",
+        "subjectId": "round_v1_ggw_demo",
+        "evidenceRoot": "d74c71cc866ec8aa6eab715f13727457679b0e9a99cc3dac7d54f3d3031c96fe",
+        "quorumWeight": 70,
+        "requiredWeight": 67,
+        "accepted": true,
+        "sources": [
+          {
+            "id": "oracle_satellite",
+            "kind": "oracle",
+            "hash": "2a10543b7befdb7d48fb0a0bb426a2a69e8acf8aa219ca359ad3971c6cd3f196",
+            "signer": "satellite-validator-1",
+            "weight": 35
+          },
+          {
+            "id": "oracle_satellite",
+            "kind": "oracle",
+            "hash": "2a10543b7befdb7d48fb0a0bb426a2a69e8acf8aa219ca359ad3971c6cd3f196",
+            "signer": "satellite-validator-1",
+            "weight": 35
+          }
+        ],
+        "warnings": [],
+        "createdAt": "2026-05-10T00:00:00.000Z"
+      }
+    }
+  ]
+}

@@ -239,6 +239,13 @@ export function buildPoccAhinConsensusReceipt(input: PoccAhinConsensusInput): Po
 }
 
 export function validatePoccAhinConsensusReceipt(receipt: PoccAhinConsensusReceipt) {
+  // Compatibility policy: historical unmarked receipts remain audit records.
+  // Reject them unchanged; callers must explicitly recompute a new local
+  // projection. Never infer markers or treat historical `accepted` as authority.
+  if (!receipt || !Object.hasOwn(receipt, "verificationScope") || !Object.hasOwn(receipt, "finalAuthority")
+    || receipt.verificationScope !== "local-evidence-projection" || receipt.finalAuthority !== false) {
+    return false;
+  }
   const rebuilt = buildPoccAhinConsensusReceipt({
     subjectType: receipt.subjectType,
     subjectId: receipt.subjectId,
@@ -248,7 +255,6 @@ export function validatePoccAhinConsensusReceipt(receipt: PoccAhinConsensusRecei
   });
 
   return (
-    receipt.verificationScope === "local-evidence-projection" && receipt.finalAuthority === false &&
     rebuilt.id === receipt.id &&
     rebuilt.evidenceRoot === receipt.evidenceRoot &&
     rebuilt.quorumWeight === receipt.quorumWeight &&

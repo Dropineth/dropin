@@ -1095,7 +1095,16 @@ export const poccAhinEvidenceSourceSchema = z.object({
   signer: z.string().min(1),
 });
 
-export const poccAhinConsensusReceiptSchema = z.object({
+// Reject-to-reissue compatibility policy: old/partial/inherited markers are not
+// defaulted or migrated. Preserve historical raw audit records outside this
+// current local-projection schema; see docs/POCC-AHIN-RECEIPT-COMPATIBILITY.md.
+export const poccAhinConsensusReceiptSchema = z.preprocess((value) => {
+  if (value !== null && typeof value === "object"
+    && (!Object.hasOwn(value, "verificationScope") || !Object.hasOwn(value, "finalAuthority"))) {
+    return undefined;
+  }
+  return value;
+}, z.object({
   verificationScope: z.literal("local-evidence-projection"),
   finalAuthority: z.literal(false),
   id: z.string().min(1),
@@ -1108,7 +1117,7 @@ export const poccAhinConsensusReceiptSchema = z.object({
   sources: z.array(poccAhinEvidenceSourceSchema),
   warnings: z.array(z.string()),
   createdAt: z.string().datetime(),
-});
+}));
 
 export const anchorVerificationReceiptSchema = z.object({
   id: z.string().min(1),

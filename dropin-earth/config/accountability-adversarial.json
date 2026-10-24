@@ -5,7 +5,8 @@
     "tests/unit/accountability-mutation-regression.test.ts",
     "tests/unit/accountability-product-projection.test.ts",
     "tests/unit/accountability-projection-adversarial.test.ts",
-    "tests/unit/pocc-ahin-anchor.test.ts"
+    "tests/unit/pocc-ahin-anchor.test.ts",
+    "tests/unit/pocc-ahin-legacy-receipt.test.ts"
   ],
   "cases": [
     "adversarial aggregate accepts only independently matched complete successful exact-head runs",
@@ -20,7 +21,11 @@
     "C08 true transport signature verifies only authentic bytes, never grants finality or financial authority",
     "C08 current revocation, epoch and expiry are checked after asynchronous authority lookup",
     "PoCC/AHIN consensus receipt is deterministic and rejects weak evidence",
-    "anchor verification receipt distinguishes verified, pending, and mismatch states"
+    "anchor verification receipt distinguishes verified, pending, and mismatch states",
+    "legacy public receipts are rejected unchanged without rewriting historical audit acceptance",
+    "legacy missing partial and inherited markers cannot enter the current receipt schema",
+    "appending markers cannot preserve a legacy duplicate quorum under current validation",
+    "explicit fresh receipt recomputation remains a non-authoritative local projection"
   ],
   "seedRange": [
     0,
