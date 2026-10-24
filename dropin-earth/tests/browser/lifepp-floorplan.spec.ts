@@ -42,10 +42,12 @@ async function main() {
       { unit: 'L112', area: '58.69', floor: '1f', page: 2, number: '1', x: 17, y: 63.3 },
       { unit: 'L203', area: '135.80', floor: '2f', page: 3, number: '2', x: 43, y: 58 },
       { unit: 'L202', area: '185.99', floor: '2f', page: 3, number: '3', x: 48, y: 58 },
-      { unit: 'L201', area: '290.78', floor: '2f', page: 3, number: '4', x: 55, y: 63 },
     ];
     for (const locale of ['en', 'zh'] as const) {
       await page.goto(`${base}/?locale=${locale}`, { waitUntil: 'networkidle' });
+      assert.equal(await page.locator('[data-plan-units]').getAttribute('data-plan-units'), '3');
+      assert.match(await page.locator('[data-four-shop-plan]').innerText(), /380\.48/);
+      assert.doesNotMatch(await page.locator('[data-four-shop-plan]').innerText(), /671\.26|612\.57/);
       const tabs = page.getByRole('tab');
       assert.equal(await tabs.count(), 2);
       await tabs.nth(0).focus(); await page.keyboard.press('ArrowRight');
@@ -56,7 +58,8 @@ async function main() {
       await page.keyboard.press('End');
       assert.equal(await tabs.nth(1).getAttribute('aria-selected'), 'true');
       const roomGroup = page.getByRole('group', { name: locale === 'en' ? 'Select a room to update the diagram marker' : '选择房间以同步图纸标记' });
-      assert.equal(await roomGroup.getByRole('button').count(), 4);
+      assert.equal(await roomGroup.getByRole('button').count(), 3);
+      assert.equal(await roomGroup.getByRole('button', { name: /L201/ }).count(), 0);
       for (const room of expected) {
         const card = roomGroup.getByRole('button', { name: new RegExp(room.unit) });
         await card.click();
@@ -96,8 +99,10 @@ async function main() {
       const alternative = await page.locator('details').innerText();
       for (const room of expected) assert.ok(alternative.includes(room.unit) && alternative.includes(room.area));
       assert.ok(!alternative.includes('L113'));
+      assert.match(alternative, /L201/);
+      assert.match(alternative, /不纳入|excluded/);
       if (locale === 'en') assert.ok(!/[\u3400-\u9fff]/.test(await page.locator('body').innerText()), 'English controls and text alternative are fully English');
-      checks.push(`${locale}: floor keyboard navigation; four card/marker selections; exact area, normalized point and source page; focus, pan, drag, zoom and reset; text alternative`);
+      checks.push(`${locale}: floor keyboard navigation; three card/marker selections; exact area, normalized point and source page; focus, pan, drag, zoom and reset; text alternative and L201 exclusion`);
       for (const width of viewportWidths) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${width}px page has no horizontal overflow`);
@@ -109,8 +114,8 @@ async function main() {
         assert.ok(markerBox.x >= mobileView.x && markerBox.x + markerBox.width <= mobileView.x + mobileView.width && markerBox.y >= mobileView.y && markerBox.y + markerBox.height <= mobileView.y + mobileView.height, 'Overview markers stay within the drawing');
         for (const other of markerBoxes.slice(index + 1)) assert.ok(markerBox.x + markerBox.width <= other.x || other.x + other.width <= markerBox.x || markerBox.y + markerBox.height <= other.y || other.y + other.height <= markerBox.y, 'Mobile marker targets do not overlap');
       }
-      assert.equal(await roomGroup.getByRole('button').count(), 4, 'All room cards remain available below mobile diagram');
-      checks.push(`${locale}: ${width}px no overflow; visible non-overlapping 44px markers; all four cards`);
+      assert.equal(await roomGroup.getByRole('button').count(), 3, 'All current room cards remain available below mobile diagram');
+      checks.push(`${locale}: ${width}px no overflow; visible non-overlapping 44px markers; all three cards`);
       if (process.env.LIFEPP_FLOORPLAN_SCREENSHOT_PREFIX) await page.screenshot({ path: `${process.env.LIFEPP_FLOORPLAN_SCREENSHOT_PREFIX}-${engine}-${locale}-${width}.png`, fullPage: true });
       }
       await page.setViewportSize({ width: 1440, height: 1000 });
@@ -120,7 +125,7 @@ async function main() {
     await page.getByText('The diagram could not load. The room cards and text alternative remain available below.', { exact: true }).waitFor();
     assert.equal(await page.getByRole('button', { name: 'Focus selected', exact: true }).isDisabled(), true);
     await page.locator('summary').click(); assert.match(await page.locator('details').innerText(), /L112.*58\.69/);
-    checks.push('Image failure keeps four cards and text alternative; image controls disable');
+    checks.push('Image failure keeps three cards and text alternative; image controls disable');
     const report = { evidenceClass: 'LOCAL_COMPONENT_INTERACTION', status: 'PASS', engine, browserVersion: browser.version(), viewportWidths, realDeviceTest: false, surveyOrNavigationValidation: false, checks };
     if (process.env.LIFEPP_FLOORPLAN_BROWSER_REPORT) await writeFile(process.env.LIFEPP_FLOORPLAN_BROWSER_REPORT, JSON.stringify(report, null, 2) + '\n');
     console.log(JSON.stringify(report, null, 2));
