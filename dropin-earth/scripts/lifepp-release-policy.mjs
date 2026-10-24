@@ -138,7 +138,7 @@ export function validateEvidence(report, expectedSha, run, expectedGates) {
   assert.equal(report.finalSnapshot?.sourceStatus, '');
   assert.equal(report.finalSnapshot?.sourceFingerprintSha256, report.sourceFingerprintSha256);
   assert.equal(report.finalSnapshot?.lockSha256, report.lockSha256);
-  assert.equal(report.finalSnapshot?.node, 'v22.22.3');
+  assert.equal(report.finalSnapshot?.node, 'v22.23.4');
   assert.equal(report.finalSnapshot?.npm, '10.9.4');
   assert.deepEqual([...report.expectedCommands].sort(), [...expectedGates].sort(), 'Required gate list changed or incomplete');
   assert.equal(report.commands?.length, expectedGates.length);

@@ -10,6 +10,8 @@ import { pathToFileURL } from 'node:url';
 import { BASELINE_PR_NUMBER, releasePrNumber, validateBaselineReachability, ENVIRONMENT, REPOSITORY, WORKER, TRUST_GATES, WEB_GATES, sha256, validateContext, validatePullRequest, validateAttestation,
   validateWorkflowRun, validateEvidence, validateEnvironmentApproval, validateRollback, validateRoutes, validateSourceConfig } from './lifepp-release-policy.mjs';
 
+import { verifyAdversarialReceipt } from './accountability-adversarial-receipt.mjs';
+
 const now = () => new Date().toISOString();
 const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'));
@@ -122,6 +124,87 @@ function zipEntry(archive, name) {
   return execFileSync('unzip', ['-p', archive, name], { maxBuffer: 15 * 1024 * 1024 });
 }
 
+// Same candidate artifact validation used by verifyCi, exported for offline boundary tests.
+// run/jobs come from authenticated GitHub reads; readEntry reads the independently
+// digest-checked archive. The manifest comes from the verified exact-head checkout.
+// Historical reports remain inspectable, but no historical exemption authorizes a candidate.
+export function validateCiArtifactEvidence({ file, workflow, run, jobs, report, expectedSha,
+  expectedLockSha256, readEntry, adversarialManifest, verifiedAt = Date.now() }) {
+  const definitions = {
+    'canopyproof-ci.yml': { job: 'Verify trust kernel and OpenNext artifact', key: 'trust-gate', gates: TRUST_GATES },
+    'lifepp-web.yml': { job: 'web', key: 'web', gates: WEB_GATES },
+  };
+  const definition = definitions[file];
+  assert.ok(definition, 'Unknown release evidence workflow');
+  assert.equal(workflow.path, `.github/workflows/${file}`, 'Wrong evidence workflow path');
+  validateWorkflowRun(run, workflow.id, expectedSha, jobs, definition.job);
+  validateEvidence(report, expectedSha, run, definition.gates);
+  assert.equal(report.lockSha256, expectedLockSha256, 'CI lockfile differs');
+  for (const entry of report.commands) {
+    assert.equal(sha256(readEntry(`${entry.id}.log`)), entry.logSha256, 'Command log missing or altered');
+    for (const item of entry.artifacts ?? []) assert.equal(sha256(readEntry(`artifacts/${item.path}`)), item.sha256, 'Command artifact missing or altered');
+  }
+  if (file !== 'canopyproof-ci.yml') return null;
+  for (const id of ['workspace', 'coverage', 'critical-coverage', 'webgl', 'workerd-smoke']) assert.ok(report.commands.find(entry => entry.id === id)?.artifacts?.length > 0, `${id} evidence missing`);
+  const audit = JSON.parse(readEntry('artifacts/reports/npm-audit-moderate.json').toString('utf8'));
+  assert.equal(audit.error, undefined, 'Audit API errors are not a successful security result');
+  assert.ok(audit.metadata?.vulnerabilities, 'Missing raw successful npm audit');
+  for (const severity of ['moderate', 'high', 'critical']) assert.equal(audit.metadata.vulnerabilities[severity], 0, `Unresolved ${severity} audit findings`);
+
+  const job = jobs[0], workspace = report.commands.find(entry => entry.id === 'workspace');
+  assert.ok(Number.isSafeInteger(run.id) && run.id > 0 && Number.isSafeInteger(run.run_attempt) && run.run_attempt > 0, 'Missing trusted CI run identity');
+  assert.ok(Number.isSafeInteger(job.id) && job.id > 0 && Number.isSafeInteger(job.runner_id) && job.runner_id > 0, 'Missing actual CI job/runner identity');
+  assert.equal(job.run_id, run.id, 'CI job belongs to another run');
+  assert.equal(job.head_sha, expectedSha, 'CI job names a different SHA');
+  assert.equal(adversarialManifest?.version, 1, 'Unsupported current adversarial inventory');
+  assert.ok(Array.isArray(adversarialManifest.cases) && adversarialManifest.cases.length > 0, 'Current adversarial inventory missing');
+  const artifact = path => {
+    const all = report.commands.flatMap(entry => (entry.artifacts ?? []).filter(item => item.path === path).map(item => ({ ...item, owner: entry.id })));
+    assert.equal(all.length, 1, `Missing or ambiguous accountability artifact: ${path}`);
+    assert.equal(all[0].owner, 'workspace', 'Accountability evidence must belong to the workspace command');
+    return all[0];
+  };
+  const receipt = artifact('reports/ci/accountability-adversarial.json');
+  const tap = artifact('reports/ci/accountability-adversarial.tap');
+  const bytes = readEntry(`artifacts/${receipt.path}`);
+  const accepted = verifyAdversarialReceipt(bytes, {
+    targetSha: expectedSha, runnerId: `${REPOSITORY}:${run.id}:${run.run_attempt}:${definition.key}`,
+    phase: 'merge_candidate', status: job.status, conclusion: job.conclusion,
+    tests: adversarialManifest.cases, receiptSha256: receipt.sha256,
+    maxAgeMs: 24 * 60 * 60 * 1000,
+  }, verifiedAt);
+  const result = JSON.parse(bytes.toString('utf8'));
+  assert.equal(result.stdoutSha256, tap.sha256, 'Accountability TAP digest differs');
+  const tapText = readEntry(`artifacts/${tap.path}`).toString('utf8');
+  const passed = [...tapText.matchAll(/^ok \d+ - (.+)$/gm)].map(match => match[1]);
+  assert.deepEqual([...passed].sort(), [...adversarialManifest.cases].sort(), 'Accountability TAP case inventory differs');
+  assert.ok(!/^not ok /m.test(tapText), 'Accountability TAP contains failed cases');
+  for (const total of ['fail', 'skipped', 'cancelled', 'todo']) {
+    const values = [...tapText.matchAll(new RegExp(`^# ${total} (\\d+)$`, 'gm'))].map(match => match[1]);
+    assert.deepEqual(values, ['0'], 'Accountability TAP contains unexecuted or failed cases, or ambiguous totals');
+  }
+  assert.ok(Array.isArray(result.command) && typeof result.command[0] === 'string', 'Accountability command missing');
+  assert.deepEqual(result.command.slice(1), ['--test', '--test-reporter=tap', '--import', 'tsx', ...adversarialManifest.files], 'Accountability command inventory changed');
+  assert.equal(result.exitCode, 0, 'Accountability runner did not exit successfully');
+  assert.equal(result.signal, null, 'Accountability runner was interrupted');
+  assert.equal(result.error, null, 'Accountability runner reported an error');
+  for (const snapshot of [result.before, result.after]) {
+    assert.equal(snapshot?.head, expectedSha, 'Accountability snapshot names a different SHA');
+    for (const key of ['node', 'npm', 'lockSha256']) assert.equal(snapshot?.[key], report.finalSnapshot[key], `Accountability ${key} differs`);
+    assert.equal(snapshot?.sourceFingerprintSha256, report.sourceFingerprintSha256, 'Accountability source fingerprint differs');
+    assert.equal(snapshot?.sourceStatus, '', 'Accountability source was dirty');
+  }
+  const completed = Date.parse(result.completedAt);
+  for (const [start, end] of [[workspace.startedAt, workspace.finishedAt], [job.started_at, job.completed_at]]) {
+    assert.ok(Number.isFinite(Date.parse(start)) && Number.isFinite(Date.parse(end))
+      && Date.parse(start) <= completed && completed <= Date.parse(end), 'Accountability receipt is outside the actual command/job interval');
+  }
+  assert.deepEqual(result.seedRange, adversarialManifest.seedRange, 'Accountability seed inventory changed');
+  assert.deepEqual(result.mutants, adversarialManifest.mutants, 'Accountability mutant inventory changed');
+  return { ...accepted, runId: run.id, attempt: run.run_attempt, jobId: job.id,
+    githubRunnerId: job.runner_id, receiptSha256: receipt.sha256, tapSha256: tap.sha256 };
+}
+
 async function verifyCi(target) {
   const receipts = [];
   for (const [file, expectedJob, prefix, gates] of [
@@ -141,21 +224,12 @@ async function verifyCi(target) {
     const archive = join(output(), `${file}.zip`);
     await downloadEvidence(matches[0], archive);
     const report = JSON.parse(zipEntry(archive, 'run.json').toString('utf8'));
-    validateEvidence(report, target.expectedSha, run, gates);
-    assert.equal(report.lockSha256, sha256(readFileSync('package-lock.json')), 'CI lockfile differs');
-    for (const entry of report.commands) {
-      assert.equal(sha256(zipEntry(archive, `${entry.id}.log`)), entry.logSha256, 'Command log missing or altered');
-      for (const item of entry.artifacts ?? []) assert.equal(sha256(zipEntry(archive, `artifacts/${item.path}`)), item.sha256, 'Command artifact missing or altered');
-    }
-    if (file === 'canopyproof-ci.yml') {
-      for (const id of ['workspace', 'coverage', 'critical-coverage', 'webgl', 'workerd-smoke']) assert.ok(report.commands.find(entry => entry.id === id)?.artifacts?.length > 0, `${id} evidence missing`);
-      const audit = JSON.parse(zipEntry(archive, 'artifacts/reports/npm-audit-moderate.json').toString('utf8'));
-      assert.equal(audit.error, undefined, 'Audit API errors are not a successful security result');
-      assert.ok(audit.metadata?.vulnerabilities, 'Missing raw successful npm audit');
-      for (const severity of ['moderate', 'high', 'critical']) assert.equal(audit.metadata.vulnerabilities[severity], 0, `Unresolved ${severity} audit findings`);
-    }
+    const accountability = validateCiArtifactEvidence({ file, workflow, run, jobs, report,
+      expectedSha: target.expectedSha, expectedLockSha256: sha256(readFileSync('package-lock.json')),
+      readEntry: name => zipEntry(archive, name),
+      adversarialManifest: readJson('config/accountability-adversarial.json') });
     receipts.push({ workflow: file, runId: run.id, attempt: run.run_attempt, sha: run.head_sha, url: run.html_url,
-      artifactId: matches[0].id, artifactDigest: matches[0].digest, runReportSha256: sha256(zipEntry(archive, 'run.json')), gates });
+      artifactId: matches[0].id, artifactDigest: matches[0].digest, runReportSha256: sha256(zipEntry(archive, 'run.json')), gates, accountability });
     rmSync(archive);
   }
   return receipts;
@@ -199,7 +273,7 @@ function seal() {
   assert.deepEqual(inputs(), preflight.target, 'Release inputs changed before sealing');
   assert.equal(git('rev-parse', 'HEAD'), preflight.target.expectedSha);
   assert.equal(git('status', '--porcelain', '--untracked-files=normal'), '', 'Prepare source changed');
-  assert.equal(process.version, 'v22.22.3');
+  assert.equal(process.version, 'v22.23.4');
   assert.equal(execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(), '10.9.4');
   assert.equal(process.env.NEXT_PUBLIC_CANOPYPROOF_MODE, 'production');
   assert.equal(process.env.NEXT_PUBLIC_DROPIN_SITE_URL, 'https://canopyproof.org');

@@ -63,8 +63,10 @@ of physical measurements, rights, regulatory status or production readiness.
 
 ## Validation and review limits
 
-Local development used Node 22.22.3 and existing npm 10.9.8 dependencies. The
-original remote workflows still pin Node 22.22.3 / npm 10.9.4 and perform a clean
+The historical local baseline used Node 22.22.3 and existing npm 10.9.8 dependencies.
+The current increment pins Node 22.23.4 / npm 10.9.4 in CI, and that exact toolchain
+has been installed and exercised locally. Earlier receipts retain their original
+runtime versions. The remote workflows perform a clean
 install; local evidence does not replace those same-commit runs.
 
 Before committing, all 957 unit tests, workspace typecheck, source-file ESLint,

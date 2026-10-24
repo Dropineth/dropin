@@ -6,6 +6,7 @@ import manifest from '../../apps/web/src/data/life/site-manifest.json';
 import { LIFEPP_PUBLIC_BRAND } from '../../apps/web/src/data/life/public-brand';
 import { lifeMetadata, lifePages } from '../../apps/web/src/data/life/navigation';
 import { rooms, pageMeta } from '../../apps/web/src/data/life/content';
+import { referenceRooms } from '../../apps/web/src/data/planetary-reference';
 import { ROOMS, AREA_TOTAL, AREA_SECOND_FLOOR, NODES, EDGES, TASKS } from '../../apps/web/src/components/life/spatial/spatial-data.mjs';
 
 const root = new URL('../../apps/web/src/', import.meta.url);
@@ -16,6 +17,8 @@ test('manifest, service cards and existing spatial demo agree on the three-store
   assert.deepEqual(manifest.spaces.map(room => room.unit), ids);
   assert.deepEqual(rooms.map(room => room.unit), ids);
   assert.deepEqual(ROOMS.map(room => room.id), ids);
+  assert.deepEqual(referenceRooms.map(room => room.id), ids);
+  assert.deepEqual(referenceRooms.map(room => room.title), manifest.spaces.map(room => ({ en: room.programEn, zh: room.programZh })));
   assert.deepEqual(manifest.currentPlan.units, ids);
   assert.deepEqual(manifest.currentPlan.excludedUnits, ['L201']);
   assert.equal(manifest.currentPlan.totalAreaSqm, 380.48);
@@ -46,7 +49,7 @@ test('all public Life titles and business brand labels use Life++HERE without re
 });
 
 test('current copy does not publish obsolete four-store areas as the active plan', () => {
-  for (const path of ['components/life/LifePages.tsx', 'components/life/FourShopPlan.tsx', 'data/life/content.ts', 'components/life/spatial/spatial-data.mjs', 'components/life/spatial/spatial-engine.mjs', 'components/planetary/ReferenceGlobe.tsx']) {
+  for (const path of ['components/life/LifePages.tsx', 'components/life/FourShopPlan.tsx', 'data/life/content.ts', 'components/life/spatial/spatial-data.mjs', 'components/life/spatial/spatial-engine.mjs', 'components/planetary/ReferenceGlobe.tsx', 'components/planetary/ReferencePanels.tsx']) {
     assert.doesNotMatch(source(path), /671\.26|612\.57|四铺|four-unit/i, path);
   }
   assert.match(source('components/life/FourShopPlan.tsx'), /data-four-shop-plan/);
