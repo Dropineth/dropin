@@ -256,3 +256,119 @@ test("Anchor's Solana client retains JSON-RPC success, error and batch behavior 
   assert.ok(requests.every((request) => request.jsonrpc === "2.0" && typeof request.id === "string"));
   assert.equal(new Set(requests.map((request) => request.id)).size, 4);
 });
+
+test("Undici enforces mixed-case SRI algorithms and the strongest supplied digest", async () => {
+  // GHSA-f72v-6w45-q472: an uppercase algorithm must not silently disable SRI.
+  const { createHash } = await import("node:crypto");
+  const { fetch, MockAgent } = require("undici");
+  const dispatcher = new MockAgent();
+  dispatcher.disableNetConnect();
+  const origin = dispatcher.get("https://integrity.invalid");
+  const digest = (algorithm: string, body: string) => createHash(algorithm).update(body).digest("base64");
+  try {
+    for (const algorithm of ["sha256", "sha384", "sha512"]) {
+      for (const token of [algorithm, algorithm.toUpperCase(), `ShA${algorithm.slice(3)}`]) {
+        origin.intercept({ path: "/" }).reply(200, "expected");
+        const good = await fetch("https://integrity.invalid/", { dispatcher, integrity: `${token}-${digest(algorithm, "expected")}` });
+        assert.equal(await good.text(), "expected");
+        origin.intercept({ path: "/" }).reply(200, "tampered");
+        await assert.rejects(fetch("https://integrity.invalid/", { dispatcher, integrity: `${token}-${digest(algorithm, "expected")}` }), /fetch failed/);
+      }
+    }
+    origin.intercept({ path: "/" }).reply(200, "expected");
+    await assert.rejects(fetch("https://integrity.invalid/", {
+      dispatcher,
+      integrity: `sha256-${digest("sha256", "expected")} SHA512-${digest("sha512", "different")}`,
+    }), /fetch failed/);
+    dispatcher.assertNoPendingInterceptors();
+  } finally { await dispatcher.close(); }
+});
+
+test("Undici rejects excess encodings without an orphan-stream process crash", () => {
+  // GHSA-xjj6-f33q-929c: six headers, no compressed payload, bounded subprocess.
+  const result = spawnSync(process.execPath, ["--max-old-space-size=64", "--input-type=commonjs", "-e", String.raw`
+    const assert = require('node:assert/strict');
+    const net = require('node:net');
+    const { fetch, Agent } = require(process.argv[1]);
+    (async () => {
+      const server = net.createServer(socket => socket.once('data', request => {
+        if (request.toString().startsWith('GET /bad ')) {
+          socket.end('HTTP/1.1 200 OK\r\nContent-Encoding: gzip, gzip, gzip, gzip, gzip, gzip\r\nContent-Length: 1\r\nConnection: close\r\n\r\n');
+        } else socket.end('HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok');
+      }));
+      await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+      const dispatcher = new Agent();
+      try {
+        const origin = 'http://127.0.0.1:' + server.address().port;
+        await assert.rejects(fetch(origin + '/bad', { dispatcher }), error => /too many content-encodings/.test(error.cause?.message));
+        await new Promise(resolve => setTimeout(resolve, 100));
+        assert.equal(await (await fetch(origin + '/good', { dispatcher })).text(), 'ok');
+      } finally {
+        await dispatcher.close();
+        await new Promise(resolve => server.close(resolve));
+      }
+      process.stdout.write('encoding rejection and recovery passed\n');
+    })().catch(error => { console.error(error); process.exitCode = 1; });
+  `, require.resolve("undici")], { encoding: "utf8", timeout: 5000, killSignal: "SIGKILL", maxBuffer: 64 * 1024 });
+  assert.equal(result.error, undefined, result.error?.message);
+  assert.equal(result.signal, null, result.stderr);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, "encoding rejection and recovery passed\n");
+});
+
+for (const fixture of [
+  { name: "empty data fields", maxEventSize: 131072, chunks: ["data:\n".repeat(1025)] },
+  { name: "fragmented unfinished lines", maxEventSize: 131072, chunks: Array<string>(1025).fill("x") },
+  { name: "oversize unfinished lines", maxEventSize: 32, chunks: ["data: " + "x".repeat(40)] },
+]) {
+  test(`Undici EventSource bounds ${fixture.name} and preserves complete events`, async () => {
+    // GHSA-4qv8-2p9j-2685: at most 6,150 fixture bytes, never memory exhaustion.
+    const { EventSourceStream } = require("undici/lib/web/eventsource/eventsource-stream");
+    const run = async (chunks: string[], maxEventSize: number) => {
+      const events: Array<{ options: { data: string } }> = [];
+      const stream = new EventSourceStream({ maxEventSize, push: (event: { options: { data: string } }) => { events.push(event); return true; } });
+      stream.on("error", () => {});
+      let error: Error | undefined;
+      try {
+        for (const chunk of chunks) {
+          error = await new Promise<Error | undefined>(resolve => stream.write(Buffer.from(chunk), (failure?: Error | null) => resolve(failure ?? undefined)));
+          if (error) break;
+        }
+        return { error, events };
+      } finally { stream.destroy(); }
+    };
+    const good = await run(["data: hello\n\n", "data: world\n\n"], fixture.maxEventSize);
+    assert.equal(good.error, undefined);
+    assert.deepEqual(good.events.map(event => event.options.data), ["hello", "world"]);
+    const bad = await run(fixture.chunks, fixture.maxEventSize);
+    assert.match(bad.error?.message ?? "", /EventSource message size exceeded/);
+    assert.deepEqual(bad.events, []);
+  });
+}
+
+test("Zod rejects oversize collections before element traversal and preserves overwrites", () => {
+  // GHSA-mrhx-c7xc-m3w5: tiny collections demonstrate short-circuiting safely.
+  const { z } = require("zod");
+  let visited = 0;
+  const item = z.string().refine(() => { visited += 1; return true; });
+  const fixtures = [
+    { schema: z.array(item).max(2), oversized: ["a", "b", "c"], valid: ["a", "b"], count: 2 },
+    { schema: z.array(item).length(2), oversized: ["a", "b", "c"], valid: ["a", "b"], count: 2 },
+    { schema: z.set(item).size(2), oversized: new Set(["a", "b", "c"]), valid: new Set(["a", "b"]), count: 2 },
+    { schema: z.map(item, item).max(2), oversized: new Map([["a", "a"], ["b", "b"], ["c", "c"]]), valid: new Map([["a", "a"], ["b", "b"]]), count: 4 },
+  ];
+  for (const fixture of fixtures) {
+    for (const compiledObject of [false, true]) {
+      const schema = compiledObject ? z.object({ value: fixture.schema }) : fixture.schema;
+      visited = 0;
+      const bad = schema.safeParse(compiledObject ? { value: fixture.oversized } : fixture.oversized);
+      assert.equal(bad.success, false);
+      assert.equal(visited, 0, "oversize collection must not visit any element");
+      assert.deepEqual(bad.error.issues.map((issue: { code: string }) => issue.code), ["too_big"]);
+      visited = 0;
+      assert.equal(schema.safeParse(compiledObject ? { value: fixture.valid } : fixture.valid).success, true);
+      assert.equal(visited, fixture.count);
+    }
+  }
+  assert.deepEqual(z.array(z.string()).overwrite((value: string[]) => value.slice(0, 2)).max(2).parse(["a", "b", "c"]), ["a", "b"]);
+});

@@ -187,7 +187,8 @@
       "jayson": "5.0.0"
     },
     "qs": "6.16.0",
-    "undici": "7.29.1",
+    "undici": "7.30.1",
+    "zod": "4.6.6",
     "@next/eslint-plugin-next": {
       "glob": {
         ".": "10.5.0",

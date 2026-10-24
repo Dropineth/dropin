@@ -23,7 +23,7 @@ test('consultation defaults closed and rejects incomplete configuration / untrus
  assert.ok(parseSubmittedInquiry(makeBody()));
 });
 
-test('LOCAL_SYNTHETIC D1 persistence, admission, withdrawal and cleanup stay fail-closed',async()=>{
+test('LOCAL_SYNTHETIC D1 persistence, admission, withdrawal and cleanup stay fail-closed',async t=>{
  const directory=await mkdtemp(join(tmpdir(),'lifepp-consultation-'));
  let mf:Miniflare|undefined;
  const open=async()=>{mf=new Miniflare({...convertV4MiniflareOptions({modules:true,script:'export default { fetch() { return new Response("LOCAL_SYNTHETIC"); } };',compatibilityDate:'2026-06-17',d1Databases:{LIFEPP_INQUIRY_DB:'local-synthetic-inquiries'}}),resourcePersistencePath:directory,cf:false,telemetry:{enabled:false}});return await mf.getD1Database('LIFEPP_INQUIRY_DB');};
@@ -80,6 +80,9 @@ test('LOCAL_SYNTHETIC D1 persistence, admission, withdrawal and cleanup stay fai
   const admitted=Number((await db.prepare('SELECT count FROM lifepp_inquiry_limits WHERE bucket=?').bind(`global:${Math.floor(now/3_600_000)}`).first())?.count);
   const remaining=100-admitted;
   const globalAdmission=await Promise.all(Array.from({length:remaining+5},(_,index)=>submitInquiry(request(makeBody()),runtime,`192.0.3.${index+1}`,now)));
+  const statuses:Record<string,number>={},errors:Record<string,number>={};
+  for(const response of globalAdmission){statuses[response.status]=(statuses[response.status]??0)+1;const result=await response.clone().json();if(result.error)errors[result.error]=(errors[result.error]??0)+1;}
+  t.diagnostic(JSON.stringify({case:'global-concurrent-admission',admittedBefore:admitted,expectedNew:remaining,statuses,errors,globalCounter:(await db.prepare('SELECT count FROM lifepp_inquiry_limits WHERE bucket=?').bind(`global:${Math.floor(now/3_600_000)}`).first())?.count,storedCount:(await db.prepare('SELECT COUNT(*) AS count FROM lifepp_inquiries').first())?.count}));
   assert.equal(globalAdmission.filter(response=>response.status===201).length,remaining,'Concurrent distinct clients cannot exceed the global hourly budget');
   assert.equal(globalAdmission.filter(response=>response.status===429).length,5);
   assert.equal((await submitInquiry(request(repeatedPayload),runtime,'192.0.2.10',now)).status,200,'Existing receipt retries remain available after the global budget is exhausted');
