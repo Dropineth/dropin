@@ -36,16 +36,16 @@ function EarthPanel({ locale }: LocalizedProps) {
         <ReferenceGlobe locale={locale} compact />
         <div className={styles.segmented} role="group" aria-label={t("Choose a reference context", "选择参考情境")}>
           <button type="button" aria-pressed={!life} aria-controls="reference-place" onClick={() => setRegion("geography")}>{t("Example geography", "地理示例")}</button>
-          <button type="button" aria-pressed={life} aria-controls="reference-place" className={styles.lifeToggle} onClick={() => setRegion("life")}>{t("Life++ four-shop concept", "Life++ 四铺构想")}</button>
+          <button type="button" aria-pressed={life} aria-controls="reference-place" className={styles.lifeToggle} onClick={() => setRegion("life")}>{t("Life++HERE three-store concept", "Life++HERE 三铺构想")}</button>
         </div>
         <p className={styles.caption}>{t("Regional context only. The globe does not identify surveyed parcels, land rights or active projects.", "仅用于区域参考。地球展示不标定测绘地块、土地权利或在运项目。")}</p>
       </section>
       <section className={`${styles.card} ${life ? styles.lifeCard : ""}`} id="reference-place" aria-live="polite" aria-atomic="true">
         <p className={styles.eyebrow}>{life ? "LIFE++ / CONCEPT" : t("SELECTED CONTEXT", "当前参考情境")}</p>
         <h2>{life ? t("Shenzhen · Life++", "深圳 · Life++") : t("Côte d’Ivoire", "科特迪瓦")}</h2>
-        <p className={styles.bodyCopy}>{life ? t("Four proposed spaces for people, local intelligence and shared learning. Their inclusion is a planning reference.", "面向人、在地智能与共同学习的四处拟议空间。本页仅引用其规划构想。") : t("A country-level example for exploring how ecological evidence could be organized, from regional context to an individual source record.", "用于探索生态证据组织方式的国家级示例：从区域背景，逐步追溯到单条来源记录。")}</p>
+        <p className={styles.bodyCopy}>{life ? t("Three proposed spaces for people, local intelligence and shared learning. Their inclusion is a planning reference.", "面向人、在地智能与共同学习的三处拟议空间。本页仅引用其规划构想。") : t("A country-level example for exploring how ecological evidence could be organized, from regional context to an individual source record.", "用于探索生态证据组织方式的国家级示例：从区域背景，逐步追溯到单条来源记录。")}</p>
         <dl className={styles.fields}>
-          <Field label={t("Display scope", "展示范围")}>{life ? t("Four-shop planning concept", "四铺规划构想") : t("Country-level reference", "国家级参考")}</Field>
+          <Field label={t("Display scope", "展示范围")}>{life ? t("Three-store planning concept", "三铺规划构想") : t("Country-level reference", "国家级参考")}</Field>
           <Field label={t("Project boundary", "项目边界")}>{t("Not established", "尚未建立")}</Field>
           <Field label={t("Source capture", "现场采集")}>{t("Not connected", "尚未接入")}</Field>
           <Field label={t("Verified ecological outcome", "已核证生态成果")}>{t("Not established", "尚未建立")}</Field>
@@ -54,7 +54,7 @@ function EarthPanel({ locale }: LocalizedProps) {
         {life && <p className={styles.caption}>{t("No lease, partnership, opening or robot operation is established by this reference.", "本参考不证明租约、合作、开放营业或机器人运营已成立。")}</p>}
       </section>
     </div>
-    {life ? <div className={styles.roomGrid} aria-label={t("Four proposed spaces", "四处拟议空间")}>
+    {life ? <div className={styles.roomGrid} aria-label={t("Three proposed spaces", "三处拟议空间")}>
       {referenceRooms.map(room => <article key={room.id} className={`${styles.card} ${styles.roomCard}`}><span className={styles.roomId}>{room.id}</span><span className={styles.proposed}>{t("PROPOSED", "拟议空间")}</span><h3>{room.title[locale]}</h3><p>{room.description[locale]}</p></article>)}
     </div> : <div className={styles.routeStrip}>
       <p className={styles.eyebrow}>{t("A REFERENCE PATH", "参考路径")}</p>
@@ -169,7 +169,7 @@ function ParticipationPanel({ locale }: LocalizedProps) {
       </section>
       <div className={styles.stackedCards}>
         <section className={styles.card}><span className={styles.eyebrow}>{t("01 / EXPLORE", "01 / 探索")}</span><h2>{t("Start with a record.", "从一条记录开始。")} </h2><p className={styles.bodyCopy}>{t("Read the existing explorer and assess each record using its own source and status. This page makes no claim about live funds held elsewhere.", "在既有浏览器中，依据每条记录自身的来源与状态进行判断。本页不声明其他系统的实时资金状况。")}</p><Link className={styles.textLink} href="/explorer">{t("Open the record explorer", "打开记录浏览器")}<Arrow /></Link></section>
-        <section className={`${styles.card} ${styles.lifeCard}`}><span className={styles.eyebrow}>{t("02 / LIFE++", "02 / LIFE++")}</span><h2>{t("Explore a shared-space concept.", "了解共生空间构想。")} </h2><p className={styles.bodyCopy}>{t("Visit the existing Life++ pages for the four-shop plan, spatial test records and responsibility boundaries.", "进入既有 Life++ 页面，了解四铺规划、空间测试记录与责任边界。")}</p><Link className={styles.textLink} href={referenceLifePath("/life", locale)}>{t("Discover Life++", "探索 Life++")}<Arrow /></Link></section>
+        <section className={`${styles.card} ${styles.lifeCard}`}><span className={styles.eyebrow}>{t("02 / LIFE++", "02 / LIFE++")}</span><h2>{t("Explore a shared-space concept.", "了解共生空间构想。")} </h2><p className={styles.bodyCopy}>{t("Visit the existing Life++ pages for the three-store plan, spatial test records and responsibility boundaries.", "进入既有 Life++ 页面，了解三铺规划、空间测试记录与责任边界。")}</p><Link className={styles.textLink} href={referenceLifePath("/life", locale)}>{t("Discover Life++", "探索 Life++")}<Arrow /></Link></section>
       </div>
     </div>
     <div className={styles.notice}>{t("This page does not establish contributions, allocations, settlements or returns. Financial records require independently attributable sources.", "本页不建立出资、拨付、结算或收益事实。资金记录需要独立且可追溯的来源。")}</div>
@@ -187,7 +187,7 @@ function TrustPanel({ locale }: LocalizedProps) {
   return <>
     <div className={styles.trustGrid}>{boundaries.map((item, index) => <article className={styles.card} key={item.title}><div className={styles.cardTop}><span className={styles.stageNumber}>0{index + 1}</span><span className={styles.smallTag}>{item.status}</span></div><h2>{item.title}</h2><p className={styles.bodyCopy}>{item.body}</p></article>)}</div>
     <section className={`${styles.card} ${styles.sceneBoundary}`} aria-labelledby="reference-scene-boundary">
-      <div><p className={styles.eyebrow}>LIFE++ / 3DGS</p><h2 id="reference-scene-boundary">{t("Scenes 33 / 29 remain blocked here.", "场景 33 / 29 在此保持关闭。")}</h2><p className={styles.bodyCopy}>{t("The existing scene records retain their original identity. This reference loads neither asset and does not bind either scene to the four shops or a forest.", "既有场景记录保留其原始身份。本参考未加载这两个资产，也未将其绑定到四铺或森林。")}</p><div className={styles.linkRow}><Link className={styles.textLink} href={referenceLifePath("/life/spaces/33", locale)}>{t("Scene 33 record", "场景 33 记录")}<Arrow /></Link><Link className={styles.textLink} href={referenceLifePath("/life/spaces/29", locale)}>{t("Scene 29 record", "场景 29 记录")}<Arrow /></Link></div></div>
+      <div><p className={styles.eyebrow}>LIFE++ / 3DGS</p><h2 id="reference-scene-boundary">{t("Scenes 33 / 29 remain blocked here.", "场景 33 / 29 在此保持关闭。")}</h2><p className={styles.bodyCopy}>{t("The existing scene records retain their original identity. This reference loads neither asset and does not bind either scene to the three selected units or a forest.", "既有场景记录保留其原始身份。本参考未加载这两个资产，也未将其绑定到本轮三铺或森林。")}</p><div className={styles.linkRow}><Link className={styles.textLink} href={referenceLifePath("/life/spaces/33", locale)}>{t("Scene 33 record", "场景 33 记录")}<Arrow /></Link><Link className={styles.textLink} href={referenceLifePath("/life/spaces/29", locale)}>{t("Scene 29 record", "场景 29 记录")}<Arrow /></Link></div></div>
       <dl className={styles.fields}><Field label={t("Real asset loading", "真实资产加载")}>{t("BLOCKED", "BLOCKED · 已关闭")}</Field><Field label={t("Capture date / source version", "采集日期 / 来源版本")}>{t("UNKNOWN", "UNKNOWN · 未知")}</Field><Field label={t("Third-party rights", "第三方权利")}>{t("NOT VERIFIED", "NOT VERIFIED · 未核验")}</Field><Field label={t("Metric registration", "度量配准")}>{t("NOT VERIFIED", "NOT VERIFIED · 未核验")}</Field></dl>
     </section>
     <div className={styles.sourceFooter}><div><h2>{t("Keep source records separate.", "保留来源记录的独立性。")} </h2><p>{t("The planetary experience is a presentation reference. Canonical records, spatial test inputs and Life++ planning retain their own status and requirements.", "地球体验属于展示参考。正式记录、空间测试输入与 Life++ 规划各自保留其状态和要求。")}</p></div><div className={styles.linkRow}><Link className={styles.textLink} href="/explorer">{t("Record explorer", "记录浏览器")}<Arrow /></Link><Link className={styles.textLink} href={referenceLifePath("/life/trust", locale)}>{t("Life++ trust", "Life++ 信任说明")}<Arrow /></Link></div></div>

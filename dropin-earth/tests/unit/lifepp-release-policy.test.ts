@@ -66,7 +66,7 @@ test('workflow status must name the actual workflow, final main SHA and successf
   validateWorkflowRun(workflowRun, 1, target, [{ ...jobs[0], steps: [...jobs[0].steps, { name: 'Post Setup Node', status: 'completed', conclusion: 'skipped' }] }], 'web');
 });
 
-const snapshot = { head: target, node: 'v22.22.3', npm: '10.9.4', lockSha256: 'd'.repeat(64), sourceFingerprintSha256: 'e'.repeat(64), sourceStatus: '' };
+const snapshot = { head: target, node: 'v22.23.4', npm: '10.9.4', lockSha256: 'd'.repeat(64), sourceFingerprintSha256: 'e'.repeat(64), sourceStatus: '' };
 const evidence = (gates: string[]) => ({ schemaVersion: 1, status: 'PASS', ...snapshot, expectedSha: target, runId: '10', runAttempt: '1', checkoutClean: true, finalSnapshot: { ...snapshot }, expectedCommands: gates,
   commands: gates.map(id => ({ id, status: 'PASS', exitCode: 0, commandExitCode: 0, signal: null, startedAt: '2026-09-30T06:00:00Z', finishedAt: '2026-09-30T06:01:00Z', before: { ...snapshot }, after: { ...snapshot } })) });
 test('CI artifact receipt independently rejects omitted gates, stale SHA/run, failed command and changed source/lock/runtime', () => {

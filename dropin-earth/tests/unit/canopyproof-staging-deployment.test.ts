@@ -85,7 +85,7 @@ test("staging workflow is exact-SHA, reviewer-gated, isolated, and non-productio
     /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/,
   );
   assert.match(workflow, /environment: canopyproof-staging/);
-  assert.match(workflow, /node-version: 22\.22\.3/);
+  assert.match(workflow, /node-version: 22\.23\.4/);
   assert.match(workflow, /npm install --global npm@10\.9\.4/);
   assert.match(workflow, /ref: \$\{\{ env\.REQUESTED_TARGET_SHA \}\}/);
   assert.match(workflow, /actual_sha="\$\(git rev-parse HEAD\)"/);

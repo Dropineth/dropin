@@ -152,9 +152,13 @@ test('native privacy authority: exact erasure, suppression and separate worker p
         assert.equal((await owner.query("SELECT count(*)::int n FROM child_stewardship.privacy_objects WHERE session_id=$1 AND kind='export'",[expiredExport.session])).rows[0].n,0);
         // A provider awaited after locking can outlive admission. Recheck the
         // current database clock after its answer, before export creation.
-        const deadline=Date.now()+350;await admit(exported.session,deadline);
-        const slowProvider=async(session:string)=>{await new Promise(resolve=>setTimeout(resolve,Math.max(0,deadline-Date.now()+25)));return provider(session);};
+        const deadline=Date.now()+5_000;await admit(exported.session,deadline);
+        await assert.doesNotReject(scope(worker,exported.session,exported.request,()=>assertChildRestoreReady(sql(worker),exported.session,provider)),'setup must admit a still-current checkpoint before the provider delay');
+        let providerStartedAt=0,providerReturnedAt=0;
+        const slowProvider=async(session:string)=>{providerStartedAt=Date.now();await new Promise(resolve=>setTimeout(resolve,Math.max(0,deadline-Date.now()+25)));providerReturnedAt=Date.now();return provider(session);};
         await assert.rejects(new ChildPrivacyWorker(sql(worker),3600000,slowProvider).process(exported.session,exported.request),/RESTORATION_UNVERIFIED/);
+        assert.ok(providerStartedAt>0&&providerStartedAt<deadline,'provider must begin while the signed checkpoint is still current');
+        assert.ok(providerReturnedAt>=deadline,'provider must return only after the actual signed deadline');
         assert.equal((await owner.query("SELECT count(*)::int n FROM child_stewardship.privacy_objects WHERE session_id=$1 AND kind='export'",[exported.session])).rows[0].n,0);
         assert.equal((await owner.query('SELECT state FROM child_stewardship.privacy_jobs WHERE session_id=$1',[exported.session])).rows[0].state,'requested');
       }finally{await verifierClient.end();await owner.query(`DROP OWNED BY ${verifierRole}`);await owner.query(`DROP ROLE ${verifierRole}`);}

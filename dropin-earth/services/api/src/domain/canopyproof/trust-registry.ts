@@ -10527,7 +10527,7 @@ export class PrismaCanopyProofTrustRegistryService {
     return snapshot;
   }
 
-  private async loadOrganization(transaction: TrustTransaction, organizationId: string, lock = false) {
+  private async loadOrganization(transaction: TrustTransaction, organizationId: string, lock = false): Promise<CanopyProofOrganizationProfile | undefined> {
     const rows = lock
       ? await transaction.$queryRaw<unknown[]>(Prisma.sql`SELECT * FROM organizations.organizations WHERE id = ${organizationId} FOR UPDATE`)
       : await transaction.$queryRaw<unknown[]>(Prisma.sql`SELECT * FROM organizations.organizations WHERE id = ${organizationId}`);

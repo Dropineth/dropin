@@ -91,8 +91,9 @@
     "pretest:coverage:ratchet": "npm run prisma:generate:test",
     "test:coverage:ratchet": "c8 --all --check-coverage --statements=70 --lines=70 --branches=72.75 --functions=70 --reporter=text-summary --reporter=json-summary --include='apps/*/src/**/*.ts' --include='apps/*/src/**/*.tsx' --include='packages/*/src/**/*.ts' --include='packages/*/src/**/*.tsx' --include='services/*/src/**/*.ts' --include='services/*/src/**/*.tsx' --exclude='**/*.d.ts' node --test --test-concurrency=1 --test-reporter=dot --import tsx tests/unit/*.test.ts tests/integration/canopyproof-postgres-audit.integration.ts tests/integration/*-pglite.integration.ts && node scripts/canopyproof-repository-coverage-report.mjs",
     "audit": "node scripts/npm-audit-moderate.mjs",
-    "ci": "npm run lint && npm run typecheck && npm run test && npm run test:fiftyone && npm run db:verify:canopyproof && npm run build && npm run audit",
-    "test:child-stewardship:browser": "node scripts/child-stewardship-browser-matrix.mjs"
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run test:accountability && npm run test:fiftyone && npm run db:verify:canopyproof && npm run build && npm run audit",
+    "test:child-stewardship:browser": "node scripts/child-stewardship-browser-matrix.mjs",
+    "test:accountability": "node scripts/accountability-adversarial-runner.mjs"
   },
   "devDependencies": {
     "@babel/core": "8.0.0",
@@ -186,7 +187,8 @@
       "jayson": "5.0.0"
     },
     "qs": "6.16.0",
-    "undici": "7.29.1",
+    "undici": "7.30.1",
+    "zod": "4.6.6",
     "@next/eslint-plugin-next": {
       "glob": {
         ".": "10.5.0",

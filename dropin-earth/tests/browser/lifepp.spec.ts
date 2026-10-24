@@ -407,8 +407,11 @@ async function interactions() {
               assert.match(await page.locator("[data-reference-globe]").first().innerText(), /REFERENCE|参考/i);
             }
             if (view === "earth") {
-              await page.getByRole("button", { name: /Life\+\+ four-shop concept|Life\+\+ 四铺构想/ }).click();
-              for (const id of ["L112", "L203", "L202", "L201"]) assert.match(await page.locator('[data-reference-view="earth"]').innerText(), new RegExp(id));
+              await page.getByRole("button", { name: /Life\+\+HERE three-store concept|Life\+\+HERE 三铺构想/ }).click();
+              const currentRooms = page.getByLabel(/Three proposed spaces|三处拟议空间/, { exact: true });
+              assert.equal(await currentRooms.locator("article").count(), 3);
+              for (const id of ["L112", "L203", "L202"]) assert.match(await currentRooms.innerText(), new RegExp(id));
+              assert.doesNotMatch(await currentRooms.innerText(), /L201/);
             }
             if (view === "evidence") {
               assert.equal(await page.locator('[data-evidence-state][data-status="not-established"]').count(), 5);
@@ -457,7 +460,8 @@ async function interactions() {
           await globe.locator('[role="status"]').filter({ hasText: "静态区域参考" }).waitFor();
           assert.equal(await globe.getAttribute("data-renderer"), "static-reference");
           assert.equal(await globe.locator("button:disabled").count(), 3);
-          assert.match(await globe.innerText(), /671.26/);
+          assert.match(await globe.innerText(), /380\.48/);
+          assert.doesNotMatch(await globe.innerText(), /671\.26/);
         } else {
           await fallbackPage.locator('[data-reference-globe][data-renderer="canvas2d-reference"]').waitFor();
           const canvas = globe.locator("canvas");
