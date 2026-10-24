@@ -3,8 +3,11 @@ import test from 'node:test';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createServer } from 'node:http';
+import { fetch as transportFetch } from 'undici';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
-import { cleanupInquiries, inquiryStatus, maintainInquiries, parseInquiryConfig, parseSubmittedInquiry, submitInquiry, withdrawInquiry, type InquiryConfig, type InquiryDatabase, type InquiryRuntime } from '../../apps/web/src/lib/life/inquiry-service';
+import { cleanupInquiries, inquiryStatus, maintainInquiries, parseInquiryConfig, parseSubmittedInquiry, submitInquiry, withdrawInquiry, INQUIRY_RECEIPT_LOOKUP_SQL, type InquiryConfig, type InquiryDatabase, type InquiryRuntime, type InquiryStatement } from '../../apps/web/src/lib/life/inquiry-service';
+import { miniflareReceiptReadback, MINIFLARE_RECEIPT_READ_BUDGET_MS, type MiniflareReadbackMetrics } from '../helpers/lifepp-miniflare-readback';
 
 const config: InquiryConfig = { enabled:true, origin:'https://inquiry.example.test', retentionDays:2, policyVersion:'fixture-v1', acceptanceRef:'LOCAL_SYNTHETIC-acceptance', controller:'LOCAL_SYNTHETIC recipient', backupNoticeZh:'本地合成测试，无生产备份声明。', backupNoticeEn:'Local synthetic test; no production backup claim.', hmacKey:'LOCAL_SYNTHETIC-hmac-key-not-a-secret-0000', maintenanceToken:'LOCAL_SYNTHETIC-maintenance-token-0000' };
 const inquiry = { name:'LOCAL_SYNTHETIC visitor',organization:'',channel:'email',contact:'test@example.invalid',type:'space',message:'LOCAL_SYNTHETIC consultation test. No real user or recipient.',consent:true };
@@ -37,6 +40,7 @@ test('LOCAL_SYNTHETIC D1 persistence, admission, withdrawal and cleanup stay fai
  const directory=await mkdtemp(join(tmpdir(),'lifepp-consultation-'));
  const storageFailures:unknown[]=[];
  let storageFailureCount=0;
+ const proxyRecovery:MiniflareReadbackMetrics={retries:0};
  // Synthetic fixture only: capture the original exception without wrapping D1
  // methods or changing their promises, SQL, admission order or concurrency.
  const observeFailure:NonNullable<InquiryRuntime['observeFailure']>=(failure,error)=>{
@@ -50,7 +54,7 @@ test('LOCAL_SYNTHETIC D1 persistence, admission, withdrawal and cleanup stay fai
  try{
   let db=await open();
   await db.exec((await readFile('apps/web/migrations/life-inquiry/0001_inquiry.sql','utf8')).replace(/--[^\n]*/g,'').replace(/\s+/g,' '));
-  let runtime:InquiryRuntime={db,config,observeFailure};
+  let runtime:InquiryRuntime={db:miniflareReceiptReadback(db,proxyRecovery),config,observeFailure};
   assert.equal((await (await inquiryStatus(runtime,now)).json()).mode,'draft','Schema alone cannot activate collection');
   await db.batch([db.prepare("INSERT INTO lifepp_inquiry_control(key,value) VALUES ('acceptance_ref',?)").bind(config.acceptanceRef),db.prepare("INSERT INTO lifepp_inquiry_control(key,value) VALUES ('policy_version',?)").bind(config.policyVersion)]);
   assert.equal((await (await inquiryStatus(runtime,now)).json()).mode,'draft','Missing cleanup heartbeat cannot activate collection');
@@ -79,7 +83,7 @@ test('LOCAL_SYNTHETIC D1 persistence, admission, withdrawal and cleanup stay fai
   for(let i=0;i<6;i++)assert.equal((await submitInquiry(request(makeBody()),runtime,'192.0.2.1',now)).status,429);
   assert.equal((await db.prepare('SELECT count FROM lifepp_inquiry_limits WHERE bucket=?').bind(`global:${Math.floor(now/3_600_000)}`).first())?.count,3,'Rejected client requests and duplicate retries cannot consume the global budget');
   const row=await db.prepare('SELECT * FROM lifepp_inquiries WHERE id=?').bind(receipt.receiptId).first();assert.ok(row);assert.match(String(row.body),/LOCAL_SYNTHETIC/);assert.equal('ip' in row,false);assert.equal(row.send_consent,1);assert.equal(String(row.withdrawal_hash).includes(receipt.withdrawalToken),false);
-  await mf!.dispose();db=await open();runtime={db,config,observeFailure};
+  await mf!.dispose();db=await open();runtime={db:miniflareReceiptReadback(db,proxyRecovery),config,observeFailure};
   const reopened=await db.prepare('SELECT body FROM lifepp_inquiries WHERE id=?').bind(receipt.receiptId).first();assert.equal(reopened?.body,row.body,'Actual local D1 persists after runtime restart');
   assert.equal((await withdrawInquiry(request({receiptId:receipt.receiptId,withdrawalToken:'0'.repeat(64)},{},'DELETE'),runtime)).status,403);
   assert.equal((await withdrawInquiry(request({receiptId:receipt.receiptId,withdrawalToken:receipt.withdrawalToken},{},'DELETE'),runtime)).status,200);
@@ -101,7 +105,7 @@ test('LOCAL_SYNTHETIC D1 persistence, admission, withdrawal and cleanup stay fai
   const globalAdmission=await Promise.all(Array.from({length:remaining+5},(_,index)=>submitInquiry(request(makeBody()),runtime,`192.0.3.${index+1}`,now)));
   const statuses:Record<string,number>={},errors:Record<string,number>={};
   for(const response of globalAdmission){statuses[response.status]=(statuses[response.status]??0)+1;const result=await response.clone().json();if(result.error)errors[result.error]=(errors[result.error]??0)+1;}
-  t.diagnostic(JSON.stringify({case:'global-concurrent-admission',admittedBefore:admitted,expectedNew:remaining,statuses,errors,storageFailures,storageFailureCount,storageFailuresTruncated:storageFailureCount>storageFailures.length,globalCounter:(await db.prepare('SELECT count FROM lifepp_inquiry_limits WHERE bucket=?').bind(`global:${Math.floor(now/3_600_000)}`).first())?.count,storedCount:(await db.prepare('SELECT COUNT(*) AS count FROM lifepp_inquiries').first())?.count}));
+  t.diagnostic(JSON.stringify({case:'global-concurrent-admission',admittedBefore:admitted,expectedNew:remaining,statuses,errors,proxyReceiptReadRetries:proxyRecovery.retries,proxyReceiptReadExhaustions:proxyRecovery.exhausted??0,proxyReceiptReadDeadlines:proxyRecovery.deadlines??0,storageFailures,storageFailureCount,storageFailuresTruncated:storageFailureCount>storageFailures.length,globalCounter:(await db.prepare('SELECT count FROM lifepp_inquiry_limits WHERE bucket=?').bind(`global:${Math.floor(now/3_600_000)}`).first())?.count,storedCount:(await db.prepare('SELECT COUNT(*) AS count FROM lifepp_inquiries').first())?.count}));
   assert.equal(globalAdmission.filter(response=>response.status===201).length,remaining,'Concurrent distinct clients cannot exceed the global hourly budget');
   assert.equal(globalAdmission.filter(response=>response.status===429).length,5);
   assert.equal((await submitInquiry(request(repeatedPayload),runtime,'192.0.2.10',now)).status,200,'Existing receipt retries remain available after the global budget is exhausted');
@@ -194,4 +198,134 @@ test('synthetic failure diagnostics redact capabilities, payload and nested prov
  assert.ok((describeSyntheticFailure(new Error('x'.repeat(2000))).message??'').length<=1200);
  assert.equal(describeSyntheticFailure(new Error("D1_ERROR SELECT body FROM private_table WHERE contact='privatevalue'" )).message,'D1_ERROR [redacted-sql]');
  assert.deepEqual(describeSyntheticFailure({payload:'never stringify unknown objects'}),{name:'object'});
+});
+
+test('Node D1 proxy retries only one closed-peer receipt read, never admission writes',async t=>{
+ const directory=await mkdtemp(join(tmpdir(),'lifepp-proxy-transport-'));
+ const peer=createServer(req=>req.socket.destroy());
+ await new Promise<void>((resolve,reject)=>{peer.once('error',reject);peer.listen(0,'127.0.0.1',resolve);});
+ const address=peer.address();assert.ok(address&&typeof address!=='string');
+ const closePeer=async():Promise<never>=>{
+  try{await transportFetch(`http://127.0.0.1:${address.port}`,{method:'POST',body:'LOCAL_SYNTHETIC'});}
+  catch(error){
+   assert.ok(error instanceof TypeError);assert.equal(error.message,'fetch failed');
+   assert.ok(error.cause instanceof Error);assert.equal(error.cause.name,'SocketError');
+   assert.equal(error.cause.message,'other side closed');assert.equal((error.cause as Error&{code?:string}).code,'UND_ERR_SOCKET');
+   throw error;
+  }
+  throw new Error('LOCAL_SYNTHETIC peer must actually close the transport');
+ };
+ const mf=new Miniflare({...convertV4MiniflareOptions({modules:true,script:'export default { fetch() { return new Response("LOCAL_SYNTHETIC"); } };',compatibilityDate:'2026-06-17',d1Databases:{LIFEPP_INQUIRY_DB:'local-synthetic-proxy-recovery'}}),resourcePersistencePath:directory,cf:false,telemetry:{enabled:false}});
+ const now=Date.now();
+ try{
+  const db=await mf.getD1Database('LIFEPP_INQUIRY_DB');
+  await db.exec((await readFile('apps/web/migrations/life-inquiry/0001_inquiry.sql','utf8')).replace(/--[^\n]*/g,'').replace(/\s+/g,' '));
+  await db.batch([db.prepare("INSERT INTO lifepp_inquiry_control(key,value) VALUES ('acceptance_ref',?)").bind(config.acceptanceRef),db.prepare("INSERT INTO lifepp_inquiry_control(key,value) VALUES ('policy_version',?)").bind(config.policyVersion)]);
+  const healthy:InquiryRuntime={db,config};await cleanupInquiries(healthy,now);
+  const counts=async()=>({rows:Number((await db.prepare('SELECT COUNT(*) AS count FROM lifepp_inquiries').first())?.count),global:Number((await db.prepare('SELECT count FROM lifepp_inquiry_limits WHERE bucket=?').bind(`global:${Math.floor(now/3_600_000)}`).first())?.count??0)});
+  const faultPort=(options:{failures?:number;permanent?:Error;batch?:boolean;prepare?:Error;bind?:Error;query?:string;afterRead?:(attempt:number)=>void;beforePrepare?:(attempt:number)=>void;holdRead?:()=>Promise<void>})=>{
+   let remaining=options.failures??0,prepares=0;const calls={reads:0,batches:0};
+   const wrap=(statement:InquiryStatement):InquiryStatement=>({
+    bind:(...values)=>{if(options.bind)throw options.bind;return wrap(statement.bind(...values));},
+    async first<T>(){calls.reads++;try{if(options.permanent)throw options.permanent;if(remaining-->0)return await closePeer();const result=await statement.first<T>();await options.holdRead?.();return result;}finally{options.afterRead?.(calls.reads);}},
+    all:<T>()=>statement.all<T>(),run:()=>statement.run(),
+   });
+   const port:InquiryDatabase={
+    prepare(sql){if(sql!==(options.query??INQUIRY_RECEIPT_LOOKUP_SQL))return db.prepare(sql);options.beforePrepare?.(++prepares);if(options.prepare)throw options.prepare;return wrap(db.prepare(sql));},
+    batch(statements){calls.batches++;return options.batch?closePeer():db.batch(statements);},
+   };
+   return{port,calls};
+  };
+  const unavailable=async(response:Response)=>{assert.equal(response.status,503);assert.deepEqual(await response.json(),{error:'unavailable'});};
+
+  await t.test('an actual closed socket is recovered by one read of the persisted receipt',async()=>{
+   const payload=makeBody(),fault=faultPort({failures:1}),metrics={retries:0};
+   const response=await submitInquiry(request(payload),{db:miniflareReceiptReadback(fault.port,metrics),config},'192.0.5.1',now);
+   assert.equal(response.status,201);const receipt=await response.json();
+   assert.ok(await db.prepare('SELECT id FROM lifepp_inquiries WHERE id=?').bind(receipt.receiptId).first());
+   assert.deepEqual(fault.calls,{reads:2,batches:1});assert.equal(metrics.retries,1);assert.deepEqual(await counts(),{rows:1,global:1});
+   const retry=await submitInquiry(request(payload),healthy,'192.0.5.1',now);assert.equal(retry.status,200);assert.equal((await retry.json()).receiptId,receipt.receiptId);
+   assert.deepEqual(await counts(),{rows:1,global:1});
+  });
+  await t.test('two real socket failures exhaust the budget and preserve503 plus one committed row',async()=>{
+   const payload=makeBody(),fault=faultPort({failures:2}),metrics={retries:0};
+   await unavailable(await submitInquiry(request(payload),{db:miniflareReceiptReadback(fault.port,metrics),config},'192.0.5.2',now));
+   assert.deepEqual(fault.calls,{reads:2,batches:1});assert.equal(metrics.retries,1);assert.deepEqual(await counts(),{rows:2,global:2});
+   assert.equal((await submitInquiry(request(payload),healthy,'192.0.5.2',now)).status,200);assert.deepEqual(await counts(),{rows:2,global:2});
+  });
+  await t.test('the unwrapped port still returns503 for the same real socket failure',async()=>{
+   const payload=makeBody(),fault=faultPort({failures:1});
+   await unavailable(await submitInquiry(request(payload),{db:fault.port,config},'192.0.5.3',now));
+   assert.deepEqual(fault.calls,{reads:1,batches:1});assert.deepEqual(await counts(),{rows:3,global:3});
+   assert.equal((await submitInquiry(request(payload),healthy,'192.0.5.3',now)).status,200);assert.deepEqual(await counts(),{rows:3,global:3});
+  });
+  await t.test('permanent SQL errors and mismatched transport errors are not retried',async()=>{
+   const errors=[new Error('D1_ERROR SQLITE_ERROR'),new TypeError('fetch failed'),new TypeError('fetch failed',{cause:Object.assign(new Error('other side closed'),{name:'SocketError',code:'OTHER_CODE'})})];
+   for(let index=0;index<errors.length;index++){
+    const fault=faultPort({permanent:errors[index]}),metrics={retries:0};
+    await unavailable(await submitInquiry(request(makeBody()),{db:miniflareReceiptReadback(fault.port,metrics),config},`192.0.5.${4+index}`,now));
+    assert.deepEqual(fault.calls,{reads:1,batches:1});assert.equal(metrics.retries,0);
+   }
+   assert.deepEqual(await counts(),{rows:6,global:6});
+  });
+  await t.test('a batch socket failure is never replayed by the read adapter',async()=>{
+   const fault=faultPort({batch:true}),metrics={retries:0};
+   await unavailable(await submitInquiry(request(makeBody()),{db:miniflareReceiptReadback(fault.port,metrics),config},'192.0.5.7',now));
+   assert.deepEqual(fault.calls,{reads:0,batches:1});assert.equal(metrics.retries,0);assert.deepEqual(await counts(),{rows:6,global:6});
+  });
+  await t.test('other SELECTs and receipt prepare/bind errors remain fail-closed without recovery',async()=>{
+   const fault=faultPort({failures:1,query:'SELECT id FROM lifepp_inquiries LIMIT 1'}),metrics={retries:0};
+   await assert.rejects(miniflareReceiptReadback(fault.port,metrics).prepare('SELECT id FROM lifepp_inquiries LIMIT 1').first(),{name:'TypeError',message:'fetch failed'});
+   assert.deepEqual(fault.calls,{reads:1,batches:0});assert.equal(metrics.retries,0);
+   const socketError=await closePeer().catch((error:Error)=>error);
+   for(const option of [{prepare:socketError},{bind:socketError}]){
+    const failed=faultPort(option),recovery={retries:0};
+    await unavailable(await submitInquiry(request(makeBody()),{db:miniflareReceiptReadback(failed.port,recovery),config},'192.0.5.8',now));
+    assert.deepEqual(failed.calls,{reads:0,batches:1});assert.equal(recovery.retries,0);
+   }
+   assert.deepEqual(await counts(),{rows:8,global:8});
+  });
+  await t.test('expired monotonic budgets never start another read or accept a late positive row',async()=>{
+   for(const [index,scenario] of ['before-first','closed-peer','first-positive','retry-positive','retry-prepare'].entries()){
+    let elapsed=0,clockCalls=0;
+    const fault=faultPort({failures:['closed-peer','retry-positive','retry-prepare'].includes(scenario)?1:0,beforePrepare:attempt=>{if(scenario==='retry-prepare'&&attempt===2)elapsed=MINIFLARE_RECEIPT_READ_BUDGET_MS;},afterRead:attempt=>{
+     if(scenario==='closed-peer'||scenario==='first-positive'||(scenario==='retry-positive'&&attempt===2))elapsed=MINIFLARE_RECEIPT_READ_BUDGET_MS;
+    }}),metrics={retries:0},payload=makeBody();
+    const clock=()=>{clockCalls++;return scenario==='before-first'&&clockCalls>1?MINIFLARE_RECEIPT_READ_BUDGET_MS:elapsed;};
+    const seen:string[]=[];
+    await unavailable(await submitInquiry(request(payload),{db:miniflareReceiptReadback(fault.port,metrics,clock),config,observeFailure:(_metadata,error)=>{seen.push((error as Error).message);}},`192.0.6.${index+1}`,now));
+    assert.deepEqual(seen,['MINIFLARE_RECEIPT_READ_DEADLINE']);
+    assert.equal(fault.calls.batches,1);
+    assert.equal(fault.calls.reads,scenario==='before-first'?0:scenario==='retry-positive'?2:1);
+    assert.equal(metrics.retries,scenario==='retry-positive'||scenario==='retry-prepare'?1:0);
+    assert.deepEqual(await counts(),{rows:9+index,global:9+index});
+    assert.equal((await submitInquiry(request(payload),healthy,`192.0.6.${index+1}`,now)).status,200);
+    assert.deepEqual(await counts(),{rows:9+index,global:9+index},'Late read rejection cannot repeat the committed admission');
+   }
+  });
+  await t.test('a pending async read times out without an overlapping retry or late success',{timeout:15_000},async()=>{
+   const socketError=await closePeer().catch((error:Error)=>error);
+   const pending=['never-during-budget','late-resolve','late-reject'].map((scenario,index)=>{
+    let resolve!:()=>void,reject!:(error:Error)=>void;
+    const gate=new Promise<void>((yes,no)=>{resolve=yes;reject=no;});
+    const fault=faultPort({holdRead:()=>gate}),metrics={retries:0},payload=makeBody(),ip=`192.0.7.${index+1}`;
+    return{scenario,resolve,reject,fault,metrics,payload,ip,response:submitInquiry(request(payload),{db:miniflareReceiptReadback(fault.port,metrics),config},ip,now)};
+   });
+   const started=performance.now();
+   try{
+    const responses=await Promise.all(pending.map(item=>item.response));
+    assert.ok(performance.now()-started>=MINIFLARE_RECEIPT_READ_BUDGET_MS-50,'The actual timer budget elapsed; this is not an immediate all-deny stub');
+    for(const response of responses)await unavailable(response);
+    for(const item of pending){assert.deepEqual(item.fault.calls,{reads:1,batches:1});assert.equal(item.metrics.retries,0);}
+    assert.deepEqual(await counts(),{rows:16,global:16});
+    pending[0].resolve();pending[1].resolve();pending[2].reject(socketError);
+    await new Promise(resolve=>setImmediate(resolve));
+    for(const item of pending){assert.equal(item.fault.calls.reads,1);assert.equal(item.metrics.retries,0);}
+    for(const item of pending)assert.equal((await submitInquiry(request(item.payload),healthy,item.ip,now)).status,200);
+    assert.deepEqual(await counts(),{rows:16,global:16},'Late outcomes cannot duplicate committed admissions');
+   }finally{for(const item of pending)item.resolve();await new Promise(resolve=>setImmediate(resolve));}
+  });
+ }finally{
+  await mf.dispose();peer.closeAllConnections();await new Promise<void>(resolve=>peer.close(()=>resolve()));await rm(directory,{recursive:true,force:true});
+ }
 });

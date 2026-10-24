@@ -32,6 +32,7 @@ const HOUR = 3_600_000;
 const MAX_BODY = 8_192;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const TOKEN = /^[0-9a-f]{64}$/;
+export const INQUIRY_RECEIPT_LOOKUP_SQL = 'SELECT id,fingerprint,expires_at FROM lifepp_inquiries WHERE idempotency_key=? AND expires_at>?';
 const noStore = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 function json(body: unknown, status = 200, extra: Record<string, string> = {}) { return Response.json(body, { status, headers: { ...noStore, ...extra } }); }
 function record(input: unknown): input is Record<string, unknown> { return !!input && typeof input === 'object' && !Array.isArray(input); }
@@ -161,7 +162,7 @@ export async function submitInquiry(request: Request, runtime: InquiryRuntime | 
         ON CONFLICT(idempotency_key) DO NOTHING`).bind(id, key, fingerprint, serialized, sign(config, 'withdrawal-proof', withdrawalToken), config.policyVersion, 1, now, expiresAt, bucket, globalBucket, key),
     ]);
     failureStage = 'receipt-readback';
-    const stored = await db.prepare('SELECT id,fingerprint,expires_at FROM lifepp_inquiries WHERE idempotency_key=? AND expires_at>?').bind(key, now).first<{ id: string; fingerprint: string; expires_at: number }>();
+    const stored = await db.prepare(INQUIRY_RECEIPT_LOOKUP_SQL).bind(key, now).first<{ id: string; fingerprint: string; expires_at: number }>();
     if (!stored) {
       failureStage = 'withdrawal-readback';
       const withdrawn = await db.prepare('SELECT idempotency_key FROM lifepp_inquiry_withdrawals WHERE idempotency_key=? AND expires_at>?').bind(key, now).first();
