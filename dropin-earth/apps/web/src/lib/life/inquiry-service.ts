@@ -19,12 +19,20 @@ export type InquiryConfig = {
   acceptanceRef: string; controller: string; backupNoticeZh: string; backupNoticeEn: string;
   hmacKey: string; maintenanceToken: string;
 };
-export type InquiryRuntime = { db: InquiryDatabase; config: InquiryConfig };
+export type InquiryFailureStage = 'acceptance' | 'admission' | 'receipt-readback' | 'withdrawal-readback' | 'receipt-response';
+export type InquiryRuntime = {
+  db: InquiryDatabase; config: InquiryConfig;
+  /** Trusted host/test observer only. The production binding factory does not install one.
+   * Errors can contain sensitive provider details: never forward them to a client or log
+   * them without an explicit host-side redaction policy. This cannot affect admission. */
+  observeFailure?: (failure: { code: 'INQUIRY_UNAVAILABLE'; stage: InquiryFailureStage }, error: unknown) => void | Promise<void>;
+};
 const DAY = 86_400_000;
 const HOUR = 3_600_000;
 const MAX_BODY = 8_192;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const TOKEN = /^[0-9a-f]{64}$/;
+export const INQUIRY_RECEIPT_LOOKUP_SQL = 'SELECT id,fingerprint,expires_at FROM lifepp_inquiries WHERE idempotency_key=? AND expires_at>?';
 const noStore = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 function json(body: unknown, status = 200, extra: Record<string, string> = {}) { return Response.json(body, { status, headers: { ...noStore, ...extra } }); }
 function record(input: unknown): input is Record<string, unknown> { return !!input && typeof input === 'object' && !Array.isArray(input); }
@@ -122,8 +130,10 @@ export async function submitInquiry(request: Request, runtime: InquiryRuntime | 
   try { input = parseSubmittedInquiry(await body(request)); } catch { return json({ error: 'invalid' }, 400); }
   if (!input) return json({ error: 'invalid' }, 400);
   if (input.policyVersion !== runtime.config.policyVersion) return json({ error: 'policy_changed' }, 409);
+  let failureStage: InquiryFailureStage = 'acceptance';
   try {
     if (!await accepted(runtime, now)) return json({ error: 'unavailable', mode: 'draft' }, 503);
+    failureStage = 'admission';
     const { config, db } = runtime;
     const serialized = JSON.stringify(input.inquiry);
     // Sending consent is bound to the policy the user saw; a later policy cannot
@@ -151,16 +161,24 @@ export async function submitInquiry(request: Request, runtime: InquiryRuntime | 
         AND NOT EXISTS (SELECT 1 FROM lifepp_inquiry_withdrawals WHERE idempotency_key=?)
         ON CONFLICT(idempotency_key) DO NOTHING`).bind(id, key, fingerprint, serialized, sign(config, 'withdrawal-proof', withdrawalToken), config.policyVersion, 1, now, expiresAt, bucket, globalBucket, key),
     ]);
-    const stored = await db.prepare('SELECT id,fingerprint,expires_at FROM lifepp_inquiries WHERE idempotency_key=? AND expires_at>?').bind(key, now).first<{ id: string; fingerprint: string; expires_at: number }>();
+    failureStage = 'receipt-readback';
+    const stored = await db.prepare(INQUIRY_RECEIPT_LOOKUP_SQL).bind(key, now).first<{ id: string; fingerprint: string; expires_at: number }>();
     if (!stored) {
+      failureStage = 'withdrawal-readback';
       const withdrawn = await db.prepare('SELECT idempotency_key FROM lifepp_inquiry_withdrawals WHERE idempotency_key=? AND expires_at>?').bind(key, now).first();
       if (withdrawn) return json({ error: 'withdrawn' }, 409);
       return json({ error: 'rate_limited' }, 429, { 'retry-after': String(Math.max(1, Math.ceil((expiry - now) / 1000))) });
     }
+    failureStage = 'receipt-response';
     if (!equal(stored.fingerprint, fingerprint)) return json({ error: 'duplicate_conflict' }, 409);
     // A receipt exists only after successful persistence and a read-back. It is not email delivery.
     return json({ status: 'stored', receiptId: stored.id, expiresAt: new Date(stored.expires_at).toISOString(), withdrawalToken, duplicate: stored.id !== id }, stored.id === id ? 201 : 200);
-  } catch { return json({ error: 'unavailable' }, 503); }
+  } catch (error) {
+    // Only the existing failure path is observed. Do not retry writes, invent a
+    // receipt, await the observer, or let observer failures change the response.
+    try { void Promise.resolve(runtime.observeFailure?.({ code: 'INQUIRY_UNAVAILABLE', stage: failureStage }, error)).catch(() => undefined); } catch { /* Observer failures are isolated. */ }
+    return json({ error: 'unavailable' }, 503);
+  }
 }
 
 export async function withdrawInquiry(request: Request, runtime: InquiryRuntime | null): Promise<Response> {

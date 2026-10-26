@@ -33,7 +33,7 @@ test("production release is manual, exact-SHA, protected and confined to the exi
   assert.equal(parsed.jobs.prepare.environment, undefined);
   assert.equal(parsed.jobs["deploy-production"].environment, "canopyproof-production");
   assert.ok(parsed.jobs.prepare.steps.every(step => !JSON.stringify(step).includes("secrets.")), "No cloud credential before approval");
-  assert.match(workflow, /node-version: 22\.22\.3/);
+  assert.match(workflow, /node-version: 22\.23\.4/);
   assert.match(workflow, /npm install --global npm@10\.9\.4/);
   assert.match(workflow, /npm ci --include=optional/);
   assert.match(workflow, /npm --workspace apps\/web run cf:build/);

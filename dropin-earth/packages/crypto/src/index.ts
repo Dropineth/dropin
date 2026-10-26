@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+export { canonicalProjectionJson, projectionDigest, referenceToVerifiedBytes, verifyProjectionTransport } from "./projection-admission.js";
+export type { CurrentProjectionKey, ProjectionKeyAuthority } from "./projection-admission.js";
 
 export type HashAlgorithm = "sha256" | "sha3_256";
 
@@ -113,7 +115,10 @@ export type PoccAhinConsensusInput = {
   createdAt?: string;
 };
 
+/** Legacy local evidence projection. It is not a signed protocol verdict or membership authority. */
 export type PoccAhinConsensusReceipt = {
+  verificationScope: "local-evidence-projection";
+  finalAuthority: false;
   id: string;
   subjectType: PoccAhinConsensusInput["subjectType"];
   subjectId: string;
@@ -149,10 +154,10 @@ export type AnchorVerificationReceipt = {
 };
 
 export function buildPoccAhinConsensusReceipt(input: PoccAhinConsensusInput): PoccAhinConsensusReceipt {
-  if (!Number.isInteger(input.requiredWeight) || input.requiredWeight <= 0) {
+  if (!Number.isSafeInteger(input.requiredWeight) || input.requiredWeight <= 0) {
     throw new Error("PoCC/AHIN requiredWeight must be a positive integer.");
   }
-  if (input.sources.length === 0) {
+  if (input.sources.length === 0 || input.sources.length > 1024) {
     throw new Error("PoCC/AHIN consensus requires at least one evidence source.");
   }
 
@@ -162,23 +167,40 @@ export function buildPoccAhinConsensusReceipt(input: PoccAhinConsensusInput): Po
     return leftKey.localeCompare(rightKey);
   });
 
+  const seenSources = new Set<string>();
+  const seenSigners = new Set<string>();
+  const seenHashes = new Set<string>();
   const warnings = sortedSources.flatMap((source) => {
     const sourceWarnings: string[] = [];
-    if (!source.hash || source.hash.length < 16) {
+    if (!/^[a-f0-9]{64}$/.test(source.hash)) {
       sourceWarnings.push(`weak_hash:${source.id}`);
     }
-    if (!Number.isInteger(source.weight) || source.weight <= 0) {
+    if (!Number.isSafeInteger(source.weight) || source.weight <= 0 || source.weight > 100) {
       sourceWarnings.push(`invalid_weight:${source.id}`);
     }
     if (!source.signer || source.signer.toLowerCase().includes("anonymous")) {
       sourceWarnings.push(`unattributed_source:${source.id}`);
     }
+    const sourceKey = `${source.kind}:${source.id}`;
+    if (seenSources.has(sourceKey)) sourceWarnings.push(`duplicate_source:${source.id}`);
+    if (seenSigners.has(source.signer)) sourceWarnings.push(`duplicate_signer:${source.id}`);
+    if (seenHashes.has(source.hash)) sourceWarnings.push(`duplicate_hash:${source.id}`);
+    seenSources.add(sourceKey); seenSigners.add(source.signer); seenHashes.add(source.hash);
     return sourceWarnings;
   });
 
-  const validSources = sortedSources.filter(
-    (source) => source.hash.length >= 16 && Number.isInteger(source.weight) && source.weight > 0 && !source.signer.toLowerCase().includes("anonymous"),
-  );
+  const countedSources = new Set<string>();
+  const countedSigners = new Set<string>();
+  const countedHashes = new Set<string>();
+  const validSources = sortedSources.filter((source) => {
+    const key = `${source.kind}:${source.id}`;
+    const valid = /^[a-f0-9]{64}$/.test(source.hash) && Number.isSafeInteger(source.weight)
+      && source.weight > 0 && source.weight <= 100 && source.signer.length > 0
+      && !source.signer.toLowerCase().includes("anonymous") && !countedSources.has(key)
+      && !countedSigners.has(source.signer) && !countedHashes.has(source.hash);
+    if (valid) { countedSources.add(key); countedSigners.add(source.signer); countedHashes.add(source.hash); }
+    return valid;
+  });
   const quorumWeight = validSources.reduce((sum, source) => sum + source.weight, 0);
   const evidenceRoot = merkleRoot(
     validSources.map((source) =>
@@ -202,6 +224,8 @@ export function buildPoccAhinConsensusReceipt(input: PoccAhinConsensusInput): Po
 
   return {
     id,
+    verificationScope: "local-evidence-projection",
+    finalAuthority: false,
     subjectType: input.subjectType,
     subjectId: input.subjectId,
     evidenceRoot,
@@ -215,6 +239,13 @@ export function buildPoccAhinConsensusReceipt(input: PoccAhinConsensusInput): Po
 }
 
 export function validatePoccAhinConsensusReceipt(receipt: PoccAhinConsensusReceipt) {
+  // Compatibility policy: historical unmarked receipts remain audit records.
+  // Reject them unchanged; callers must explicitly recompute a new local
+  // projection. Never infer markers or treat historical `accepted` as authority.
+  if (!receipt || !Object.hasOwn(receipt, "verificationScope") || !Object.hasOwn(receipt, "finalAuthority")
+    || receipt.verificationScope !== "local-evidence-projection" || receipt.finalAuthority !== false) {
+    return false;
+  }
   const rebuilt = buildPoccAhinConsensusReceipt({
     subjectType: receipt.subjectType,
     subjectId: receipt.subjectId,

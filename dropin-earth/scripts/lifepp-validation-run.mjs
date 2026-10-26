@@ -12,7 +12,7 @@ import { pathToFileURL } from 'node:url';
 
 const commandArtifacts = {
   'supply-chain': ['reports/ci/canopyproof-supply-chain-gate.json', 'reports/ci/canopyproof-sbom.cdx.json'],
-  workspace: ['reports/npm-audit-moderate.json'],
+  workspace: ['reports/npm-audit-moderate.json', 'reports/ci/accountability-adversarial.json', 'reports/ci/accountability-adversarial.tap'],
   coverage: ['reports/ci/canopyproof-coverage.txt', 'coverage/coverage-summary.json',
     'reports/canopyproof-repository-coverage.json', 'reports/canopyproof-repository-coverage.md'],
   'critical-coverage': ['reports/canopyproof-critical-coverage.json', 'reports/canopyproof-critical-coverage.md'],

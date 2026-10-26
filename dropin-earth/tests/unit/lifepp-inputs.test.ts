@@ -5,10 +5,12 @@ import { createHash } from "node:crypto";
 import manifest from "../../apps/web/src/data/life/site-manifest.json";
 import { renderedMetadata } from "../helpers/lifepp-metadata";
 
-test("business input preserves final rooms, cent-square-metre totals and proposed annual prices", () => {
- assert.deepEqual(manifest.spaces.map(room=>[room.unit,Math.round(room.areaSqm*100)]),[["L112",5869],["L203",13580],["L202",18599],["L201",29078]]);
- assert.equal(manifest.spaces.reduce((sum,room)=>sum+Math.round(room.areaSqm*100),0),67126);
- assert.equal(manifest.spaces.filter(room=>room.unit!=="L112").reduce((sum,room)=>sum+Math.round(room.areaSqm*100),0),61257);
+test("current three-store input preserves exact documented areas and proposed annual prices", () => {
+ assert.deepEqual(manifest.spaces.map(room=>[room.unit,Math.round(room.areaSqm*100)]),[["L112",5869],["L203",13580],["L202",18599]]);
+ assert.equal(manifest.spaces.reduce((sum,room)=>sum+Math.round(room.areaSqm*100),0),38048);
+ assert.equal(manifest.spaces.filter(room=>room.unit!=="L112").reduce((sum,room)=>sum+Math.round(room.areaSqm*100),0),32179);
+ assert.deepEqual(manifest.currentPlan.excludedUnits,["L201"]);
+ assert.equal(manifest.currentPlan.sourceFloorplansUnchanged,true);
  assert.equal(manifest.membership.status,"proposal_not_on_sale");
  assert.equal(manifest.membership.billingInterval,"year");
  assert.deepEqual(manifest.membership.tiers.map(tier=>[tier.name,tier.price]),[["Life",299],["Life+",599],["Life++",1000]]);
@@ -44,7 +46,7 @@ test("local Worker preview cannot inherit production routes or live API settings
 
 
 test("R3 room provenance is bounded to original floors and reviewed local derivatives",()=>{
- assert.deepEqual(manifest.spaces.map(room=>[room.unit,room.floor,room.sourcePage,room.markerNumber]),[["L112","1F",2,"1"],["L203","2F",3,"2"],["L202","2F",3,"3"],["L201","2F",3,"4"]]);
+ assert.deepEqual(manifest.spaces.map(room=>[room.unit,room.floor,room.sourcePage,room.markerNumber]),[["L112","1F",2,"1"],["L203","2F",3,"2"],["L202","2F",3,"3"]]);
  for(const room of manifest.spaces){
   assert.equal(room.roomBindingToScene,null);assert.equal(room.leaseExecuted,null);assert.equal(room.openToPublic,false);
   assert.ok(room.marker.x>0&&room.marker.x<1&&room.marker.y>0&&room.marker.y<1);

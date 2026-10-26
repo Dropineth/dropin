@@ -13,7 +13,7 @@ test("repository-root CanopyProof CI is a non-deploying trust gate", () => {
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /permissions:\n\s+contents: read/);
   assert.match(workflow, /working-directory: dropin-earth/);
-  assert.match(workflow, /node-version: 22\.22\.3/);
+  assert.match(workflow, /node-version: 22\.23\.4/);
   assert.match(workflow, /npm install --global npm@10\.9\.4/);
   assert.match(workflow, /npm ci --include=optional/);
   assert.match(workflow, /npm run ci/);
