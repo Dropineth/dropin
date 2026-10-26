@@ -8,7 +8,7 @@ import {PostgresChildStore,type ChildSqlClient,type ChildSqlConnection} from '..
 import {createSyntheticLearningState,executeLearningCommand} from '../../services/api/src/domain/child-stewardship/learning.js';
 import {SyntheticChildMediaService} from '../../services/api/src/domain/child-stewardship/media.js';
 import {ChildPrivacyWorker} from '../../services/api/src/domain/child-stewardship/privacy.js';
-import {createSyntheticRightsFixture} from '../fixtures/child-stewardship-rights.js';
+import {createSyntheticRightsFixture} from '../fixtures/child-stewardship-native-time.js';
 import type {LearningPrincipal} from '../../services/api/src/domain/child-stewardship/learning-types.js';
 function sql(client:pg.Client):ChildSqlClient{const connection:ChildSqlConnection={async query<T extends Record<string,unknown>>(q:string,v:unknown[]=[]):Promise<T[]>{return(await client.query(q,v)).rows as T[];}};return{...connection,async transaction<T>(run:(db:ChildSqlConnection)=>Promise<T>){await client.query('BEGIN');try{const value=await run(connection);await client.query('COMMIT');return value;}catch(e){await client.query('ROLLBACK');throw e;}}};}
 const denied=(error:unknown)=>error instanceof Error&&'code'in error&&['42501','23514'].includes(String(error.code));

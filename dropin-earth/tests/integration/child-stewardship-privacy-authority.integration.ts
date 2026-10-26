@@ -9,7 +9,7 @@ import { ChildPrivacyWorker } from '../../services/api/src/domain/child-stewards
 import { ChildRestoreVerifier, type RestoreAnchor, type RestoreCheckpoint, type RestoreCheckpointKey } from '../../services/api/src/domain/child-stewardship/restore-checkpoint.js';
 import { childDigest, stableJson } from '../../services/api/src/domain/child-stewardship/store.js';
 import { assertChildRestoreReady } from '../../services/api/src/domain/child-stewardship/postgres-store.js';
-import { createSyntheticRightsFixture, now } from '../fixtures/child-stewardship-rights.js';
+import { createSyntheticRightsFixture, now, after } from '../fixtures/child-stewardship-native-time.js';
 
 function sql(client:pg.Client):ChildSqlClient {
   const connection:ChildSqlConnection={async query<T extends Record<string,unknown>>(query:string,values:unknown[]=[]):Promise<T[]>{return(await client.query(query,values)).rows as T[];}};
@@ -44,7 +44,7 @@ test('native privacy authority: exact erasure, suppression and separate worker p
     async function scope<T>(client:pg.Client,session:string,request:string,run:()=>Promise<T>):Promise<T>{return sql(client).transaction(async()=>{
       await client.query("SELECT set_config('app.child_session_id',$1,true),set_config('app.child_privacy_request_id',$2,true),set_config('app.child_actor_role','guardian',true),set_config('app.child_actor_id','demo-guardian',true)",[session,request]);return run();
     });}
-    async function seed(external=false,issueJob=true,kind='delete_learning',expiresAt='2027-01-01',mixed=false){
+    async function seed(external=false,issueJob=true,kind='delete_learning',expiresAt=after,mixed=false){
       let learning=createSyntheticLearningState(now);const principal={actorId:'demo-guardian',deviceId:'demo-device-guardian',epoch:1};
       learning=executeLearningCommand(learning,{type:'create-profile',commandId:'demo-profile-create',expectedVersion:0,profileId:'demo-profile',ageBand:'9-12',locale:'en',nickname:'leaf'},principal,now).state;
       if(mixed)learning=executeLearningCommand(learning,{type:'request-privacy',kind:'export_learning',profileId:'demo-profile',commandId:'demo-export-before-delete',expectedVersion:learning.version},principal,now).state;
