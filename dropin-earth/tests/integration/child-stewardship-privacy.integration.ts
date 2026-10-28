@@ -9,7 +9,7 @@ import {ChildPrivacyWorker} from '../../services/api/src/domain/child-stewardshi
 import {createSyntheticLearningState} from '../../services/api/src/domain/child-stewardship/learning.js';
 import {childDigest,createDemoTokens,newDemoSessionId} from '../../services/api/src/domain/child-stewardship/store.js';
 import {createChildStewardshipRoutes} from '../../services/api/src/routes/child-stewardship/index.js';
-import {createSyntheticRightsFixture} from '../fixtures/child-stewardship-rights.js';
+import {createSyntheticRightsFixture} from '../fixtures/child-stewardship-native-time.js';
 
 test('native privacy lifecycle: actual erasure, scoped export, retained rights, suppression and immutable receipts',async t=>{
   const owner=nativeChildPool();let runtime:Awaited<ReturnType<typeof scopedNativeChildPool>>|undefined;let workerPool:pg.Pool|undefined;

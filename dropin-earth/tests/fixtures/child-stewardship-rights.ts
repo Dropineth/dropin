@@ -7,8 +7,11 @@ import type { RightsApproval, RightsContext, RightsCredential, RightsOperation, 
 export const now = '2026-10-23T12:00:00Z';
 export const before = '2026-01-01T00:00:00Z';
 export const after = '2027-01-01T00:00:00Z';
+export type SyntheticRightsClock = {now:string;before:string;after:string};
+const historicalClock: SyntheticRightsClock = {now,before,after};
 const operationTypes: RightsOperationType[] = ['REGISTER_BENEFICIARY','CONFIRM_CONTRIBUTION','RECORD_OBLIGATION','RECORD_CLEARED_FUNDING','RESERVE_OUTCOME','RESERVE_FUNDING','VEST','PAY_PROTECTED','PAY_EXCEPTIONAL','PAY_EMERGENCY','PAYMENT_RESULT','REFUND','PAUSE','RESUME','ROTATE_GUARDIAN_KEY','RECOVER_GUARDIAN_KEY','CHANGE_GUARDIAN','CAPACITY_TRANSFER','LEGAL_CORRECTION','POLICY_CHANGE','GRANT_DELEGATION','REVOKE_DELEGATION'];
-export function createSyntheticRightsFixture() {
+export function createSyntheticRightsFixture(clock: SyntheticRightsClock = historicalClock) {
+  const {now,before,after}=clock;
   const secrets = new Map<string, KeyObject>();
   const credentials: RightsCredential[] = [];
   for (const [keyId, role] of [['g','G'],['b','B'],['v1','V'],['v2','V'],['v3','V'],['r1','R'],['r2','R'],['r3','R'],['t','T'],['a','A'],['c','C'],['x','X'],['community','COMMUNITY'],['o','O']] as [string,RightsRole][]) {

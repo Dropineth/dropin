@@ -5,7 +5,7 @@ import {PostgresChildStore} from '../../services/api/src/domain/child-stewardshi
 import {createChildStewardshipRoutes} from '../../services/api/src/routes/child-stewardship/index.js';
 import {createSyntheticLearningState} from '../../services/api/src/domain/child-stewardship/learning.js';
 import {createDemoTokens,newDemoSessionId} from '../../services/api/src/domain/child-stewardship/store.js';
-import {createSyntheticRightsFixture,now} from '../fixtures/child-stewardship-rights.js';
+import {createSyntheticRightsFixture,now,nativeTimeAfter} from '../fixtures/child-stewardship-native-time.js';
 import {nativeChildPool,nativeChildSql,scopedNativeChildPool} from '../fixtures/child-stewardship-postgres.js';
 import {ChildRightsVerifier} from '../../services/api/src/domain/child-stewardship/verifier-admission.js';
 
@@ -27,7 +27,7 @@ test('native authority: exact signed payments serialize budgets/nonces; failed r
     assert.equal(await store.ready(),true);
     const rights=createSyntheticRightsFixture();
     const id=newDemoSessionId();const tokens=createDemoTokens(id);
-    await store.create({id,expiresAt:'2026-10-24T12:00:00Z',snapshot:{version:0,learning:createSyntheticLearningState(now),rights:rights.funded(100),rightsContext:rights.context}},tokens.records);
+    await store.create({id,expiresAt:nativeTimeAfter(86_400_000),snapshot:{version:0,learning:createSyntheticLearningState(now),rights:rights.funded(100),rightsContext:rights.context}},tokens.records);
     for(const update of ["actor_id='demo-operator'","device_id='demo-device-operator'",'epoch=epoch+1']){
       await assert.rejects(nativeChildSql(scoped.pool).transaction(async db=>{
         await db.query("SELECT set_config('app.child_session_id',$1,true)",[id]);

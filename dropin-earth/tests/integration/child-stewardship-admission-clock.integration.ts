@@ -9,7 +9,7 @@ import { admittedRightsRecordedAt,applyRightsOperation,RIGHTS_CONTRIBUTION_ADMIS
 import { createDemoTokens } from '../../services/api/src/domain/child-stewardship/store.js';
 import { createSyntheticLearningState } from '../../services/api/src/domain/child-stewardship/learning.js';
 import { createChildStewardshipRoutes } from '../../services/api/src/routes/child-stewardship/index.js';
-import { createSyntheticRightsFixture } from '../fixtures/child-stewardship-rights.js';
+import { createSyntheticRightsFixture } from '../fixtures/child-stewardship-native-time.js';
 import { nativeChildPool,nativeChildSql,scopedNativeChildPool } from '../fixtures/child-stewardship-postgres.js';
 
 test('native rights admission clock: exact immutable outputs with current execution-time authority',async t=>{

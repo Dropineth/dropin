@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { chromium, firefox, webkit, type Browser, type Page } from "playwright";
+import { boundedDiagnostic, diagnosticError, diagnosticTimeoutMs, diagnosticUrl, sampleDiagnosticPage, trackDiagnosticRequests } from "../helpers/lifepp-browser-diagnostics";
 import { assertSpatialOperations, prepareSpatialChecks } from "../../scripts/lifepp-spatial-browser-check.mjs";
 
 // Run against a built Next or local workerd server. Never starts a deploy or API.
@@ -33,6 +34,7 @@ const results: { name: string; status: "PASS" | "FAIL"; details?: unknown; error
 const measurements: unknown[] = [];
 const screenshots: string[] = [];
 const failureStates = new WeakMap<Error, { phase: string; state: unknown }[]>();
+const diagnosticRequests = new WeakMap<Page, ReturnType<typeof trackDiagnosticRequests>>();
 let browser: Browser;
 
 async function assertReducedMotion(page: Page) {
@@ -102,27 +104,32 @@ function describeError(error: unknown, seen = new WeakSet<Error>(), depth = 0): 
 async function captureFailureState(page: Page, error: unknown, phase: string) {
   const failure = error instanceof Error ? error : new Error(String(error), { cause: error });
   let state: unknown;
+  // Snapshot in-flight requests before the additional diagnostic work can finish
+  // them. All diagnostic promises are bounded; none retries a passing assertion.
+  let network: unknown;
   try {
-    state = await page.evaluate(() => {
-      const active = document.activeElement;
-      const rect = active?.getBoundingClientRect();
-      return {
-        scroll: { x: scrollX, y: scrollY },
-        viewport: { width: innerWidth, height: innerHeight },
-        visualViewport: visualViewport ? { width: visualViewport.width, height: visualViewport.height, offsetLeft: visualViewport.offsetLeft, offsetTop: visualViewport.offsetTop, pageLeft: visualViewport.pageLeft, pageTop: visualViewport.pageTop, scale: visualViewport.scale } : null,
-        activeElement: active ? {
-          tag: active.tagName,
-          id: active.id,
-          rect: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height, top: rect.top, right: rect.right, bottom: rect.bottom, left: rect.left } : null,
-        } : null,
-      };
-    });
+    network = diagnosticRequests.get(page)?.snapshot();
+    state = { network, page: await sampleDiagnosticPage(page, base.origin) };
   } catch (sampleError) {
-    // Diagnostics must not replace the assertion/load/cleanup failure.
-    state = { sampleError: describeError(sampleError) };
+    state = { network, sampleError: diagnosticError(sampleError) };
   }
   failureStates.set(failure, [...(failureStates.get(failure) ?? []), { phase, state }]);
   return failure;
+}
+
+async function captureDiagnosticScreenshot(page: Page, failure: Error, name: string) {
+  const startedAt = Date.now();
+  let state: unknown;
+  try {
+    if (diagnosticUrl(page.url(), base.origin) === "[non-local]") {
+      state = { status: "skipped", reason: "non-local-document" };
+    } else {
+      await boundedDiagnostic(() => page.screenshot({ path: join(output, name), fullPage: true, timeout: diagnosticTimeoutMs }));
+      screenshots.push(name);
+      state = { status: "captured", file: name };
+    }
+  } catch (error) { state = { status: "failed", error: diagnosticError(error) }; }
+  failureStates.set(failure, [...(failureStates.get(failure) ?? []), { phase: "diagnostic-screenshot", state: { ...(state as object), elapsedMs: Date.now() - startedAt } }]);
 }
 
 async function check(name: string, task: () => Promise<unknown>) {
@@ -227,6 +234,7 @@ async function routeMatrix(profile: typeof profiles[number]) {
       // route, while retaining this profile's shared browser context/cache.
       const page = await context.newPage();
       page.setDefaultTimeout(10_000);
+      diagnosticRequests.set(page, trackDiagnosticRequests(page, base.origin));
       await setupMetrics(page);
       if (path.endsWith("/life/center")) await prepareSpatialChecks(page);
       await check(`${profile.name} ${path}`, async () => {
@@ -298,9 +306,9 @@ async function routeMatrix(profile: typeof profiles[number]) {
         } catch (error) {
           const failure = await captureFailureState(page, error, "route-failure");
           const name = `failure-${profile.name}-${path.slice(1).replaceAll("/", "-")}.png`;
-          await page.screenshot({ path: join(output, name), fullPage: true }).then(() => screenshots.push(name)).catch(() => undefined);
+          await captureDiagnosticScreenshot(page, failure, name);
           throw failure;
-        } finally { page.off("pageerror", onError); page.off("console", onConsole); await page.close(); }
+        } finally { page.off("pageerror", onError); page.off("console", onConsole); diagnosticRequests.get(page)?.dispose(); await page.close(); }
       });
     }
     await check(`${profile.name} no form mutations`, async () => assert.deepEqual(mutations, []));
@@ -600,6 +608,7 @@ async function accessibilityAndUnavailableSources() {
     });
     const page = await context.newPage();
     page.setDefaultTimeout(10_000);
+    diagnosticRequests.set(page, trackDiagnosticRequests(page, base.origin));
     const touchEvents: { trusted: boolean; touches: number }[] = [];
     await page.exposeFunction("__recordLifeTouch", (event: { trusted: boolean; touches: number }) => touchEvents.push(event));
     const observeTouch = () => page.evaluate(() => {
@@ -609,72 +618,76 @@ async function accessibilityAndUnavailableSources() {
     });
     try {
       for (const prefix of ["", "/en"]) await check(`${profile.name} ${prefix || "zh"} keyboard navigation and reflow`, async () => {
-        await page.goto(new URL(`${prefix}/life`, base).href, { waitUntil: "networkidle" });
-        const focus = await assertKeyboardEntry(page);
-        // Follow real keyboard links through the visible navigation, including
-        // horizontally scrollable mobile navigation. No mouse is needed.
-        const navigation = page.getByRole("navigation", { name: profile.width <= 960 ? /移动端导航|Mobile navigation/ : /主导航|Main navigation/ });
-        assert.equal(await navigation.isVisible(), true);
-        const first = navigation.getByRole("link").first();
-        await first.focus();
-        const total = await navigation.getByRole("link").count();
-        assert.ok(total >= 3, "Key navigation entries remain available");
-        for (let index = 0; index < total; index++) {
-          const link = navigation.getByRole("link").nth(index);
-          assert.equal(await link.evaluate((element) => element === document.activeElement), true, "Tab reaches each visible navigation link");
-          const bounds = await link.boundingBox();
-          assert.ok(bounds && bounds.x >= -1 && bounds.x + bounds.width <= profile.width + 1, "Focused navigation item scrolls into view");
-          if (index < total - 1) await page.keyboard.press("Tab");
+        try {
+          await page.goto(new URL(`${prefix}/life`, base).href, { waitUntil: "networkidle" });
+          const focus = await assertKeyboardEntry(page);
+          // Follow real keyboard links through the visible navigation, including
+          // horizontally scrollable mobile navigation. No mouse is needed.
+          const navigation = page.getByRole("navigation", { name: profile.width <= 960 ? /移动端导航|Mobile navigation/ : /主导航|Main navigation/ });
+          assert.equal(await navigation.isVisible(), true);
+          const first = navigation.getByRole("link").first();
+          await first.focus();
+          const total = await navigation.getByRole("link").count();
+          assert.ok(total >= 3, "Key navigation entries remain available");
+          for (let index = 0; index < total; index++) {
+            const link = navigation.getByRole("link").nth(index);
+            assert.equal(await link.evaluate((element) => element === document.activeElement), true, "Tab reaches each visible navigation link");
+            const bounds = await link.boundingBox();
+            assert.ok(bounds && bounds.x >= -1 && bounds.x + bounds.width <= profile.width + 1, "Focused navigation item scrolls into view");
+            if (index < total - 1) await page.keyboard.press("Tab");
+          }
+          const scene = page.locator(`main a[href="${prefix}/life/spaces/33"]`).first();
+          await scene.focus(); await page.keyboard.press("Enter");
+          await page.waitForURL(`**${prefix}/life/spaces/33`);
+          await assertBlockedScene(page, "33");
+          const cooperation = page.locator(`header a[href="${prefix}/life/partners"]`).first();
+          await cooperation.focus(); await page.keyboard.press("Enter");
+          await page.waitForURL(`**${prefix}/life/partners`);
+          const name = page.locator("#inquiry-name");
+          await name.focus(); await page.keyboard.type("Keyboard fixture");
+          assert.equal(await name.inputValue(), "Keyboard fixture");
+          await page.keyboard.press("Tab");
+          assert.equal(await page.locator("#inquiry-organization").evaluate((element) => element === document.activeElement), true);
+          await page.keyboard.press("Shift+Tab");
+          assert.equal(await name.evaluate((element) => element === document.activeElement), true, "Keyboard users can move back out of the next field");
+          assert.equal(await page.locator('button[type="submit"]').isEnabled(), true, "Draft action stays available");
+          const overflow = await page.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth, dpr: devicePixelRatio }));
+          assert.ok(overflow.width <= overflow.viewport + 1, "Reflow leaves the draft form within the viewport");
+          if (zoomAlternative) {
+            assert.equal(overflow.viewport, 640); assert.equal(overflow.dpr, 2);
+            // Keyboard traversal and reverse traversal have already been asserted
+            // with the real editor focused. End that interaction before full-page
+            // capture: WebKit's pending caret reveal can otherwise override the
+            // screenshot helper's scroll restoration. Do not relax its timeout or
+            // any keyboard, reflow, image-load or decode assertion.
+            await name.blur();
+            assert.equal(await name.evaluate((element) => element === document.activeElement), false, "Full-page capture starts after editing ends");
+            assert.equal(await name.inputValue(), "Keyboard fixture", "Ending editing preserves the entered draft");
+            await prepareFullPageImages(page);
+            const screenshot = `after-${profile.name}-${prefix ? "en" : "zh"}-partners.png`;
+            await page.screenshot({ path: join(output, screenshot), fullPage: true }); screenshots.push(screenshot);
+            assert.equal(await page.evaluate(() => Math.abs(scrollY) < 1 && Math.abs(scrollX) < 1), true, "Full-page capture preserves the restored scroll position");
+          }
+          if (profile.width <= 390) {
+            // Firefox/WebKit can expose maxTouchPoints=0 while native emulated
+            // touch works. Require actual trusted touch events and navigation.
+            const beforeTouches = touchEvents.length;
+            await observeTouch();
+            await page.locator(`header a[href="${prefix}/life"]`).tap();
+            await page.waitForURL(`**${prefix}/life`);
+            await observeTouch();
+            await page.locator(`main a[href="${prefix}/life/spaces/29"]`).first().tap();
+            await page.waitForURL(`**${prefix}/life/spaces/29`);
+            assert.deepEqual(touchEvents.slice(beforeTouches), [{ trusted: true, touches: 1 }, { trusted: true, touches: 1 }], "Both navigation actions receive actual trusted touch input");
+            await assertBlockedScene(page, "29");
+          }
+          return { focus, overflow, emulatedTouchNavigation: profile.width <= 390, zoom: zoomAlternative ? { percent: 200, method: "1280x1000 baseline represented by 640x500 CSS pixels and DPR 2", nativeBrowserZoomMeasured: false } : null };
+        } catch (error) {
+          throw await captureFailureState(page, error, "keyboard-navigation-and-reflow");
         }
-        const scene = page.locator(`main a[href="${prefix}/life/spaces/33"]`).first();
-        await scene.focus(); await page.keyboard.press("Enter");
-        await page.waitForURL(`**${prefix}/life/spaces/33`);
-        await assertBlockedScene(page, "33");
-        const cooperation = page.locator(`header a[href="${prefix}/life/partners"]`).first();
-        await cooperation.focus(); await page.keyboard.press("Enter");
-        await page.waitForURL(`**${prefix}/life/partners`);
-        const name = page.locator("#inquiry-name");
-        await name.focus(); await page.keyboard.type("Keyboard fixture");
-        assert.equal(await name.inputValue(), "Keyboard fixture");
-        await page.keyboard.press("Tab");
-        assert.equal(await page.locator("#inquiry-organization").evaluate((element) => element === document.activeElement), true);
-        await page.keyboard.press("Shift+Tab");
-        assert.equal(await name.evaluate((element) => element === document.activeElement), true, "Keyboard users can move back out of the next field");
-        assert.equal(await page.locator('button[type="submit"]').isEnabled(), true, "Draft action stays available");
-        const overflow = await page.evaluate(() => ({ viewport: innerWidth, width: document.documentElement.scrollWidth, dpr: devicePixelRatio }));
-        assert.ok(overflow.width <= overflow.viewport + 1, "Reflow leaves the draft form within the viewport");
-        if (zoomAlternative) {
-          assert.equal(overflow.viewport, 640); assert.equal(overflow.dpr, 2);
-          // Keyboard traversal and reverse traversal have already been asserted
-          // with the real editor focused. End that interaction before full-page
-          // capture: WebKit's pending caret reveal can otherwise override the
-          // screenshot helper's scroll restoration. Do not relax its timeout or
-          // any keyboard, reflow, image-load or decode assertion.
-          await name.blur();
-          assert.equal(await name.evaluate((element) => element === document.activeElement), false, "Full-page capture starts after editing ends");
-          assert.equal(await name.inputValue(), "Keyboard fixture", "Ending editing preserves the entered draft");
-          await prepareFullPageImages(page);
-          const screenshot = `after-${profile.name}-${prefix ? "en" : "zh"}-partners.png`;
-          await page.screenshot({ path: join(output, screenshot), fullPage: true }); screenshots.push(screenshot);
-          assert.equal(await page.evaluate(() => Math.abs(scrollY) < 1 && Math.abs(scrollX) < 1), true, "Full-page capture preserves the restored scroll position");
-        }
-        if (profile.width <= 390) {
-          // Firefox/WebKit can expose maxTouchPoints=0 while native emulated
-          // touch works. Require actual trusted touch events and navigation.
-          const beforeTouches = touchEvents.length;
-          await observeTouch();
-          await page.locator(`header a[href="${prefix}/life"]`).tap();
-          await page.waitForURL(`**${prefix}/life`);
-          await observeTouch();
-          await page.locator(`main a[href="${prefix}/life/spaces/29"]`).first().tap();
-          await page.waitForURL(`**${prefix}/life/spaces/29`);
-          assert.deepEqual(touchEvents.slice(beforeTouches), [{ trusted: true, touches: 1 }, { trusted: true, touches: 1 }], "Both navigation actions receive actual trusted touch input");
-          await assertBlockedScene(page, "29");
-        }
-        return { focus, overflow, emulatedTouchNavigation: profile.width <= 390, zoom: zoomAlternative ? { percent: 200, method: "1280x1000 baseline represented by 640x500 CSS pixels and DPR 2", nativeBrowserZoomMeasured: false } : null };
       });
       await check(`${profile.name} accessible flows have no external requests or writes`, async () => { assert.deepEqual(external, []); assert.deepEqual(mutations, []); });
-    } finally { await context.close(); if (profileBrowser !== browser) await profileBrowser.close(); }
+    } finally { diagnosticRequests.get(page)?.dispose(); await context.close(); if (profileBrowser !== browser) await profileBrowser.close(); }
   }
   // This is fault injection against the real blocked-source component, not a
   // claim that any provider scene rendered or that its readiness was observed.

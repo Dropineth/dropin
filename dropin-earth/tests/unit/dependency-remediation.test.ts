@@ -11,6 +11,31 @@ const require = createRequire(import.meta.url);
 const anchorRequire = createRequire(require.resolve("@coral-xyz/anchor/package.json"));
 const prismaRequire = createRequire(require.resolve("@prisma/config/package.json"));
 
+test("qs comma serialization handles untrusted object elements without losing ordinary query behavior", () => {
+  // GHSA-6pq8-jhm2-2vcw: exercise the actual copies resolved by both consumers,
+  // including parsed prototype-shadowing fields and null-prototype objects.
+  const expressRequire = createRequire(require.resolve("express/package.json"));
+  const bodyParserRequire = createRequire(expressRequire.resolve("body-parser/package.json"));
+  for (const load of [require, expressRequire, bodyParserRequire]) {
+    const qs = load("qs");
+    const hostileInputs = [
+      JSON.parse('{"items":[{"toString":"shadowed"}]}'),
+      qs.parse("items[0][toString]=shadowed", { allowPrototypes: true }),
+      qs.parse("items[0][label]=oak", { plainObjects: true }),
+    ];
+    for (const input of hostileInputs) {
+      for (const encodeValuesOnly of [false, true]) {
+        assert.equal(qs.stringify(input, { arrayFormat: "comma", encodeValuesOnly }), "items=%5Bobject%20Object%5D");
+      }
+    }
+    assert.equal(qs.stringify({ items: ["oak", "pine"] }, { arrayFormat: "comma" }), "items=oak%2Cpine");
+    assert.equal(qs.stringify({ items: ["oak", "pine"] }), "items%5B0%5D=oak&items%5B1%5D=pine");
+    assert.deepEqual(qs.parse("items[0]=oak&items[1]=pine"), { items: ["oak", "pine"] });
+    assert.equal(qs.stringify({ items: [{ toString: () => "oak" }] }, { arrayFormat: "comma" }), "items=oak");
+    assert.throws(() => qs.stringify({ items: [{ toString() { throw new Error("caller failure"); } }] }, { arrayFormat: "comma" }), /caller failure/);
+  }
+});
+
 test("proxy-addr rejects IPv4 spoofing through broad IPv6 trust while preserving valid subnets", () => {
   // GHSA-jqcg-44mw-7w3h: an IPv6 prefix must not accidentally trust every IPv4 client.
   const proxyaddr = require("proxy-addr");
