@@ -21,7 +21,7 @@ defaults:
 jobs:
   trust-gate:
     name: Verify trust kernel and OpenNext artifact
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     services:
       postgres:
@@ -125,7 +125,11 @@ jobs:
       - name: Install cross-browser WebGL fallback matrix
         id: browsers
         if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
-        run: node scripts/lifepp-validation-run.mjs run browsers -- npx playwright install --with-deps chromium firefox webkit
+        run: |
+          node scripts/lifepp-validation-run.mjs run browsers -- bash -eo pipefail -c '
+          node scripts/lifepp-ci-apt-mirror.mjs
+          npx playwright install --with-deps chromium firefox webkit
+          '
 
       - name: Verify Chromium, Firefox, and WebKit fallback matrix
         id: webgl

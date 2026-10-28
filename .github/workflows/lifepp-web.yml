@@ -24,7 +24,7 @@ concurrency:
 jobs:
   web:
     if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     defaults:
       run:
@@ -69,7 +69,11 @@ jobs:
       - name: Install Chromium, Firefox and WebKit
         id: browsers
         if: ${{ always() && !cancelled() && steps.install.outcome == 'success' }}
-        run: node scripts/lifepp-validation-run.mjs run browsers -- npx playwright install --with-deps chromium firefox webkit
+        run: |
+          node scripts/lifepp-validation-run.mjs run browsers -- bash -eo pipefail -c '
+          node scripts/lifepp-ci-apt-mirror.mjs
+          npx playwright install --with-deps chromium firefox webkit
+          '
       - name: Scene viewer fixture lifecycle
         if: ${{ always() && !cancelled() && steps.browsers.outcome == 'success' }}
         run: |
