@@ -130,6 +130,24 @@ test("EX-01 dedicated synthetic mode blocks every legacy route independent of ac
   assert.equal(childBoundaryDenies("/payments/intents", "Bearer cp-demo.anything", undefined), true);
 });
 
+test("guardian and offline capabilities cannot enter legacy routes even outside dedicated demo mode", async () => {
+  for (const mode of [undefined, "disabled", "synthetic-demo"]) {
+    let calls=0;
+    const app=new Hono();
+    app.use("*",async(c,next)=>{
+      if(childBoundaryDenies(c.req.path,c.req.header("authorization")??"",mode))return c.json({code:"CHILD_DOMAIN_ISOLATED"},403);
+      await next();
+    });
+    app.all("*",c=>{calls++;return c.json({reached:true});});
+    for(const prefix of ["cp-guardian","cp-demo","cp-resume","cp-upload"])
+      for(const path of ["/payments/intents","/wallets","/treasury/transactions","/admin/fund/allocations/one/release","/canopyproof/agents/events"])
+        assert.equal((await app.request(path,{method:"POST",headers:{authorization:`Bearer ${prefix}.${"A".repeat(43)}`,"x-actor-role":"admin"}})).status,403);
+    assert.equal(calls,0);
+    assert.equal((await app.request("/canopyproof/child-stewardship/v1/view",{headers:{authorization:`Bearer cp-guardian.${"A".repeat(43)}`}})).status,200,"routing to child domain does not itself authenticate");
+    assert.equal(calls,1);
+  }
+});
+
 test("AT-16 concurrent API stale writes are serialized, same intent retries return one receipt", async () => {
   const f = await fixture();
   const fields = { type: "create-profile", profileId: "demo-profile-one", ageBand: "9-12", locale: "zh-CN", nickname: "leaf" };
