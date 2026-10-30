@@ -1,0 +1,15 @@
+.git
+**/node_modules
+**/.env*
+**/*.pem
+**/*.key
+**/*.log
+**/.next
+**/.open-next
+**/.wrangler
+**/coverage
+**/dist
+reports
+artifacts
+test-results
+playwright-report
