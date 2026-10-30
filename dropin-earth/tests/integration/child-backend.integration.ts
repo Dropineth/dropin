@@ -40,6 +40,20 @@ test('backend native migration, direct runtime role, external current anchor and
    await assert.rejects(migrateChildBackend(owner,migrations,{database,role:'wrong-role'}),/IDENTITY_MISMATCH/);
    assert.equal((await owner.query('SELECT count(*)::int n FROM child_stewardship.sessions')).rows[0].n,1);
   });
+  await t.test('managed-style migration owner needs neither superuser, BYPASSRLS, role creation nor database creation',async()=>{
+   const ownerLogin=`backend_owner_${randomUUID().replaceAll('-','')}`,ownerPassword=randomUUID();
+   const ownedDatabase=`child_backend_test_${randomUUID().replaceAll('-','')}`;
+   await admin.query(`CREATE ROLE ${ownerLogin} LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOINHERIT PASSWORD '${ownerPassword}'`);
+   await admin.query(`CREATE DATABASE ${ownedDatabase} OWNER ${ownerLogin}`);
+   const target=new URL(url);target.pathname=`/${ownedDatabase}`;target.username=ownerLogin;target.password=ownerPassword;
+   const limitedOwner=new pg.Pool({connectionString:target.toString()});
+   try{
+    const privileges=(await limitedOwner.query('SELECT rolsuper,rolbypassrls,rolcreaterole,rolcreatedb FROM pg_roles WHERE rolname=current_user')).rows[0];assert.deepEqual(Object.values(privileges),[false,false,false,false]);
+    assert.equal((await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin})).applied.length,11);
+    assert.equal((await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin})).unchanged.length,11);
+    assert.equal(await new PostgresChildStore(nativeChildSql(limitedOwner),async()=>({checkpointId:'not-an-admission',sequence:1,digest:'a'.repeat(64)})).ready(),false);
+   }finally{await limitedOwner.end();await admin.query(`DROP DATABASE ${ownedDatabase} WITH (FORCE)`);await admin.query(`DROP ROLE ${ownerLogin}`);}
+  });
   await t.test('failed final migration leaves neither partial schema nor a successful journal',async()=>{
    const failedDatabase=`child_backend_test_${randomUUID().replaceAll('-','')}`;await admin.query(`CREATE DATABASE ${failedDatabase}`);
    const target=new URL(url);target.pathname=`/${failedDatabase}`;const failedPool=new pg.Pool({connectionString:target.toString()});

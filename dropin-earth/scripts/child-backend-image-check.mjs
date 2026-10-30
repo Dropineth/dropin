@@ -2,7 +2,6 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {randomUUID} from 'node:crypto';
-import process from 'node:process';
 import console from 'node:console';
 const exec=promisify(execFile);
 const run=async(args,timeout=30_000)=>(await exec('docker',args,{timeout,maxBuffer:32*1024*1024})).stdout.trim();
