@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS child_stewardship.restore_admissions(
  admitted_revision bigint NOT NULL CHECK(admitted_revision>=0),signer_key_ids jsonb NOT NULL CHECK(jsonb_typeof(signer_key_ids)='array' AND jsonb_array_length(signer_key_ids)>=2),admitted_at timestamptz NOT NULL DEFAULT clock_timestamp(),expires_at timestamptz NOT NULL
 );
 CREATE OR REPLACE FUNCTION child_stewardship.restore_state_roots(tenant uuid) RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path=pg_catalog,child_stewardship SET TimeZone='UTC' AS $$
-DECLARE owner_name name;kind text;relations text[];relation text;rows jsonb;aggregate jsonb;result jsonb:='{}';BEGIN
+DECLARE owner_name name;kind text;relations text[];relation text;rows jsonb;aggregate jsonb;result jsonb:='{}';sandbox uuid;part jsonb;prior_sandbox text:=current_setting('app.webauthn_sandbox',true);BEGIN
  SELECT pg_get_userbyid(relowner) INTO owner_name FROM pg_class WHERE oid='child_stewardship.restore_admissions'::regclass;
  IF tenant::text IS DISTINCT FROM current_setting('app.child_session_id',true) OR (child_stewardship.restore_database_role()<>owner_name AND NOT child_stewardship.is_restore_verifier()) THEN RAISE EXCEPTION 'CHILD_RESTORE_READER_REQUIRED' USING ERRCODE='42501';END IF;
  FOREACH kind IN ARRAY ARRAY['canonical','security','privacy'] LOOP
@@ -56,6 +56,29 @@ DECLARE owner_name name;kind text;relations text[];relation text;rows jsonb;aggr
    aggregate:=aggregate||jsonb_build_object(relation,rows);
   END LOOP;
   IF kind='security' THEN
+   -- Guardian product sessions and their authentication sources are part of the
+   -- revocation/replay floor. New schema changes roots; old checkpoints cannot
+   -- authorize it silently. Never omit authentication state from backups.
+   IF to_regclass('child_stewardship_guardian.bindings') IS NOT NULL THEN
+    IF current_user<>pg_get_userbyid((SELECT relowner FROM pg_class WHERE oid='child_stewardship_guardian.bindings'::regclass)) THEN RAISE EXCEPTION 'CHILD_RESTORE_GUARDIAN_READER_REQUIRED';END IF;
+    EXECUTE 'SELECT coalesce(jsonb_agg(to_jsonb(b) ORDER BY b.id),''[]''::jsonb) FROM child_stewardship_guardian.bindings b WHERE session_id=$1' INTO rows USING tenant;
+    aggregate:=aggregate||jsonb_build_object('guardian_bindings',rows);
+    FOREACH relation IN ARRAY ARRAY['sessions','audit'] LOOP
+     EXECUTE format('SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY to_jsonb(s)::text COLLATE "C"),''[]''::jsonb) FROM child_stewardship_guardian.%I s JOIN child_stewardship_guardian.bindings b ON b.id=s.binding_id WHERE b.session_id=$1',relation) INTO rows USING tenant;
+     aggregate:=aggregate||jsonb_build_object('guardian_'||relation,rows);
+    END LOOP;
+    FOREACH relation IN ARRAY ARRAY['sandboxes','credentials','sessions','ceremonies','audit'] LOOP
+     rows:='[]'::jsonb;
+     FOR sandbox IN EXECUTE 'SELECT sandbox_id FROM child_stewardship_guardian.bindings WHERE session_id=$1 ORDER BY sandbox_id' USING tenant LOOP
+      PERFORM set_config('app.webauthn_sandbox',sandbox::text,true);
+      EXECUTE format('SELECT coalesce(jsonb_agg(to_jsonb(s) ORDER BY to_jsonb(s)::text COLLATE "C"),''[]''::jsonb) FROM child_stewardship_webauthn.%I s WHERE s.%I=$1',relation,CASE WHEN relation='sandboxes' THEN 'id' ELSE 'sandbox_id' END) INTO part USING sandbox;
+      IF relation='sandboxes' AND jsonb_array_length(part)<>1 THEN RAISE EXCEPTION 'CHILD_RESTORE_GUARDIAN_STATE_MISSING';END IF;
+      rows:=rows||part;
+     END LOOP;
+     aggregate:=aggregate||jsonb_build_object('guardian_webauthn_'||relation,rows);
+    END LOOP;
+    PERFORM set_config('app.webauthn_sandbox',coalesce(prior_sandbox,''),true);
+   END IF;
    FOREACH relation IN ARRAY ARRAY['child_stewardship.service_role_scopes','child_stewardship.privacy_worker_roles','child_stewardship.media_roles','child_stewardship.agent_verifier_roles','child_stewardship_webauthn.verifier_roles','child_stewardship.restore_verifier_roles','child_stewardship.media_fixture_allowlist'] LOOP
     IF to_regclass(relation) IS NULL THEN rows:='null'::jsonb;
     ELSE EXECUTE format('SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY to_jsonb(r)::text COLLATE "C"),''[]''::jsonb) FROM %s r',to_regclass(relation)) INTO rows;END IF;
