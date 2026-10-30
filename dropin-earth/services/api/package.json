@@ -21,7 +21,7 @@
     "@dropin/dropin-protocol": "file:../../packages/dropin-protocol",
     "@dropin/satellite-ingestor": "file:../satellite-ingestor",
     "@dropin/schemas": "file:../../packages/schemas",
-    "@hono/node-server": "^2.0.1",
+    "@hono/node-server": "2.1.5",
     "@prisma/client": "^6.19.3",
     "@simplewebauthn/server": "14.0.3",
     "aws4fetch": "1.0.20",

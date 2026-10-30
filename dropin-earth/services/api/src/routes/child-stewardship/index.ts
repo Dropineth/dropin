@@ -1,3 +1,4 @@
+import type { GuardianTransactionAuthorization } from '../../domain/child-stewardship/guardian-sessions.js';
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { createSyntheticLearningState, executeLearningCommand, readChildLearningView } from "../../domain/child-stewardship/learning.js";
@@ -16,7 +17,7 @@ type Options = {
   now?: () => string;
   onOperationalSignal?: (signal:ChildOperationalSignal)=>void;
 };
-type ApiEnv = { Variables: { sessionId: string; principal: LearningPrincipal } };
+type ApiEnv = { Variables: { sessionId: string; principal: LearningPrincipal; guardianAuthorization?:GuardianTransactionAuthorization } };
 const CODE = /^[A-Z][A-Z0-9_]{1,70}$/;
 function safeError(error: unknown): { code: string; status: 400 | 401 | 403 | 409 | 413 | 429 | 503 } {
   if (isChildStorageFailure(error)) return {code:'SERVICE_UNAVAILABLE',status:503};
@@ -59,7 +60,7 @@ export function createChildStewardshipRoutes(options: Options) {
   app.onError((error, c) => { const e = safeError(error); return c.json({ error: { code: e.code, safe_message: "This synthetic action is unavailable. Your draft has not been accepted.", retryable: e.status === 503 || e.status === 429 }, request_id: newDemoSessionId(), server_time: now() }, e.status); });
   app.get("/status", async c => c.json(envelope({ protocol: CHILD_PROTOCOL, mode: options.mode === "synthetic-demo" ? "synthetic-demo" : "disabled", available: options.mode === "synthetic-demo" && Boolean(options.store) && await options.store!.ready(), syntheticOnly: true, realCapabilities: false, passkeyEnrollment: "unavailable", mediaUpload: "unavailable", pocc: "unsupported", chainRank: "unsupported" })));
   app.all('/guardian/passkeys/*', c => c.json({error:{code:'REAL_ENROLLMENT_UNAVAILABLE',retryable:false}},503));
-  app.all('/guardian/sessions', c => c.json({error:{code:'REAL_ENROLLMENT_UNAVAILABLE',retryable:false}},503));
+
   app.route('/',createChildResumeRoutes({mode:options.mode,store:options.resumeStore??null,now}));
   app.use("*", async (c, next) => {
     if (options.mode !== "synthetic-demo" || !options.store) throw new ChildApiError("SERVICE_UNAVAILABLE", 503);
@@ -67,6 +68,14 @@ export function createChildStewardshipRoutes(options: Options) {
     await next();
   });
   app.use("*", bodyLimit({ maxSize: 131_072, onError: c => c.json({ error: { code: "PAYLOAD_TOO_LARGE", retryable: false } }, 413) }));
+  app.post('/guardian/sessions',async c=>{
+    if(!options.store?.guardianSessions)throw new ChildApiError('REAL_ENROLLMENT_UNAVAILABLE',503);
+    if(!c.req.header('content-type')?.startsWith('application/json'))throw new ChildApiError('INVALID_INPUT');
+    limited('guardian-login',12);
+    await options.store.consumeRateLimit?.('session_creation');
+    let input:unknown;try{input=await c.req.json();}catch{throw new ChildApiError('INVALID_INPUT');}
+    return c.json(envelope(await options.store.guardianSessions.exchange(input)),201);
+  });
   app.post("/demo-sessions", async c => {
     limited("session-creation", 12);
     await options.store!.consumeRateLimit?.('session_creation');
@@ -83,18 +92,27 @@ export function createChildStewardshipRoutes(options: Options) {
   });
   app.use("*", async (c, next) => {
     const value = c.req.header("authorization") ?? "";
-    if (!/^Bearer cp-demo\.[A-Za-z0-9_-]{43}$/.test(value)) throw new ChildApiError("UNAUTHORIZED", 401);
-    const identity = await options.store!.resolveToken(tokenDigest(value.slice(7)), now());
+    const guardian=/^Bearer cp-guardian\.[A-Za-z0-9_-]{43}$/.test(value);
+    if(!guardian&&!/^Bearer cp-demo\.[A-Za-z0-9_-]{43}$/.test(value))throw new ChildApiError('UNAUTHORIZED',401);
+    if(guardian&&!options.store!.guardianSessions)throw new ChildApiError('SERVICE_UNAVAILABLE',503);
+    const identity=guardian?await options.store!.guardianSessions!.resolve(value.slice(7)):await options.store!.resolveToken(tokenDigest(value.slice(7)),now());
+    if(guardian)c.set('guardianAuthorization',{guardianToken:value.slice(7)});
     if (!identity) throw new ChildApiError("UNAUTHORIZED", 401);
     limited(`${identity.sessionId}:${identity.principal.actorId}`, 120);
     await options.store!.consumeRateLimit?.('session_request',identity.sessionId,identity.principal.actorId);
     c.set("sessionId", identity.sessionId); c.set("principal", identity.principal);
     await next();
   });
+  app.post('/guardian/logout',async c=>{
+    if(!c.get('guardianAuthorization')||!options.store?.guardianSessions)throw new ChildApiError('UNAUTHORIZED',401);
+    if(await c.req.text()!=='{}')throw new ChildApiError('INVALID_INPUT');
+    await options.store.guardianSessions.logout(c.get('guardianAuthorization')!.guardianToken);
+    return c.json(envelope({status:'session_revoked',syntheticOnly:true}));
+  });
   app.get('/privacy/requests/:id', async c => {
     const id=c.req.param('id');
     if(!/^[A-Za-z0-9_-]{1,160}$/.test(id)||!options.store?.privacyResult) throw new ChildApiError('SERVICE_UNAVAILABLE',503);
-    return c.json(envelope(await options.store.privacyResult(c.get('sessionId'),c.get('principal'),id,now())));
+    return c.json(envelope(await options.store.privacyResult(c.get('sessionId'),c.get('principal'),id,now(),c.get('guardianAuthorization'))));
   });
   app.post('/draft-authorizations',async c=>{
     if(!c.req.header('content-type')?.startsWith('application/json'))throw new ChildApiError('INVALID_INPUT');
@@ -107,7 +125,7 @@ export function createChildStewardshipRoutes(options: Options) {
     const result = await options.store!.transact(c.get("sessionId"), now(), tx => {
       assertPrincipal(tx, c.get("principal"), now());
       return envelope(readChildLearningView(tx.snapshot.learning, c.get("principal"), tx.executionTime??now()), tx.snapshot.learning.version);
-    });
+    },c.get('guardianAuthorization'));
     return c.json(result);
   });
   for (const path of ["/commands", "/rights/operations"] as const) {
@@ -170,7 +188,7 @@ export function createChildStewardshipRoutes(options: Options) {
           tx.audit.push({ action: path === "/commands" ? "learning-command" : "rights-operation", outcome: "rejected", reason: rejection.code, actorId: principal.actorId, time });
           return { ok: false as const, error: rejection };
         }
-      }));
+      },c.get('guardianAuthorization')));
       if (!outcome.ok) throw new ChildApiError(outcome.error.code, outcome.error.status);
       return c.json(envelope(outcome.data, outcome.version));
     });
