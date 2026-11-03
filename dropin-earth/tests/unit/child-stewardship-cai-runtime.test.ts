@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
-import {mkdtemp,cp,readFile,writeFile,rm} from 'node:fs/promises';
+import {mkdtemp,cp,readFile,writeFile,rm,open,rename} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -112,4 +112,67 @@ test('concurrent upstream tickets preserve separate work and operation bindings'
 test('actual sandbox rejects unrecognized input instead of treating it as instructions',options,async()=>{
   const {runIsolatedWorker}=await import(pathToFileURL(resolve(__dirname,'../../integrations/cai/docker-worker.mjs')).href);
   await assert.rejects(runIsolatedWorker({workId:`cai-${'a'.repeat(32)}`,operationDigest:'b'.repeat(64),delayMs:0,execute:'PAY_NOW'}));
+});
+
+test('active containment probes cannot write rootfs, read host sentinel/socket, or route outside loopback',options,async()=>{
+  const {createSyntheticRouter}=await adapter(),router=await createSyntheticRouter(source,{timeoutMs:10000});
+  const {f,operation,read}=fixture(),directory=await mkdtemp(join(tmpdir(),'cai-host-sentinel-'));
+  const sentinel=join(directory,'marker');await writeFile(sentinel,'synthetic-not-a-secret');
+  try{
+    const job=router.submit(operation,f.approvals(operation,['g','r1','t']),read,{delayMs:1000});
+    const name=await job.began;
+    const {setTimeout:pause}=await import('node:timers/promises');
+    for(let i=0;i<20;i++){
+      const running=(await exec('docker',['inspect','--format','{{.State.Running}}',name])).stdout.trim();
+      if(running==='true')break;
+      if(i===19)assert.fail('sandbox did not start');
+      await pause(25);
+    }
+    const script=`
+      const fs=require('node:fs'),net=require('node:net'),os=require('node:os');
+      const result={uid:process.getuid(),interfaces:Object.keys(os.networkInterfaces()),status:fs.readFileSync('/proc/self/status','utf8')};
+      try{fs.writeFileSync('/tmp/cai-write-probe','synthetic');result.write='ALLOWED';}catch(e){result.write=e.code;}
+      for(const [key,path] of [['host',process.argv[1]],['socket','/var/run/docker.sock']]){
+        try{fs.readFileSync(path);result[key]='ALLOWED';}catch(e){result[key]=e.code;}
+      }
+      const socket=net.createConnection({host:'192.0.2.1',port:443});
+      socket.setTimeout(250);
+      socket.once('connect',()=>{result.network='ALLOWED';socket.destroy();});
+      socket.once('timeout',()=>{result.network='TIMEOUT';socket.destroy();});
+      socket.once('error',e=>{result.network=e.code;});
+      socket.once('close',()=>process.stdout.write(JSON.stringify(result)));
+    `;
+    const probe=JSON.parse((await exec('docker',['exec',name,'node','-e',script,sentinel],{timeout:3000})).stdout);
+    assert.equal(probe.uid,65534);assert.equal(probe.write,'EROFS');
+    assert.equal(probe.host,'ENOENT');assert.equal(probe.socket,'ENOENT');
+    assert.deepEqual(probe.interfaces,['lo']);assert.ok(['ENETUNREACH','EHOSTUNREACH'].includes(probe.network));
+    assert.match(probe.status,/CapEff:\s+0+\n/);assert.match(probe.status,/NoNewPrivs:\s+1\n/);
+    assert.equal((await job.done).status,'ready');
+  }finally{await router.shutdown();await rm(directory,{recursive:true,force:true});}
+});
+
+
+test('loading uses verified bytes even when the checkout changes after hashing',options,async()=>{
+  const {loadPinnedDeepSeek}=await adapter(),root=await mkdtemp(join(tmpdir(),'cai-verified-snapshot-'));
+  const globals=globalThis as typeof globalThis & {caiPinRaceProbe?:boolean};
+  delete globals.caiPinRaceProbe;
+  try{
+    await cp(join(source!,'src/core'),join(root,'src/core'),{recursive:true});
+    for(const file of ['LICENSE','package.json','tsconfig.json'])await cp(join(source!,file),join(root,file));
+    const config=await readFile(join(root,'tsconfig.json'));
+    await rm(join(root,'tsconfig.json'));await exec('mkfifo',[join(root,'tsconfig.json')]);
+    const loading=loadPinnedDeepSeek(root);
+    // Opening the writer synchronizes with the final pin read: index.ts has
+    // already been verified, and the loader cannot yet complete that last read.
+    const writer=await open(join(root,'tsconfig.json'),'w');
+    try{
+      const index=join(root,'src/core/index.ts');
+      await writeFile(index,(await readFile(index,'utf8'))+'\nglobalThis.caiPinRaceProbe = true;\n');
+      await writeFile(join(root,'replacement.json'),config);
+      await rename(join(root,'replacement.json'),join(root,'tsconfig.json'));
+      await writer.writeFile(config);
+    }finally{await writer.close();}
+    const upstream=await loading;
+    assert.equal(typeof upstream.Engine,'function');assert.equal(globals.caiPinRaceProbe,undefined);
+  }finally{delete globals.caiPinRaceProbe;await rm(root,{recursive:true,force:true});}
 });

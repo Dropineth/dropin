@@ -23,7 +23,9 @@ designs are not implemented. Its actual runtime uses DeepSeek Harness services;
 this change neither installs that runtime nor claims its benchmark figures.
 No upstream source is copied into this repository. The local runtime loads the
 actual core from an explicit checkout after checking every core source file and
-LICENSE against the pinned SHA-256 inventory. That checkout retains its MIT
+LICENSE against the pinned SHA-256 inventory. The loader captures verified bytes,
+bundles only those bytes in memory, allows only the Node crypto builtin as an
+external import, and never imports the mutable checkout after verification. That checkout retains its MIT
 notice. Any later vendoring must also preserve the notice.
 
 Accepted concepts: a source event routes work; workers report to a coordinator;
@@ -149,3 +151,42 @@ bounded queue/timeout, queued and active cancellation, shutdown, malformed worke
 input, and tampered upstream source. This is a runnable engineering increment;
 production signing, persistence, authenticated external ingress, model inference,
 real enrollment, deployment and always-on operation remain unimplemented.
+
+
+## Independent automated adversarial review
+
+A separate automated reviewer examined the integration at commit
+`4c364865f9c2365fa29d9ff88c094de8d6eabbcd`. This was not independent human review
+and does not satisfy a production release approval requirement.
+
+The reviewer reproduced a low-severity trusted-checkout race: changing a source
+file after its digest check but before its path import executed unverified code
+in the Router host. The Worker could not exploit this because it has no host
+mount. The fix loads a bundle constructed solely from captured, verified bytes,
+with no filesystem fallback or local tsconfig resolution. The original independent
+reproduction now reports `unverifiedSourceExecuted:false`. A deterministic FIFO
+regression coordinates a mutation after hashing and verifies the altered code
+never executes. The reviewer inspected the fix and found no introduced bypass.
+
+The reviewer independently passed the original eight integration tests, then the
+new verified-byte race and active containment probes. The complete updated
+integration suite passes ten tests. No worker-controlled authorization bypass was
+found within this reviewed synthetic scope.
+
+Containment evidence must be separated from configuration and assumptions:
+
+- Configuration inspected: immutable image, network none, rootfs read-only,
+  UID/GID 65534, no host mounts or forwarded application credentials, resource
+  limits, dropped capabilities and no-new-privileges.
+- Actively tested in the actual Worker container: `/tmp` rootfs writes fail with
+  EROFS; an existing nonsecret host sentinel and the Docker socket are unavailable;
+  only loopback is visible and an attempted route to documentation-only
+  `192.0.2.1` fails; effective capabilities are zero and NoNewPrivs is enabled.
+- Not established: resistance to kernel/container-runtime exploits, safety of
+  arbitrary future model tools, an untrusted Router host/Docker daemon, crash or
+  daemon-outage cleanup, a production key registry, or production authorization.
+
+Private work IDs and digests are correlation data, not anonymous/public records.
+The synthetic worker input is bounded and contains neither beneficiary records
+nor signatures. The Router host and its current-state provider remain trusted;
+this increment does not elevate a worker result into authority.

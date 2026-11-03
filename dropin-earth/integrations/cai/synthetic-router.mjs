@@ -1,7 +1,9 @@
 /* global AbortController, structuredClone */
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { URL, pathToFileURL } from 'node:url';
+import { resolve, posix } from 'node:path';
+import { URL } from 'node:url';
+import { Buffer } from 'node:buffer';
+import { build } from 'esbuild';
 import { createHash, randomBytes } from 'node:crypto';
 import { createCaiChildTrigger, reviewCaiChildProposal } from '../../services/api/src/domain/child-stewardship/cai-proposal.ts';
 import { canonicalRightsJson } from '../../services/api/src/domain/child-stewardship/authorization.ts';
@@ -9,11 +11,26 @@ import { runIsolatedWorker } from './docker-worker.mjs';
 
 export async function loadPinnedDeepSeek(root) {
   const pin = JSON.parse(await readFile(new URL('./deepseek-source-pin.json',import.meta.url),'utf8'));
+  const verified = new Map();
   for(const [file,digest] of Object.entries(pin.files)) {
     const bytes = await readFile(resolve(root,file));
     if(createHash('sha256').update(bytes).digest('hex')!==digest)throw new Error('DEEPSEEK_SOURCE_PIN_MISMATCH');
+    verified.set(file,bytes.toString('utf8'));
   }
-  return import(pathToFileURL(resolve(root,'src/core/index.ts')).href);
+  // Never import the mutable checkout after checking it. Resolve every module
+  // from the exact verified bytes; local tsconfig and extra files cannot enter.
+  const bundle=await build({entryPoints:['src/core/index.ts'],bundle:true,write:false,
+    platform:'node',format:'esm',target:'node22',tsconfigRaw:'{}',
+    plugins:[{name:'verified-deepseek-core',setup(builder){
+      builder.onResolve({filter:/.*/},args=>{
+        if(args.path==='node:crypto')return {path:args.path,external:true};
+        const path=args.kind==='entry-point'?args.path:posix.normalize(posix.join(posix.dirname(args.importer),args.path));
+        if(!path.endsWith('.ts')||!verified.has(path))throw new Error('DEEPSEEK_IMPORT_NOT_PINNED');
+        return {path,namespace:'verified-core'};
+      });
+      builder.onLoad({filter:/.*/,namespace:'verified-core'},args=>({contents:verified.get(args.path),loader:'ts'}));
+    }}]});
+  return import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].contents).toString('base64')}`);
 }
 
 /** Local synthetic composition of the real upstream Engine/Policy/Assessor/
