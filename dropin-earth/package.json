@@ -95,7 +95,9 @@
     "test:child-stewardship:browser": "node scripts/child-stewardship-browser-matrix.mjs",
     "test:accountability": "node scripts/accountability-adversarial-runner.mjs",
     "build:child-backend": "node --import tsx scripts/build-child-backend.mjs",
-    "test:child-backend:image": "node scripts/child-backend-image-check.mjs"
+    "test:child-backend:image": "node scripts/child-backend-image-check.mjs",
+    "demo:cai:synthetic": "node --import tsx scripts/cai-synthetic-demo.mjs",
+    "test:cai:synthetic": "node scripts/cai-synthetic-tests.mjs"
   },
   "devDependencies": {
     "@babel/core": "8.0.0",
