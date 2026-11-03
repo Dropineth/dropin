@@ -31,7 +31,8 @@ export function createCaiChildTrigger(workId: string, at: string, operation: Rig
 export type CaiChildTrigger = ReturnType<typeof createCaiChildTrigger>;
 
 /** Server-side review port. Never expose context/credentials/state to a model.
- * Caller reloads current state and context; no enqueue-time authorization is
+ * Caller loads the original trigger from its private job store and reloads
+ * current state and context; no enqueue-time authorization is
  * cached. This is a pure simulation: even its calculated state is discarded.
  * Real execution must still enter the existing transactional command endpoint
  * with its own current consent, authority, replay and restore checks.
@@ -41,8 +42,9 @@ export function reviewCaiChildProposal(input: {
   trigger: CaiChildTrigger;
   operation: RightsOperation;
   approvals: RightsApproval[];
-}, current: { state: RightsState; context: RightsContext }) {
+}, current: { expectedTrigger: CaiChildTrigger; state: RightsState; context: RightsContext }) {
   requireRights(input.mode === 'synthetic-review', 'AHIN_AUTHORITY_UNAVAILABLE');
+  requireRights(canonicalRightsJson(input.trigger) === canonicalRightsJson(current.expectedTrigger), 'CAI_WORK_BINDING_CHANGED');
   const expected = createCaiChildTrigger(input.trigger.id, input.trigger.at, input.operation);
   // Reject modified content, extra metadata, cross-work references and operation substitution.
   requireRights(canonicalRightsJson(input.trigger) === canonicalRightsJson(expected), 'CAI_PROPOSAL_CHANGED');

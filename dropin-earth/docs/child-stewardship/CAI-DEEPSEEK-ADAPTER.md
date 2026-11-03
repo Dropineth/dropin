@@ -42,14 +42,15 @@ its prompts nor command wrappers are an execution security boundary here.
    operation digest. It includes no beneficiary, destination, evidence, key,
    signature, access token or reply channel. Its source identity is the application
    service, not a purported human author. It is not an authenticated ingress.
-2. `reviewCaiChildProposal(input, current)` checks exact event/operation binding
+2. `reviewCaiChildProposal(input, current)` checks the original server-stored work event and exact event/operation binding
    and calls the existing `applyRightsOperation` with server-supplied current state
    and context. It discards the calculated state, including all simulated outbox
    effects. Its versioned, digest-only result is advisory and cannot authorize
    execution. Retries consume no ledger nonce. `ahin-execution` always fails with
    `AHIN_AUTHORITY_UNAVAILABLE`.
 
-Only trusted server code may supply `current`. Worker reports never supply
+Only trusted server code may supply `current`, including `expectedTrigger` loaded
+from its private job store rather than copied from the worker report. Worker reports never supply
 credentials, policy, current time, restore checkpoints or consent state. Review
 results are not authorization tokens. A later execution must independently enter
 the existing command transaction and recheck all authorization, consent, replay,
