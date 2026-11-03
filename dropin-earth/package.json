@@ -136,9 +136,8 @@
       "sharp": "0.35.5"
     },
     "esbuild": "0.28.1",
-    "@node-minify/core": {
-      "glob": "12.0.0"
-    },
+    "glob": "14.0.2",
+    "minimatch": "11.0.1",
     "@opennextjs/aws": {
       "esbuild": "0.28.1"
     },
@@ -190,12 +189,6 @@
     },
     "qs": "6.16.1",
     "undici": "7.30.1",
-    "zod": "4.6.6",
-    "@next/eslint-plugin-next": {
-      "glob": {
-        ".": "10.5.0",
-        "brace-expansion": "2.1.7"
-      }
-    }
+    "zod": "4.6.6"
   }
 }

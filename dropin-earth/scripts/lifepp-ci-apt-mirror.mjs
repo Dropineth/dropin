@@ -29,7 +29,14 @@ export function preferUbuntuArchive(mirrors, sources, osRelease) {
   const matches = (entries) => new Set(lines.map(([url]) => url)).size === 3
     && lines.every(([url, priority]) => entries.get(url) === priority);
   if (matches(alreadyPreferred)) return mirrors;
-  if (!matches(expected)) throw new Error('Unexpected hosted Ubuntu mirror priorities');
+  if (!matches(expected)) {
+    // Keep the allowlist closed. Report only known endpoint labels and bounded
+    // numeric priorities so a changed hosted image can be diagnosed without
+    // logging arbitrary URLs, query parameters or file contents.
+    const names = new Map([[azure, 'azure'], [archive, 'archive'], [security, 'security']]);
+    const observed = lines.map(([url, priority]) => `${names.get(url) ?? 'unknown'}=${/^priority:\d{1,3}$/.test(priority) ? priority : 'invalid'}`);
+    throw new Error(`Unexpected hosted Ubuntu mirror priorities: ${observed.join(', ')}`);
+  }
   return mirrors.replace(/priority:1\b/, 'priority:TEMP').replace(/priority:2\b/, 'priority:1').replace('priority:TEMP', 'priority:2');
 }
 

@@ -122,3 +122,31 @@ test('native Hono learning: current withdrawal survives reconnect; request idemp
     assert.ok(Object.values(snapshot.learning.consents).some(c=>c.purpose==='upload'&&c.withdrawnAt));
   }finally{await scoped?.close();await pool.end();}
 });
+
+test('native coauthorization: aliased signing keys and child payment votes never acquire verifier admission',async()=>{
+  const owner=nativeChildPool();
+  let runtime:Awaited<ReturnType<typeof scopedNativeChildPool>>|undefined;
+  let verification:Awaited<ReturnType<typeof scopedNativeChildPool>>|undefined;
+  try {
+    runtime=await scopedNativeChildPool(owner); verification=await scopedNativeChildPool(owner,true);
+    const store=new PostgresChildStore(nativeChildSql(runtime.pool));
+    const verifier=new ChildRightsVerifier(nativeChildSql(verification.pool));
+    for(const kind of ['same-key','child-vote'] as const) {
+      const f=createSyntheticRightsFixture(),rights=f.funded(),op=f.payment();
+      const approvals=f.approvals(op,kind==='child-vote'?['g','r1','t','c']:['g','r1','t']);
+      if(kind==='same-key') {
+        f.context.credentials.find(c=>c.keyId==='r1')!.publicKeyPem=f.context.credentials.find(c=>c.keyId==='g')!.publicKeyPem.replaceAll('\n','\r\n');
+        approvals[1]={...approvals[0]!,keyId:'r1'};
+      }
+      const id=newDemoSessionId(),tokens=createDemoTokens(id);
+      await store.create({id,expiresAt:nativeTimeAfter(86_400_000),snapshot:{version:0,learning:createSyntheticLearningState(now),rights,rightsContext:f.context}},tokens.records);
+      await assert.rejects(verifier.admit(id,op,approvals,now),kind==='same-key'?/DUPLICATE_SIGNING_KEY/:/CHILD_PAYMENT_SIGNATURE_FORBIDDEN/);
+      assert.equal((await owner.query('SELECT count(*)::int AS count FROM child_stewardship.verification_admissions WHERE session_id=$1',[id])).rows[0].count,0);
+      const app=createChildStewardshipRoutes({mode:'synthetic-demo',store,now:()=>now});
+      const response=await app.request('/rights/operations',{method:'POST',headers:{authorization:`Bearer ${tokens.publicTokens.operator}`,'content-type':'application/json','idempotency-key':`denied-${kind}`,'if-match':'0'},body:JSON.stringify({operation:op,approvals})});
+      assert.equal(response.status,403);
+      const after=await store.transact(id,now,tx=>structuredClone(tx.snapshot));
+      assert.equal(after.version,0); assert.deepEqual(after.rights,rights);
+    }
+  }finally{await verification?.close();await runtime?.close();await owner.end();}
+});
