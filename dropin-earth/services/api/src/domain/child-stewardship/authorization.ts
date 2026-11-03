@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, createPublicKey } from 'node:crypto';
 import { verifyChildSignatureBytes } from './signature.js';
 import type { RightsApproval, RightsContext, RightsCredential, RightsDelegation, RightsOperation, RightsOperationType, RightsPolicy, RightsRole, RightsState } from './rights-types.js';
 
@@ -86,12 +86,25 @@ function strictBase64(value: string): Uint8Array {
   requireRights(bytes.toString('base64') === value, 'INVALID_SIGNATURE_ENCODING');
   return bytes;
 }
+/** Registry labels cannot make copies of one signing key independent seats.
+ * Canonical SPKI bytes also identify PEM whitespace/line-ending aliases. This
+ * detects key reuse, not concealed common control of different private keys. */
+function signingKeyIdentity(credential: RightsCredential): string {
+  try {
+    requireRights(credential.publicKeyPem.startsWith('-----BEGIN PUBLIC KEY-----'), 'INVALID_PUBLIC_KEY');
+    const key=createPublicKey(credential.publicKeyPem);
+    requireRights(key.asymmetricKeyType==='ed25519', 'INVALID_PUBLIC_KEY');
+    return createHash('sha256').update(key.export({type:'spki',format:'der'})).digest('hex');
+  } catch { throw new ChildRightsError('INVALID_PUBLIC_KEY'); }
+}
 function checkPanel(role: 'V' | 'R', signers: RightsCredential[], context: RightsContext, beneficiaryRef: string, required: number): void {
   const ids = role === 'V' ? context.policy.verificationPanelKeyIds : context.policy.protectionPanelKeyIds;
   requireRights(ids.length === 3 && new Set(ids).size === 3, 'PANEL_INVALID');
   const panel = ids.map(id => context.credentials.find(key => key.keyId === id));
   requireRights(panel.every(key => key && key.role === role && liveCredential(key, context, beneficiaryRef)), 'PANEL_UNAVAILABLE');
   requireRights(new Set(panel.map(key => key?.controlDomainId)).size === 3, 'PANEL_NOT_INDEPENDENT');
+  requireRights(new Set(panel.map(key => key?.actorRef)).size === 3
+    && new Set(panel.map(key => signingKeyIdentity(key!))).size === 3, 'PANEL_NOT_INDEPENDENT');
   const counted = signers.filter(key => key.role === role && ids.includes(key.keyId));
   requireRights(counted.length >= required, 'ROLE_QUORUM_MISSING');
   if (role === 'V') requireRights(counted.some(key => key.externalToOperatorAndSchool), 'EXTERNAL_APPROVAL_REQUIRED');
@@ -134,14 +147,19 @@ export function authorizeRightsOperation(operation: RightsOperation, approvals: 
   requireRights(Array.isArray(approvals) && approvals.length > 0 && approvals.length <= 12, 'APPROVALS_REQUIRED');
   requireRights(new Set(context.credentials.map(key => key.keyId)).size === context.credentials.length, 'REGISTRY_AMBIGUOUS');
   const signers: RightsCredential[] = [];
+  const signingKeys=new Set<string>();
   const bytes = rightsOperationBytes(operation);
   for (const approval of approvals) {
     requireRights(approval && typeof approval === 'object' && Object.keys(approval).length === 4 && Object.keys(approval).every(key => ['keyId','algorithm','payloadBase64','signatureBase64'].includes(key)), 'INVALID_APPROVAL');
     const credential = context.credentials.find(key => key.keyId === approval.keyId);
     requireRights(credential && liveCredential(credential, context, operation.beneficiaryRef), 'CREDENTIAL_UNAVAILABLE');
+    requireRights(!payment || credential.role!=='C', 'CHILD_PAYMENT_SIGNATURE_FORBIDDEN');
     requireRights(!signers.some(key => key.keyId === credential.keyId || key.actorRef === credential.actorRef || key.controlDomainId === credential.controlDomainId), 'DUPLICATE_CONTROL_DOMAIN');
     const verification = verifyChildSignatureBytes({ algorithm: approval.algorithm, expectedPayload: bytes, signedPayload: strictBase64(approval.payloadBase64), signature: strictBase64(approval.signatureBase64), registeredPublicKey: credential.publicKeyPem });
     requireRights(verification.valid, 'INVALID_SIGNATURE');
+    const signingKey=signingKeyIdentity(credential);
+    requireRights(!signingKeys.has(signingKey), 'DUPLICATE_SIGNING_KEY');
+    signingKeys.add(signingKey);
     if (credential.role === 'G') {
       requireRights(credential.actorRef === (beneficiary?.guardianActorRef ?? operation.details.guardianActorRef), 'GUARDIAN_MISMATCH');
       requireRights(!beneficiary?.guardianKeyId || credential.keyId === beneficiary.guardianKeyId, 'GUARDIAN_KEY_REVOKED');

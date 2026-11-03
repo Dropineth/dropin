@@ -2,6 +2,8 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { LearningPrincipal, LearningRole, LearningState } from "./learning-types.js";
 import type { RightsState, RightsContext } from "./rights-types.js";
 
+import type { GuardianTransactionAuthorization, PostgresGuardianSessions } from './guardian-sessions.js';
+
 export const CHILD_PROTOCOL = "canopyproof.child-stewardship.v1";
 export const CHILD_POLICY = "synthetic-child-policy-2026-10-23";
 export type ChildSnapshot = { version: number; learning: LearningState; rights: RightsState; rightsContext?: RightsContext };
@@ -22,13 +24,14 @@ export type ChildTransaction = {
   outbox: { id: string; kind: string; resourceId: string; audience: string }[];
 };
 export type ChildStore = {
+  guardianSessions?:PostgresGuardianSessions;
   consumeRateLimit?(kind:'session_creation'|'session_request',sessionId?:string,actorId?:string):Promise<void>;
   issueDraftAuthorization?(rawBearer:string,proposal:unknown):Promise<string>;
   ready(): Promise<boolean>;
   create(session: DemoSession, tokens: DemoToken[]): Promise<void>;
   resolveToken(hash: string, now: string): Promise<{ sessionId: string; principal: LearningPrincipal } | null>;
-  privacyResult?(sessionId: string, principal: LearningPrincipal, requestId: string, now:string): Promise<unknown>;
-  transact<T>(sessionId: string, now: string, run: (tx: ChildTransaction) => T): Promise<T>;
+  privacyResult?(sessionId: string, principal: LearningPrincipal, requestId: string, now:string, authorization?:GuardianTransactionAuthorization): Promise<unknown>;
+  transact<T>(sessionId: string, now: string, run: (tx: ChildTransaction) => T, authorization?:GuardianTransactionAuthorization): Promise<T>;
 };
 export class ChildApiError extends Error {
   constructor(public readonly code: string, public readonly status: 400 | 401 | 403 | 409 | 413 | 429 | 503 = 400) { super(code); }
@@ -74,7 +77,8 @@ export class TestChildStore implements ChildStore {
     const session = token ? this.sessions.get(token.sessionId) : undefined;
     return token && session && Date.parse(session.expiresAt) > Date.parse(now) ? structuredClone(token) : null;
   }
-  async transact<T>(sessionId: string, now: string, run: (tx: ChildTransaction) => T): Promise<T> {
+  async transact<T>(sessionId: string, now: string, run: (tx: ChildTransaction) => T, authorization?:GuardianTransactionAuthorization): Promise<T> {
+    if(authorization)throw new ChildApiError('SERVICE_UNAVAILABLE',503);
     const work = this.tail.then(() => {
       const session = this.sessions.get(sessionId);
       if (!session || Date.parse(session.expiresAt) <= Date.parse(now)) throw new ChildApiError("UNAUTHORIZED", 401);

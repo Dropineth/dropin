@@ -25,6 +25,19 @@ test('refuses unknown OS, source routing, duplicate mirrors, priorities and extr
   ]) assert.throws(() => preferUbuntuArchive(list, source, release));
 });
 
+test('unexpected mirror diagnostics remain bounded and never echo untrusted endpoint data', () => {
+  assert.throws(() => preferUbuntuArchive(mirrors.replace('priority:2', 'priority:0'), sources, os),
+    /Unexpected hosted Ubuntu mirror priorities: azure=priority:1, archive=priority:0, security=priority:3/);
+  try {
+    preferUbuntuArchive(mirrors.replace('https://archive.ubuntu.com/ubuntu/', 'https://private.invalid/?token=do-not-log').replace('priority:2', 'untrusted-priority'), sources, os);
+    assert.fail('unknown endpoint must stay rejected');
+  } catch (error) {
+    assert.ok(error instanceof Error);
+    assert.match(error.message, /unknown=invalid/);
+    assert.doesNotMatch(error.message, /private\.invalid|do-not-log|untrusted-priority/);
+  }
+});
+
 test('only writes the hosted mirror list, verifies read-back and does not run any installer', () => {
   let current = mirrors;
   const calls: unknown[] = [];

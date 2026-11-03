@@ -1,3 +1,4 @@
+import { authorizeGuardianTransaction, PostgresGuardianSessions, type GuardianTransactionAuthorization } from './guardian-sessions.js';
 import { ChildApiError, childDigest, stableJson, tokenDigest, type ChildStore, type ChildSnapshot, type ChildReceipt, type ChildTransaction, type DemoSession, type DemoToken } from "./store.js";
 import type { LearningPrincipal,LearningActor } from './learning-types.js';
 import { admittedRightsRecordedAt } from './rights.js';
@@ -111,7 +112,10 @@ async function persist(db: ChildSqlConnection, sessionId: string, revision: numb
  * Existing snapshot-only rows are rejected until explicitly migrated and reviewed.
  */
 export class PostgresChildStore implements ChildStore {
-  constructor(private readonly client: ChildSqlClient,private readonly restoreAnchor?:ChildRestoreAnchorProvider) {}
+  readonly guardianSessions:PostgresGuardianSessions;
+  constructor(private readonly client: ChildSqlClient,private readonly restoreAnchor?:ChildRestoreAnchorProvider) {
+    this.guardianSessions=new PostgresGuardianSessions(client,restoreAnchor);
+  }
   async consumeRateLimit(kind:'session_creation'|'session_request',sessionId?:string,actorId?:string):Promise<void>{
     // This transaction commits before the business transaction. Rejected or
     // rolled-back requests must not restore their consumed request allowance.
@@ -198,7 +202,7 @@ export class PostgresChildStore implements ChildStore {
       return sessions.length ? {sessionId:token.session_id,principal:{actorId:token.actor_id,deviceId:token.device_id,epoch:token.epoch,sessionGeneration:Number(token.generation)}} : null;
     });
   }
-  async transact<T>(sessionId: string, now: string, run: (tx: ChildTransaction) => T): Promise<T> {
+  async transact<T>(sessionId: string, now: string, run: (tx: ChildTransaction) => T, authorization?:GuardianTransactionAuthorization): Promise<T> {
     const started=performance.now();
     return this.client.transaction(async db => {
       await scope(db,sessionId,'child','read');
@@ -223,6 +227,11 @@ export class PostgresChildStore implements ChildStore {
       const currentExecutionTime=childExecutionTime(now,started);
       if(sessions[0].expires_at.getTime()<=Date.parse(currentExecutionTime))throw new ChildApiError('UNAUTHORIZED',401);
       const tx:ChildTransaction = {snapshot,receipts,audit:[],outbox:[],sessionGeneration,executionTime:currentExecutionTime,rightsRecordedAt};
+      if(authorization){
+        await authorizeGuardianTransaction(db,sessionId,authorization);
+        tx.executionTime=childExecutionTime(now,started);
+        if(sessions[0].expires_at.getTime()<=Date.parse(tx.executionTime))throw new ChildApiError('UNAUTHORIZED',401);
+      }
       const result = run(tx);
       const newOperation = Object.keys(tx.snapshot.rights.executedOperations).find(key=>!oldOperations.has(key)) ?? '';
       await scope(db,sessionId,tx.actorRole ?? 'child',tx.operation ?? 'read',newOperation);
@@ -253,7 +262,7 @@ export class PostgresChildStore implements ChildStore {
       return result;
     });
   }
-  async privacyResult(sessionId:string,principal:LearningPrincipal,requestId:string,now:string):Promise<unknown> {
+  async privacyResult(sessionId:string,principal:LearningPrincipal,requestId:string,now:string,authorization?:GuardianTransactionAuthorization):Promise<unknown> {
     const started=performance.now();
     return this.client.transaction(async db=>{
       await scope(db,sessionId,'child','read-privacy-result');
@@ -270,6 +279,8 @@ export class PostgresChildStore implements ChildStore {
       // states that could disclose a protected case. Durable worker receipts keep
       // the actual processing state; this response confirms withdrawal only.
       const result:{requestId:string;kind:string;state:string;syntheticOnly:true;retentionNotice:string;export?:unknown}={requestId,kind:job.kind,state:job.kind==='delete_learning'?'learning_access_withdrawn':job.state,syntheticOnly:true,retentionNotice:job.kind==='delete_learning'?'Learning access is withdrawn. Physical processing and minimum security, protection and legal-purpose retention are independently tracked. This response does not certify deletion of every copy. No rights or funds are forfeited.':'This export contains authorized ordinary learning records only. Its availability expires separately from source retention. Requesting an export does not withdraw learning access or forfeit rights or funds.'};
+      // Authenticate before reading export bytes; the sandbox lock may wait.
+      if(authorization)await authorizeGuardianTransaction(db,sessionId,authorization);
       if(job.kind==='export_learning'&&job.state==='completed') {
         const suppressed=await db.query("SELECT 1 FROM child_stewardship.privacy_suppressions WHERE session_id=$1::uuid AND profile_id=$2 AND active",[sessionId,job.profile_id]);
         if(suppressed.length) throw new ChildApiError('PRIVACY_SUPPRESSED',403);
