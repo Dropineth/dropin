@@ -28,7 +28,10 @@ test('a declared three-person panel cannot conceal key reuse in a non-voting sea
 
 test('independent panel validation rejects malformed, private and non-Ed25519 public key material',()=>{
   const ec=generateKeyPairSync('ec',{namedCurve:'prime256v1'}).publicKey.export({type:'spki',format:'pem'}).toString();
-  for(const publicKeyPem of ['-----BEGIN PUBLIC KEY-----\ninvalid\n-----END PUBLIC KEY-----', '-----BEGIN PRIVATE KEY-----',ec]) {
+  // Generate the private-material negative control only in memory; never commit
+  // key text or weaken the repository's secret-marker gate for a test fixture.
+  const privateMaterial=generateKeyPairSync('ed25519').privateKey.export({type:'pkcs8',format:'pem'}).toString();
+  for(const publicKeyPem of ['-----BEGIN PUBLIC KEY-----\ninvalid\n-----END PUBLIC KEY-----',privateMaterial,ec]) {
     const f=createSyntheticRightsFixture(),state=f.funded(),op=f.payment();
     f.context.credentials.find(c=>c.keyId==='r2')!.publicKeyPem=publicKeyPem;
     assert.throws(()=>f.apply(state,op,['g','r1','t']),/INVALID_PUBLIC_KEY/);
