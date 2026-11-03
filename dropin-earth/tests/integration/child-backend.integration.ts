@@ -11,6 +11,7 @@ import {backendSql,backendPool} from '../../services/api/src/child-backend/datab
 import {createChildBackend} from '../../services/api/src/child-backend/app.js';
 import {loadChildMigrations,migrateChildBackend,childMigrationReady} from '../../services/api/src/child-backend/migrations.js';
 import {PostgresChildStore} from '../../services/api/src/domain/child-stewardship/postgres-store.js';
+import {closeNativeChildPool} from '../fixtures/child-stewardship-pool-close.js';
 import {ChildRestoreVerifier,type RestoreAnchor,type RestoreRoots,type RestoreCheckpointKey,type SignedRestoreCheckpoint} from '../../services/api/src/domain/child-stewardship/restore-checkpoint.js';
 import {currentAuthorityClient} from '../../services/api/src/child-backend/current-authority.js';
 import {createSyntheticLearningState} from '../../services/api/src/domain/child-stewardship/learning.js';
@@ -52,7 +53,7 @@ test('backend native migration, direct runtime role, external current anchor and
     assert.equal((await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin})).applied.length,11);
     assert.equal((await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin})).unchanged.length,11);
     assert.equal(await new PostgresChildStore(nativeChildSql(limitedOwner),async()=>({checkpointId:'not-an-admission',sequence:1,digest:'a'.repeat(64)})).ready(),false);
-   }finally{await limitedOwner.end();await admin.query(`DROP DATABASE ${ownedDatabase} WITH (FORCE)`);await admin.query(`DROP ROLE ${ownerLogin}`);}
+   }finally{await closeNativeChildPool(limitedOwner);await admin.query(`DROP DATABASE ${ownedDatabase} WITH (FORCE)`);await admin.query(`DROP ROLE ${ownerLogin}`);}
   });
   await t.test('failed final migration leaves neither partial schema nor a successful journal',async()=>{
    const failedDatabase=`child_backend_test_${randomUUID().replaceAll('-','')}`;await admin.query(`CREATE DATABASE ${failedDatabase}`);
@@ -61,7 +62,7 @@ test('backend native migration, direct runtime role, external current anchor and
     const broken=migrations.map(m=>({...m}));broken[broken.length-1]!.sql+='\nSELECT * FROM child_backend_intentionally_missing;';broken[broken.length-1]!.digest=createHash('sha256').update(broken[broken.length-1]!.sql).digest('hex');
     await assert.rejects(migrateChildBackend(failedPool,broken,{database:failedDatabase,role:ownerRole}),/does not exist/);
     assert.equal((await failedPool.query("SELECT count(*)::int n FROM pg_namespace WHERE nspname IN('child_stewardship','child_backend_migrations')")).rows[0].n,0);
-   }finally{await failedPool.end();await admin.query(`DROP DATABASE ${failedDatabase} WITH (FORCE)`);}
+   }finally{await closeNativeChildPool(failedPool);await admin.query(`DROP DATABASE ${failedDatabase} WITH (FORCE)`);}
   });
   const role=(await runtime.pool.query('SELECT current_user role')).rows[0].role;
   await owner.query(`GRANT USAGE ON SCHEMA child_backend_migrations,child_stewardship_webauthn,child_stewardship_guardian TO ${role}`);
@@ -139,8 +140,8 @@ test('backend native migration, direct runtime role, external current anchor and
    backend.stop();assert.equal((await backend.app.request('/health/ready')).status,503);
   });
  }finally{
-  await live?.end();await verifier?.end();await runtime?.close();
+  if(live)await closeNativeChildPool(live);if(verifier)await closeNativeChildPool(verifier);await runtime?.close();
   if(verifierRole){await owner.query(`DROP OWNED BY ${verifierRole}`);await owner.query(`DROP ROLE ${verifierRole}`);}
-  await owner.end();process.env.CANOPYPROOF_NATIVE_DATABASE_URL=original;await admin.query(`DROP DATABASE ${database} WITH (FORCE)`);await admin.end();
+  await closeNativeChildPool(owner);process.env.CANOPYPROOF_NATIVE_DATABASE_URL=original;await admin.query(`DROP DATABASE ${database} WITH (FORCE)`);await closeNativeChildPool(admin);
  }
 });
