@@ -4,12 +4,13 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {mkdtemp,cp,readFile,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {createSyntheticRightsFixture} from '../fixtures/child-stewardship-rights.js';
 const exec=promisify(execFile);
 const source=process.env.CAI_DEEPSEEK_ROOT;
 const options={skip:source ? false : 'Explicit CAI_DEEPSEEK_ROOT and pinned Docker image required; no synthetic replacement engine is used.'};
-const adapter=()=>import(new URL('../../integrations/cai/synthetic-router.mjs',import.meta.url).href);
+const adapter=()=>import(pathToFileURL(resolve(__dirname,'../../integrations/cai/synthetic-router.mjs')).href);
 function fixture(){const f=createSyntheticRightsFixture(),state=f.funded(),operation=f.payment();return {f,state,operation,read:()=>({state,context:f.context})};}
 
 test('actual DeepSeek Engine routes to isolated worker and current synthetic multisig review',options,async()=>{
@@ -109,6 +110,6 @@ test('concurrent upstream tickets preserve separate work and operation bindings'
 });
 
 test('actual sandbox rejects unrecognized input instead of treating it as instructions',options,async()=>{
-  const {runIsolatedWorker}=await import(new URL('../../integrations/cai/docker-worker.mjs',import.meta.url).href);
+  const {runIsolatedWorker}=await import(pathToFileURL(resolve(__dirname,'../../integrations/cai/docker-worker.mjs')).href);
   await assert.rejects(runIsolatedWorker({workId:`cai-${'a'.repeat(32)}`,operationDigest:'b'.repeat(64),delayMs:0,execute:'PAY_NOW'}));
 });
