@@ -77,6 +77,7 @@ export function PlanetarySite({ locale = "en", view = "home" }: { locale?: Plane
       <span>CanopyProof Limited<small>{copy("主体信息以登记核验为准", "Entity identity subject to registry verification")}</small></span>
       <span>{copy("参考与示例不构成核证碳信用、签发或资金收付。", "Reference and sample material is not certified carbon credits, issuance or a funds transaction.")}</span>
       <a href="/ecology">{copy("原生态网站", "Original ecology site")} ↗</a>
+      <a href={zh ? "https://ahin.io/zh/child-accounts" : "https://ahin.io/child-accounts"} rel="noreferrer" referrerPolicy="no-referrer">{copy("AHIN · 儿童账户框架预览", "AHIN · child-account framework preview")} ↗</a>
     </footer>
   </div>;
 }
