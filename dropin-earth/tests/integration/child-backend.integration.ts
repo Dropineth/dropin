@@ -107,6 +107,22 @@ test('backend native migration, direct runtime role, external current anchor and
   await owner.query(`GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA child_stewardship TO ${verifierRole}`);
   await owner.query("INSERT INTO child_stewardship.restore_verifier_roles VALUES($1,1,true,'synthetic-native-test',clock_timestamp()+interval '1 hour')",[verifierRole]);
   const verifierUrl=new URL(url);verifierUrl.username=verifierRole;verifierUrl.password=password;verifier=new pg.Pool({connectionString:verifierUrl.toString()});
+  await t.test('restore cannot count the same signing key twice under distinct role and control-domain labels',async()=>{
+   const roots=await nativeChildSql(owner).transaction(async c=>{await c.query("SELECT set_config('app.child_session_id',$1,true)",[session]);return (await c.query<{roots:RestoreRoots}>('SELECT child_stewardship.restore_state_roots($1::uuid) roots',[session]))[0]!.roots;});
+   const checkpoint:SignedRestoreCheckpoint['checkpoint']={protocol:'CanopyProof-RestoreCheckpoint/1',environment:'SIMULATION_ONLY',domainSeparator:'canopyproof:synthetic:restore:v1',checkpointId:anchor.checkpointId,sequence:1,sessionId:session,keyRegistryVersion:registry.version,issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+60_000).toISOString(),roots};
+   anchor={...anchor,digest:childDigest(checkpoint)};
+   const before=(await owner.query('SELECT revision FROM child_stewardship.sessions WHERE id=$1',[session])).rows;
+   for(const alias of [keys[0]!.publicKey,keys[0]!.publicKey.replaceAll('\n','\r\n')]){
+    const duplicated={version:registry.version,keys:[keys[0]!,{...keys[1]!,publicKey:alias}]};
+    const check=new ChildRestoreVerifier(nativeChildSql(verifier!),async()=>anchor,duplicated);
+    const signed={checkpoint,signatures:keys.map(key=>({keyId:key.keyId,signature:sign(null,Buffer.from(stableJson(checkpoint)),signing[0]!.privateKey).toString('base64url')}))};
+    await assert.rejects(check.verifyAndAdmit(session,signed),/RESTORE_SIGNER_NOT_CURRENT_OR_INDEPENDENT/);
+    assert.equal(await check.isReadyForAnchor(session),false);
+    assert.equal((await owner.query('SELECT count(*)::int n FROM child_stewardship.restore_admissions')).rows[0].n,0);
+   }
+   assert.deepEqual((await owner.query('SELECT revision FROM child_stewardship.sessions WHERE id=$1',[session])).rows,before);
+   assert.equal((await backend.app.request('/canopyproof/child-stewardship/v1/view',{headers:{authorization:`Bearer ${tokens.publicTokens.child}`}})).status,503);
+  });
   await t.test('actual signed external read plus distinct verifier admits current state; changed floor or outage closes existing sessions',async()=>{
    const roots=await nativeChildSql(owner).transaction(async c=>{await c.query("SELECT set_config('app.child_session_id',$1,true)",[session]);return (await c.query<{roots:RestoreRoots}>('SELECT child_stewardship.restore_state_roots($1::uuid) roots',[session]))[0]!.roots;});
    const checkpoint:SignedRestoreCheckpoint['checkpoint']={protocol:'CanopyProof-RestoreCheckpoint/1',environment:'SIMULATION_ONLY',domainSeparator:'canopyproof:synthetic:restore:v1',checkpointId:anchor.checkpointId,sequence:1,sessionId:session,keyRegistryVersion:registry.version,issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+60_000).toISOString(),roots};

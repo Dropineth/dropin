@@ -1,7 +1,7 @@
 import {randomBytes} from 'node:crypto';
 import {z} from 'zod';
 import {stableJson} from '../domain/child-stewardship/store.js';
-import {verifyChildSignatureBytes} from '../domain/child-stewardship/signature.js';
+import {childEd25519KeyIdentity,verifyChildSignatureBytes} from '../domain/child-stewardship/signature.js';
 import type {RestoreAnchor,RestoreCheckpointKey} from '../domain/child-stewardship/restore-checkpoint.js';
 
 const timestamp = z.iso.datetime({precision:3});
@@ -45,6 +45,9 @@ export function currentAuthorityClient(options:{url:string;publicKey:string;audi
       if(raw.toString('base64url')!==signature || !verifyChildSignatureBytes({algorithm:'Ed25519',expectedPayload:bytes,signedPayload:bytes,signature:raw,registeredPublicKey:options.publicKey}).valid) return unavailable();
       // Signed membership is still subject to current eligibility and quorum checks.
       const eligible=payload.registry.keys.filter(key=>!key.revoked && key.independentOfOperator && Date.parse(key.validAfter)<=moment && Date.parse(key.expiresAt)>moment);
+      // Signed role/domain labels cannot multiply one actual key into a quorum.
+      const identities=eligible.map(key=>childEd25519KeyIdentity(key.publicKey));
+      if(identities.some(identity=>identity===null) || new Set(identities).size!==eligible.length) return unavailable();
       if(!eligible.some(a=>a.role==='protection' && eligible.some(b=>b.role==='trustee' && a.controlDomain!==b.controlDomain))) return unavailable();
       return {anchor:payload.anchor,registry:payload.registry};
     };

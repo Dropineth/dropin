@@ -8,12 +8,13 @@ import {currentAuthorityClient} from '../../services/api/src/child-backend/curre
 import {stableJson} from '../../services/api/src/domain/child-stewardship/store.js';
 
 const pair=generateKeyPairSync('ed25519'),publicKey=pair.publicKey.export({type:'spki',format:'pem'}).toString();
+const checkpointKeys=[generateKeyPairSync('ed25519'),generateKeyPairSync('ed25519')].map(key=>key.publicKey.export({type:'spki',format:'pem'}).toString());
 const session=randomUUID(),moment=Date.now(),audience='canopyproof:synthetic:child-backend';
 function response(request:Record<string,unknown>){return {
  protocol:'CanopyProof-CurrentRestoreAuthority/1',environment:'SIMULATION_ONLY',audience,nonce:request.nonce,sessionId:request.sessionId,
  issuedAt:new Date(moment).toISOString(),expiresAt:new Date(moment+10_000).toISOString(),
  anchor:{sessionId:request.sessionId,checkpointId:'synthetic-checkpoint-1',sequence:1,digest:'a'.repeat(64),keyRegistryVersion:'fixture-v1'},
- registry:{version:'fixture-v1',keys:['protection','trustee'].map((role,i)=>({keyId:`test-${i}`,role,controlDomain:`fixture-${i}`,independentOfOperator:true,publicKey,revoked:false,validAfter:new Date(moment-1000).toISOString(),expiresAt:new Date(moment+60_000).toISOString()}))},
+ registry:{version:'fixture-v1',keys:['protection','trustee'].map((role,i)=>({keyId:`test-${i}`,role,controlDomain:`fixture-${i}`,independentOfOperator:true,publicKey:checkpointKeys[i]!,revoked:false,validAfter:new Date(moment-1000).toISOString(),expiresAt:new Date(moment+60_000).toISOString()}))},
 };}
 function transport(mutate:(payload:ReturnType<typeof response>)=>void=()=>{},badSignature=false):typeof fetch{return async(_input,init)=>{
  const payload=response(JSON.parse(String(init?.body)));mutate(payload);
@@ -55,6 +56,15 @@ test('current authority rejects forged/replayed/stale/wrong-scope/extra-field/re
  for(const mutation of mutations)await assert.rejects(client(transport(mutation))(session),/AUTHORITY_UNAVAILABLE/);
  await assert.rejects(client(transport(()=>{},true))(session),/AUTHORITY_UNAVAILABLE/);
  let saved:Response|undefined;const replay:typeof fetch=async(url,init)=>{saved??=await transport()(url,init);return saved.clone();};const reader=client(replay);await reader(session);await assert.rejects(reader(session),/AUTHORITY_UNAVAILABLE/);
+});
+test('signed restore registry cannot turn one key into independent roles or admit unusable keys',async()=>{
+ for(const alias of [checkpointKeys[0]!,checkpointKeys[0]!.replaceAll('\n','\r\n')]){
+  await assert.rejects(client(transport(p=>{p.registry.keys[1]!.publicKey=alias;}))(session),/AUTHORITY_UNAVAILABLE/);
+ }
+ for(const invalid of ['not-a-public-key',generateKeyPairSync('ec',{namedCurve:'prime256v1'}).publicKey.export({type:'spki',format:'pem'}).toString(),pair.privateKey.export({type:'pkcs8',format:'pem'}).toString()]){
+  await assert.rejects(client(transport(p=>{p.registry.keys[1]!.publicKey=invalid;}))(session),/AUTHORITY_UNAVAILABLE/);
+ }
+ await assert.rejects(client(transport(p=>{p.registry.keys.push({...p.registry.keys[0]!,keyId:'extra-seat',controlDomain:'extra-domain'});}))(session),/AUTHORITY_UNAVAILABLE/);
 });
 test('transport rejects oversized, malformed, unavailable responses without retry or exposing provider error',async()=>{
  for(const result of [new Response('x'.repeat(65_537),{headers:{'content-type':'application/json'}}),Response.json({},{status:503}),new Response('not json',{headers:{'content-type':'application/json'}}),new Response('secret-body')]){

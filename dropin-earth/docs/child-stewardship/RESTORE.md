@@ -4,6 +4,14 @@ This optional module keeps a restored child-stewardship session unavailable unti
 
 `child-stewardship-restore.sql` installs quarantine and immutable admission facts. `ChildRestoreVerifier` verifies exact canonical checkpoint bytes, two distinct current keys and control domains with protection and trustee roles, explicit key-registry version, current expiry, tenant, environment, and the independently current checkpoint digest. It checks the actual canonical, security and privacy roots before admission. Its connection must be a separately approved nonowner verifier login without other operational roles or memberships. SQL records the verifier's admission; SQL does not itself perform Ed25519 verification.
 
+Key distinctness is checked using canonical Ed25519 SPKI identities, including PEM
+line-ending aliases. The current-authority reader rejects duplicate or unusable
+eligible registry keys; the checkpoint verifier independently rejects a repeated
+signing key even when called without that reader. Distinct key IDs, roles and
+declared domains cannot turn one key into two approvals. Distinct actual keys
+still require external evidence of independent control. This check does not
+create or enroll a production registry, issuer, verifier or recovery service.
+
 The roots include normalized E/C/R/F state, append-only economic and financial facts, pending obligations, nonce and epoch floors, registry/admission/replay state, media quarantine and review facts, agent registry and nonce facts, and deletion suppression, inventories, receipts and legal holds. Installed global role registries and the fixed media fixture manifest are covered too. Restore admission facts are excluded to avoid a self-referential digest. Ephemeral rate counters are not canonical financial or privacy authority. The separate, unlinked WebAuthn sandbox's data is not represented as a child session; its verifier role configuration is included.
 
 The runtime requires a fresh external anchor provider on every guarded access when this module is installed. A configured requirement also fails closed when a restored older schema lacks the module. A copied admission or database OID alone is insufficient. The API store, operation verifier, media service, agent gateway and privacy worker use the shared current-anchor gate. Quarantine blocks privacy deletion as well as export: a stale backup may lack a later legal hold, so a queued old deletion is not current deletion authority. Separate cleanup helpers require the same current checkpoint and admission but permit an approved privacy worker to finish retention after the interactive session expires. They do not permit interactive access, export creation, new media, or arbitrary record writes. The worker still enforces exact deletion plans and current legal holds.
