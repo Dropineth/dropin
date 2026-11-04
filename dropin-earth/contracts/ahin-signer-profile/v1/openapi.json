@@ -1,0 +1,505 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AHIN Signer Profile v1 — CanopyProof synthetic integration contract",
+    "version": "1.0.0",
+    "description": "Product-local contract export. Not an approved AHIN wire/signing profile or production guardian authority. See README.md for mandatory signing and semantic validation."
+  },
+  "x-authority-status": "SIMULATION_ONLY; no production authority established",
+  "servers": [
+    {
+      "url": "http://127.0.0.1:{port}",
+      "description": "Isolated fixture handler only; not a deployed service",
+      "variables": {
+        "port": {
+          "default": "8080"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/current": {
+      "post": {
+        "operationId": "readSyntheticCurrentRestoreAuthority",
+        "x-implementation-status": "unmounted fixture handler",
+        "description": "Nonce-bound signed current snapshot. No standalone revocation-list or recovery API is implemented.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrentAuthorityRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed snapshot; client must verify all semantic rules",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedSnapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fixture error; caller treats every non-200 as unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Fixture error; caller treats every non-200 as unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderError"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Fixture error; caller treats every non-200 as unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Fixture error; caller treats every non-200 as unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CurrentAuthorityRequest": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "const": "CanopyProof-CurrentRestoreAuthority/1"
+          },
+          "environment": {
+            "type": "string",
+            "const": "SIMULATION_ONLY"
+          },
+          "audience": {
+            "type": "string"
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "sessionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "protocol",
+          "environment",
+          "audience",
+          "nonce",
+          "sessionId"
+        ],
+        "additionalProperties": false
+      },
+      "SignedSnapshot": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "protocol": {
+                "type": "string",
+                "const": "CanopyProof-CurrentRestoreAuthority/1"
+              },
+              "environment": {
+                "type": "string",
+                "const": "SIMULATION_ONLY"
+              },
+              "audience": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+              },
+              "nonce": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{43}$"
+              },
+              "sessionId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "issuedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$"
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$"
+              },
+              "anchor": {
+                "type": "object",
+                "properties": {
+                  "checkpointId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+                  },
+                  "sequence": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "sessionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "keyRegistryVersion": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+                  }
+                },
+                "required": [
+                  "checkpointId",
+                  "sequence",
+                  "digest",
+                  "sessionId",
+                  "keyRegistryVersion"
+                ],
+                "additionalProperties": false
+              },
+              "registry": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+                  },
+                  "keys": {
+                    "minItems": 2,
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "keyId": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "protection",
+                            "trustee"
+                          ]
+                        },
+                        "controlDomain": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+                        },
+                        "independentOfOperator": {
+                          "type": "boolean"
+                        },
+                        "publicKey": {
+                          "type": "string",
+                          "maxLength": 1024
+                        },
+                        "revoked": {
+                          "type": "boolean"
+                        },
+                        "validAfter": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$"
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$"
+                        }
+                      },
+                      "required": [
+                        "keyId",
+                        "role",
+                        "controlDomain",
+                        "independentOfOperator",
+                        "publicKey",
+                        "revoked",
+                        "validAfter",
+                        "expiresAt"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "version",
+                  "keys"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "protocol",
+              "environment",
+              "audience",
+              "nonce",
+              "sessionId",
+              "issuedAt",
+              "expiresAt",
+              "anchor",
+              "registry"
+            ],
+            "additionalProperties": false
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{86}$"
+          }
+        },
+        "required": [
+          "payload",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "Registry": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+          },
+          "keys": {
+            "minItems": 2,
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "keyId": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "protection",
+                    "trustee"
+                  ]
+                },
+                "controlDomain": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9:_-]{1,160}$"
+                },
+                "independentOfOperator": {
+                  "type": "boolean"
+                },
+                "publicKey": {
+                  "type": "string",
+                  "maxLength": 1024
+                },
+                "revoked": {
+                  "type": "boolean"
+                },
+                "validAfter": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$"
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d\\.\\d{3}(?:Z))$"
+                }
+              },
+              "required": [
+                "keyId",
+                "role",
+                "controlDomain",
+                "independentOfOperator",
+                "publicKey",
+                "revoked",
+                "validAfter",
+                "expiresAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "version",
+          "keys"
+        ],
+        "additionalProperties": false
+      },
+      "SignedRestoreCheckpoint": {
+        "type": "object",
+        "properties": {
+          "checkpoint": {
+            "type": "object",
+            "properties": {
+              "protocol": {
+                "type": "string",
+                "const": "CanopyProof-RestoreCheckpoint/1"
+              },
+              "environment": {
+                "type": "string",
+                "const": "SIMULATION_ONLY"
+              },
+              "domainSeparator": {
+                "type": "string",
+                "const": "canopyproof:synthetic:restore:v1"
+              },
+              "checkpointId": {
+                "type": "string"
+              },
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "sessionId": {
+                "type": "string"
+              },
+              "keyRegistryVersion": {
+                "type": "string"
+              },
+              "issuedAt": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d{3})?Z$"
+              },
+              "expiresAt": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d{3})?Z$"
+              },
+              "roots": {
+                "type": "object",
+                "properties": {
+                  "canonical": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "security": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "privacy": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "canonical",
+                  "security",
+                  "privacy"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "protocol",
+              "environment",
+              "domainSeparator",
+              "checkpointId",
+              "sequence",
+              "sessionId",
+              "keyRegistryVersion",
+              "issuedAt",
+              "expiresAt",
+              "roots"
+            ],
+            "additionalProperties": false
+          },
+          "signatures": {
+            "minItems": 2,
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "keyId": {
+                  "type": "string"
+                },
+                "signature": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{86}$"
+                }
+              },
+              "required": [
+                "keyId",
+                "signature"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "checkpoint",
+          "signatures"
+        ],
+        "additionalProperties": false,
+        "description": "Internal verifyAndAdmit argument, NOT an HTTP recovery endpoint. Session supplied separately must match the current trusted anchor. Outer/signature objects are profile-strict; current verifier also tolerates extra fields there."
+      },
+      "ResumeRequest": {
+        "type": "object",
+        "properties": {
+          "resumeTicket": {
+            "type": "string",
+            "pattern": "^cp-resume\\.[A-Za-z0-9_-]{43}$"
+          }
+        },
+        "required": [
+          "resumeTicket"
+        ],
+        "additionalProperties": false,
+        "description": "Existing synthetic resume/cancel-resume body; possession ticket, not IdP identity recovery. Bad ticket string shape is rejected by store with 401."
+      },
+      "ProviderError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "enum": [
+              "UNAVAILABLE",
+              "NOT_FOUND",
+              "METHOD_NOT_ALLOWED",
+              "INVALID_REQUEST"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

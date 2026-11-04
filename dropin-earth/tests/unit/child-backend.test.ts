@@ -81,7 +81,7 @@ test('real bundled producer starts closed, serves safe health, plans migrations 
  const run=promisify(execFile);
  await run(process.execPath,['--import','tsx','scripts/build-child-backend.mjs'],{timeout:10_000});
  const plan=await run(process.execPath,['dist/child-backend/migrate.mjs','--plan'],{env:{PATH:process.env.PATH},timeout:5000});
- assert.equal(JSON.parse(plan.stdout).migrations.length,11);assert.equal(JSON.parse(plan.stdout).createsRoles,false);
+ assert.equal(JSON.parse(plan.stdout).migrations.length,12);assert.equal(JSON.parse(plan.stdout).createsRoles,false);
  await assert.rejects(run(process.execPath,['dist/child-backend/migrate.mjs','--apply-synthetic'],{env:{PATH:process.env.PATH},timeout:5000}));
  const reservation=createServer();await new Promise<void>(resolve=>reservation.listen(0,'127.0.0.1',resolve));const address=reservation.address();assert.ok(address&&typeof address==='object');const port=address.port;await new Promise<void>(resolve=>reservation.close(()=>resolve()));
  const child=spawn(process.execPath,['dist/child-backend/server.mjs'],{env:{PATH:process.env.PATH,PORT:String(port)},stdio:['ignore','pipe','pipe']});

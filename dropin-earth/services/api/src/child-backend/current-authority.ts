@@ -21,11 +21,11 @@ const unavailable = (): never => { throw new Error('CURRENT_RESTORE_AUTHORITY_UN
  * A fresh nonce-bound response is required on EVERY call; no cached rollback floor. */
 export function currentAuthorityClient(options:{url:string;publicKey:string;audience:string;fetch?:typeof fetch;now?:()=>number}) {
   const fetcher = options.fetch ?? fetch, now = options.now ?? Date.now;
-  return async (sessionId:string):Promise<CurrentAuthority> => {
+  return async (sessionId:string):Promise<CurrentAuthority & {expiresAt:string}> => {
     if(!z.uuid().safeParse(sessionId).success) return unavailable();
     const nonce = randomBytes(32).toString('base64url'), controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const operation = async ():Promise<CurrentAuthority> => {
+    const operation = async ():Promise<CurrentAuthority & {expiresAt:string}> => {
       const response = await fetcher(options.url,{method:'POST',redirect:'error',credentials:'omit',cache:'no-store',signal:controller.signal,
         headers:{'content-type':'application/json','accept':'application/json'},
         body:JSON.stringify({protocol:'CanopyProof-CurrentRestoreAuthority/1',environment:'SIMULATION_ONLY',audience:options.audience,nonce,sessionId})});
@@ -49,7 +49,7 @@ export function currentAuthorityClient(options:{url:string;publicKey:string;audi
       const identities=eligible.map(key=>childEd25519KeyIdentity(key.publicKey));
       if(identities.some(identity=>identity===null) || new Set(identities).size!==eligible.length) return unavailable();
       if(!eligible.some(a=>a.role==='protection' && eligible.some(b=>b.role==='trustee' && a.controlDomain!==b.controlDomain))) return unavailable();
-      return {anchor:payload.anchor,registry:payload.registry};
+      return {anchor:payload.anchor,registry:payload.registry,expiresAt:payload.expiresAt};
     };
     try {
       return await Promise.race([operation(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('CURRENT_RESTORE_AUTHORITY_UNAVAILABLE'));},3000);})]);

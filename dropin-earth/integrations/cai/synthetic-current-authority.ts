@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {currentAuthorityResponseSchema,type CurrentAuthority} from '../../services/api/src/child-backend/current-authority.js';
 import {stableJson} from '../../services/api/src/domain/child-stewardship/store.js';
 
-const requestSchema=z.object({protocol:z.literal('CanopyProof-CurrentRestoreAuthority/1'),
+export const currentAuthorityRequestSchema=z.object({protocol:z.literal('CanopyProof-CurrentRestoreAuthority/1'),
  environment:z.literal('SIMULATION_ONLY'),audience:z.string(),nonce:z.string().regex(/^[A-Za-z0-9_-]{43}$/),sessionId:z.uuid()}).strict();
 
 /** Local fixture provider only. No enrollment, guardian verification or production trust.
@@ -24,7 +24,7 @@ export function syntheticCurrentAuthorityProvider(options:{environment:'SIMULATI
   try{
    const read=async()=>{const chunks:Uint8Array[]=[];let size=0;for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>4096)throw new Error('OVERSIZE');chunks.push(part.value);}return Buffer.concat(chunks).toString('utf8');};
    const body=await Promise.race([read(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>reject(new Error('DEADLINE')),1000);})]);
-   const parsed=requestSchema.safeParse(JSON.parse(body));
+   const parsed=currentAuthorityRequestSchema.safeParse(JSON.parse(body));
    if(!parsed.success||parsed.data.audience!==options.audience)return reply(400,{error:'INVALID_REQUEST'});
    if(stopped||request.signal.aborted)return reply(503,{error:'UNAVAILABLE'});
    // No await between snapshot and signing: withdrawal is observed on every request.

@@ -75,8 +75,12 @@ export class ChildRestoreVerifier{
       const finalAnchor=await this.anchor(session);if(stableJson(finalAnchor)!==stableJson(anchor))return fail('RESTORE_ANCHOR_CHANGED');
       moment=(await this.lock(db,session)).now;verifyEnvelope(signed,finalAnchor,this.keys,moment);
       const admissionExpiry=new Date(Math.min(Date.parse(signed.checkpoint.expiresAt),...this.keys.filter(key=>signers.includes(key.keyId)).map(key=>Date.parse(key.expiresAt)))).toISOString();
-      await db.query(`INSERT INTO child_stewardship.restore_admissions(quarantine_sequence,session_id,checkpoint_digest,anchor_digest,canonical_root,security_root,privacy_root,admitted_revision,signer_key_ids,expires_at)
-        VALUES($1::bigint,$2::uuid,$3,$3,$4,$5,$6,$7::bigint,$8::jsonb,$9::timestamptz)`,[quarantine.sequence,session,anchor.digest,roots.canonical,roots.security,roots.privacy,locked.revision,JSON.stringify(signers),admissionExpiry]);
+      const registryColumn=await db.query<{installed:boolean}>("SELECT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid='child_stewardship.restore_admissions'::regclass AND attname='registry_digest' AND NOT attisdropped) installed");
+      const committed=registryColumn[0]?.installed===true;
+      const values:unknown[]=[quarantine.sequence,session,anchor.digest,roots.canonical,roots.security,roots.privacy,locked.revision,JSON.stringify(signers),admissionExpiry];
+      if(committed)values.push(childDigest({version:this.keyRegistryVersion,keys:this.keys}));
+      await db.query(`INSERT INTO child_stewardship.restore_admissions(quarantine_sequence,session_id,checkpoint_digest,anchor_digest,canonical_root,security_root,privacy_root,admitted_revision,signer_key_ids,expires_at${committed?',registry_digest':''})
+        VALUES($1::bigint,$2::uuid,$3,$3,$4,$5,$6,$7::bigint,$8::jsonb,$9::timestamptz${committed?',$10':''})`,values);
       return{verified:true as const,syntheticOnly:true as const,checkpointId:anchor.checkpointId,sequence:anchor.sequence};
     });
   }
