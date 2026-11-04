@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync, sign } from "node:crypto";
 import test from "node:test";
-import { verifyChildSignatureBytes } from "../../services/api/src/domain/child-stewardship/signature.ts";
+import { childEd25519KeyIdentity, verifyChildSignatureBytes } from "../../services/api/src/domain/child-stewardship/signature.ts";
 import { ChildExternalRightsUnavailable, executeChildRealFundsTransfer, executeChildRealCarbonTransfer, verifyChildExternalLegalEntitlement } from "../../services/api/src/domain/child-stewardship/external-rights.ts";
 
 // Ephemeral server-side test keys: never persisted, logged, exported or funded.
@@ -12,6 +12,17 @@ const payload = Buffer.from(JSON.stringify({ environment: "synthetic", operation
 const valid = () => ({ algorithm: "Ed25519", expectedPayload: payload, signedPayload: payload,
   signature: sign(null, payload, privateKey), registeredPublicKey: publicKey });
 
+test("canonical key identity detects PEM aliases and rejects private or non-Ed25519 keys", () => {
+  const pem = publicKey.export({type:'spki',format:'pem'}).toString();
+  const identity = childEd25519KeyIdentity(publicKey);
+  assert.match(identity!, /^[a-f0-9]{64}$/);
+  assert.equal(childEd25519KeyIdentity(pem), identity);
+  assert.equal(childEd25519KeyIdentity(pem.replaceAll('\n','\r\n')), identity);
+  assert.notEqual(childEd25519KeyIdentity(generateKeyPairSync('ed25519').publicKey), identity);
+  for (const invalid of [privateKey, privateKey.export({type:'pkcs8',format:'pem'}).toString(), 'not-a-public-key', generateKeyPairSync('ec',{namedCurve:'prime256v1'}).publicKey]) {
+    assert.equal(childEd25519KeyIdentity(invalid), null);
+  }
+});
 test("EX-33 primitive: real ephemeral Ed25519 signature verifies exact bytes", () => {
   assert.deepEqual(verifyChildSignatureBytes(valid()), { valid: true });
 });

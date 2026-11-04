@@ -1,4 +1,14 @@
-import { createPublicKey, timingSafeEqual, verify, type KeyObject } from "node:crypto";
+import { createHash, createPublicKey, timingSafeEqual, verify, type KeyObject } from "node:crypto";
+
+/** Local key-reuse detection only. Distinct keys do not prove independent control. */
+export function childEd25519KeyIdentity(registeredPublicKey: KeyObject | string): string | null {
+  try {
+    if (typeof registeredPublicKey === 'string' && !registeredPublicKey.startsWith('-----BEGIN PUBLIC KEY-----')) return null;
+    const key = typeof registeredPublicKey === 'string' ? createPublicKey(registeredPublicKey) : registeredPublicKey;
+    if (key.type !== 'public' || key.asymmetricKeyType !== 'ed25519') return null;
+    return createHash('sha256').update(key.export({type:'spki',format:'der'})).digest('hex');
+  } catch { return null; }
+}
 
 /** Cryptographic primitive only: neither a quorum decision nor a rights grant.
  * The caller must obtain the key from its authoritative, current registry.

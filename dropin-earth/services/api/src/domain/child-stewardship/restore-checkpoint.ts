@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {ChildSqlClient,ChildSqlConnection} from './postgres-store.js';
 import {ChildApiError,childDigest,stableJson} from './store.js';
-import {verifyChildSignatureBytes} from './signature.js';
+import {childEd25519KeyIdentity,verifyChildSignatureBytes} from './signature.js';
 
 export type RestoreRoots={canonical:string;security:string;privacy:string};
 export type RestoreCheckpoint={
@@ -20,11 +20,13 @@ function verifyEnvelope(signed:SignedRestoreCheckpoint,anchor:RestoreAnchor,keys
   if(c.sessionId!==anchor.sessionId||c.checkpointId!==anchor.checkpointId||c.sequence!==anchor.sequence||c.keyRegistryVersion!==anchor.keyRegistryVersion||childDigest(c)!==anchor.digest)return fail('RESTORE_CURRENT_ANCHOR_MISMATCH');
   const moment=time(now);if(time(c.issuedAt)>moment||time(c.expiresAt)<=moment||time(c.expiresAt)-moment>3_600_000||time(c.expiresAt)<=time(c.issuedAt))return fail('RESTORE_CHECKPOINT_EXPIRED');
   if(!Array.isArray(signed.signatures)||signed.signatures.length<2||signed.signatures.length>8||new Set(keys.map(k=>k.keyId)).size!==keys.length)return fail('RESTORE_SIGNER_REGISTRY_INVALID');
-  const payload=Buffer.from(stableJson(c)),seen=new Set<string>(),domains=new Set<string>(),roles=new Set<string>();
+  const payload=Buffer.from(stableJson(c)),seen=new Set<string>(),domains=new Set<string>(),roles=new Set<string>(),signingKeys=new Set<string>();
   for(const approval of signed.signatures){
     const key=keys.find(k=>k.keyId===approval.keyId);if(!key||seen.has(key.keyId)||key.revoked||!key.independentOfOperator||domains.has(key.controlDomain)||time(key.validAfter)>moment||time(key.expiresAt)<=moment||!(/^[A-Za-z0-9_-]{86}$/.test(approval.signature)))return fail('RESTORE_SIGNER_NOT_CURRENT_OR_INDEPENDENT');
+    const identity=childEd25519KeyIdentity(key.publicKey);
+    if(identity===null || signingKeys.has(identity))return fail('RESTORE_SIGNER_NOT_CURRENT_OR_INDEPENDENT');
     const signature=Buffer.from(approval.signature,'base64url');if(signature.toString('base64url')!==approval.signature||!verifyChildSignatureBytes({algorithm:'Ed25519',expectedPayload:payload,signedPayload:payload,signature,registeredPublicKey:key.publicKey}).valid)return fail('RESTORE_INVALID_SIGNATURE');
-    seen.add(key.keyId);domains.add(key.controlDomain);roles.add(key.role);
+    seen.add(key.keyId);domains.add(key.controlDomain);roles.add(key.role);signingKeys.add(identity);
   }
   if(!roles.has('protection')||!roles.has('trustee'))return fail('RESTORE_INDEPENDENT_QUORUM_REQUIRED');return[...seen].sort();
 }
