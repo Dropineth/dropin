@@ -75,3 +75,32 @@ actual wire adapters, exercise synthetic end-to-end positive/negative cases on
 its approved sandbox, obtain independent review and service/operator acceptance,
 and release through the existing gates. Until then production admission stays
 closed, without fallback to fixture roots, static committees or model decisions.
+
+## Executable synthetic provider seam
+
+`integrations/cai/synthetic-current-authority.ts` now supplies a reusable Web
+Request/Response handler for the existing product transport contract. It accepts
+only literal loopback HTTP `/current` requests and `SIMULATION_ONLY`, checks the
+configured audience and strict request fields, caps input at 4 KiB with a one-second
+read deadline, and signs a fresh response with a caller-owned ephemeral Ed25519
+fixture key. The synchronous snapshot callback is consulted on every valid
+request; it must provide one coherent anchor/registry snapshot. Shutdown rejects
+new requests and requests still reading their body. No product route mounts it.
+
+This is an in-memory test service interface, not a guardian registry, an identity
+verifier, a production network isolation control, or durable recovery authority.
+Its key and fixture role labels establish no real-world independence. The client
+continues enforcing signature, freshness, current eligibility and independent-key
+checks. A response represents a point-in-time snapshot; downstream execution must
+still perform its existing current-authority and revocation checks.
+
+Run the actual local-socket provider/client test and negative cases with:
+
+```sh
+node --import tsx --test tests/unit/child-stewardship-authority-provider.test.ts tests/unit/child-stewardship-authority-transport.test.ts tests/unit/child-backend.test.ts
+```
+
+The provider fixture covers current revocation, anchor changes, unknown sessions,
+wrong audience/environment, malformed or oversized requests, non-loopback URLs,
+stalled input and shutdown during an in-flight read. It supplies no production
+endpoint, trust-root enrollment, guardian relationship or regional approval.

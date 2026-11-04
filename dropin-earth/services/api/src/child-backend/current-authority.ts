@@ -8,7 +8,7 @@ const timestamp = z.iso.datetime({precision:3});
 const id = z.string().regex(/^[A-Za-z0-9:_-]{1,160}$/);
 const registryKey = z.object({keyId:id,role:z.enum(['protection','trustee']),controlDomain:id,
   independentOfOperator:z.boolean(),publicKey:z.string().max(1024),revoked:z.boolean(),validAfter:timestamp,expiresAt:timestamp}).strict();
-const responseSchema = z.object({
+export const currentAuthorityResponseSchema = z.object({
   payload:z.object({protocol:z.literal('CanopyProof-CurrentRestoreAuthority/1'),environment:z.literal('SIMULATION_ONLY'),
     audience:id,nonce:z.string().regex(/^[A-Za-z0-9_-]{43}$/),sessionId:z.uuid(),issuedAt:timestamp,expiresAt:timestamp,
     anchor:z.object({checkpointId:id,sequence:z.number().int().positive().max(Number.MAX_SAFE_INTEGER),digest:z.string().regex(/^[a-f0-9]{64}$/),sessionId:z.uuid(),keyRegistryVersion:id}).strict(),
@@ -34,7 +34,7 @@ export function currentAuthorityClient(options:{url:string;publicKey:string;audi
       try {
         for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>65_536)return unavailable();chunks.push(part.value);}
       } finally { await reader.cancel().catch(()=>{}); }
-      const parsed = responseSchema.safeParse(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+      const parsed = currentAuthorityResponseSchema.safeParse(JSON.parse(Buffer.concat(chunks).toString('utf8')));
       if(!parsed.success) return unavailable();
       const {payload,signature} = parsed.data, moment=now();
       if(payload.sessionId!==sessionId || payload.anchor.sessionId!==sessionId || payload.nonce!==nonce || payload.audience!==options.audience
