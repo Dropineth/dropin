@@ -104,3 +104,34 @@ The provider fixture covers current revocation, anchor changes, unknown sessions
 wrong audience/environment, malformed or oversized requests, non-loopback URLs,
 stalled input and shutdown during an in-flight read. It supplies no production
 endpoint, trust-root enrollment, guardian relationship or regional approval.
+
+## Native backend lifecycle verification
+
+`tests/integration/child-backend.integration.ts` now feeds the reusable signed
+provider into the actual dedicated backend's transport seam. This test uses Hono
+requests and native PostgreSQL, with an explicitly injected local provider handler;
+it does not claim deployed HTTPS. Separate socket tests cover real HTTP transport.
+The database fixture predates the strict restore gate and is admitted using actual
+Ed25519 checkpoint signatures and a distinct restricted verifier database role.
+
+The admitted backend exercises synthetic profile creation, guardian consent, child
+assent, unilateral consent withdrawal, protection dispute submission and protector
+resolution. A child cannot grant guardian consent and a guardian cannot resolve the
+protection dispute. Current registry revocation, authority outage, advanced restore
+floor and provider shutdown close access. Hosted demo provisioning and guardian
+passkey registration/recovery remain explicitly unavailable (503).
+
+Complementary native suites exercise actual ES256 fixture registration and guardian
+session exchange, one-time authentication, revoked credentials, revocation while
+waiting on locks, protected complaint visibility, session-generation changes,
+one-use synthetic resume and actual pg_dump/pg_restore admission checks. These are
+separate fixture suites, not one production registration-to-recovery journey.
+Guardian bindings are inserted by the disposable fixture owner; no independently
+verified guardian enrollment service is available. Restoring database state or a
+synthetic session is not identity recovery and does not establish new consent.
+
+The missing production operations cannot safely be enabled from these fixtures:
+verified guardian enrollment/binding and passkey replacement require the approved
+identity/guardian service and recovery authority; dispute handling needs an actual
+accountable safeguarding operator beyond the synthetic role checks. No new public
+registration or recovery endpoint is introduced without those dependencies.

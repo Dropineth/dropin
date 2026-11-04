@@ -13,6 +13,7 @@ import {loadChildMigrations,migrateChildBackend,childMigrationReady} from '../..
 import {PostgresChildStore} from '../../services/api/src/domain/child-stewardship/postgres-store.js';
 import {closeNativeChildPool} from '../fixtures/child-stewardship-pool-close.js';
 import {ChildRestoreVerifier,type RestoreAnchor,type RestoreRoots,type RestoreCheckpointKey,type SignedRestoreCheckpoint} from '../../services/api/src/domain/child-stewardship/restore-checkpoint.js';
+import {syntheticCurrentAuthorityProvider} from '../../integrations/cai/synthetic-current-authority.js';
 import {currentAuthorityClient} from '../../services/api/src/child-backend/current-authority.js';
 import {createSyntheticLearningState} from '../../services/api/src/domain/child-stewardship/learning.js';
 import {createEmptyRightsState} from '../../services/api/src/domain/child-stewardship/rights.js';
@@ -77,10 +78,12 @@ test('backend native migration, direct runtime role, external current anchor and
   const signing=[generateKeyPairSync('ed25519'),generateKeyPairSync('ed25519')];
   const keys:RestoreCheckpointKey[]=signing.map((key,i)=>({keyId:`test-${i}`,role:i===0?'protection':'trustee',controlDomain:`test-domain-${i}`,independentOfOperator:true,publicKey:key.publicKey.export({type:'spki',format:'pem'}).toString(),revoked:false,validAfter:new Date(Date.now()-60_000).toISOString(),expiresAt:new Date(Date.now()+600_000).toISOString()}));
   const registry={version:'test-v1',keys};let anchor:RestoreAnchor={sessionId:session,checkpointId:'test-checkpoint',sequence:1,digest:'a'.repeat(64),keyRegistryVersion:registry.version};let offline=false;
+  const provider=syntheticCurrentAuthorityProvider({environment:'SIMULATION_ONLY',audience:config.authorityAudience,privateKey:root.privateKey,
+   snapshot:id=>id===session?{anchor,registry}:null});
+  // Explicit local transport injection; the production HTTPS configuration stays unchanged.
   const transport:typeof fetch=async(_url,init)=>{
-   if(offline)throw new Error('fixture unavailable');const request=JSON.parse(String(init?.body));
-   const payload={...request,anchor,registry,issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+10_000).toISOString()};
-   return Response.json({payload,signature:sign(null,Buffer.from(stableJson(payload)),root.privateKey).toString('base64url')});
+   if(offline)throw new Error('fixture unavailable');
+   return provider.handle(new Request('http://127.0.0.1/current',init));
   };
   const backend=createChildBackend({config,client:db,migrations,sourceSha:'a'.repeat(40),fetch:transport});
   await t.test('migration owner cannot serve; runtime cannot alter migration history or switch to owner',async()=>{
@@ -134,9 +137,29 @@ test('backend native migration, direct runtime role, external current anchor and
    await check.verifyAndAdmit(session,signed);
    const view=()=>backend.app.request('/canopyproof/child-stewardship/v1/view',{headers:{authorization:`Bearer ${tokens.publicTokens.child}`}});
    assert.equal((await view()).status,200,'positive actual SQL + Ed25519 + HTTP control');
+   const base='/canopyproof/child-stewardship/v1';
+   const command=async(role:'guardian'|'child'|'protector',fields:Record<string,unknown>)=>{
+    const current=await (await view()).json();const packet={commandId:`demo-${randomUUID()}`,expectedVersion:current.data.version,...fields};
+    return backend.app.request(`${base}/commands`,{method:'POST',headers:{authorization:`Bearer ${tokens.publicTokens[role]}`,'content-type':'application/json','idempotency-key':packet.commandId,'if-match':String(packet.expectedVersion)},body:JSON.stringify(packet)});
+   };
+   let disputeId='';
+   for(const [role,fields] of [
+    ['guardian',{type:'create-profile',profileId:'demo-profile-a',ageBand:'9-12',locale:'en',nickname:'leaf'}],
+    ['guardian',{type:'grant-consent',profileId:'demo-profile-a',purpose:'learning',policyVersion:'child-learning-demo-v1'}],
+    ['child',{type:'set-assent',profileId:'demo-profile-a',purpose:'learning',willing:true}],
+    ['guardian',{type:'withdraw-consent',profileId:'demo-profile-a',purpose:'learning'}],
+    ['child',{type:'open-dispute',profileId:'demo-profile-a',targetId:'demo-profile-a',reason:'unsafe_adult'}],
+   ] as const){const result=await command(role,fields);assert.equal(result.status,200,await result.clone().text());if(fields.type==='open-dispute')disputeId=(await result.json()).data.id;}
+   assert.ok(disputeId);
+   assert.equal((await command('guardian',{type:'resolve-dispute',disputeId,resolution:'unknown'})).status,403);
+   const resolved=await command('protector',{type:'resolve-dispute',disputeId,resolution:'unknown'});assert.equal(resolved.status,200,await resolved.clone().text());
+   const denied=await command('child',{type:'grant-consent',profileId:'demo-profile-a',purpose:'learning',policyVersion:'child-learning-demo-v1'});assert.equal(denied.status,403);
+   for(const path of ['/guardian/passkeys/register','/guardian/passkeys/recover','/demo-sessions'])assert.equal((await backend.app.request(`${base}${path}`,{method:'POST'})).status,503,'unimplemented enrollment/recovery must stay closed');
+   keys[1]!.revoked=true;assert.equal((await view()).status,503,'provider current revocation closes admitted session');keys[1]!.revoked=false;
    offline=true;assert.equal((await view()).status,503);offline=false;
    anchor={...anchor,sequence:2};assert.equal((await view()).status,503,'external floor advanced: old restored/admitted state denied');
    assert.equal((await owner.query('SELECT count(*)::int n FROM child_stewardship.restore_admissions')).rows[0].n,1);
+   provider.stop();assert.equal((await view()).status,503);
    backend.stop();assert.equal((await backend.app.request('/health/ready')).status,503);
   });
  }finally{
