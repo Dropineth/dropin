@@ -272,6 +272,11 @@ export class PostgresChildStore implements ChildStore {
         }
       }
       for (const event of tx.outbox) await db.query("INSERT INTO child_stewardship.outbox(session_id,event_id,kind,resource_id,audience) VALUES ($1::uuid,$2,$3,$4,$5) ON CONFLICT DO NOTHING",[sessionId,event.id,event.kind,event.resourceId,event.audience]);
+      // SQL changes remain tentative. A fresh external snapshot after all writes
+      // must still authorize the admission, otherwise the transaction rolls back
+      // state, one-use grants, receipts, audit and outbox together. This is a
+      // pre-commit check, not a distributed lease on the external authority.
+      if(this.restoreAnchor)await assertChildRestoreReady(db,sessionId,this.restoreAnchor);
       return result;
     });
   }

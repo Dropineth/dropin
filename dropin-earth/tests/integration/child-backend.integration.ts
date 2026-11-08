@@ -10,7 +10,7 @@ import {backendConfig} from '../../services/api/src/child-backend/config.js';
 import {backendSql,backendPool} from '../../services/api/src/child-backend/database.js';
 import {createChildBackend} from '../../services/api/src/child-backend/app.js';
 import {loadChildMigrations,migrateChildBackend,childMigrationReady} from '../../services/api/src/child-backend/migrations.js';
-import {PostgresChildStore,assertChildRestoreReady} from '../../services/api/src/domain/child-stewardship/postgres-store.js';
+import {PostgresChildStore,assertChildRestoreReady,type ChildSqlClient} from '../../services/api/src/domain/child-stewardship/postgres-store.js';
 import {closeNativeChildPool} from '../fixtures/child-stewardship-pool-close.js';
 import {ChildRestoreVerifier,type RestoreAnchor,type RestoreRoots,type RestoreCheckpointKey,type SignedRestoreCheckpoint} from '../../services/api/src/domain/child-stewardship/restore-checkpoint.js';
 import {syntheticCurrentAuthorityProvider} from '../../integrations/cai/synthetic-current-authority.js';
@@ -86,7 +86,13 @@ test('backend native migration, direct runtime role, external current anchor and
    if(offline)throw new Error('fixture unavailable');
    return provider.handle(new Request('http://127.0.0.1/current',init));
   };
-  const backend=createChildBackend({config,client:db,migrations,sourceSha:'a'.repeat(40),fetch:transport});
+  let revokeAfterWrite=false;
+  const instrumented:ChildSqlClient={query:db.query,transaction:run=>db.transaction(connection=>run({query:async<T extends Record<string,unknown>>(sql:string,values?:unknown[]):Promise<T[]>=>{
+   const result=await connection.query<T>(sql,values);
+   if(revokeAfterWrite&&sql.startsWith('INSERT INTO child_stewardship.audit')){revokeAfterWrite=false;keys[1]!.revoked=true;}
+   return result;
+  }}))};
+  const backend=createChildBackend({config,client:instrumented,migrations,sourceSha:'a'.repeat(40),fetch:transport});
   await t.test('migration owner cannot serve; runtime cannot alter migration history or switch to owner',async()=>{
    assert.equal(await childMigrationReady(db,migrations),true);
    assert.equal(await new PostgresChildStore(nativeChildSql(owner),async()=>anchor).ready(),false);
@@ -168,6 +174,15 @@ test('backend native migration, direct runtime role, external current anchor and
    const originalKey=keys[1]!.publicKey;keys[1]!.publicKey=generateKeyPairSync('ed25519').publicKey.export({type:'spki',format:'pem'}).toString();
    assert.equal((await view()).status,503,'same key ID with new signing material cannot preserve admission');keys[1]!.publicKey=originalKey;
    assert.equal((await view()).status,200,'unchanged committed registry remains admitted');
+   const beforeLateRevocation=(await owner.query('SELECT revision FROM child_stewardship.sessions WHERE id=$1',[session])).rows;
+   const beforeAudit=(await owner.query('SELECT count(*)::int n FROM child_stewardship.audit WHERE session_id=$1',[session])).rows;
+   revokeAfterWrite=true;
+   const interrupted=await command('guardian',{type:'grant-consent',profileId:'demo-profile-a',purpose:'learning',policyVersion:'child-learning-demo-v1'});
+   assert.equal(interrupted.status,503,'revocation after tentative SQL writes aborts before commit');
+   assert.equal(revokeAfterWrite,false,'fault actually injected after audit write');
+   assert.deepEqual((await owner.query('SELECT revision FROM child_stewardship.sessions WHERE id=$1',[session])).rows,beforeLateRevocation);
+   assert.deepEqual((await owner.query('SELECT count(*)::int n FROM child_stewardship.audit WHERE session_id=$1',[session])).rows,beforeAudit);
+   keys[1]!.revoked=false;assert.equal((await view()).status,200);
    offline=true;assert.equal((await view()).status,503);offline=false;
    anchor={...anchor,sequence:2};assert.equal((await view()).status,503,'external floor advanced: old restored/admitted state denied');
    assert.equal((await owner.query('SELECT count(*)::int n FROM child_stewardship.restore_admissions')).rows[0].n,1);

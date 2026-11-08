@@ -159,7 +159,10 @@ recompute those roots by substituting another JSON encoder.
 The client now carries the signed expiresAt internally to the dedicated backend's
 registry admission check; database clock_timestamp enforces it after earlier DB
 waits. Session locking precedes the transport read in the transaction path.
-This is not a distributed atomic authorization lease: later waits after that gate
-and remote revocation after the current read are not eliminated. Production
-execution requires an accepted side-effect/commit-time authority policy and its
-race tests. Passing these conformance fixtures is not operational acceptance.
+The command transaction additionally fetches fresh authority after all tentative
+SQL writes and before returning to the database commit wrapper. Revocation or
+expiry detected there rolls back the transaction. This is not a distributed atomic
+authorization lease: a change between the final read and actual COMMIT is still
+possible, and this final check does not cover every other transaction method.
+Production execution requires an accepted side-effect/commit-time authority policy
+and its race tests. Passing these conformance fixtures is not operational acceptance.
