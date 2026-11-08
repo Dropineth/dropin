@@ -8,7 +8,7 @@ const timestamp = z.iso.datetime({precision:3});
 const id = z.string().regex(/^[A-Za-z0-9:_-]{1,160}$/);
 const registryKey = z.object({keyId:id,role:z.enum(['protection','trustee']),controlDomain:id,
   independentOfOperator:z.boolean(),publicKey:z.string().max(1024),revoked:z.boolean(),validAfter:timestamp,expiresAt:timestamp}).strict();
-const responseSchema = z.object({
+export const currentAuthorityResponseSchema = z.object({
   payload:z.object({protocol:z.literal('CanopyProof-CurrentRestoreAuthority/1'),environment:z.literal('SIMULATION_ONLY'),
     audience:id,nonce:z.string().regex(/^[A-Za-z0-9_-]{43}$/),sessionId:z.uuid(),issuedAt:timestamp,expiresAt:timestamp,
     anchor:z.object({checkpointId:id,sequence:z.number().int().positive().max(Number.MAX_SAFE_INTEGER),digest:z.string().regex(/^[a-f0-9]{64}$/),sessionId:z.uuid(),keyRegistryVersion:id}).strict(),
@@ -21,11 +21,11 @@ const unavailable = (): never => { throw new Error('CURRENT_RESTORE_AUTHORITY_UN
  * A fresh nonce-bound response is required on EVERY call; no cached rollback floor. */
 export function currentAuthorityClient(options:{url:string;publicKey:string;audience:string;fetch?:typeof fetch;now?:()=>number}) {
   const fetcher = options.fetch ?? fetch, now = options.now ?? Date.now;
-  return async (sessionId:string):Promise<CurrentAuthority> => {
+  return async (sessionId:string):Promise<CurrentAuthority & {expiresAt:string}> => {
     if(!z.uuid().safeParse(sessionId).success) return unavailable();
     const nonce = randomBytes(32).toString('base64url'), controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const operation = async ():Promise<CurrentAuthority> => {
+    const operation = async ():Promise<CurrentAuthority & {expiresAt:string}> => {
       const response = await fetcher(options.url,{method:'POST',redirect:'error',credentials:'omit',cache:'no-store',signal:controller.signal,
         headers:{'content-type':'application/json','accept':'application/json'},
         body:JSON.stringify({protocol:'CanopyProof-CurrentRestoreAuthority/1',environment:'SIMULATION_ONLY',audience:options.audience,nonce,sessionId})});
@@ -34,7 +34,7 @@ export function currentAuthorityClient(options:{url:string;publicKey:string;audi
       try {
         for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>65_536)return unavailable();chunks.push(part.value);}
       } finally { await reader.cancel().catch(()=>{}); }
-      const parsed = responseSchema.safeParse(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+      const parsed = currentAuthorityResponseSchema.safeParse(JSON.parse(Buffer.concat(chunks).toString('utf8')));
       if(!parsed.success) return unavailable();
       const {payload,signature} = parsed.data, moment=now();
       if(payload.sessionId!==sessionId || payload.anchor.sessionId!==sessionId || payload.nonce!==nonce || payload.audience!==options.audience
@@ -49,7 +49,7 @@ export function currentAuthorityClient(options:{url:string;publicKey:string;audi
       const identities=eligible.map(key=>childEd25519KeyIdentity(key.publicKey));
       if(identities.some(identity=>identity===null) || new Set(identities).size!==eligible.length) return unavailable();
       if(!eligible.some(a=>a.role==='protection' && eligible.some(b=>b.role==='trustee' && a.controlDomain!==b.controlDomain))) return unavailable();
-      return {anchor:payload.anchor,registry:payload.registry};
+      return {anchor:payload.anchor,registry:payload.registry,expiresAt:payload.expiresAt};
     };
     try {
       return await Promise.race([operation(),new Promise<never>((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('CURRENT_RESTORE_AUTHORITY_UNAVAILABLE'));},3000);})]);

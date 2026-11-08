@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import pg from 'pg';
+import {closeNativeChildPool} from './child-stewardship-pool-close.js';
 import type { ChildSqlClient, ChildSqlConnection } from '../../services/api/src/domain/child-stewardship/postgres-store.js';
 export function nativeChildPool() {
   assert.equal(process.env.CANOPYPROOF_NATIVE_TEST_CONFIRM,'confirm-disposable-test-database');
@@ -46,5 +47,5 @@ export async function scopedNativeChildPool(owner:pg.Pool, verifier=false) {
   const connection=new URL(process.env.CANOPYPROOF_NATIVE_DATABASE_URL!);
   connection.username=role;connection.password=password;
   const pool=new pg.Pool({connectionString:connection.toString(),max:6});
-  return {pool,async close(){await pool.end();await owner.query(`DROP OWNED BY ${role}`);await owner.query(`DROP ROLE ${role}`);}};
+  return {pool,async close(){await closeNativeChildPool(pool);await owner.query(`DROP OWNED BY ${role}`);await owner.query(`DROP ROLE ${role}`);}};
 }

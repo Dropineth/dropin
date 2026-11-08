@@ -6,13 +6,14 @@ import type {BackendConfig} from './config.js';
 import {backendLog} from './database.js';
 import {childMigrationReady,type ChildMigration} from './migrations.js';
 import {currentAuthorityClient} from './current-authority.js';
+import {childDigest} from '../domain/child-stewardship/store.js';
 
 /** Dedicated entry point reuses the existing domain and SQL authority. It does
  * not mount legacy payments, generic uploads, enrollment or fixture ceremonies. */
 export function createChildBackend(options:{config:BackendConfig;client?:ChildSqlClient;migrations:readonly ChildMigration[];sourceSha:string;fetch?:typeof fetch}) {
   const {config,client}=options,app=new Hono();
   const authority=config.authorityUrl && config.authorityPublicKey ? currentAuthorityClient({url:config.authorityUrl,publicKey:config.authorityPublicKey,audience:config.authorityAudience,...(options.fetch ? {fetch:options.fetch} : {})}) : null;
-  const anchor=authority ? async(session:string)=>(await authority(session)).anchor : null;
+  const anchor=authority ? async(session:string)=>{const current=await authority(session);return {...current.anchor,registryDigest:childDigest(current.registry),authorityExpiresAt:current.expiresAt};} : null;
   const store=config.mode==='synthetic-demo' && client && anchor ? new PostgresChildStore(client,anchor) : null;
   const resume=store && client && anchor ? new PostgresChildResumeStore(client,anchor) : null;
   let stopping=false;

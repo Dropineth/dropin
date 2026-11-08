@@ -42,6 +42,12 @@ The next formal integration needs all of these versioned artifacts:
 Until these artifacts and operational sources are verified, formal AHIN execution
 remains unavailable. No invented wire profile or synthetic provider fills the gap.
 
+The [CAI/DeepSeek proposal adapter](CAI-DEEPSEEK-ADAPTER.md) adds a private
+synthetic Trigger mapping and side-effect-free review through the existing rights
+verifier. Its digest-only review result is not an execution permission. It does
+not install a model runtime, change this formal integration status or open an
+additional ledger mutation path.
+
 ## Application authorization improvements
 
 The existing role-specific operation verifier now also compares canonical SPKI

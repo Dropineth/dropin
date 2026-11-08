@@ -11,8 +11,19 @@ export interface ChildSqlClient extends ChildSqlConnection {
 }
 /** Must come from independently current deployment configuration, never the
  * restored database or a browser request. Its digest covers the signed checkpoint. */
-export type ChildRestoreAnchor={checkpointId:string;sequence:number;digest:string};
+export type ChildRestoreAnchor={checkpointId:string;sequence:number;digest:string;registryDigest?:string;authorityExpiresAt?:string};
 export type ChildRestoreAnchorProvider=(sessionId:string)=>Promise<ChildRestoreAnchor>;
+async function assertCurrentRestoreRegistry(db:ChildSqlConnection,sessionId:string,anchor:ChildRestoreAnchor):Promise<void>{
+  // Dedicated backend always supplies this digest. Legacy isolated fixture
+  // providers have no registry transport and retain their existing boundary.
+  if(anchor.registryDigest===undefined)return;
+  if(!/^[a-f0-9]{64}$/.test(anchor.registryDigest)||!anchor.authorityExpiresAt||!Number.isFinite(Date.parse(anchor.authorityExpiresAt)))throw new ChildApiError('RESTORATION_UNVERIFIED',503);
+  const rows=await db.query<{current:boolean}>(`SELECT EXISTS(SELECT 1 FROM child_stewardship.restore_admissions a
+    JOIN child_stewardship.restore_quarantines q ON q.sequence=a.quarantine_sequence
+    WHERE q.session_id=$1::uuid AND q.sequence=(SELECT max(sequence) FROM child_stewardship.restore_quarantines WHERE session_id=$1::uuid)
+      AND a.registry_digest=$2 AND $3::timestamptz>clock_timestamp()) AS current`,[sessionId,anchor.registryDigest,anchor.authorityExpiresAt]);
+  if(rows[0]?.current!==true)throw new ChildApiError('RESTORATION_UNVERIFIED',503);
+}
 export async function assertChildRestoreReady(db:ChildSqlConnection,sessionId:string,provider?:ChildRestoreAnchorProvider):Promise<void>{
   const installed=await db.query<{installed:boolean;anchor_function:boolean}>("SELECT to_regprocedure('child_stewardship.restore_execution_permitted(uuid)') IS NOT NULL AS installed,to_regprocedure('child_stewardship.restore_anchor_current(uuid,text,bigint,text)') IS NOT NULL AS anchor_function");
   if(!installed[0]?.installed){if(provider)throw new ChildApiError('RESTORATION_UNVERIFIED',503);return;}
@@ -22,6 +33,7 @@ export async function assertChildRestoreReady(db:ChildSqlConnection,sessionId:st
   if(!anchor||!Number.isSafeInteger(anchor.sequence)||anchor.sequence<1||!/^[a-f0-9]{64}$/.test(anchor.digest)||!anchor.checkpointId)throw new ChildApiError('RESTORATION_UNVERIFIED',503);
   const rows=await db.query<{permitted:boolean}>("SELECT child_stewardship.restore_execution_permitted($1::uuid) AND child_stewardship.restore_anchor_current($1::uuid,$2,$3::bigint,$4) AS permitted",[sessionId,anchor.checkpointId,anchor.sequence,anchor.digest]);
   if(rows[0]?.permitted!==true)throw new ChildApiError('RESTORATION_UNVERIFIED',503);
+  await assertCurrentRestoreRegistry(db,sessionId,anchor);
 }
 /** Retention cleanup still requires independently current evidence, but does not
  * grant interactive access to an expired session. Export uses the stricter gate. */
@@ -34,6 +46,7 @@ export async function assertChildRestoreCleanupReady(db:ChildSqlConnection,sessi
   if(!anchor||!Number.isSafeInteger(anchor.sequence)||anchor.sequence<1||!/^[a-f0-9]{64}$/.test(anchor.digest)||!anchor.checkpointId)throw new ChildApiError('RESTORATION_UNVERIFIED',503);
   const rows=await db.query<{permitted:boolean}>("SELECT child_stewardship.restore_cleanup_permitted($1::uuid) AND child_stewardship.restore_cleanup_anchor_current($1::uuid,$2,$3::bigint,$4) AS permitted",[sessionId,anchor.checkpointId,anchor.sequence,anchor.digest]);
   if(rows[0]?.permitted!==true)throw new ChildApiError('RESTORATION_UNVERIFIED',503);
+  await assertCurrentRestoreRegistry(db,sessionId,anchor);
 }
 type StateRecord = { domain: string; collection: string; record_id: string; payload: unknown; position: number };
 /** Advance the server's supplied clock through lock waits; never backdate execution. */
@@ -259,6 +272,11 @@ export class PostgresChildStore implements ChildStore {
         }
       }
       for (const event of tx.outbox) await db.query("INSERT INTO child_stewardship.outbox(session_id,event_id,kind,resource_id,audience) VALUES ($1::uuid,$2,$3,$4,$5) ON CONFLICT DO NOTHING",[sessionId,event.id,event.kind,event.resourceId,event.audience]);
+      // SQL changes remain tentative. A fresh external snapshot after all writes
+      // must still authorize the admission, otherwise the transaction rolls back
+      // state, one-use grants, receipts, audit and outbox together. This is a
+      // pre-commit check, not a distributed lease on the external authority.
+      if(this.restoreAnchor)await assertChildRestoreReady(db,sessionId,this.restoreAnchor);
       return result;
     });
   }
