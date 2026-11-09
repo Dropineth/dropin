@@ -8,7 +8,7 @@ function fixture(){
   const participants=keys.map((key,i)=>({id:`synthetic-guardian-${i}`,principal:`synthetic-human-${i}`,role:'verified-guardian-fixture' as const,publicKey:key.publicKey.export({type:'spki',format:'pem'}).toString()}));
   const network=createSyntheticAccountNetwork('synthetic-account',participants);
   const request:NetworkRequest={profile:'CanopyProof-Synthetic-CAI/2',account:'synthetic-account',epoch:0,nonce:'synthetic-proposal',action:'learning-review',evidenceDigest:'a'.repeat(64),expiresAt:Date.now()+20000};
-  const approvals=()=>keys.map((key,i)=>({participant:participants[i].id,signature:sign(null,networkSigningBytes(request),key.privateKey).toString('base64url')}));
+  const approvals=()=>keys.map((key,i)=>({participant:participants[i]!.id,signature:sign(null,networkSigningBytes(request),key.privateKey).toString('base64url')}));
   const provider:ScopedInferenceProvider={propose:async input=>{assert.deepEqual(Object.keys(input).sort(),['evidenceDigest','tools']);return {kind:'learning-review-proposal',evidenceDigest:input.evidenceDigest,tools:[]};}};
   return {network,request,approvals,provider};
 }
@@ -35,13 +35,13 @@ test('inference timeout, withdrawal, denial and shutdown reject even a provider 
   }
 });
 test('revocation between explicit handoff and execution prevents dispatch',async()=>{
-  const f=fixture();f.network.recordChildAssent();const twin=createChildTwinOrchestration(f.network,f.provider);
+  const f=fixture();f.network.recordChildAssent(f.request);const twin=createChildTwinOrchestration(f.network,f.provider);
   await twin.propose(f.request);twin.authorize(f.approvals());f.network.revoke('synthetic-guardian-0');
   await assert.rejects(twin.execute('must-not-load'),/AUTHORITY/);assert.equal(twin.snapshot().state,'denied');
 });
 test('actual pinned Engine executes only after explicit human handoff; twin never signs',{skip:!process.env.CAI_DEEPSEEK_ROOT},async()=>{
   const f=fixture(),twin=createChildTwinOrchestration(f.network,f.provider);
-  await twin.propose(f.request);f.network.recordChildAssent();twin.authorize(f.approvals());
+  await twin.propose(f.request);f.network.recordChildAssent(f.request);twin.authorize(f.approvals());
   await twin.execute(process.env.CAI_DEEPSEEK_ROOT!);
   assert.equal(twin.snapshot().state,'receipted');assert.equal(twin.snapshot().signer,false);
   assert.equal(f.network.snapshot().receipts.length,1);

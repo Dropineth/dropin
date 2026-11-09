@@ -8,11 +8,11 @@ function fixture(){
   let now=1000;
   const roles=['verified-guardian-fixture','verified-guardian-fixture','verified-guardian-fixture'] as const;
   const keys=roles.map(()=>generateKeyPairSync('ed25519'));
-  const participants=roles.map((role,i)=>({id:`synthetic-${i}`,principal:`synthetic-principal-${i}`,role,publicKey:keys[i].publicKey.export({type:'spki',format:'pem'}).toString()}));
+  const participants=roles.map((role,i)=>({id:`synthetic-${i}`,principal:`synthetic-principal-${i}`,role,publicKey:keys[i]!.publicKey.export({type:'spki',format:'pem'}).toString()}));
   const network=createSyntheticAccountNetwork('synthetic-account',participants,()=>now);
-  network.recordChildAssent();
   const request:NetworkRequest={profile:'CanopyProof-Synthetic-CAI/2',account:'synthetic-account',epoch:0,nonce:'synthetic-nonce',action:'learning-review',evidenceDigest:'a'.repeat(64),expiresAt:2000};
-  const approvals=(r=request,indices=[0,1])=>indices.map(i=>({participant:participants[i].id,signature:sign(null,networkSigningBytes(r),keys[i].privateKey).toString('base64url')}));
+  network.recordChildAssent(request);
+  const approvals=(r=request,indices=[0,1])=>indices.map(i=>({participant:participants[i]!.id,signature:sign(null,networkSigningBytes(r),keys[i]!.privateKey).toString('base64url')}));
   return {network,request,approvals,participants,advance:()=>{now=2001;}};
 }
 test('synthetic role quorum records only digest learning receipt and prevents replay',()=>{
@@ -23,7 +23,7 @@ test('synthetic role quorum records only digest learning receipt and prevents re
   assert.equal(JSON.stringify(f.network.snapshot()).includes('publicKey'),false);
 });
 test('duplicate principals or keys cannot impersonate independent roles',()=>{
-  for(const field of ['principal','publicKey'] as const){const f=fixture();f.participants[1][field]=f.participants[0][field];assert.throws(()=>createSyntheticAccountNetwork('synthetic-account',f.participants),/INDEPENDENT/);}
+  for(const field of ['principal','publicKey'] as const){const f=fixture();f.participants[1]![field]=f.participants[0]![field];assert.throws(()=>createSyntheticAccountNetwork('synthetic-account',f.participants),/INDEPENDENT/);}
 });
 test('tampering, wrong account, expired approval, revoked registry and financial fields fail closed',()=>{
   for(const change of [{evidenceDigest:'b'.repeat(64)},{account:'synthetic-other'},{action:'payment'},{amount:1}]){
@@ -54,15 +54,16 @@ test('real pinned Engine and isolated worker produce synthetic network receipt; 
   }
 });
 test('private key input is refused and registry updates cannot bypass receipt retention',()=>{
-  const f=fixture();f.participants[1].publicKey=generateKeyPairSync('ed25519').privateKey.export({format:'pem',type:'pkcs8'}).toString();
+  const f=fixture();f.participants[1]!.publicKey=generateKeyPairSync('ed25519').privateKey.export({format:'pem',type:'pkcs8'}).toString();
   assert.throws(()=>createSyntheticAccountNetwork('synthetic-account',f.participants),/PUBLIC_KEY_ONLY/);
   const g=fixture();
   for(let i=0;i<32;i++){
     const r={...g.request,nonce:`synthetic-nonce-${i}`,epoch:g.network.snapshot().epoch};
-    g.network.commit(r,g.approvals(r));
+    g.network.recordChildAssent(r);g.network.commit(r,g.approvals(r));
   }
   g.network.revoke('synthetic-2');g.network.revoke('synthetic-2');assert.equal(g.network.snapshot().epoch,1);
   const r={...g.request,nonce:'synthetic-last',epoch:1};
+  g.network.recordChildAssent(r);
   assert.throws(()=>g.network.commit(r,g.approvals(r)),/RETENTION_LIMIT/);
   const withdrawal={...r,action:'withdraw' as const};g.network.commit(withdrawal,g.approvals(withdrawal,[0]));
   assert.deepEqual(g.network.snapshot().receipts,[]);
@@ -74,5 +75,53 @@ test('guardian-only fixture registry rejects institutions and twins; human-child
   }
   const f=fixture(),network=createSyntheticAccountNetwork('synthetic-account',f.participants,()=>1000);
   assert.throws(()=>network.commit(f.request,f.approvals()),/ASSENT_REQUIRED/);
-  network.recordChildAssent();network.commit(f.request,f.approvals());
+  network.recordChildAssent(f.request);network.commit(f.request,f.approvals());
+});
+
+test('assent binds the entire proposal, requires renewal after epoch changes and is consumed only by successful commit',()=>{
+  const f=fixture();
+  for(const change of [{evidenceDigest:'b'.repeat(64)},{nonce:'synthetic-other'},{expiresAt:1900}]){
+    const changed={...f.request,...change};
+    assert.throws(()=>f.network.commit(changed,f.approvals(changed)),/ASSENT_REQUIRED/);
+  }
+  assert.throws(()=>f.network.commit(f.request,f.approvals(f.request,[0])),/GUARDIAN_QUORUM/);
+  assert.equal(f.network.snapshot().assent,true);
+  f.network.commit(f.request,f.approvals());
+  assert.equal(f.network.snapshot().assent,false);
+  assert.throws(()=>f.network.recordChildAssent(f.request),/AUTHORITY/);
+  const next={...f.request,nonce:'synthetic-next'};
+  assert.throws(()=>f.network.commit(next,f.approvals(next)),/ASSENT_REQUIRED/);
+  f.network.recordChildAssent(next);
+  f.network.revoke('synthetic-2'); // Alternative valid guardian pair remains.
+  assert.equal(f.network.snapshot().assent,false);
+  const renewed={...next,epoch:1};
+  assert.throws(()=>f.network.commit(renewed,f.approvals(renewed)),/ASSENT_REQUIRED/);
+  assert.throws(()=>f.network.recordChildAssent(next),/AUTHORITY/);
+  f.network.recordChildAssent(renewed);f.network.commit(renewed,f.approvals(renewed));
+});
+
+test('legacy, invalid, expired or withdrawn assent cannot authorize a proposal',()=>{
+  for(const invalid of [undefined,{...fixture().request,action:'withdraw'},{...fixture().request,account:'synthetic-wrong'}]){
+    const f=fixture();
+    assert.throws(()=>f.network.recordChildAssent(invalid as NetworkRequest));
+    assert.equal(f.network.snapshot().assent,false);
+    assert.throws(()=>f.network.commit(f.request,f.approvals()),/ASSENT_REQUIRED/);
+  }
+  const expired=fixture();expired.advance();assert.equal(expired.network.snapshot().assent,false);
+  assert.throws(()=>expired.network.recordChildAssent(expired.request),/AUTHORITY/);
+  for(const end of ['withdrawChild','shutdown'] as const){
+    const f=fixture();f.network[end]();assert.equal(f.network.snapshot().assent,false);
+    assert.throws(()=>f.network.recordChildAssent(f.request),/AUTHORITY/);
+    assert.deepEqual(f.network.snapshot().receipts,[]);
+  }
+  const f=fixture(),withdrawal={...f.request,action:'withdraw' as const};
+  f.network.commit(withdrawal,f.approvals(withdrawal,[0]));assert.equal(f.network.snapshot().assent,false);
+});
+
+test('replacing assent during actual asynchronous work rejects the old commit without consuming the new grant',{skip:!source},async()=>{
+  const {runSyntheticNetworkReview}=await import(pathToFileURL(resolve('integrations/cai/synthetic-network-router.mjs')).href);
+  const f=fixture(),next={...f.request,nonce:'synthetic-next',evidenceDigest:'b'.repeat(64)};
+  await assert.rejects(runSyntheticNetworkReview(source,f.network,f.request,f.approvals(),{delayMs:100,onStarted:()=>f.network.recordChildAssent(next)}),/ASSENT_REQUIRED/);
+  assert.deepEqual(f.network.snapshot().receipts,[]);
+  f.network.commit(next,f.approvals(next));assert.equal(f.network.snapshot().assent,false);
 });

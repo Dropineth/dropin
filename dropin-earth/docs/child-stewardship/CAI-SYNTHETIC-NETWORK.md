@@ -33,6 +33,17 @@ trusted human-interaction port without any key or majority. The CAI has neither
 port nor keys. Production must authenticate human handoffs and guardian status;
 local fixture registration does not verify real-world guardianship.
 
+The human port requires `recordChildAssent(request)`: a missing/legacy argument
+fails closed. It stores only the canonical request digest, epoch and expiry in
+memory, replacing any previous grant. The complete request (including nonce and
+evidence digest) must match at every authorization check and commit. Successful
+commit consumes assent; failed checks leave a still-valid grant available for
+the same request. Registry revocation, withdrawal and shutdown invalidate it;
+expiry is evaluated on access and expired grants are lazily removed. Invalid
+replacement attempts also clear the previous grant. Snapshot/audit output does
+not expose the grant digest. This is local proposal-scoped assent, not proof of
+human identity, a durable consent register or distributed atomic revocation.
+
 Human children and their CAI are distinct. Direct client-side human-child signing
 is not implemented in this increment. Neither raw Ed25519 nor an interface is
 claimed to implement WebAuthn: the existing backend's actual WebAuthn protocols
