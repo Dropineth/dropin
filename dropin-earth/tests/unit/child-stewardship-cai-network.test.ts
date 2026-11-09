@@ -125,3 +125,25 @@ test('replacing assent during actual asynchronous work rejects the old commit wi
   assert.deepEqual(f.network.snapshot().receipts,[]);
   f.network.commit(next,f.approvals(next));assert.equal(f.network.snapshot().assent,false);
 });
+
+test('competing actual workers consume one proposal assent exactly once',{skip:!source},async()=>{
+  const {runSyntheticNetworkReview}=await import(pathToFileURL(resolve('integrations/cai/synthetic-network-router.mjs')).href);
+  const f=fixture();let started=0;
+  const results=await Promise.allSettled([0,1].map(()=>runSyntheticNetworkReview(source,f.network,f.request,f.approvals(),{delayMs:500,onStarted:()=>{started++;}})));
+  assert.equal(started,2,'both workers reach execution before local commitment');
+  assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
+  const rejected=results.find(r=>r.status==='rejected');
+  assert.ok(rejected?.status==='rejected');assert.match(String(rejected.reason),/AUTHORITY/);
+  assert.equal(f.network.snapshot().receipts.length,1);assert.equal(f.network.snapshot().assent,false);
+});
+
+test('worker rejection before commit preserves valid assent and permits an unchanged retry',{skip:!source},async()=>{
+  const {runSyntheticNetworkReview}=await import(pathToFileURL(resolve('integrations/cai/synthetic-network-router.mjs')).href);
+  const f=fixture();
+  // The actual isolated worker rejects this input, before any receipt commit.
+  await assert.rejects(runSyntheticNetworkReview(source,f.network,f.request,f.approvals(),{delayMs:-1}),/WORKER_FAILED/);
+  assert.deepEqual(f.network.snapshot().receipts,[]);assert.equal(f.network.snapshot().assent,true);
+  const result=await runSyntheticNetworkReview(source,f.network,f.request,f.approvals());
+  assert.equal(result.receipt.syntheticOnly,true);
+  assert.equal(f.network.snapshot().receipts.length,1);assert.equal(f.network.snapshot().assent,false);
+});

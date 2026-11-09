@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {generateKeyPairSync,sign} from 'node:crypto';
+import {ZodError} from 'zod';
 import {createSyntheticAccountNetwork,networkSigningBytes,type NetworkRequest} from '../../integrations/cai/synthetic-account-network.js';
 import {createChildTwinOrchestration,type ScopedInferenceProvider} from '../../integrations/cai/child-twin-orchestration.js';
 function fixture(){
@@ -47,4 +48,21 @@ test('actual pinned Engine executes only after explicit human handoff; twin neve
   assert.equal(f.network.snapshot().receipts.length,1);
   await assert.rejects(twin.execute(process.env.CAI_DEEPSEEK_ROOT!),/STATE_INVALID/);
   twin.withdraw();assert.deepEqual(f.network.snapshot().receipts,[]);
+});
+
+test('cancellation at the execute import boundary prevents commitment and erases assent',async()=>{
+  for(const action of ['withdraw','shutdown','abort','deny'] as const){
+    const f=fixture(),twin=createChildTwinOrchestration(f.network,f.provider);
+    await twin.propose(f.request);f.network.recordChildAssent(f.request);twin.authorize(f.approvals());
+    const pending=twin.execute(process.env.CAI_DEEPSEEK_ROOT??'must-not-load');
+    assert.equal(twin.snapshot().state,'executing');twin[action]();
+    // Cancellation discards the pending request during the import await. The
+    // request validator must reject it before source loading/worker dispatch;
+    // an import, source-pin or Docker failure must not satisfy this assertion.
+    await assert.rejects(pending,error=>error instanceof ZodError&&error.issues.some(issue=>issue.code==='invalid_type'&&issue.path.length===0));
+    assert.equal(twin.snapshot().state,action==='deny'?'denied':'aborted');
+    assert.equal(f.network.snapshot().closed,true);assert.equal(f.network.snapshot().assent,false);
+    assert.deepEqual(f.network.snapshot().receipts,[]);
+    await assert.rejects(twin.execute('must-not-load'),/STATE_INVALID/);
+  }
 });
