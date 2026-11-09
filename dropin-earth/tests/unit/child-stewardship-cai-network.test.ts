@@ -6,17 +6,18 @@ import {pathToFileURL} from 'node:url';
 import {createSyntheticAccountNetwork,networkSigningBytes,type NetworkRequest} from '../../integrations/cai/synthetic-account-network.js';
 function fixture(){
   let now=1000;
-  const roles=['child','un-placeholder','bev-placeholder','canopyproof-placeholder','local-child-organization-placeholder'] as const;
+  const roles=['verified-guardian-fixture','verified-guardian-fixture','verified-guardian-fixture'] as const;
   const keys=roles.map(()=>generateKeyPairSync('ed25519'));
   const participants=roles.map((role,i)=>({id:`synthetic-${i}`,principal:`synthetic-principal-${i}`,role,publicKey:keys[i].publicKey.export({type:'spki',format:'pem'}).toString()}));
   const network=createSyntheticAccountNetwork('synthetic-account',participants,()=>now);
-  const request:NetworkRequest={profile:'CanopyProof-Synthetic-CAI/1',account:'synthetic-account',epoch:0,nonce:'synthetic-nonce',action:'learning-review',evidenceDigest:'a'.repeat(64),expiresAt:2000};
-  const approvals=(r=request,indices=[0,1,3,4])=>indices.map(i=>({participant:participants[i].id,signature:sign(null,networkSigningBytes(r),keys[i].privateKey).toString('base64url')}));
+  network.recordChildAssent();
+  const request:NetworkRequest={profile:'CanopyProof-Synthetic-CAI/2',account:'synthetic-account',epoch:0,nonce:'synthetic-nonce',action:'learning-review',evidenceDigest:'a'.repeat(64),expiresAt:2000};
+  const approvals=(r=request,indices=[0,1])=>indices.map(i=>({participant:participants[i].id,signature:sign(null,networkSigningBytes(r),keys[i].privateKey).toString('base64url')}));
   return {network,request,approvals,participants,advance:()=>{now=2001;}};
 }
 test('synthetic role quorum records only digest learning receipt and prevents replay',()=>{
-  const f=fixture();assert.throws(()=>f.network.commit(f.request,f.approvals(f.request,[0])),/ROLE_QUORUM/);
-  assert.throws(()=>f.network.commit(f.request,f.approvals(f.request,[1,3,4])),/CHILD_ASSENT/);
+  const f=fixture();assert.throws(()=>f.network.commit(f.request,f.approvals(f.request,[0])),/GUARDIAN_QUORUM/);
+  assert.throws(()=>f.network.commit(f.request,[]),/GUARDIAN_QUORUM/);
   const receipt=f.network.commit(f.request,f.approvals());assert.equal('cashValue' in receipt&&receipt.cashValue,false);
   assert.throws(()=>f.network.commit(f.request,f.approvals()),/AUTHORITY/);
   assert.equal(JSON.stringify(f.network.snapshot()).includes('publicKey'),false);
@@ -31,10 +32,9 @@ test('tampering, wrong account, expired approval, revoked registry and financial
   const f=fixture();f.advance();assert.throws(()=>f.network.commit(f.request,f.approvals()),/AUTHORITY/);
   const g=fixture();g.network.revoke('synthetic-1');assert.throws(()=>g.network.commit(g.request,g.approvals()),/AUTHORITY/);
 });
-test('child alone withdraws, erases retained receipts and permanently closes account',()=>{
+test('child withdrawal needs no signing key, erases receipts and closes account',()=>{
   const f=fixture();f.network.commit(f.request,f.approvals());
-  const withdraw={...f.request,nonce:'synthetic-withdraw',action:'withdraw' as const};
-  f.network.commit(withdraw,f.approvals(withdraw,[0]));assert.deepEqual(f.network.snapshot().receipts,[]);
+  f.network.withdrawChild();assert.deepEqual(f.network.snapshot().receipts,[]);
   assert.throws(()=>f.network.commit({...f.request,epoch:1},f.approvals()),/AUTHORITY/);
 });
 const source=process.env.CAI_DEEPSEEK_ROOT;
@@ -66,4 +66,13 @@ test('private key input is refused and registry updates cannot bypass receipt re
   assert.throws(()=>g.network.commit(r,g.approvals(r)),/RETENTION_LIMIT/);
   const withdrawal={...r,action:'withdraw' as const};g.network.commit(withdrawal,g.approvals(withdrawal,[0]));
   assert.deepEqual(g.network.snapshot().receipts,[]);
+});
+
+test('guardian-only fixture registry rejects institutions and twins; human-child signing is not implemented',()=>{
+  for(const role of ['child','un-placeholder','bev-placeholder','canopyproof-placeholder','local-child-organization-placeholder','child-cai']){
+    const f=fixture();assert.throws(()=>createSyntheticAccountNetwork('synthetic-account',f.participants.map((p,i)=>i===0?{...p,role}:p) as typeof f.participants));
+  }
+  const f=fixture(),network=createSyntheticAccountNetwork('synthetic-account',f.participants,()=>1000);
+  assert.throws(()=>network.commit(f.request,f.approvals()),/ASSENT_REQUIRED/);
+  network.recordChildAssent();network.commit(f.request,f.approvals());
 });
