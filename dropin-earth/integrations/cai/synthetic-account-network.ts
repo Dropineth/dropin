@@ -14,7 +14,11 @@ export type NetworkSignature=z.infer<typeof signature>;
 export const networkSigningBytes=(value:NetworkRequest)=>Buffer.from(`CanopyProof synthetic CAI request v2\n${canonicalRightsJson(request.parse(value))}`);
 export const networkDigest=(value:NetworkRequest)=>createHash('sha256').update(networkSigningBytes(value)).digest('hex');
 
-/** Trusted local fixture host, never an IdP or production authority. All transitions
+/** Assent is a one-use digest commitment to the exact request (including epoch,
+ * nonce and expiry), supplied only by the trusted human-interaction fixture host.
+ * Failed checks do not consume a still-valid grant; successful commit does.
+ * Expired grants are erased lazily on access, not persisted or returned in audit.
+ * Trusted local fixture host, never an IdP or production authority. All transitions
  * are synchronous in one process; there is no distributed authorization guarantee. */
 export function createSyntheticAccountNetwork(account:string,participants:NetworkParticipant[],now:()=>number=Date.now){
   id.parse(account);
@@ -28,7 +32,12 @@ export function createSyntheticAccountNetwork(account:string,participants:Networ
     if(seen.has(p.id)||principals.has(p.principal)||keys.has(fingerprint))throw new Error('INDEPENDENT_PARTICIPANTS_REQUIRED');
     seen.add(p.id);principals.add(p.principal);keys.add(fingerprint);
   }
-  let epoch=0,closed=false,assent=false;
+  let epoch=0,closed=false;
+  let assent:{digest:string;epoch:number;expiresAt:number}|undefined;
+  function currentAssent(){
+    if(assent&&(closed||assent.epoch!==epoch||assent.expiresAt<=now()))assent=undefined;
+    return assent;
+  }
   const revoked=new Set<string>(),consumed=new Set<string>();
   let receipts:{digest:string;kind:'learning-review';syntheticOnly:true;cashValue:false;carbonCredit:false}[]=[];
   function check(value:NetworkRequest,approvals:NetworkSignature[]){
@@ -40,26 +49,32 @@ export function createSyntheticAccountNetwork(account:string,participants:Networ
       if(!p||revoked.has(p.id)||signers.has(p.id)||!verify(null,networkSigningBytes(r),p.publicKey,Buffer.from(approval.signature,'base64url')))throw new Error('SIGNATURE_UNAVAILABLE');
       signers.add(p.id);
     }
-    if(r.action==='learning-review'&&(!assent||signers.size<2))throw new Error('GUARDIAN_QUORUM_AND_ASSENT_REQUIRED');
+    if(r.action==='learning-review'&&(currentAssent()?.digest!==networkDigest(r)||signers.size<2))throw new Error('GUARDIAN_QUORUM_AND_ASSENT_REQUIRED');
     if(r.action==='withdraw'&&signers.size<1)throw new Error('GUARDIAN_REQUIRED');
     return r;
   }
   return {
     check,
     // Trusted human-interaction port, not accessible to inference or tools.
-    recordChildAssent(){if(closed)throw new Error('AUTHORITY_UNAVAILABLE');assent=true;},
-    withdrawChild(){closed=true;assent=false;epoch++;receipts=[];consumed.clear();},
+    recordChildAssent(value:NetworkRequest){
+      // Replace rather than accumulate grants. Missing/legacy calls fail closed.
+      assent=undefined;
+      const r=request.parse(value),time=now();
+      if(closed||r.action!=='learning-review'||r.account!==account||r.epoch!==epoch||r.expiresAt<=time||r.expiresAt>time+30000||consumed.has(r.nonce))throw new Error('AUTHORITY_UNAVAILABLE');
+      assent={digest:networkDigest(r),epoch:r.epoch,expiresAt:r.expiresAt};
+    },
+    withdrawChild(){closed=true;assent=undefined;epoch++;receipts=[];consumed.clear();},
     commit(value:NetworkRequest,approvals:NetworkSignature[]){
       const r=check(value,approvals);
-      if(r.action==='withdraw'){closed=true;epoch++;receipts=[];consumed.clear();return {withdrawn:true as const};}
+      if(r.action==='withdraw'){assent=undefined;closed=true;epoch++;receipts=[];consumed.clear();return {withdrawn:true as const};}
       if(receipts.length>=32)throw new Error('RETENTION_LIMIT');
       consumed.add(r.nonce);
       const receipt={digest:networkDigest(r),kind:'learning-review' as const,syntheticOnly:true as const,cashValue:false as const,carbonCredit:false as const};
-      receipts.push(receipt);return {...receipt};
+      receipts.push(receipt);assent=undefined;return {...receipt};
     },
     // Host control plane only: these functions are never exposed to the worker.
-    revoke(participantId:string){if(!seen.has(participantId))throw new Error('UNKNOWN_PARTICIPANT');if(!revoked.has(participantId)){revoked.add(participantId);epoch++;consumed.clear();}},
-    shutdown(){closed=true;epoch++;receipts=[];consumed.clear();},
-    snapshot:()=>({account,epoch,closed,assent,receipts:receipts.map(r=>({...r})),syntheticOnly:true,productionAuthority:false}),
+    revoke(participantId:string){if(!seen.has(participantId))throw new Error('UNKNOWN_PARTICIPANT');if(!revoked.has(participantId)){revoked.add(participantId);assent=undefined;epoch++;consumed.clear();}},
+    shutdown(){assent=undefined;closed=true;epoch++;receipts=[];consumed.clear();},
+    snapshot:()=>({account,epoch,closed,assent:!!currentAssent(),receipts:receipts.map(r=>({...r})),syntheticOnly:true,productionAuthority:false}),
   };
 }
