@@ -5,6 +5,34 @@ import { applyRightsOperation } from '../../services/api/src/domain/child-stewar
 import { childBoundaryDenies } from '../../services/api/src/domain/child-stewardship/runtime-boundary.js';
 import { createSyntheticRightsFixture } from '../fixtures/child-stewardship-rights.js';
 
+test('trusted actor classification and signing purpose exclude agents and external attestations regardless of labels',()=>{
+  for(const patch of [
+    {actorKind:'ai-agent'}, {actorKind:'external-reference'}, {actorKind:'evidence-attester'},
+    {signaturePurpose:'evidence-attestation'}, {signaturePurpose:'reference'},
+    {actorKind:undefined}, {signaturePurpose:undefined}, {isAgent:undefined},
+  ]){
+    const f=createSyntheticRightsFixture(),state=f.funded(),op=f.payment();
+    const credential=f.context.credentials.find(c=>c.keyId==='r1')!;
+    Object.assign(credential,patch,{actorRef:'renamed-human-looking-reference',legalEntityRef:'synthetic-un-or-bev-reference'});
+    const before=structuredClone(state);
+    // Actual valid signatures from fixture keys do not override registry purpose.
+    assert.throws(()=>f.apply(state,op,['g','r1','t']),/CREDENTIAL_UNAVAILABLE/);
+    assert.deepEqual(state,before);
+  }
+  const f=createSyntheticRightsFixture(),state=f.funded(),op=f.payment();
+  const approvals=f.approvals(op,['g','r1','t']);
+  Object.assign(approvals[1]!,{actorKind:'human',signaturePurpose:'account-transaction'});
+  assert.throws(()=>applyRightsOperation(state,op,approvals,f.context),/INVALID_APPROVAL/);
+  assert.equal(f.apply(state,op,['g','r1','t']).payments['payout-a']!.status,'submitted');
+});
+
+test('a non-signer registry key cannot be laundered through a human-labelled alias',()=>{
+  const f=createSyntheticRightsFixture(),state=f.funded(),op=f.payment();
+  const r=f.context.credentials.find(c=>c.keyId==='r1')!;
+  f.context.credentials.push({...r,keyId:'reference-alias',actorRef:'renamed-reference',actorKind:'external-reference',signaturePurpose:'evidence-attestation',publicKeyPem:r.publicKeyPem.replaceAll('\n','\r\n')});
+  assert.throws(()=>f.apply(state,op,['g','r1','t']),/CREDENTIAL_PURPOSE_CONFLICT/);
+});
+
 test('one cryptographic key cannot fill independent approval seats through renamed registry entries',()=>{
   for(const reformat of [false,true]) {
     const f=createSyntheticRightsFixture(),state=f.funded(),op=f.payment();
