@@ -1,3 +1,4 @@
+import {isHumanTransactionCredential} from './rights-types.js';
 import { createHash, createPublicKey } from 'node:crypto';
 import { verifyChildSignatureBytes } from './signature.js';
 import type { RightsApproval, RightsContext, RightsCredential, RightsDelegation, RightsOperation, RightsOperationType, RightsPolicy, RightsRole, RightsState } from './rights-types.js';
@@ -75,7 +76,7 @@ export function validateRightsOperation(operation: RightsOperation): void {
 }
 function liveCredential(credential: RightsCredential, context: RightsContext, beneficiaryRef: string): boolean {
   const now = rightsTime(context.now);
-  return !credential.revoked && !credential.isAgent && now >= rightsTime(credential.validAfter)
+  return !credential.revoked && isHumanTransactionCredential(credential) && now >= rightsTime(credential.validAfter)
     && now < rightsTime(credential.expiresAt) && now < rightsTime(credential.independenceVerifiedUntil)
     && !!credential.legalEntityRef && !!credential.appointmentEvidenceRef && !!credential.independenceEvidenceRef
     && !credential.conflictBeneficiaryRefs.includes(beneficiaryRef);
@@ -158,6 +159,8 @@ export function authorizeRightsOperation(operation: RightsOperation, approvals: 
     const verification = verifyChildSignatureBytes({ algorithm: approval.algorithm, expectedPayload: bytes, signedPayload: strictBase64(approval.payloadBase64), signature: strictBase64(approval.signatureBase64), registeredPublicKey: credential.publicKeyPem });
     requireRights(verification.valid, 'INVALID_SIGNATURE');
     const signingKey=signingKeyIdentity(credential);
+    requireRights(!context.credentials.some(other=>!isHumanTransactionCredential(other)
+      && (other.actorRef===credential.actorRef||signingKeyIdentity(other)===signingKey)), 'CREDENTIAL_PURPOSE_CONFLICT');
     requireRights(!signingKeys.has(signingKey), 'DUPLICATE_SIGNING_KEY');
     signingKeys.add(signingKey);
     if (credential.role === 'G') {

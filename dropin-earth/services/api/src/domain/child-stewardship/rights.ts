@@ -1,3 +1,4 @@
+import {isHumanTransactionCredential} from './rights-types.js';
 import { assertDelegationNarrower, authorizeRightsOperation, assertRightsReference, canonicalRightsJson, ChildRightsError, requireRights, rightsDigest, rightsInteger, rightsTime } from './authorization.js';
 import type { RightsApproval, RightsContext, RightsEntitlement, RightsFundingLot, RightsOperation, RightsState } from './rights-types.js';
 export * from './rights-types.js';
@@ -268,20 +269,20 @@ export function applyRightsOperation(input: RightsState, operation: RightsOperat
       noticeWait(operation,context,'recovery',context.policy.recoveryWaitMs);
       const newKeyId = requiredRef(details.newControllerRef);
       const newKey = context.credentials.find(key => key.keyId === newKeyId);
-      requireRights(newKey && newKey.role === 'G' && newKey.actorRef === beneficiary!.guardianActorRef && !newKey.revoked && !newKey.isAgent && rightsTime(context.now) >= rightsTime(newKey.validAfter) && rightsTime(context.now) < rightsTime(newKey.expiresAt), 'RECOVERY_KEY_INVALID');
+      requireRights(newKey && newKey.role === 'G' && newKey.actorRef === beneficiary!.guardianActorRef && !newKey.revoked && isHumanTransactionCredential(newKey) && rightsTime(context.now) >= rightsTime(newKey.validAfter) && rightsTime(context.now) < rightsTime(newKey.expiresAt), 'RECOVERY_KEY_INVALID');
       requireRights(newKeyId !== beneficiary!.guardianKeyId, 'RECOVERY_NO_CHANGE');
       beneficiary!.guardianKeyId = newKeyId; beneficiary!.authorizationEpoch += 1; break;
     }
     case 'CHANGE_GUARDIAN': {
       requireRights(!!details.legalDecisionRef, 'GUARDIAN_LEGAL_BASIS_REQUIRED');
       const key = context.credentials.find(item => item.keyId === details.newControllerRef);
-      requireRights(key && key.role === 'G' && !key.revoked && !key.isAgent && rightsTime(context.now) >= rightsTime(key.validAfter) && rightsTime(context.now) < rightsTime(key.expiresAt) && key.actorRef === details.guardianActorRef, 'GUARDIAN_KEY_INVALID');
+      requireRights(key && key.role === 'G' && !key.revoked && isHumanTransactionCredential(key) && rightsTime(context.now) >= rightsTime(key.validAfter) && rightsTime(context.now) < rightsTime(key.expiresAt) && key.actorRef === details.guardianActorRef, 'GUARDIAN_KEY_INVALID');
       beneficiary!.guardianActorRef = key.actorRef; beneficiary!.guardianKeyId = key.keyId; beneficiary!.authorizationEpoch += 1; break;
     }
     case 'CAPACITY_TRANSFER': {
       requireRights(!!details.capacityEvidenceRef && context.legalEvidenceRefs.includes(details.capacityEvidenceRef), 'CAPACITY_UNVERIFIED');
       const key = context.credentials.find(item => item.keyId === details.newControllerRef);
-      requireRights(key && key.role === 'C' && key.actorRef === beneficiary!.controllerRef && !key.revoked && !key.isAgent && rightsTime(context.now) >= rightsTime(key.validAfter) && rightsTime(context.now) < rightsTime(key.expiresAt), 'CAPACITY_KEY_INVALID');
+      requireRights(key && key.role === 'C' && key.actorRef === beneficiary!.controllerRef && !key.revoked && isHumanTransactionCredential(key) && rightsTime(context.now) >= rightsTime(key.validAfter) && rightsTime(context.now) < rightsTime(key.expiresAt), 'CAPACITY_KEY_INVALID');
       requireRights(key.keyId !== authorization.signers.find(signer => signer.role === 'C')?.keyId && key.controlDomainId !== context.credentials.find(signer => signer.keyId === beneficiary!.guardianKeyId)?.controlDomainId, 'INDEPENDENT_NEW_CAPACITY_KEY_REQUIRED');
       beneficiary!.guardianActorRef = 'no-current-guardian'; beneficiary!.guardianKeyId = null; beneficiary!.participantKeyId = key.keyId;
       beneficiary!.authorizationEpoch += 1; break;
@@ -317,7 +318,7 @@ export function applyRightsOperation(input: RightsState, operation: RightsOperat
       requireRights(grant.maximumCalls > 0 && grant.perCallLimitMinor > 0 && grant.cumulativeLimitMinor >= grant.perCallLimitMinor && grant.perCallLimitMinor <= context.policy.perPaymentLimitMinor && grant.cumulativeLimitMinor <= context.policy.beneficiaryPeriodLimitMinor, 'DELEGATION_LIMIT');
       requireRights(rightsTime(grant.validAfter) >= rightsTime(context.now) && rightsTime(grant.expiresAt) > rightsTime(grant.validAfter) && rightsTime(grant.expiresAt) - rightsTime(grant.validAfter) <= 30 * 86_400_000, 'DELEGATION_EXPIRED');
       requireRights(grant.operationTypes.length > 0 && grant.operationTypes.every(type => type === 'PAY_PROTECTED') && grant.entitlementIds.length > 0 && grant.entitlementIds.every(id => state.entitlements[id]?.beneficiaryRef === beneficiary!.ref) && grant.destinationRefs.length > 0 && grant.destinationRefs.every(id => state.destinations[id]?.beneficiaryRef === beneficiary!.ref && state.destinations[id]!.protected && state.destinations[id]!.active) && grant.purposeCodes.length > 0 && grant.purposeCodes.every(code => context.policy.allowedPurposes.includes(code)), 'DELEGATION_SCOPE');
-      requireRights(context.credentials.some(key => key.actorRef === grant.delegateActorRef && !key.isAgent && !key.revoked && rightsTime(context.now) >= rightsTime(key.validAfter) && rightsTime(context.now) < rightsTime(key.expiresAt)), 'DELEGATE_UNAVAILABLE');
+      requireRights(context.credentials.some(key => key.actorRef === grant.delegateActorRef && isHumanTransactionCredential(key) && !key.revoked && rightsTime(context.now) >= rightsTime(key.validAfter) && rightsTime(context.now) < rightsTime(key.expiresAt)), 'DELEGATE_UNAVAILABLE');
       if (grant.parentId) {
         const parent = state.delegations[grant.parentId];
         requireRights(parent && !parent.revoked && parent.epoch === beneficiary!.authorizationEpoch, 'DELEGATION_REVOKED');

@@ -33,6 +33,33 @@ trusted human-interaction port without any key or majority. The CAI has neither
 port nor keys. Production must authenticate human handoffs and guardian status;
 local fixture registration does not verify real-world guardianship.
 
+The separate synthetic rights backend now requires trusted credential metadata
+`actorKind: human`, `signaturePurpose: account-transaction`, and `isAgent: false`
+before counting a signature or selecting a recovery/guardian/participant key or
+delegate. AI agents, external references and evidence attesters cannot contribute
+transaction authority even with valid Ed25519 signatures and human-looking names.
+Conflicting non-signer entries for the same canonical public key or actor reference
+also reject the vote, including PEM formatting aliases. Account-signing and
+external-attestation credentials must not share conflicting registry identities.
+These classifications come from the trusted registry context, never the proposal
+or approval payload. Missing legacy metadata fails closed; existing synthetic
+registries need explicit reviewed classification rather than automatic inference
+from role or organization names. An institution affiliation is not itself a
+signer class. This does not implement an external attestation service or an
+on-chain contract, and does not alter separately scoped evidence attestations.
+
+The PostgreSQL runtime already serializes session-local changes using the session
+row lock held through commit; verification admissions also bind the expected
+revision. A withdrawal holding that lock commits before a waiting transaction can
+read the updated consent. If an operation acquired the lock first, it can commit
+before a waiting withdrawal: the latter is not retroactive cancellation. Failed
+transactions roll back their tentative changes. Native tests exercise this order,
+stale revisions, committed withdrawal and receipt-write rollback. No extra CAS is
+claimed to close a race with external authority: a signed remote snapshot can
+become stale after its final check, and an unreceived revocation is not local DB
+state. Real operations remain unavailable without an accepted external authority
+commit/revocation protocol and authenticated registry enrollment.
+
 The human port requires `recordChildAssent(request)`: a missing/legacy argument
 fails closed. It stores only the canonical request digest, epoch and expiry in
 memory, replacing any previous grant. The complete request (including nonce and

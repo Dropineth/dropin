@@ -76,7 +76,14 @@ export interface RightsApproval {
   payloadBase64: string;
   signatureBase64: string;
 }
+/** Trusted registry classification, never supplied by a proposal or signature.
+ * Missing legacy classification is deliberately not transaction authority. */
+export function isHumanTransactionCredential(credential: RightsCredential): boolean {
+  return credential.actorKind === 'human' && credential.signaturePurpose === 'account-transaction' && credential.isAgent === false;
+}
 export interface RightsCredential {
+  actorKind: 'human' | 'ai-agent' | 'external-reference' | 'evidence-attester';
+  signaturePurpose: 'account-transaction' | 'evidence-attestation' | 'reference';
   keyId: string;
   actorRef: string;
   publicKeyPem: string;

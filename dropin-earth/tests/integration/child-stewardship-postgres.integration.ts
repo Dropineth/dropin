@@ -114,7 +114,35 @@ test('native Hono learning: current withdrawal survives reconnect; request idemp
       assert.equal((await command('child',{type:'set-assent',profileId:'demo-native-profile',purpose,willing:true})).response.status,200);
     }
     const assignment=(await command('child',{type:'assign-task',profileId:'demo-native-profile',taskId:'demo-task-leaf-comparison'})).body.data.id;
-    assert.equal((await command('guardian',{type:'withdraw-consent',profileId:'demo-native-profile',purpose:'upload'})).response.status,200);
+    // Hold the actual withdrawal transaction after its writes, before commit.
+    // A second store must wait on the same session row and then read revocation.
+    let release!:()=>void,announce!:()=>void;
+    const held=new Promise<void>(resolve=>{announce=resolve;});
+    const gate=new Promise<void>(resolve=>{release=resolve;});
+    const base=nativeChildSql(scoped.pool);
+    const gatedStore=new PostgresChildStore({...base,transaction:run=>base.transaction(db=>run({query:async<T extends Record<string,unknown>>(text:string,values?:unknown[]):Promise<T[]>=>{
+      const result=await db.query<T>(text,values);
+      if(text.startsWith('UPDATE child_stewardship.sessions SET revision=')){announce();await gate;}
+      return result;
+    }}))});
+    const gatedApp=createChildStewardshipRoutes({mode:'synthetic-demo',store:gatedStore,now:()=>now});
+    const withdrawal=gatedApp.request('/commands',{method:'POST',headers:{authorization:`Bearer ${tokens.guardian}`,'content-type':'application/json','idempotency-key':'demo-withdraw-fenced','if-match':String(version)},body:JSON.stringify({commandId:'demo-withdraw-fenced',expectedVersion:version,type:'withdraw-consent',profileId:'demo-native-profile',purpose:'upload'})});
+    await Promise.race([held,Promise.resolve(withdrawal).then(response=>{throw new Error(`withdrawal finished before fence: ${response.status}`);})]);
+    let observed=false,announceReader!:(pid:number)=>void;
+    const readerStarted=new Promise<number>(resolve=>{announceReader=resolve;});
+    const readerStore=new PostgresChildStore({...base,transaction:run=>base.transaction(db=>run({query:async<T extends Record<string,unknown>>(text:string,values?:unknown[]):Promise<T[]>=>{
+      if(text.includes('FOR UPDATE')){const rows=await db.query<{pid:number}>('SELECT pg_backend_pid() AS pid');announceReader(rows[0]!.pid);}
+      return db.query<T>(text,values);
+    }}))});
+    const read=readerStore.transact(created.data.sessionId,now,tx=>{observed=true;return structuredClone(tx.snapshot.learning.consents);});
+    try{
+      const pid=await readerStarted;let waiting=false;const deadline=Date.now()+3000;
+      while(Date.now()<deadline){const rows=await pool.query("SELECT wait_event_type='Lock' AS waiting FROM pg_stat_activity WHERE pid=$1",[pid]);if(rows.rows[0]?.waiting){waiting=true;break;}await new Promise(resolve=>setTimeout(resolve,10));}
+      assert.equal(waiting,true,'PostgreSQL confirms the competing reader is lock-blocked');
+      assert.equal(observed,false,'pending revocation retains the session lock until commit');
+    }finally{release();}
+    const withdrawn=await withdrawal;assert.equal(withdrawn.status,200);version=(await withdrawn.json()).version;
+    assert.ok(Object.values(await read).some(c=>c.purpose==='upload'&&c.withdrawnAt),'waiting transaction reads committed revocation');
     const refused=await command('child',{type:'submit-observation',assignmentId:assignment,sampleId:'demo-leaf-green',answer:'green',capturedAtClaimed:now});assert.equal(refused.response.status,403);
     const reconnected=new PostgresChildStore(nativeChildSql(scoped.pool));
     const snapshot=await reconnected.transact(created.data.sessionId,now,tx=>tx.snapshot);
@@ -131,16 +159,18 @@ test('native coauthorization: aliased signing keys and child payment votes never
     runtime=await scopedNativeChildPool(owner); verification=await scopedNativeChildPool(owner,true);
     const store=new PostgresChildStore(nativeChildSql(runtime.pool));
     const verifier=new ChildRightsVerifier(nativeChildSql(verification.pool));
-    for(const kind of ['same-key','child-vote'] as const) {
+    for(const kind of ['same-key','child-vote','ai-agent','external-reference','evidence-attester','cross-purpose'] as const) {
       const f=createSyntheticRightsFixture(),rights=f.funded(),op=f.payment();
       const approvals=f.approvals(op,kind==='child-vote'?['g','r1','t','c']:['g','r1','t']);
       if(kind==='same-key') {
         f.context.credentials.find(c=>c.keyId==='r1')!.publicKeyPem=f.context.credentials.find(c=>c.keyId==='g')!.publicKeyPem.replaceAll('\n','\r\n');
         approvals[1]={...approvals[0]!,keyId:'r1'};
       }
+      if(['ai-agent','external-reference','evidence-attester'].includes(kind))Object.assign(f.context.credentials.find(c=>c.keyId==='r1')!,{actorKind:kind,actorRef:'renamed-human-looking-actor'});
+      if(kind==='cross-purpose')f.context.credentials.find(c=>c.keyId==='r1')!.signaturePurpose='evidence-attestation';
       const id=newDemoSessionId(),tokens=createDemoTokens(id);
       await store.create({id,expiresAt:nativeTimeAfter(86_400_000),snapshot:{version:0,learning:createSyntheticLearningState(now),rights,rightsContext:f.context}},tokens.records);
-      await assert.rejects(verifier.admit(id,op,approvals,now),kind==='same-key'?/DUPLICATE_SIGNING_KEY/:/CHILD_PAYMENT_SIGNATURE_FORBIDDEN/);
+      await assert.rejects(verifier.admit(id,op,approvals,now),kind==='same-key'?/DUPLICATE_SIGNING_KEY/:kind==='child-vote'?/CHILD_PAYMENT_SIGNATURE_FORBIDDEN/:/CREDENTIAL_UNAVAILABLE/);
       assert.equal((await owner.query('SELECT count(*)::int AS count FROM child_stewardship.verification_admissions WHERE session_id=$1',[id])).rows[0].count,0);
       const app=createChildStewardshipRoutes({mode:'synthetic-demo',store,now:()=>now});
       const response=await app.request('/rights/operations',{method:'POST',headers:{authorization:`Bearer ${tokens.publicTokens.operator}`,'content-type':'application/json','idempotency-key':`denied-${kind}`,'if-match':'0'},body:JSON.stringify({operation:op,approvals})});
