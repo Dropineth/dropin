@@ -66,3 +66,4 @@
 .ledger strong { display: block; }
 @media (max-width: 700px) { .header { padding: 18px 18px 12px; } .banner { margin-inline: 18px; } .content { padding: 22px 18px; } .layout { grid-template-columns: 1fr; gap: 24px; } .art { position: static; border-radius: 20px; padding: 18px; display: grid; grid-template-columns: 100px 1fr; text-align: left; gap: 12px; } .art svg { grid-row: span 2; } .art .treeMeta { display: none; } .art h2 { font-size: 20px; } .art p { font-size: 13px; } .nav { gap: 0; padding-inline: 4px; } .nav button { min-width: 0; width: 25%; padding-inline: 4px; font-size: 14px; } .card { padding: 20px; } .ledger { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .shell { scroll-behavior: auto; } }
+@media (max-width: 700px) { .art .treeMeta { display: grid; grid-column: 1 / -1; font-size: 12px; } }

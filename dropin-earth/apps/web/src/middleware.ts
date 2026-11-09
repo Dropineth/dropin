@@ -69,12 +69,13 @@ function generateNonce(): string {
 
 export function middleware(request: NextRequest): NextResponse {
   const childRoute = /^\/stewardship(?:\/|$)/.test(request.nextUrl.pathname);
+  const childGuide = /^\/(?:zh\/)?(?:child-accounts|children)\/?$/.test(request.nextUrl.pathname);
   const nonce = generateNonce();
   const forwardedProtocol = request.headers
     .get("x-forwarded-proto")
     ?.split(",", 1)[0]
     ?.trim();
-  const csp = buildContentSecurityPolicy(
+  const csp = childGuide ? "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" : buildContentSecurityPolicy(
     nonce,
     request.nextUrl.protocol === "https:" || forwardedProtocol === "https",
     childRoute,
@@ -93,7 +94,7 @@ export function middleware(request: NextRequest): NextResponse {
   response.headers.set("strict-transport-security", "max-age=63072000; includeSubDomains; preload");
   response.headers.set("x-content-type-options", "nosniff");
   response.headers.set("x-frame-options", "DENY");
-  response.headers.set("referrer-policy", childRoute ? "no-referrer" : "strict-origin-when-cross-origin");
+  response.headers.set("referrer-policy", childRoute || childGuide ? "no-referrer" : "strict-origin-when-cross-origin");
   if (childRoute) {
     response.headers.set("cache-control", "private, no-store, max-age=0");
     response.headers.set("x-robots-tag", "noindex, nofollow");

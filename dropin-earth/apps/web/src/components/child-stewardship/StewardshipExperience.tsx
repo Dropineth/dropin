@@ -17,6 +17,24 @@ function Leaves({ locale }: { locale: ChildLocale }) {
 export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN_API_URL ?? "" }: { apiBase?: string }) {
   const [locale, setLocale] = useState<ChildLocale>("zh-CN");
   const [screen, setScreen] = useState<StewardshipScreenId>("S01");
+  const visited = useRef<StewardshipScreenId[]>(["S01"]);
+  const cursor = useRef(0);
+  const navigationInstance = useRef<string | null>(null);
+  useEffect(() => {
+    navigationInstance.current ??= crypto.randomUUID();
+    window.history.replaceState({...window.history.state, childGuideIndex:0, childGuideInstance:navigationInstance.current}, "");
+    function pop(event: PopStateEvent) {
+      const index: unknown = event.state?.childGuideIndex;
+      if (event.state?.childGuideInstance === navigationInstance.current && typeof index === "number" && Number.isInteger(index) && index >= 0 && index < visited.current.length) {
+        cursor.current = index; setScreen(visited.current[index]!); setMessage("");
+      } else {
+        visited.current = ["S01"]; cursor.current = 0; setScreen("S01"); setMessage("");
+        window.history.replaceState({...window.history.state, childGuideIndex:0, childGuideInstance:navigationInstance.current}, "");
+      }
+    }
+    window.addEventListener("popstate", pop);
+    return () => window.removeEventListener("popstate", pop);
+  }, []);
   const [profile, setProfile] = useState<ChildDraft["profile"]>("synthetic-a");
   const [ageBand, setAgeBand] = useState<"6-8" | "9-12" | "13-17">("9-12");
   const [large, setLarge] = useState(false);
@@ -82,7 +100,14 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     return () => window.removeEventListener("storage", onStorage);
   }, [profile]);
   useEffect(() => { if (initialScreen.current) { initialScreen.current = false; return; } heading.current?.focus({ preventScroll: true }); }, [screen]);
-  function go(next: StewardshipScreenId) { setScreen(next); setMessage(""); }
+  function go(next: StewardshipScreenId) {
+    if (visited.current[cursor.current] !== next) {
+      visited.current = [...visited.current.slice(0, cursor.current + 1), next];
+      cursor.current++;
+      window.history.pushState({...window.history.state, childGuideIndex:cursor.current, childGuideInstance:navigationInstance.current}, "");
+    }
+    setScreen(next); setMessage("");
+  }
   function revokeLocal(preserveTicket = false) {
     setPrivacyExport(null); setCurrentApprovals({}); setAuthorizationProposal(null); setAuthorizationChoice(false);
     pendingAuthority.current?.abort(); api.current?.clearUploadAuthorizations();
@@ -94,7 +119,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
   function stop() {
     revokeLocal(true); setLearning(false); setUpload(false); setPermissionCheck(false);
     setWithdrawalRequested(true); setWithdrawalServer("pending"); setWithdrawalLocal("pending");
-    setScreen("S26"); setMessage("撤回已请求，本页立即停止发送。服务端确认与本地清除将分别显示。");
+    go("S26"); setMessage("撤回已请求，本页立即停止发送。服务端确认与本地清除将分别显示。");
     void (async () => {
       try {
         if (connected && api.current) { await api.current.withdraw(); setWithdrawalServer("consent"); }
@@ -133,7 +158,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
       await vault.current.save(boundDraft);
       currentPageDrafts.current.add(draft.id);
       setDrafts(await vault.current.list(profile)); savingDraft.current = null;
-      setScreen("S15"); setMessage("已加密保存在这台设备，还没有发出。你可以离开这一步。");
+      go("S15"); setMessage("已加密保存在这台设备，还没有发出。你可以离开这一步。");
     } catch { setMessage("没有确认保存成功。请不要关闭这页，可以稍后重试或放弃本次记录。"); }
     finally { setBusy(false); }
   }
@@ -242,11 +267,11 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     finally { setBusy(false); }
   }
   async function openChallenge() {
-    if (!observationId || !api.current || !connected) { setChallenge("本地练习，尚未发送"); setScreen("S24"); return; }
+    if (!observationId || !api.current || !connected) { setChallenge("本地练习，尚未发送"); go("S24"); return; }
     setBusy(true);
     try {
       const result = await api.current.command("child", { type: "open-dispute", profileId: api.current.profileId, targetId: observationId, reason: challengeReason });
-      setChallenge(`合成服务接收编号：${result.id}。等待演示复核，不代表真实保护服务接单。`); setScreen("S24");
+      setChallenge(`合成服务接收编号：${result.id}。等待演示复核，不代表真实保护服务接单。`); go("S24");
     } catch { setMessage("未收到异议接收回执，不能确认已发送。真实安全问题请找可信的大人。"); }
     finally { setBusy(false); }
   }
@@ -352,7 +377,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     <a className={styles.skip} href="#stewardship-main">跳到主要内容</a>
     <header className={styles.header}><a className={styles.brand} href="/" aria-label="CanopyProof 首页"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 22C3 11 11 3 26 4C26 18 19 26 9 25M8 27L22 9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>CanopyProof <span className={styles.note}>树木观察册</span></a><div className={styles.headerActions}><label className={styles.note}>语言<select aria-label="语言" className={styles.select} value={locale} onChange={event => setLocale(event.target.value as ChildLocale)}><option value="zh-CN">中文</option><option value="en">English</option></select></label><button className={styles.secondary} onClick={stop}>停一停</button><button className={styles.quiet} onClick={() => go("S30")}>找帮助</button></div></header>
     <div className={styles.banner}><strong>合成演示</strong> · 虚构角色与树木 · 真实身份、现场任务、资金和碳交易未开放</div>
-    <div className={styles.content}><div className={styles.topline}><button className={styles.quiet} onClick={() => go(screen === "S01" ? "S01" : stewardshipScreens[Math.max(0, stewardshipScreens.findIndex(item => item[0] === screen) - 1)]![0])}>← 返回</button><span>{connected ? "合成服务已连接" : "本机体验 · 服务未连接"}</span></div><div className={styles.layout}><main id="stewardship-main" className={styles.main}><p className={styles.eyebrow}>{selection[3]} · {screen}</p><h1 ref={heading} tabIndex={-1}>{selection[1]}</h1><p className={styles.intro}>{selection[2]}</p>{message && <div role="status" aria-live="polite" className={styles.status}>{message}</div>}{screenContent()}</main><aside className={styles.art} aria-label="合成树木材料"><TreeDrawing locale={locale}/><div><h2>慢慢观察就好</h2><p>合成插画 · 不是实时画面</p><span className={styles.badge}>近况未知</span></div><dl className={styles.treeMeta}><dt>材料</dt><dd>样例学习园 / 小树 01</dd><dt>来源与时点</dt><dd>合成示意 / 无真实观察时间</dd><dt>今天可以做</dt><dd>看一看，提个问题，或休息</dd></dl></aside></div><details className={styles.details}><summary>成人演示导览 · 全部 35 个屏幕与状态</summary><p className={styles.note}>此导览用于检查产品边界；查看某个页面不会取得真实权限或创建账户。</p><div className={styles.screenList}>{stewardshipScreens.map(item => <button key={item[0]} onClick={() => go(item[0])}>{item[0]} · {item[1]}</button>)}</div></details></div>
+    <div className={styles.content}><div className={styles.topline}><button className={styles.quiet} disabled={cursor.current === 0} onClick={() => window.history.back()}>← 返回</button><span>{connected ? "合成服务已连接" : "本机体验 · 服务未连接"}</span></div><div className={styles.layout}><main id="stewardship-main" className={styles.main}><p className={styles.eyebrow}>{selection[3]} · {screen}</p><h1 ref={heading} tabIndex={-1}>{selection[1]}</h1><p className={styles.intro}>{selection[2]}</p>{message && <div role="status" aria-live="polite" className={styles.status}>{message}</div>}{screenContent()}</main><aside className={styles.art} aria-label="合成树木材料"><TreeDrawing locale={locale}/><div><h2>慢慢观察就好</h2><p>合成插画 · 不是实时画面</p><span className={styles.badge}>近况未知</span></div><dl className={styles.treeMeta}><dt>材料</dt><dd>样例学习园 / 小树 01</dd><dt>来源与时点</dt><dd>合成示意 / 无真实观察时间</dd><dt>今天可以做</dt><dd>看一看，提个问题，或休息</dd></dl></aside></div><details className={styles.details}><summary>成人演示导览 · 全部 35 个屏幕与状态</summary><p className={styles.note}>此导览用于检查产品边界；查看某个页面不会取得真实权限或创建账户。</p><div className={styles.screenList}>{stewardshipScreens.map(item => <button key={item[0]} onClick={() => go(item[0])}>{item[0]} · {item[1]}</button>)}</div></details></div>
     <nav className={styles.nav} aria-label="主要导航">{([["S06", "我的树", "M12 21V10m0 6L7 12m5 1l5-5M5 10a7 7 0 0114 0"], ["S19", "观察册", "M4 4h7l1 2 1-2h7v16h-7l-1 1-1-1H4zM12 6v14"], ["S08", "一起学习", "M3 5h6l3 3 3-3h6v14h-6l-3 2-3-2H3z"], ["S30", "帮助", "M9 9a3 3 0 016 0c0 2-3 2-3 5m0 3h.01M12 2a10 10 0 100 20 10 10 0 000-20"]] as const).map(([id, label, path]) => <button key={id} aria-current={screen === id ? "page" : undefined} onClick={() => go(id)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path}/></svg>{label}</button>)}</nav>
   </div>, locale);
 }
