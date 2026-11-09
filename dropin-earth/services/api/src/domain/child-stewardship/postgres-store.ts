@@ -1,4 +1,5 @@
 import { authorizeGuardianTransaction, PostgresGuardianSessions, type GuardianTransactionAuthorization } from './guardian-sessions.js';
+import {assertChildSnapshotLedgerBoundaries,assertLearningLedgerBoundaries} from './ledger-boundaries.js';
 import { ChildApiError, childDigest, stableJson, tokenDigest, type ChildStore, type ChildSnapshot, type ChildReceipt, type ChildTransaction, type DemoSession, type DemoToken } from "./store.js";
 import type { LearningPrincipal,LearningActor } from './learning-types.js';
 import { admittedRightsRecordedAt } from './rights.js';
@@ -55,6 +56,8 @@ export function childExecutionTime(requestedAt:string,started:number):string {
 }
 const learningCollections = ['actors','profiles','guardianLinks','consents','trees','tasks','assignments','observations','reviews','assessments','contributions','disputes','aliases','audit','outbox','privacyRequests','idempotency'];
 export function normalizeChildSnapshot(snapshot: ChildSnapshot): StateRecord[] {
+  // Rights writes retain the independent SQL financial-type constraints.
+  assertLearningLedgerBoundaries(snapshot.learning);
   const records: StateRecord[] = [];
   for (const domain of ['learning','rights'] as const) {
     const state = snapshot[domain] as unknown as Record<string, unknown>;
@@ -94,6 +97,7 @@ export function reconstructChildSnapshot(records: StateRecord[], revision: numbe
   }
   const context = records.find(r => r.domain === 'rights' && r.collection === 'securityContext');
   if (context) snapshot.rightsContext = context.payload;
+  assertChildSnapshotLedgerBoundaries(snapshot as ChildSnapshot);
   return snapshot as ChildSnapshot;
 }
 async function scope(db: ChildSqlConnection, sessionId: string, role: string, operation: string, operationId = '') {

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import {assertLearningLedgerBoundaries} from './ledger-boundaries.js';
 import type {
   AgeBand, ChildLearningProfile, LearningActor, LearningAuditEvent, LearningCommand,
   LearningConsent, LearningPrincipal, LearningPurpose, LearningResult, LearningRole,
@@ -164,6 +165,7 @@ export function authorizeLearningInteraction(state: LearningState, principal: Le
 
 /** No I/O. A caller must commit the returned state, audit, and outbox in one transaction. */
 export function executeLearningCommand(original: LearningState, input: unknown, principal: LearningPrincipal, now: string): LearningTransition {
+  assertLearningLedgerBoundaries(original);
   epochTime(now);
   const actor = authenticate(original, principal, now);
   const command = parseCommand(input);
@@ -452,6 +454,7 @@ export function executeLearningCommand(original: LearningState, input: unknown, 
 
 /** Returns no precise locations, canonical aliases, private case metadata, or financial balances. */
 export function readChildLearningView(state: LearningState, principal: LearningPrincipal, now: string) {
+  assertLearningLedgerBoundaries(state);
   const actor = authenticate(state, principal, now);
   const suppressedProfiles=new Set(Object.values(state.privacyRequests).filter(request=>request.kind==='delete_learning').map(request=>request.profileId));
   const originalProfiles = Object.values(state.profiles).filter(profile => actor.id === profile.actorId || actor.id === profile.guardianActorId);
