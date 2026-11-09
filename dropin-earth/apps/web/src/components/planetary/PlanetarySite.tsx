@@ -19,6 +19,7 @@ export function PlanetarySite({ locale = "en", view = "home" }: { locale?: Plane
       <nav className={styles.nav} aria-label={copy("主导航", "Primary navigation")}>
         {(["home", "earth", "evidence", "participation"] as const).map(key => <a key={key} href={planetaryHref(locale, key)} aria-current={view === key ? "page" : undefined}>{planetaryTitles[locale][key]}</a>)}
         <a href={life}>{copy("人机共生", LIFEPP_PUBLIC_BRAND)}</a>
+        <a href={zh ? "/zh/child-accounts" : "/child-accounts"}>{copy("儿童 CAI", "Child CAI")}</a>
       </nav>
       <div className={styles.headerActions}>
         <a href={planetaryHref(zh ? "en" : "zh", view)} hrefLang={zh ? "en" : "zh-CN"} lang={zh ? "en" : "zh-CN"}>{zh ? "EN" : "中文"}</a>
