@@ -20,7 +20,8 @@ export const networkDigest=(value:NetworkRequest)=>createHash('sha256').update(n
  * Expired grants are erased lazily on access, not persisted or returned in audit.
  * Trusted local fixture host, never an IdP or production authority. All transitions
  * are synchronous in one process; there is no distributed authorization guarantee. */
-export function createSyntheticAccountNetwork(account:string,participants:NetworkParticipant[],now:()=>number=Date.now){
+export function createSyntheticAccountNetwork(account:string,participants:NetworkParticipant[],now:()=>number=Date.now,
+  protocolBoundary?:Readonly<{assertLearningAllowed:()=>void}>){
   id.parse(account);
   const registry=z.array(participant).min(2).max(16).parse(participants);
   const seen=new Set<string>(),principals=new Set<string>(),keys=new Set<string>();
@@ -43,6 +44,10 @@ export function createSyntheticAccountNetwork(account:string,participants:Networ
   function check(value:NetworkRequest,approvals:NetworkSignature[]){
     const r=request.parse(value),time=now();
     if(closed||r.account!==account||r.epoch!==epoch||r.expiresAt<=time||r.expiresAt>time+30000||consumed.has(r.nonce))throw new Error('AUTHORITY_UNAVAILABLE');
+    // Optional only for the legacy sandbox. The Life++ composition constructor
+    // always supplies this gate, including the synchronous receipt recheck.
+    // Withdrawal is a human right and must remain available after CAI eviction.
+    if(r.action==='learning-review')protocolBoundary?.assertLearningAllowed();
     const signatures=z.array(signature).max(16).parse(approvals),signers=new Set<string>();
     for(const approval of signatures){
       const p=registry.find(p=>p.id===approval.participant);
@@ -55,6 +60,12 @@ export function createSyntheticAccountNetwork(account:string,participants:Networ
   }
   return {
     check,
+    // Read-only pre-inference gate: protocol eligibility is required before any
+    // provider work, but consent/signatures are intentionally collected later.
+    assertProposalAllowed(){
+      if(closed)throw new Error('AUTHORITY_UNAVAILABLE');
+      protocolBoundary?.assertLearningAllowed();
+    },
     // Trusted human-interaction port, not accessible to inference or tools.
     recordChildAssent(value:NetworkRequest){
       // Replace rather than accumulate grants. Missing/legacy calls fail closed.

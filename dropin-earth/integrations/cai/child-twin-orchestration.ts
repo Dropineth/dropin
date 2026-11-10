@@ -29,14 +29,16 @@ export function createChildTwinOrchestration(network:Network,provider?:ScopedInf
       const active=controller,expected=request.evidenceDigest;
       let timer:ReturnType<typeof setTimeout>|undefined;
       try{
+        network.assertProposalAllowed();
         const aborted=new Promise<never>((_,reject)=>{
           active.signal.addEventListener('abort',()=>reject(new Error('INFERENCE_ABORTED')),{once:true});
           timer=setTimeout(()=>active.abort(),timeoutMs);
         });
         const result=inferenceResult.parse(await Promise.race([
-          Promise.resolve().then(()=>{if(active.signal.aborted)throw new Error('INFERENCE_ABORTED');return provider.propose(Object.freeze({evidenceDigest:expected,tools:Object.freeze([]) as readonly []}),active.signal);}),aborted,
+          Promise.resolve().then(()=>{if(active.signal.aborted)throw new Error('INFERENCE_ABORTED');network.assertProposalAllowed();return provider.propose(Object.freeze({evidenceDigest:expected,tools:Object.freeze([]) as readonly []}),active.signal);}),aborted,
         ]));
         if(state!=='inferring'||active.signal.aborted||network.snapshot().closed||result.evidenceDigest!==expected)throw new Error('PROPOSAL_DENIED');
+        network.assertProposalAllowed();
         state='awaiting-human-consent';return structuredClone(request);
       }catch(error){fail();discard();throw error;}
       finally{clearTimeout(timer);controller=undefined;}
