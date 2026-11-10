@@ -88,6 +88,16 @@ test("every integration test is assigned exactly once to PGlite or native Postgr
   assert.match(requireScript(manifest, "ci"), /npm run db:verify:canopyproof/);
 });
 
+test("child ledger boundary rollback checks run against native PostgreSQL", () => {
+  const manifest = readManifest();
+  const ledgerBoundaryTest = "tests/integration/child-stewardship-ledger-boundaries.integration.ts";
+  const native = integrationPaths(requireScript(manifest, "db:verify:canopyproof:native"));
+  const pglite = integrationPaths(requireScript(manifest, "db:verify:canopyproof"));
+
+  assert.ok(native.includes(ledgerBoundaryTest), "ledger rollback checks require native PostgreSQL");
+  assert.ok(!pglite.includes(ledgerBoundaryTest), "native role and database checks cannot run in PGlite");
+});
+
 test("FiftyOne and Solana workspace-local tests have explicit commands", () => {
   const manifest = readManifest();
   const fiftyOneTests = listFiles(join(ROOT, "integrations", "fiftyone", "tests")).filter(
