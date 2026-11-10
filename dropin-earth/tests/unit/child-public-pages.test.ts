@@ -17,6 +17,13 @@ test('public guide routes return fixed bilingual content with no collection or e
     assert.equal((html.match(/<details /g)??[]).length,4);
     assert.match(html,/https:\/\/ahin.io\/(zh\/)?child-accounts/);
     assert.match(html,/EXP/);
+    const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);
+    assert.equal(new Set(ids).size,ids.length);
+    for(const [,anchor] of html.matchAll(/href="#([^"]+)"/g))assert.ok(ids.includes(anchor),`missing ${anchor}`);
+    assert.equal((html.match(/class="entry-card"/g)??[]).length,3);
+    assert.equal((html.match(/class="family-note"/g)??[]).length,2);
+    assert.match(html,/<nav class="contents" aria-label=/);
   }
   assert.equal(await HEAD().text(),'');
 });
+
