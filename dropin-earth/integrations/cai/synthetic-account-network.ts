@@ -18,6 +18,9 @@ export const networkDigest=(value:NetworkRequest)=>createHash('sha256').update(n
  * nonce and expiry), supplied only by the trusted human-interaction fixture host.
  * Failed checks do not consume a still-valid grant; successful commit does.
  * Expired grants are erased lazily on access, not persisted or returned in audit.
+ * Observed time never moves backward within this instance. Invalid, unavailable
+ * or rolled-back clocks erase assent; recovery needs a fresh human grant after
+ * clock catch-up. This is not durable restart protection or a trusted time source.
  * Trusted local fixture host, never an IdP or production authority. All transitions
  * are synchronous in one process; there is no distributed authorization guarantee. */
 export function createSyntheticAccountNetwork(account:string,participants:NetworkParticipant[],now:()=>number=Date.now,
@@ -33,17 +36,32 @@ export function createSyntheticAccountNetwork(account:string,participants:Networ
     if(seen.has(p.id)||principals.has(p.principal)||keys.has(fingerprint))throw new Error('INDEPENDENT_PARTICIPANTS_REQUIRED');
     seen.add(p.id);principals.add(p.principal);keys.add(fingerprint);
   }
-  let epoch=0,closed=false;
+  let epoch=0,closed=false,lastObservedTime=-1;
   let assent:{digest:string;epoch:number;expiresAt:number}|undefined;
+  function currentTime(){
+    let time:number;
+    try{time=now();}catch{assent=undefined;throw new Error('AUTHORITY_UNAVAILABLE');}
+    if(!Number.isSafeInteger(time)||time<0||time<lastObservedTime){
+      assent=undefined;throw new Error('AUTHORITY_UNAVAILABLE');
+    }
+    lastObservedTime=time;
+    // Latch observed expiry even when request-scope validation fails first.
+    if(assent&&assent.expiresAt<=time)assent=undefined;
+    return time;
+  }
   function currentAssent(){
-    if(assent&&(closed||assent.epoch!==epoch||assent.expiresAt<=now()))assent=undefined;
+    if(assent){
+      // A read-only snapshot must never display a grant backed by a bad clock.
+      try{currentTime();}catch{return undefined;}
+      if(closed||assent?.epoch!==epoch)assent=undefined;
+    }
     return assent;
   }
   const revoked=new Set<string>(),consumed=new Set<string>();
   let receipts:{digest:string;kind:'learning-review';syntheticOnly:true;cashValue:false;carbonCredit:false}[]=[];
   function checkRequestScope(value:NetworkRequest){
-    const r=request.parse(value),time=now();
-    if(!Number.isSafeInteger(time)||time<0||closed||r.account!==account||r.epoch!==epoch||r.expiresAt<=time||r.expiresAt>time+30000||consumed.has(r.nonce))throw new Error('AUTHORITY_UNAVAILABLE');
+    const r=request.parse(value),time=currentTime();
+    if(closed||r.account!==account||r.epoch!==epoch||r.expiresAt<=time||r.expiresAt>time+30000||consumed.has(r.nonce))throw new Error('AUTHORITY_UNAVAILABLE');
     return r;
   }
   function check(value:NetworkRequest,approvals:NetworkSignature[]){
