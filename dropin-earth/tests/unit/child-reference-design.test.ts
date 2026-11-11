@@ -3,11 +3,27 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {childPublicPage, childPublicHeaders} from '../../apps/web/src/components/child-public/public-page.mjs';
 
-test('pearl and orbital guide design preserves fixed, accessible non-signer content', () => {
+test('sculptural editorial guide preserves fixed, accessible non-signer content', () => {
   for (const zh of [false, true]) {
     const html = childPublicPage('canopy', zh);
     assert.match(html, /color-scheme:light/);
-    assert.match(html, /class="constellation" aria-hidden="true"/);
+    assert.match(html, /class="hero-scene" aria-hidden="true"/);
+    assert.match(html, /url\('\/child-experience\/hero-v2\.webp'\)/);
+    assert.match(html, /background-size:100% auto/);
+    assert.match(html, /class="hero-copy"/);
+    assert.match(html, /class="hero-foot"/);
+    assert.match(html, /class="journey-layout"/);
+    assert.match(html, /class="family-layout"/);
+    assert.match(html, /class="role-head"/);
+    const foreground = html.match(/\.num\{color:(#[\da-f]{6});/)![1];
+    const background = html.match(/--bg:(#[\da-f]{6});/)![1];
+    const luminance = (hex: string) => {
+      const rgb = [1, 3, 5].map(offset => parseInt(hex.slice(offset, offset + 2), 16) / 255);
+      const linear = rgb.map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4);
+      return linear[0] * .2126 + linear[1] * .7152 + linear[2] * .0722;
+    };
+    assert.ok((luminance(background) + .05) / (luminance(foreground) + .05) >= 5, '12px editorial numbers retain comfortable text contrast');
+    assert.doesNotMatch(html, /class="diagram"|class="permission-seal"/);
     assert.match(html, /class="brand-mark mark-life"/);
     assert.match(html, /class="brand-mark mark-dropin"/);
     assert.match(html, /prefers-reduced-motion:reduce/);
@@ -17,6 +33,23 @@ test('pearl and orbital guide design preserves fixed, accessible non-signer cont
     assert.match(html, zh ? /真实注册未开放/ : /REAL ENROLLMENT CLOSED/);
     assert.match(html, zh ? /CAI 提出建议，不签署授权/ : /CAI proposes\. It never signs/);
     assert.match(childPublicHeaders['content-security-policy'], /default-src 'none'/);
+    assert.match(childPublicHeaders['content-security-policy'], /img-src 'self'/);
+    assert.match(childPublicHeaders['content-security-policy'], /form-action 'none'/);
+    assert.doesNotMatch(html, /url\(\s*["']?https?:|@import/i);
+    assert.equal((html.match(/<h1>/g) ?? []).length, 1);
+    assert.equal((html.match(/class="primary"/g) ?? []).length, 1);
+    assert.equal((html.match(/class="entry-card"/g) ?? []).length, 3);
+    assert.equal((html.match(/class="family-note"/g) ?? []).length, 2);
+    assert.equal((html.match(/<details /g) ?? []).length, 4);
+    for (const [, size] of html.matchAll(/font-size:([\d.]+)rem/g)) {
+      assert.ok(Number(size) >= .75, 'no type is smaller than 12px');
+    }
+    if (zh) {
+      const headline = html.match(/<h1>(.*?)<\/h1>/)![1];
+      for (const line of headline.split('<br>')) {
+        assert.ok(line.replace(/<[^>]*>/g, '').length <= 15, 'Chinese headline stays concise');
+      }
+    }
   }
 });
 
