@@ -1,0 +1,81 @@
+name: CAI synthetic boundary
+
+on:
+  pull_request:
+    paths:
+      - 'dropin-earth/integrations/cai/**'
+      - 'dropin-earth/services/api/src/domain/child-stewardship/**'
+      - 'dropin-earth/tests/unit/child-stewardship-*.test.ts'
+      - 'dropin-earth/tests/fixtures/child-stewardship-rights.ts'
+      - 'dropin-earth/scripts/cai-synthetic-tests.mjs'
+      - 'dropin-earth/package.json'
+      - 'dropin-earth/package-lock.json'
+      - '.github/workflows/cai-synthetic-boundary.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cai-synthetic-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  synthetic-boundary:
+    name: Verify pinned Engine and isolated synthetic worker
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: dropin-earth
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.4
+          cache: npm
+          cache-dependency-path: dropin-earth/package-lock.json
+
+      - name: Install locked dependencies
+        run: |
+          npm install --global npm@10.9.4
+          npm ci --include=optional
+
+      - name: Fetch pinned research source and immutable worker image
+        env:
+          CAI_DEEPSEEK_ROOT: ${{ runner.temp }}/deepseek-cai
+        run: |
+          set -euo pipefail
+          expected=8c32a9dc5d72c033816c6a8110b37f40cf94fba4
+          test "$(node -p 'require("./integrations/cai/deepseek-source-pin.json").commit')" = "$expected"
+          git init "$CAI_DEEPSEEK_ROOT"
+          git -C "$CAI_DEEPSEEK_ROOT" fetch --depth=1 https://github.com/deepseek-ai/dsh-superagent-prototype.git "$expected"
+          git -C "$CAI_DEEPSEEK_ROOT" checkout --detach FETCH_HEAD
+          test "$(git -C "$CAI_DEEPSEEK_ROOT" rev-parse HEAD)" = "$expected"
+          docker pull node@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+
+      - name: Run mandatory synthetic CAI integration
+        env:
+          CAI_DEEPSEEK_ROOT: ${{ runner.temp }}/deepseek-cai
+        run: |
+          set -euo pipefail
+          mkdir -p reports/cai-synthetic
+          printf '%s\n' "${{ github.event.pull_request.head.sha || github.sha }}" > reports/cai-synthetic/commit.txt
+          npm run test:cai:synthetic 2>&1 | tee reports/cai-synthetic/tests.log
+
+      - name: Preserve test result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cai-synthetic-${{ github.event.pull_request.head.sha || github.sha }}-${{ github.run_id }}
+          path: dropin-earth/reports/cai-synthetic/
+          if-no-files-found: warn
+          retention-days: 14

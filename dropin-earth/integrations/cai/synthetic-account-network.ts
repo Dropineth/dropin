@@ -41,9 +41,13 @@ export function createSyntheticAccountNetwork(account:string,participants:Networ
   }
   const revoked=new Set<string>(),consumed=new Set<string>();
   let receipts:{digest:string;kind:'learning-review';syntheticOnly:true;cashValue:false;carbonCredit:false}[]=[];
-  function check(value:NetworkRequest,approvals:NetworkSignature[]){
+  function checkRequestScope(value:NetworkRequest){
     const r=request.parse(value),time=now();
-    if(closed||r.account!==account||r.epoch!==epoch||r.expiresAt<=time||r.expiresAt>time+30000||consumed.has(r.nonce))throw new Error('AUTHORITY_UNAVAILABLE');
+    if(!Number.isSafeInteger(time)||time<0||closed||r.account!==account||r.epoch!==epoch||r.expiresAt<=time||r.expiresAt>time+30000||consumed.has(r.nonce))throw new Error('AUTHORITY_UNAVAILABLE');
+    return r;
+  }
+  function check(value:NetworkRequest,approvals:NetworkSignature[]){
+    const r=checkRequestScope(value);
     // Optional only for the legacy sandbox. The Life++ composition constructor
     // always supplies this gate, including the synchronous receipt recheck.
     // Withdrawal is a human right and must remain available after CAI eviction.
@@ -60,18 +64,20 @@ export function createSyntheticAccountNetwork(account:string,participants:Networ
   }
   return {
     check,
-    // Read-only pre-inference gate: protocol eligibility is required before any
-    // provider work, but consent/signatures are intentionally collected later.
-    assertProposalAllowed(){
-      if(closed)throw new Error('AUTHORITY_UNAVAILABLE');
+    // The CAI account workflow owns request scope even before consent. No stale,
+    // foreign-account or consumed request may reach a provider. This read-only
+    // check does not collect assent, consume a nonce or create signing authority.
+    assertProposalAllowed(value:NetworkRequest){
+      const r=checkRequestScope(value);
+      if(r.action!=='learning-review')throw new Error('PROPOSAL_DENIED');
       protocolBoundary?.assertLearningAllowed();
     },
     // Trusted human-interaction port, not accessible to inference or tools.
     recordChildAssent(value:NetworkRequest){
       // Replace rather than accumulate grants. Missing/legacy calls fail closed.
       assent=undefined;
-      const r=request.parse(value),time=now();
-      if(closed||r.action!=='learning-review'||r.account!==account||r.epoch!==epoch||r.expiresAt<=time||r.expiresAt>time+30000||consumed.has(r.nonce))throw new Error('AUTHORITY_UNAVAILABLE');
+      const r=checkRequestScope(value);
+      if(r.action!=='learning-review')throw new Error('AUTHORITY_UNAVAILABLE');
       assent={digest:networkDigest(r),epoch:r.epoch,expiresAt:r.expiresAt};
     },
     withdrawChild(){closed=true;assent=undefined;epoch++;receipts=[];consumed.clear();},
