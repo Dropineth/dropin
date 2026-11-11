@@ -9,60 +9,7 @@ import styles from "./Stewardship.module.css";
 
 const answers: Record<ObservationChoice, string> = { green_leaves: "我看到了绿色的叶片", yellow_leaves: "我看到了黄色的叶片", not_sure: "我还不确定" };
 function TreeDrawing({ locale }: { locale: ChildLocale }) {
-  return translateChildNode(
-    <svg viewBox="0 0 480 480" role="img" aria-label="合成树木插画，不表示实时健康">
-      <defs>
-        <radialGradient id="cp-scene-glow"><stop stopColor="#e6edf0"/><stop offset=".6" stopColor="#f0f2ed" stopOpacity=".7"/><stop offset="1" stopColor="#fcfcfa" stopOpacity="0"/></radialGradient>
-        <linearGradient id="cp-leaf-surface" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#e2eee3"/><stop offset=".25" stopColor="#9dc9ac"/><stop offset=".49" stopColor="#70ad99"/><stop offset=".51" stopColor="#397f70"/><stop offset="1" stopColor="#174a47"/></linearGradient>
-        <linearGradient id="cp-leaf-reverse" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#d7dde4"/><stop offset=".5" stopColor="#94a9af"/><stop offset="1" stopColor="#456c6e"/></linearGradient>
-        <linearGradient id="cp-stem" x1="0" x2="1"><stop stopColor="#526a64"/><stop offset=".48" stopColor="#afbbb0"/><stop offset=".68" stopColor="#879e8e"/><stop offset="1" stopColor="#496960"/></linearGradient>
-        <linearGradient id="cp-plinth-edge" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#fdfefd"/><stop offset=".55" stopColor="#d9e2dd"/><stop offset="1" stopColor="#edf1e9"/></linearGradient>
-        <linearGradient id="cp-plinth-top" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff"/><stop offset=".58" stopColor="#f6f7f1"/><stop offset="1" stopColor="#dbe9e0"/></linearGradient>
-        <radialGradient id="cp-ground-shadow"><stop stopColor="#6c9383" stopOpacity=".25"/><stop offset="1" stopColor="#6c9383" stopOpacity="0"/></radialGradient>
-        <g id="cp-leaf">
-          <path d="M0 0C-37-17-43-59-12-98C25-76 32-32 0 0Z" fill="url(#cp-leaf-surface)"/>
-          <path d="M0 0C-6-25-7-57-12-98" fill="none" stroke="#d5e6cf" strokeWidth="1.2" opacity=".8"/>
-          <path d="M-4-28L-24-43M-6-47L12-62M-9-66L-22-78" fill="none" stroke="#d9ebd8" strokeWidth=".65" opacity=".45"/>
-        </g>
-        <g id="cp-leaf-back">
-          <path d="M0 0C-37-17-43-59-12-98C25-76 32-32 0 0Z" fill="url(#cp-leaf-reverse)"/>
-          <path d="M0 0C-6-25-7-57-12-98" fill="none" stroke="#e3e9e5" strokeWidth="1" opacity=".65"/>
-        </g>
-      </defs>
-      <ellipse cx="241" cy="237" rx="226" ry="218" fill="url(#cp-scene-glow)"/>
-      <circle cx="240" cy="219" r="168" fill="none" stroke="#dce4df" strokeWidth=".8"/>
-      <circle cx="240" cy="219" r="187" fill="none" stroke="#e8e6ee" strokeWidth=".7" strokeDasharray="2 7"/>
-      <path d="M51 326C135 369 346 363 422 298" fill="none" stroke="#e1e8e1" strokeWidth=".8"/>
-      <circle cx="66" cy="235" r="3" fill="#b4c5be"/>
-      <circle cx="391" cy="145" r="2.5" fill="#c3bcd2"/>
-      <ellipse cx="241" cy="423" rx="172" ry="32" fill="url(#cp-ground-shadow)"/>
-      <path d="M116 390V405C116 445 367 445 367 405V390Z" fill="url(#cp-plinth-edge)" stroke="#dce5dd" strokeWidth=".8"/>
-      <ellipse cx="241.5" cy="390" rx="125.5" ry="29" fill="url(#cp-plinth-top)" stroke="#e2e8df" strokeWidth=".8"/>
-      <ellipse cx="241" cy="390" rx="91" ry="21" fill="none" stroke="#d7e3d8" strokeWidth=".8"/>
-      <ellipse cx="243" cy="388" rx="36" ry="8" fill="url(#cp-ground-shadow)"/>
-      <g opacity=".84">
-        <use href="#cp-leaf-back" transform="translate(211 298) rotate(-87) scale(.82)"/>
-        <use href="#cp-leaf-back" transform="translate(261 242) rotate(80) scale(.91)"/>
-        <use href="#cp-leaf-back" transform="translate(233 186) rotate(-43) scale(.8)"/>
-      </g>
-      <path d="M229 391C237 342 228 295 233 248C237 203 246 153 243 104L248 105C255 164 243 214 243 258C242 309 246 350 253 391Z" fill="url(#cp-stem)"/>
-      <g fill="none" stroke="url(#cp-stem)" strokeLinecap="round">
-        <path d="M237 323C209 308 183 290 160 265M237 285C263 277 288 258 309 229M237 249C207 235 187 216 173 194" strokeWidth="7"/>
-        <path d="M241 213C266 198 284 179 296 157M244 170C223 158 209 143 201 126M241 348C263 342 281 328 298 310" strokeWidth="5"/>
-      </g>
-      <path d="M241 384C237 321 236 283 239 243" fill="none" stroke="#dce2cd" strokeWidth="1.2" opacity=".65"/>
-      <use href="#cp-leaf" transform="translate(168 271) rotate(-57) scale(.93)"/>
-      <use href="#cp-leaf" transform="translate(198 307) rotate(-20) scale(.72)"/>
-      <use href="#cp-leaf" transform="translate(305 235) rotate(50) scale(1.02)"/>
-      <use href="#cp-leaf" transform="translate(285 262) rotate(5) scale(.76)"/>
-      <use href="#cp-leaf" transform="translate(179 202) rotate(-47) scale(1.02)"/>
-      <use href="#cp-leaf" transform="translate(215 232) rotate(-9) scale(.83)"/>
-      <use href="#cp-leaf" transform="translate(296 163) rotate(49) scale(.84)"/>
-      <use href="#cp-leaf" transform="translate(206 134) rotate(-40) scale(.72)"/>
-      <use href="#cp-leaf" transform="translate(246 129) rotate(12) scale(.88)"/>
-      <use href="#cp-leaf" transform="translate(292 317) rotate(71) scale(.79)"/>
-      <path d="M220 391C225 385 233 382 239 382M246 385C254 383 263 387 270 391" fill="none" stroke="#839b88" strokeWidth="2" strokeLinecap="round"/>
-    </svg>, locale);
+  return translateChildNode(<svg viewBox="0 0 270 300" role="img" aria-label="合成树木插画，不表示实时健康"><ellipse cx="137" cy="271" rx="91" ry="12" fill="#ccd5b9"/><path d="M132 263l7-128m-4 68l-37-38m39 17l38-43" stroke="#817056" strokeWidth="11" fill="none" strokeLinecap="round"/><path d="M67 170C22 154 47 89 77 87C73 24 148 11 173 54C226 49 249 113 214 144C228 200 158 221 135 189C103 207 75 199 67 170Z" fill="#789867"/><path d="M81 141C56 111 88 74 114 86C119 49 160 48 174 81C206 76 217 119 192 137C197 169 158 181 143 155C115 174 92 165 81 141Z" fill="#96ad7d"/><path d="M90 252l-6-14m99 20l6-19m-21 23l-3-11" stroke="#718753" strokeWidth="4" strokeLinecap="round"/></svg>, locale);
 }
 function Leaves({ locale }: { locale: ChildLocale }) {
   return translateChildNode(<div className={styles.leaves}>{["#6e9256", "#b69d4f"].map((color, index) => <figure key={color}><svg viewBox="0 0 100 120" role="img" aria-label={index ? "黄色示意叶片" : "绿色示意叶片"}><path d="M48 104C4 91 14 25 78 12C91 70 80 95 48 104Z" fill={color}/><path d="M37 115L71 29M48 88L29 70M55 69L76 60M62 50L47 38" stroke="#4d623c" strokeWidth="3" fill="none" strokeLinecap="round"/></svg><figcaption>合成示意 {index ? "B" : "A"}</figcaption></figure>)}</div>, locale);
@@ -152,7 +99,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [profile]);
-  useEffect(() => { if (initialScreen.current) { initialScreen.current = false; return; } heading.current?.focus({ preventScroll: true }); heading.current?.scrollIntoView({ block: "start", behavior: "auto" }); }, [screen]);
+  useEffect(() => { if (initialScreen.current) { initialScreen.current = false; return; } heading.current?.focus({ preventScroll: true }); }, [screen]);
   function go(next: StewardshipScreenId) {
     if (visited.current[cursor.current] !== next) {
       visited.current = [...visited.current.slice(0, cursor.current + 1), next];
@@ -428,7 +375,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
   }
   return translateChildNode(<div className={`${styles.shell} ${large ? styles.large : ""}`} lang="zh-CN" data-synthetic-only="true">
     <a className={styles.skip} href="#stewardship-main">跳到主要内容</a>
-    <header className={styles.header}><a className={styles.brand} href="/" aria-label="CanopyProof 首页"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="cp-brand-ring" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#87d4bb"/><stop offset=".35" stopColor="#3f9b95"/><stop offset=".7" stopColor="#376e7a"/><stop offset="1" stopColor="#164a5b"/></linearGradient><linearGradient id="cp-brand-sweep" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#a3e5c3"/><stop offset=".6" stopColor="#4fb5a1"/><stop offset="1" stopColor="#258b82"/></linearGradient></defs><path d="M14 78C31 92 58 91 75 74C92 57 90 31 74 17C56 1 29 7 15 25C29 3 58-2 78 14C102 33 101 63 82 82C63 102 29 99 14 78Z" fill="url(#cp-brand-ring)"/><path d="M74 37C71 62 53 80 31 79C7 79-2 57 7 35C15 15 34 4 54 6C32 6 15 22 13 40C9 60 21 71 36 70C53 69 67 56 73 37Z" fill="url(#cp-brand-sweep)"/><path d="M54 6C31 9 17 24 16 43C15 61 27 70 42 67C22 75 8 61 11 42C14 22 31 7 54 6Z" fill="#b4e7ce" opacity=".7"/><circle cx="50" cy="31" r="8.5" fill="#315f6c"/></svg>CanopyProof <span className={styles.note}>树木观察册</span></a><div className={styles.headerActions}><label className={styles.note}>语言<select aria-label="语言" className={styles.select} value={locale} onChange={event => setLocale(event.target.value as ChildLocale)}><option value="zh-CN">中文</option><option value="en">English</option></select></label><button className={styles.secondary} onClick={stop}>停一停</button><button className={styles.quiet} onClick={() => go("S30")}>找帮助</button></div></header>
+    <header className={styles.header}><a className={styles.brand} href="/" aria-label="CanopyProof 首页"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 22C3 11 11 3 26 4C26 18 19 26 9 25M8 27L22 9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>CanopyProof <span className={styles.note}>树木观察册</span></a><div className={styles.headerActions}><label className={styles.note}>语言<select aria-label="语言" className={styles.select} value={locale} onChange={event => setLocale(event.target.value as ChildLocale)}><option value="zh-CN">中文</option><option value="en">English</option></select></label><button className={styles.secondary} onClick={stop}>停一停</button><button className={styles.quiet} onClick={() => go("S30")}>找帮助</button></div></header>
     <div className={styles.banner}><strong>合成演示</strong> · 虚构角色与树木 · 真实身份、现场任务、资金和碳交易未开放</div>
     <div className={styles.content}><div className={styles.topline}><button className={styles.quiet} disabled={cursor.current === 0} onClick={() => window.history.back()}>← 返回</button><span>{connected ? "合成服务已连接" : "本机体验 · 服务未连接"}</span></div><div className={styles.layout}><main id="stewardship-main" className={styles.main}><p className={styles.eyebrow}>{selection[3]} · {screen}</p><h1 ref={heading} tabIndex={-1}>{selection[1]}</h1><p className={styles.intro}>{selection[2]}</p>{message && <div role="status" aria-live="polite" className={styles.status}>{message}</div>}{screenContent()}</main><aside className={styles.art} aria-label="合成树木材料"><TreeDrawing locale={locale}/><div><h2>慢慢观察就好</h2><p>合成插画 · 不是实时画面</p><span className={styles.badge}>近况未知</span></div><dl className={styles.treeMeta}><dt>材料</dt><dd>样例学习园 / 小树 01</dd><dt>来源与时点</dt><dd>合成示意 / 无真实观察时间</dd><dt>今天可以做</dt><dd>看一看，提个问题，或休息</dd></dl></aside></div><details className={styles.details}><summary>成人演示导览 · 全部 35 个屏幕与状态</summary><p className={styles.note}>此导览用于检查产品边界；查看某个页面不会取得真实权限或创建账户。</p><div className={styles.screenList}>{stewardshipScreens.map(item => <button key={item[0]} onClick={() => go(item[0])}>{item[0]} · {item[1]}</button>)}</div></details></div>
     <nav className={styles.nav} aria-label="主要导航">{([["S06", "我的树", "M12 21V10m0 6L7 12m5 1l5-5M5 10a7 7 0 0114 0"], ["S19", "观察册", "M4 4h7l1 2 1-2h7v16h-7l-1 1-1-1H4zM12 6v14"], ["S08", "一起学习", "M3 5h6l3 3 3-3h6v14h-6l-3 2-3-2H3z"], ["S30", "帮助", "M9 9a3 3 0 016 0c0 2-3 2-3 5m0 3h.01M12 2a10 10 0 100 20 10 10 0 000-20"]] as const).map(([id, label, path]) => <button key={id} aria-current={screen === id ? "page" : undefined} onClick={() => go(id)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={path}/></svg>{label}</button>)}</nav>
