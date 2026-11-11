@@ -30,9 +30,6 @@ jobs:
       run:
         shell: bash
         working-directory: dropin-earth
-    env:
-      CAI_DEEPSEEK_ROOT: ${{ runner.temp }}/deepseek-cai
-
     steps:
       - name: Checkout exact candidate
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -53,6 +50,8 @@ jobs:
           npm ci --include=optional
 
       - name: Fetch pinned research source and immutable worker image
+        env:
+          CAI_DEEPSEEK_ROOT: ${{ runner.temp }}/deepseek-cai
         run: |
           set -euo pipefail
           expected=8c32a9dc5d72c033816c6a8110b37f40cf94fba4
@@ -64,6 +63,8 @@ jobs:
           docker pull node@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
 
       - name: Run mandatory synthetic CAI integration
+        env:
+          CAI_DEEPSEEK_ROOT: ${{ runner.temp }}/deepseek-cai
         run: |
           set -euo pipefail
           mkdir -p reports/cai-synthetic
