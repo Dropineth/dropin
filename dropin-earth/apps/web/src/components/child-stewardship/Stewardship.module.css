@@ -46,7 +46,7 @@
 .main { min-width: 0; padding-top: 8px; scroll-margin-top: 11rem; }
 .eyebrow { display: flex; align-items: center; gap: 12px; color: var(--teal); font-size: calc(0.875rem * var(--text-scale)); font-weight: 600; letter-spacing: .12em; margin: 0 0 22px; }
 .eyebrow::before { content: ""; width: 24px; height: 1px; background: #87b6ad; flex: none; }
-.main h1 { max-width: 680px; margin: 0 0 26px; font-family: ui-serif, Georgia, "Songti SC", "Noto Serif CJK SC", serif; font-size: clamp(calc(2.375rem * var(--text-scale)), 4.5vw, calc(3.75rem * var(--text-scale))); font-weight: 500; line-height: 1.24; letter-spacing: -.045em; text-wrap: balance; }
+.main h1 { max-width: 680px; margin: 0 0 26px; scroll-margin-top: calc(8rem * var(--text-scale)); font-family: ui-serif, Georgia, "Songti SC", "Noto Serif CJK SC", serif; font-size: clamp(calc(2.375rem * var(--text-scale)), 4.5vw, calc(3.75rem * var(--text-scale))); font-weight: 500; line-height: 1.24; letter-spacing: -.045em; text-wrap: balance; }
 .intro { max-width: 39rem; margin: 0 0 34px; color: var(--muted); font-size: calc(1.0625rem * var(--text-scale)); line-height: 1.9; }
 
 /* A continuous reading surface, with rules instead of card chrome. */
@@ -146,7 +146,7 @@
   .layout { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .main { padding-top: 0; scroll-margin-top: 13rem; }
   .eyebrow { margin-bottom: 18px; }
-  .main h1 { margin-bottom: 20px; font-size: calc(2.25rem * var(--text-scale)); }
+  .main h1 { margin-bottom: 20px; scroll-margin-top: calc(11rem * var(--text-scale)); font-size: calc(2.25rem * var(--text-scale)); }
   .intro { margin-bottom: 28px; font-size: calc(1rem * var(--text-scale)); }
   .card { margin: 22px 0; padding: 24px 0 2px; }
   .card h2, .card h3 { font-size: calc(1.125rem * var(--text-scale)); }

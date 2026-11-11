@@ -11,6 +11,8 @@ test('sculptural editorial guide preserves fixed, accessible non-signer content'
     assert.match(html, /url\('\/child-experience\/hero-v2\.webp'\)/);
     assert.match(html, /background-size:100% auto/);
     assert.match(html, /class="hero-copy"/);
+    assert.match(html, /<svg class="arrow-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">/);
+    assert.doesNotMatch(html, /↗/);
     assert.match(html, /class="hero-foot"/);
     assert.match(html, /class="journey-layout"/);
     assert.match(html, /class="family-layout"/);
@@ -29,6 +31,8 @@ test('sculptural editorial guide preserves fixed, accessible non-signer content'
     assert.match(html, /prefers-reduced-motion:reduce/);
     assert.match(html, /forced-colors:active/);
     assert.match(html, /@media\(max-width:380px\)/);
+    assert.doesNotMatch(html, /\.nav[^{}]*\{[^}]*display:\s*none/);
+    assert.match(html, /\.nav a:first-child\{display:inline-flex\}/);
     assert.doesNotMatch(html, /<script\b|<img\b|<iframe\b|<form\b|<input\b|<button\b/i);
     assert.match(html, zh ? /真实注册未开放/ : /REAL ENROLLMENT CLOSED/);
     assert.match(html, zh ? /CAI 提出建议，不签署授权/ : /CAI proposes\. It never signs/);
@@ -51,6 +55,14 @@ test('sculptural editorial guide preserves fixed, accessible non-signer content'
       }
     }
   }
+});
+
+test('edge middleware uses the same bounded image policy as the static guide', async () => {
+  const source = await readFile(new URL('../../apps/web/src/middleware.ts', import.meta.url), 'utf8');
+  assert.match(source, /import \{ childPublicHeaders \} from "\.\/components\/child-public\/public-page\.mjs"/);
+  assert.match(source, /childGuide \? childPublicHeaders\["content-security-policy"\]/);
+  assert.match(childPublicHeaders['content-security-policy'], /default-src 'none'; img-src 'self';/);
+  assert.doesNotMatch(childPublicHeaders['content-security-policy'], /img-src[^;]*(?:https:|data:|blob:|\*)/);
 });
 
 test('stewardship visual layer retains visible disabled, focus and mobile safety states', async () => {

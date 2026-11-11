@@ -152,7 +152,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, [profile]);
-  useEffect(() => { if (initialScreen.current) { initialScreen.current = false; return; } heading.current?.focus({ preventScroll: true }); }, [screen]);
+  useEffect(() => { if (initialScreen.current) { initialScreen.current = false; return; } heading.current?.focus({ preventScroll: true }); heading.current?.scrollIntoView({ block: "start", behavior: "auto" }); }, [screen]);
   function go(next: StewardshipScreenId) {
     if (visited.current[cursor.current] !== next) {
       visited.current = [...visited.current.slice(0, cursor.current + 1), next];

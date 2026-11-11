@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {runInNewContext} from 'node:vm';
 
 const component = new URL('../../apps/web/src/components/child-stewardship/StewardshipExperience.tsx', import.meta.url);
 const stylesheet = new URL('../../apps/web/src/components/child-stewardship/Stewardship.module.css', import.meta.url);
@@ -41,4 +42,30 @@ test('botanical scene and ring remain decorative, clearly synthetic, and self-co
   assert.match(source, /onClick=\{stop\}>停一停/);
   assert.match(source, /onClick=\{\(\) => go\("S30"\)\}>找帮助/);
   assert.doesNotMatch(source, /<image\b|<img\b|<iframe\b/);
+});
+
+test('screen navigation focuses then reveals the heading below the sticky header', async () => {
+  const source = await readFile(component, 'utf8');
+  const css = await readFile(stylesheet, 'utf8');
+  const effect = source.match(/useEffect\(\(\) => (\{ if \(initialScreen\.current\)[^\n]+\}), \[screen\]\);/);
+  assert.ok(effect, 'screen-change accessibility effect is present');
+  const calls: unknown[] = [];
+  const initialScreen = {current: true};
+  const heading = {current: {
+    focus: (options: unknown) => calls.push(['focus', options]),
+    scrollIntoView: (options: unknown) => calls.push(['scroll', options]),
+  }};
+  const runEffect = () => runInNewContext(`(() => ${effect[1]})()`, {initialScreen, heading});
+  runEffect();
+  assert.deepEqual(calls, [], 'initial load does not steal focus or scroll');
+  runEffect();
+  assert.equal(JSON.stringify(calls), JSON.stringify([
+    ['focus', {preventScroll: true}],
+    ['scroll', {block: 'start', behavior: 'auto'}],
+  ]));
+  const desktopRule = css.match(/\.main h1 \{[^}]+\}/)?.[0];
+  assert.match(desktopRule ?? '', /scroll-margin-top: calc\(8rem \* var\(--text-scale\)\)/);
+  const mobileRules = css.slice(css.indexOf('@media (max-width: 700px)'));
+  assert.match(mobileRules, /\.main h1 \{[^}]*scroll-margin-top: calc\(11rem \* var\(--text-scale\)\)/);
+  assert.doesNotMatch(source, /behavior:\s*["']smooth["']/);
 });

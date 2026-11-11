@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isProductionSite } from "./data/life/navigation";
+import { childPublicHeaders } from "./components/child-public/public-page.mjs";
 
 /**
  * Edge security middleware for canopyproof.org.
@@ -75,7 +76,7 @@ export function middleware(request: NextRequest): NextResponse {
     .get("x-forwarded-proto")
     ?.split(",", 1)[0]
     ?.trim();
-  const csp = childGuide ? "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" : buildContentSecurityPolicy(
+  const csp = childGuide ? childPublicHeaders["content-security-policy"] : buildContentSecurityPolicy(
     nonce,
     request.nextUrl.protocol === "https:" || forwardedProtocol === "https",
     childRoute,
@@ -123,3 +124,4 @@ export const config = {
     },
   ],
 };
+
