@@ -84,6 +84,6 @@ test('fresh fixture allows proposal only; expiry cannot be reversed to authorize
   const f=fixture();f.protocolBoundary.observeFixture(f.protocol);let calls=0;
   const twin=createChildTwinOrchestration(f.network,{async propose(input){calls++;return {kind:'learning-review-proposal',evidenceDigest:input.evidenceDigest,tools:[]};}});
   await twin.propose(f.request);assert.equal(calls,1);assert.equal(twin.snapshot().state,'awaiting-human-consent');
-  f.network.recordChildAssent(f.request);f.advance(2000);assert.throws(()=>f.network.assertProposalAllowed(),/INELIGIBLE/);
+  f.network.recordChildAssent(f.request);f.advance(2000);assert.throws(()=>f.network.assertProposalAllowed(f.request),/INELIGIBLE/);
   f.advance(1500);assert.throws(()=>twin.authorize(f.approvals()),/INELIGIBLE/);assert.equal(twin.snapshot().state,'denied');
 });
