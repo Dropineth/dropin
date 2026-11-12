@@ -20,20 +20,26 @@ export async function verifyChildSignatureWebCrypto(input:SignatureInput):Promis
  if(difference!==0)return invalid('PAYLOAD_MISMATCH');
  if(input.signature.byteLength!==64)return invalid('INVALID_SIGNATURE');
  try{signature=new Uint8Array(input.signature);}catch{return invalid('INVALID_SIGNATURE');}
- const pem=input.registeredPublicKey;
- if(typeof pem!=='string'||pem.length>1024||!pem.startsWith('-----BEGIN PUBLIC KEY-----'))return invalid('INVALID_PUBLIC_KEY');
+ const bytes=decodeEd25519PublicKey(input.registeredPublicKey);
+ if(!bytes)return invalid('INVALID_PUBLIC_KEY');
  let key:CryptoKey;
- try{
-  const match=/^-----BEGIN PUBLIC KEY-----\r?\n([A-Za-z0-9+/=\r\n]+)-----END PUBLIC KEY-----\r?\n?$/.exec(pem);
-  if(!match)return invalid('INVALID_PUBLIC_KEY');
-  const encoded=match[1]!.replace(/[\r\n]/g,'');
-  const decoded=atob(encoded);if(btoa(decoded)!==encoded)return invalid('INVALID_PUBLIC_KEY');
-  const bytes=Uint8Array.from(decoded,c=>c.charCodeAt(0));
-  // Canonical RFC8410 Ed25519 SPKI: fixed OID/header + exactly one 32-byte key.
-  const header=[0x30,0x2a,0x30,0x05,0x06,0x03,0x2b,0x65,0x70,0x03,0x21,0x00];
-  if(bytes.length!==44||header.some((v,i)=>bytes[i]!==v))return invalid('INVALID_PUBLIC_KEY');
-  key=await crypto.subtle.importKey('spki',bytes,{name:'Ed25519'},false,['verify']);
- }catch{return invalid('INVALID_PUBLIC_KEY');}
+ try{key=await crypto.subtle.importKey('spki',bytes,{name:'Ed25519'},false,['verify']);}
+ catch{return invalid('INVALID_PUBLIC_KEY');}
  try{return await crypto.subtle.verify({name:'Ed25519'},key,signature,payload)?{valid:true}:invalid('INVALID_SIGNATURE');}
  catch{return invalid('INVALID_SIGNATURE');}
+}
+
+/** Bounded canonical public-key encoding check, not identity or possession. */
+export function decodeEd25519PublicKey(pem:unknown):Uint8Array<ArrayBuffer>|undefined{
+ if(typeof pem!=='string'||pem.length>1024||!pem.startsWith('-----BEGIN PUBLIC KEY-----'))return undefined;
+ try{
+  const match=/^-----BEGIN PUBLIC KEY-----\r?\n([A-Za-z0-9+/=\r\n]+)-----END PUBLIC KEY-----\r?\n?$/.exec(pem);
+  if(!match)return undefined;
+  const encoded=match[1]!.replace(/[\r\n]/g,'');
+  const decoded=atob(encoded);if(btoa(decoded)!==encoded)return undefined;
+  const bytes=Uint8Array.from(decoded,c=>c.charCodeAt(0));
+  const header=[0x30,0x2a,0x30,0x05,0x06,0x03,0x2b,0x65,0x70,0x03,0x21,0x00];
+  if(bytes.length!==44||header.some((v,i)=>bytes[i]!==v))return undefined;
+  return bytes;
+ }catch{return undefined;}
 }

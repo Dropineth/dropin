@@ -1,8 +1,12 @@
 import {DurableObject} from 'cloudflare:workers';
+import {verifyChildSignatureWebCrypto,decodeEd25519PublicKey} from './signature';
+import {syntheticCommitBytes,type SignedCommitFields} from './authorization';
 
 type Row={scope:string;epoch:number;sequence:number;head:string;guardian:number;child:number;blocked:number;last_time:number};
 type Proposal={id:string;digest:string;nonce:string;epoch:number;expires:number;consumed:number};
 type Receipt={command_id:string;proposal_id:string;digest:string;nonce:string;epoch:number;sequence:number};
+type Signer={key_id:string;revision:number;public_key:string;active:number};
+type VerifiedCommit={signer:Signer;payload:Uint8Array<ArrayBuffer>;signature:Uint8Array<ArrayBuffer>;expiresAt:number};
 type Anchor=Pick<Row,'scope'|'epoch'|'sequence'|'head'>;
 type Denial={ok:false;code:string;syntheticOnly:true};
 const denied=(code:string):Denial=>({ok:false,code,syntheticOnly:true});
@@ -24,18 +28,22 @@ function sameAnchor(a:Anchor,b:Record<string,unknown>|Anchor){return a.scope===b
 export class SyntheticChildAccount extends DurableObject<Env>{
  #bootNonce=crypto.randomUUID();
  #admitted:Anchor|undefined;
- #call<T>(body:()=>T):T|Denial{
-  try{return body();}catch(error){
-   const code=error instanceof Error?error.message:'';
-   return denied(['SYNTHETIC_INPUT_INVALID','SYNTHETIC_FIXTURE_DISABLED','SYNTHETIC_SCOPE_MISMATCH','SYNTHETIC_ROLE_INVALID','SYNTHETIC_LIMIT'].includes(code)?code:'STORAGE_UNAVAILABLE');
-  }
+ #failure(error:unknown):Denial{
+  const code=error instanceof Error?error.message:'';
+  return denied(['SYNTHETIC_INPUT_INVALID','SYNTHETIC_FIXTURE_DISABLED','SYNTHETIC_SCOPE_MISMATCH','SYNTHETIC_ROLE_INVALID','SYNTHETIC_LIMIT'].includes(code)?code:'STORAGE_UNAVAILABLE');
  }
+ #call<T>(body:()=>T):T|Denial{try{return body();}catch(error){return this.#failure(error);}}
  initializeSyntheticFixture(input:unknown){return this.#call(()=>this.#initialize(input));}
  fixtureChallenge(input:unknown){return this.#call(()=>this.#challenge(input));}
  admitSyntheticFixture(input:unknown){return this.#call(()=>this.#admit(input));}
  setSyntheticConsent(input:unknown){return this.#call(()=>this.#consent(input));}
  issueSyntheticProposal(input:unknown){return this.#call(()=>this.#issue(input));}
  commitSyntheticProposal(input:unknown){return this.#call(()=>this.#commit(input));}
+ registerSyntheticGuardian(input:unknown){return this.#call(()=>this.#register(input));}
+ revokeSyntheticGuardian(input:unknown){return this.#call(()=>this.#revoke(input));}
+ async commitSignedSyntheticProposal(input:unknown){
+  try{return await this.#signedCommit(input);}catch(error){return this.#failure(error);}
+ }
  constructor(ctx:DurableObjectState,env:Env){
   super(ctx,env);
   ctx.blockConcurrencyWhile(async()=>{
@@ -49,7 +57,12 @@ export class SyntheticChildAccount extends DurableObject<Env>{
     digest TEXT NOT NULL,nonce TEXT UNIQUE NOT NULL,epoch INTEGER NOT NULL,sequence INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS observations(proposal_id TEXT PRIMARY KEY,command_id TEXT UNIQUE NOT NULL,
     digest TEXT NOT NULL,level TEXT NOT NULL CHECK(level='SYNTHETIC_E0'));
-    CREATE TABLE IF NOT EXISTS audit(sequence INTEGER PRIMARY KEY,kind TEXT NOT NULL,head TEXT NOT NULL);`);
+    CREATE TABLE IF NOT EXISTS audit(sequence INTEGER PRIMARY KEY,kind TEXT NOT NULL,head TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS signature_policy(id INTEGER PRIMARY KEY CHECK(id=1),required INTEGER NOT NULL CHECK(required=1));
+    CREATE TABLE IF NOT EXISTS synthetic_signer(id INTEGER PRIMARY KEY CHECK(id=1),key_id TEXT NOT NULL,
+    revision INTEGER NOT NULL,public_key TEXT NOT NULL,active INTEGER NOT NULL CHECK(active IN (0,1)));
+    CREATE TABLE IF NOT EXISTS signature_evidence(command_id TEXT PRIMARY KEY,key_id TEXT NOT NULL,
+    revision INTEGER NOT NULL,public_key TEXT NOT NULL,envelope TEXT NOT NULL,signature BLOB NOT NULL);`);
   });
  }
  #fixture(scope:unknown):asserts scope is string{
@@ -90,6 +103,54 @@ export class SyntheticChildAccount extends DurableObject<Env>{
    const current=this.#row();if(current)this.#admitted=anchor(current);
   }else this.#admitted=undefined;
   return result;
+ }
+ #signer():Signer|undefined{return this.ctx.storage.sql.exec<Signer>('SELECT * FROM synthetic_signer WHERE id=1').toArray()[0];}
+ /** Trusted local fixture administration ONLY: no human identity or real registry. */
+ #register(input:unknown){
+  const v=shape(input,['scope','keyId','publicKey','role']);this.#fixture(v.scope);
+  if(v.role!=='guardian')throw new Error('SYNTHETIC_ROLE_INVALID');
+  if(!ident(v.keyId)||typeof v.publicKey!=='string'||!decodeEd25519PublicKey(v.publicKey))throw new Error('SYNTHETIC_INPUT_INVALID');
+  return this.#run(v.scope,true,row=>{
+   const previous=this.#signer();if(previous&&previous.revision>=Number.MAX_SAFE_INTEGER-1)throw new Error('SYNTHETIC_LIMIT');
+   const revision=(previous?.revision??0)+1;
+   this.ctx.storage.sql.exec('INSERT OR IGNORE INTO signature_policy VALUES(1,1)');
+   this.ctx.storage.sql.exec('INSERT INTO synthetic_signer VALUES(1,?,?,?,1) ON CONFLICT(id) DO UPDATE SET key_id=excluded.key_id,revision=excluded.revision,public_key=excluded.public_key,active=1',v.keyId,revision,v.publicKey);
+   row.epoch++;row.guardian=0;row.child=0;this.#advance(row,'fixture-signer-registered');
+   return {ok:true,revision,epoch:row.epoch,syntheticOnly:true};
+  });
+ }
+ #revoke(input:unknown){
+  const v=shape(input,['scope']);this.#fixture(v.scope);
+  return this.#run(v.scope,false,row=>{
+   const previous=this.#signer();if(!previous)return denied('SIGNER_REQUIRED');
+   if(previous.revision>=Number.MAX_SAFE_INTEGER-1)throw new Error('SYNTHETIC_LIMIT');
+   this.ctx.storage.sql.exec('UPDATE synthetic_signer SET active=0,revision=revision+1 WHERE id=1');
+   row.epoch++;row.guardian=0;row.child=0;this.#advance(row,'fixture-signer-revoked');
+   return {ok:true,epoch:row.epoch,syntheticOnly:true};
+  });
+ }
+ async #signedCommit(input:unknown){
+  const v=shape(input,['scope','proposalId','commandId','digest','nonce','expectedEpoch','expiresAt','keyId','keyRevision','signature']);this.#fixture(v.scope);
+  if(!ident(v.proposalId)||!ident(v.commandId)||!ident(v.keyId)||!hex(v.digest,64)||!hex(v.nonce,32)
+   ||!integer(v.expectedEpoch)||!integer(v.expiresAt)||!integer(v.keyRevision)||v.keyRevision===0
+   ||!(v.signature instanceof Uint8Array)||v.signature.byteLength!==64)throw new Error('SYNTHETIC_INPUT_INVALID');
+  // Own immutable primitive fields and signature bytes before the first await.
+  const fields:SignedCommitFields={scope:v.scope,proposalId:v.proposalId,commandId:v.commandId,digest:v.digest,nonce:v.nonce,
+   expectedEpoch:v.expectedEpoch,expiresAt:v.expiresAt,keyId:v.keyId,keyRevision:v.keyRevision};
+  const signature=new Uint8Array(v.signature),payload=syntheticCommitBytes(fields,this.ctx.id.toString());
+  const snapshot=this.#run(fields.scope,true,row=>{
+   if(!row.guardian||!row.child||row.epoch!==fields.expectedEpoch)return denied('CONSENT_STALE');
+   const signer=this.#signer();
+   if(!signer||!signer.active||signer.key_id!==fields.keyId||signer.revision!==fields.keyRevision)return denied('SIGNER_STALE');
+   return {ok:true as const,signer};
+  });
+  if(!snapshot.ok)return snapshot;
+  const verified=await verifyChildSignatureWebCrypto({algorithm:'Ed25519',expectedPayload:payload,signedPayload:payload,signature,registeredPublicKey:snapshot.signer.public_key});
+  if(!verified.valid)return denied('SIGNATURE_INVALID');
+  // Async crypto may interleave with revoke/rotation/consent. No earlier check
+  // authorizes the write: all local authority is reread in the sync transaction.
+  return this.#commit({scope:fields.scope,proposalId:fields.proposalId,commandId:fields.commandId,digest:fields.digest,nonce:fields.nonce,expectedEpoch:fields.expectedEpoch},
+   {signer:snapshot.signer,payload,signature,expiresAt:fields.expiresAt});
  }
  #initialize(input:unknown){
   const v=shape(input,['scope']);this.#fixture(v.scope);
@@ -140,14 +201,21 @@ export class SyntheticChildAccount extends DurableObject<Env>{
    this.#advance(row,'proposal-issued');return {ok:true,epoch:row.epoch,syntheticOnly:true};
   });
  }
- #commit(input:unknown){
+ #commit(input:unknown,verified?:VerifiedCommit){
   const v=shape(input,['scope','proposalId','commandId','digest','nonce','expectedEpoch']);this.#fixture(v.scope);
   if(!ident(v.proposalId)||!ident(v.commandId)||!hex(v.digest,64)||!hex(v.nonce,32)||!integer(v.expectedEpoch))throw new Error('SYNTHETIC_INPUT_INVALID');
   const {proposalId,commandId,digest,nonce,expectedEpoch}=v;
   return this.#run(v.scope,true,(row,now)=>{
+   const currentSigner=this.#signer();
+   // Once enrolled in this synthetic signed mode, even revocation cannot fall
+   // back to the unsigned conformance RPC. There is no unenroll/delete RPC.
+   if(!verified&&(currentSigner||this.ctx.storage.sql.exec('SELECT 1 FROM signature_policy WHERE id=1').toArray().length))return denied('SIGNATURE_REQUIRED');
+   if(verified&&(!currentSigner||!currentSigner.active||currentSigner.key_id!==verified.signer.key_id
+    ||currentSigner.revision!==verified.signer.revision||currentSigner.public_key!==verified.signer.public_key))return denied('SIGNER_STALE');
    if(!row.guardian||!row.child||row.epoch!==expectedEpoch)return denied('CONSENT_STALE');
    const proposal=this.ctx.storage.sql.exec<Proposal>('SELECT * FROM proposals WHERE id=?',proposalId).toArray()[0];
    if(!proposal||proposal.digest!==digest||proposal.nonce!==nonce||proposal.epoch!==row.epoch)return denied('PROPOSAL_MISMATCH');
+   if(verified&&proposal.expires!==verified.expiresAt)return denied('SIGNED_EXPIRY_MISMATCH');
    if(proposal.expires<=now)return denied('PROPOSAL_EXPIRED');
    // Exact retries still require current consent, epoch and original expiry.
    const previous=this.ctx.storage.sql.exec<Receipt>('SELECT * FROM receipts WHERE command_id=?',commandId).toArray()[0];
@@ -160,6 +228,8 @@ export class SyntheticChildAccount extends DurableObject<Env>{
    this.ctx.storage.sql.exec("INSERT INTO observations VALUES(?,?,?,'SYNTHETIC_E0')",proposalId,commandId,digest);
    const receipt={command_id:commandId,proposal_id:proposalId,digest,nonce,epoch:row.epoch,sequence:row.sequence+1};
    this.ctx.storage.sql.exec('INSERT INTO receipts VALUES(?,?,?,?,?,?)',commandId,proposalId,digest,nonce,row.epoch,receipt.sequence);
+   if(verified)this.ctx.storage.sql.exec('INSERT INTO signature_evidence VALUES(?,?,?,?,?,?)',commandId,verified.signer.key_id,verified.signer.revision,
+    verified.signer.public_key,new TextDecoder().decode(verified.payload),verified.signature);
    this.#advance(row,'proposal-committed');return {ok:true,replayed:false,receipt,syntheticOnly:true};
   });
  }
