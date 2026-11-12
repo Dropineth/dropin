@@ -1,0 +1,15 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "replace-with-approved-child-gateway-name",
+  "main": "../../packages/dropin-cloudflare/src/child-private-gateway.ts",
+  "compatibility_date": "2026-11-12",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "vars": {
+    "DROPIN_CHILD_GATEWAY_MODE": "disabled"
+  },
+  "observability": {
+    "enabled": false
+  }
+}
