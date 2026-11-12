@@ -1,0 +1,10 @@
+{
+  "name": "dropin",
+  "account_id": "ff1026248646a5c87b3a664d87683818",
+  "main": "workers/dropin/worker.mjs",
+  "compatibility_date": "2026-05-13",
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [],
+  "logpush": false
+}
