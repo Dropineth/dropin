@@ -1,4 +1,4 @@
 import {cloudflareTest} from '@cloudflare/vitest-plugin';
 import {defineConfig} from 'vitest/config';
 export default defineConfig({plugins:[cloudflareTest({wrangler:{configPath:'./wrangler.jsonc'},
-  miniflare:{bindings:{CHILD_DO_MODE:'local-fixture-only'}}})],test:{fileParallelism:false}});
+  miniflare:{bindings:{CHILD_DO_MODE:'local-fixture-only'}}})],test:{fileParallelism:false,include:['test/**/*.test.ts']}});
