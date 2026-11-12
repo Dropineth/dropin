@@ -273,7 +273,7 @@ function seal() {
   assert.deepEqual(inputs(), preflight.target, 'Release inputs changed before sealing');
   assert.equal(git('rev-parse', 'HEAD'), preflight.target.expectedSha);
   assert.equal(git('status', '--porcelain', '--untracked-files=normal'), '', 'Prepare source changed');
-  assert.equal(process.version, 'v22.23.4');
+  assert.equal(process.version, 'v22.23.5');
   assert.equal(execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim(), '10.9.4');
   assert.equal(process.env.NEXT_PUBLIC_CANOPYPROOF_MODE, 'production');
   assert.equal(process.env.NEXT_PUBLIC_DROPIN_SITE_URL, 'https://canopyproof.org');

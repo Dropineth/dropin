@@ -66,7 +66,7 @@ test('workflow status must name the actual workflow, final main SHA and successf
   validateWorkflowRun(workflowRun, 1, target, [{ ...jobs[0], steps: [...jobs[0].steps, { name: 'Post Setup Node', status: 'completed', conclusion: 'skipped' }] }], 'web');
 });
 
-const snapshot = { head: target, node: 'v22.23.4', npm: '10.9.4', lockSha256: 'd'.repeat(64), sourceFingerprintSha256: 'e'.repeat(64), sourceStatus: '' };
+const snapshot = { head: target, node: 'v22.23.5', npm: '10.9.4', lockSha256: 'd'.repeat(64), sourceFingerprintSha256: 'e'.repeat(64), sourceStatus: '' };
 const evidence = (gates: string[]) => ({ schemaVersion: 1, status: 'PASS', ...snapshot, expectedSha: target, runId: '10', runAttempt: '1', checkoutClean: true, finalSnapshot: { ...snapshot }, expectedCommands: gates,
   commands: gates.map(id => ({ id, status: 'PASS', exitCode: 0, commandExitCode: 0, signal: null, startedAt: '2026-09-30T06:00:00Z', finishedAt: '2026-09-30T06:01:00Z', before: { ...snapshot }, after: { ...snapshot } })) });
 test('CI artifact receipt independently rejects omitted gates, stale SHA/run, failed command and changed source/lock/runtime', () => {
@@ -81,6 +81,15 @@ test('CI artifact receipt independently rejects omitted gates, stale SHA/run, fa
   }
   for (const engine of ['chromium', 'firefox', 'webkit']) { assert.ok(WEB_GATES.includes(`browser-next-${engine}`)); assert.ok(WEB_GATES.includes(`floorplan-${engine}`)); }
   for (const required of ['native-postgres', 'coverage', 'critical-coverage', 'workspace', 'webgl', 'lifepp-workerd']) assert.ok(TRUST_GATES.includes(required));
+});
+
+test('release evidence requires patched Node even when every stale runtime receipt agrees', () => {
+  for (const node of ['v22.23.4', 'v22.23.3', 'v24.22.3']) {
+    const stale = evidence(TRUST_GATES);
+    stale.node = node; stale.finalSnapshot.node = node;
+    for (const command of stale.commands) { command.before.node = node; command.after.node = node; }
+    assert.throws(() => validateEvidence(stale, target, workflowRun, TRUST_GATES));
+  }
 });
 
 const environment = { id: 42, name: ENVIRONMENT, protection_rules: [{ type: 'required_reviewers', prevent_self_review: true, reviewers: [{ type: 'User', reviewer: user('fixture-reviewer') }] }] };

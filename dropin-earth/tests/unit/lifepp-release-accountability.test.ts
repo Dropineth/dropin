@@ -18,7 +18,7 @@ function fixture(actual?: { target: string; snapshot: { head: string; node: stri
  const end = actual?.finishedAt ?? '2026-10-24T11:20:00Z';
  const run={id:101,run_attempt:1,workflow_id:7,repository:{full_name:REPOSITORY},head_sha:candidate,head_branch:'main',event:'push',status:'completed',conclusion:'success'};
  const jobs=[{id:201,runner_id:301,run_id:101,head_sha:candidate,name:'Verify trust kernel and OpenNext artifact',status:'completed',conclusion:'success',started_at:start,completed_at:end,steps:[{name:'Run deterministic workspace gate',status:'completed',conclusion:'success'}]}];
- const snapshot=actual?.snapshot ?? {head:candidate,node:'v22.23.4',npm:'10.9.4',lockSha256:'d'.repeat(64),sourceFingerprintSha256:'e'.repeat(64),sourceStatus:''};
+ const snapshot=actual?.snapshot ?? {head:candidate,node:'v22.23.5',npm:'10.9.4',lockSha256:'d'.repeat(64),sourceFingerprintSha256:'e'.repeat(64),sourceStatus:''};
  const files=new Map<string,Buffer>();
  const report={schemaVersion:1,status:'PASS',...snapshot,expectedSha:candidate,runId:'101',runAttempt:'1',checkoutClean:true,finalSnapshot:{...snapshot},expectedCommands:TRUST_GATES,commands:TRUST_GATES.map(id=>({id,status:'PASS',exitCode:0,commandExitCode:0,signal:null,startedAt:start,finishedAt:end,before:{...snapshot},after:{...snapshot},logSha256:sha256(id),artifacts:[] as {path:string;sha256:string}[]}))};
  report.commands.forEach(entry=>files.set(`${entry.id}.log`,Buffer.from(entry.id)));
