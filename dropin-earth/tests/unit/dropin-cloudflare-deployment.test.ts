@@ -87,6 +87,105 @@ test("Cloudflare proxy blocks admin routes by default", async () => {
   assert.equal(body.error, "admin_proxy_disabled");
 });
 
+const childCommandsPath = "/api/canopyproof/child-stewardship/v1/commands";
+const ordinaryCorsHeaders = "authorization,content-type,idempotency-key,x-dropin-client";
+
+function childCommandPreflight(path = childCommandsPath, method: string | null = "POST", origin: string | null = "https://canopyproof.org") {
+  const headers = new Headers({
+    "access-control-request-headers": "authorization,content-type,if-match,x-child-upload-authorization",
+  });
+  if (method !== null) headers.set("access-control-request-method", method);
+  if (origin !== null) headers.set("origin", origin);
+  return new Request(`https://canopyproof.org${path}`, { method: "OPTIONS", headers });
+}
+
+test("Cloudflare child command POST preflight allows only the two additional required headers", async () => {
+  const handler = createCanopyproofApiProxy({ fetcher: async () => { throw new Error("Preflight must not reach the origin"); } });
+  for (const path of [childCommandsPath, `${childCommandsPath}?request=synthetic`]) {
+    for (const origin of ["https://canopyproof.org", "https://www.canopyproof.org"]) {
+      const response = await handler.fetch(childCommandPreflight(path, "POST", origin), env);
+      assert.equal(response.status, 204);
+      assert.equal(response.headers.get("access-control-allow-origin"), origin);
+      assert.equal(response.headers.get("access-control-allow-headers"), `${ordinaryCorsHeaders},if-match,x-child-upload-authorization`);
+      assert.equal(response.headers.get("access-control-allow-methods"), "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+      assert.equal(response.headers.get("access-control-allow-credentials"), null);
+      assert.equal(response.headers.get("vary"), "origin");
+    }
+  }
+});
+
+test("Cloudflare child preflight does not reflect arbitrary requested headers", async () => {
+  const handler = createCanopyproofApiProxy({ fetcher: async () => { throw new Error("Preflight must not reach the origin"); } });
+  const request = childCommandPreflight();
+  request.headers.set("access-control-request-headers", "if-match,x-child-upload-authorization,x-unapproved-header");
+  const response = await handler.fetch(request, env);
+  assert.equal(response.status, 204);
+  // The missing requested header keeps this request inadmissible to the browser.
+  assert.equal(response.headers.get("access-control-allow-headers"), `${ordinaryCorsHeaders},if-match,x-child-upload-authorization`);
+  assert.doesNotMatch(response.headers.get("access-control-allow-headers") ?? "", /x-unapproved-header/);
+});
+
+test("Cloudflare child preflight exception does not expand other paths or lookalike routes", async () => {
+  const handler = createCanopyproofApiProxy({ fetcher: async () => { throw new Error("Preflight must not reach the origin"); } });
+  for (const path of [
+    "/api/ready", "/api/admin/launch/readiness", "/api/canopyproof/child-stewardship/v1",
+    "/api/canopyproof/child-stewardship/v1/guardian/sessions", "/api/canopyproof/child-stewardship/v1/draft-authorizations",
+    `${childCommandsPath}/`, `${childCommandsPath}-extra`, `${childCommandsPath}/extra`, `${childCommandsPath}%2Fextra`,
+    "/api/canopyproof/child-stewardship/v10/commands", "/api/canopyproof/child-stewardship/v1/%63ommands",
+    "/api/ready?path=/api/canopyproof/child-stewardship/v1/commands",
+  ]) {
+    const response = await handler.fetch(childCommandPreflight(path), env);
+    assert.equal(response.status, 204, path);
+    assert.equal(response.headers.get("access-control-allow-headers"), ordinaryCorsHeaders, path);
+  }
+});
+
+test("Cloudflare child preflight exception is limited to POST", async () => {
+  const handler = createCanopyproofApiProxy({ fetcher: async () => { throw new Error("Preflight must not reach the origin"); } });
+  for (const method of [null, "GET", "HEAD", "PUT", "PATCH", "DELETE", "OPTIONS", "post"]) {
+    const response = await handler.fetch(childCommandPreflight(childCommandsPath, method), env);
+    assert.equal(response.status, 204);
+    assert.equal(response.headers.get("access-control-allow-headers"), ordinaryCorsHeaders, String(method));
+  }
+});
+
+test("Cloudflare child preflight keeps exact origin restrictions and never grants an originless request", async () => {
+  const handler = createCanopyproofApiProxy({ fetcher: async () => { throw new Error("Preflight must not reach the origin"); } });
+  for (const origin of ["https://unapproved.example", "https://canopyproof.org.unapproved.example", "http://canopyproof.org", "null"]) {
+    const response = await handler.fetch(childCommandPreflight(childCommandsPath, "POST", origin), env);
+    assert.equal(response.status, 403, origin);
+    assert.equal(response.headers.get("access-control-allow-origin"), null, origin);
+    assert.equal(response.headers.get("access-control-allow-headers"), null, origin);
+  }
+  const absent = await handler.fetch(childCommandPreflight(childCommandsPath, "POST", null), env);
+  assert.equal(absent.status, 204);
+  assert.equal(absent.headers.get("access-control-allow-origin"), null);
+  assert.equal(absent.headers.get("access-control-allow-headers"), null);
+});
+
+test("Cloudflare child command forwarding preserves the configured origin and opaque authorization headers", async () => {
+  const handler = createCanopyproofApiProxy({
+    requestIdFactory: () => "edge-test-request",
+    fetcher: async request => {
+      assert.equal(request.url, "https://api.dropin.example/canopyproof/child-stewardship/v1/commands?request=synthetic");
+      assert.equal(request.method, "POST");
+      assert.equal(request.headers.get("authorization"), "Bearer synthetic-test-token");
+      assert.equal(request.headers.get("if-match"), '"7"');
+      assert.equal(request.headers.get("x-child-upload-authorization"), "synthetic-test-proof");
+      assert.equal(await request.text(), "{}");
+      return new Response("{}", { status: 200 });
+    },
+  });
+  const response = await handler.fetch(new Request(`https://canopyproof.org${childCommandsPath}?request=synthetic`, {
+    method: "POST", body: "{}", headers: {
+      origin: "https://canopyproof.org", "content-type": "application/json", authorization: "Bearer synthetic-test-token",
+      "if-match": '"7"', "x-child-upload-authorization": "synthetic-test-proof",
+    },
+  }), env);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("access-control-allow-headers"), ordinaryCorsHeaders);
+});
+
 test("Cloudflare deployment docs preserve the separated guarded OpenNext path", () => {
   const text = readFileSync(join(process.cwd(), "docs/deploy-cloudflare.md"), "utf8");
 
