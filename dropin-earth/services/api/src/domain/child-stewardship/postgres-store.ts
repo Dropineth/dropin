@@ -155,6 +155,9 @@ export class PostgresChildStore implements ChildStore {
       await assertChildRestoreReady(db,tokens[0].session_id,this.restoreAnchor);
       const rows=await db.query<{token:string|null}>("SELECT child_stewardship.issue_draft_authorization($1,$2::jsonb) AS token",[rawBearer,JSON.stringify(proposal)]);
       if(!rows[0]?.token)throw new ChildApiError('CURRENT_DRAFT_AUTHORIZATION_REQUIRED',403);
+      // The grant remains tentative through this fresh external read. A failure
+      // rolls it back; this is not a lease on the external authority.
+      if(this.restoreAnchor)await assertChildRestoreReady(db,tokens[0].session_id,this.restoreAnchor);
       return rows[0].token;
     });
   }

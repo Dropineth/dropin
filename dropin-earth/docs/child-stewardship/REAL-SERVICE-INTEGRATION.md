@@ -155,3 +155,30 @@ boundary, not native PostgreSQL lock execution, a live HTTPS service or verified
 guardianship. Existing native suites remain required. This final read is not a
 distributed lease or atomic external revocation guarantee; a change after that
 read still requires an agreed authority/commit protocol before real enrollment.
+
+## Draft and resume capability release
+
+Draft upload grants and successful synthetic suspension/resumption now perform
+the same final current-authority read inside their transaction, after SQL has
+tentatively created the new capability. A rejected final read rolls back the
+grant or the resume/suspension changes and releases no token. Abuse-rate quota
+charged outside the transaction is not refunded. There is no automatic retry.
+
+Negative results remain distinct: when resume SQL rejects an identified ticket
+and records its consumption, that denial must commit even if positive authority
+then becomes unavailable. No final positive-authority check is added to that
+denial or to cancellation. Cancellation and guardian logout are not new grants.
+
+`child-stewardship-capability-commit.test.ts` reproduces five late authority
+failures across all three release paths using real adapters and Ed25519 signed
+responses with a transactional in-memory SQL seam. It additionally verifies
+denial consumption, cancellation, quota persistence and explicit retry. This
+unit seam is not native PostgreSQL or a deployed recovery service.
+The existing native backend suite additionally injects registry revocation after
+the actual draft/suspend/resume SQL function returns, compares persisted rows
+before/after rollback, and exercises a successful explicit retry with fresh
+tokens. It requires the disposable PostgreSQL CI environment; it is a post-write
+fault test, not an external distributed-commit or lock-wait proof.
+Original SQL identity/role/generation/consent checks remain mandatory; synthetic
+all-role resume is not human identity or guardian recovery. External changes
+after the final read remain outside the local transaction's atomic boundary.

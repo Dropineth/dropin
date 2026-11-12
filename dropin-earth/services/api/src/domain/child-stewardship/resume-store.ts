@@ -65,7 +65,14 @@ export class PostgresChildResumeStore implements ChildResumeStore {
       await db.query("SELECT set_config('app.child_session_id',$1,true)",[sessionId]);
       await db.query('SELECT id FROM child_stewardship.sessions WHERE id=$1::uuid FOR UPDATE',[sessionId]);
       await assertChildRestoreReady(db,sessionId,this.restoreAnchor);
-      return db.query<{result:T|{denied:true}}>(operation==='suspend'?'SELECT child_stewardship.suspend_synthetic_session($1) AS result':'SELECT child_stewardship.resume_synthetic_session($1) AS result',[raw]);
+      const rows=await db.query<{result:T|{denied:true}}>(operation==='suspend'?'SELECT child_stewardship.suspend_synthetic_session($1) AS result':'SELECT child_stewardship.resume_synthetic_session($1) AS result',[raw]);
+      const result=rows[0]?.result;
+      // Only a positive capability release needs this final external read.
+      // A SQL-denied resume must COMMIT its one-use ticket consumption, not
+      // resurrect that ticket by rolling back on a positive-authority outage.
+      // Like ordinary writes, this is a recheck, not distributed atomicity.
+      if(this.restoreAnchor&&result&&!("denied" in result))await assertChildRestoreReady(db,sessionId,this.restoreAnchor);
+      return rows;
     });
   }
   async cancel(rawTicket:string):Promise<ChildResumeCancellation>{
