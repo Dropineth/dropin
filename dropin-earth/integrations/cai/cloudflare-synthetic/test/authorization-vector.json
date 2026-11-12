@@ -1,0 +1,18 @@
+{
+  "syntheticOnly": true,
+  "fields": {
+    "scope": "synthetic-vector",
+    "proposalId": "synthetic-proposal",
+    "commandId": "synthetic-command",
+    "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "nonce": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "expectedEpoch": 3,
+    "expiresAt": 1800000000000,
+    "keyId": "synthetic-guardian-key",
+    "keyRevision": 1
+  },
+  "objectAudience": "abababababababababababababababababababababababababababababababab",
+  "canonicalUtf8": "{\"profile\":\"canopyproof.synthetic-do.commit.v1\",\"action\":\"commit-synthetic-e0\",\"audience\":\"abababababababababababababababababababababababababababababababab\",\"scope\":\"synthetic-vector\",\"role\":\"guardian-fixture\",\"keyId\":\"synthetic-guardian-key\",\"keyRevision\":1,\"proposalId\":\"synthetic-proposal\",\"commandId\":\"synthetic-command\",\"digest\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"nonce\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"expectedEpoch\":3,\"expiresAt\":1800000000000}",
+  "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAAYUDWqfxBIdBrJx2Tt1bulWHgxpdK4FN7TD7dXFXbNs=\n-----END PUBLIC KEY-----\n",
+  "signatureHex": "de3912a1cb4aa4cce9390b7e7f6a7452343e42e51ede8d917b6cf2bcb2dbdfe7e8f4bafa8b4e3dae0ae4e456ce4d2ccb108fdc00238eb3f4ebbed79c301d2200"
+}
