@@ -64,6 +64,25 @@ test('native actual backup/restore quarantine and independently current signed c
    assert.equal((await new ChildRestoreVerifier(pooled,currentProvider,registry).verifyAndAdmit(session,checkpointOne)).verified,true);assert.equal(await verifier.isReadyForAnchor(session),true);
    await assert.rejects(()=>sql(runtime).transaction(async db=>{await db.query("SELECT set_config('app.child_session_id',$1,true)",[session]);await db.query("INSERT INTO child_stewardship.restore_quarantines(session_id,instance_id,database_oid,anchor_digest,checkpoint_id,checkpoint_sequence) VALUES($1,$2,(SELECT oid FROM pg_database WHERE datname=current_database()),$3,'forged',1)",[session,randomUUID(),'a'.repeat(64)]);}),denied);
   });
+  await t.test('privacy export releases no bytes when authority fails after actual job or object SQL reads',async()=>{
+   const principal={actorId:'demo-child',deviceId:'demo-device-child',epoch:1,sessionGeneration:0};
+   const before=(await source!.query('SELECT request_id,state FROM child_stewardship.privacy_jobs WHERE session_id=$1 ORDER BY request_id',[session])).rows;
+   for(const boundary of ['SELECT kind,state,profile_id','SELECT content,expires_at']){
+    let invalid=false,reads=0;
+    const provider=async(id:string)=>{reads++;if(invalid)throw new Error('CURRENT_AUTHORITY_UNAVAILABLE');return currentProvider(id);};
+    const underlying=sql(runtime);
+    const wrapped:ChildSqlClient={...underlying,async transaction<T>(run:(db:ChildSqlConnection)=>Promise<T>){
+     return underlying.transaction(db=>run({async query<R extends Record<string,unknown>>(query:string,values:unknown[]=[]):Promise<R[]>{
+      const rows=await db.query<R>(query,values);if(query.includes(boundary))invalid=true;return rows;
+     }}));
+    }};
+    await assert.rejects(()=>new PostgresChildStore(wrapped,provider).privacyResult(session,principal,exportId,clock()),/RESTORATION_UNVERIFIED/);
+    assert.equal(invalid,true);assert.equal(reads,2);
+    assert.deepEqual((await source!.query('SELECT request_id,state FROM child_stewardship.privacy_jobs WHERE session_id=$1 ORDER BY request_id',[session])).rows,before);
+   }
+   const healthy=await new PostgresChildStore(sql(runtime),currentProvider).privacyResult(session,principal,exportId,clock()) as {export?:unknown};
+   assert.ok(healthy.export,'the original valid export remains available after the denied reads');
+  });
   await t.test('privacy export rechecks actor expiry after a slow current checkpoint provider and returns no bytes',async()=>{
    const extraRoots=await sql(source!).transaction(async db=>{await db.query("SELECT set_config('app.child_session_id',$1,true)",[id]);return(await db.query<{roots:RestoreRoots}>('SELECT child_stewardship.restore_state_roots($1::uuid) roots',[id]))[0]!.roots;});
    const checkpoint=signed(extraRoots,1,{sessionId:id,checkpointId:'demo-actor-expiry-checkpoint'}),c=checkpoint.checkpoint;
