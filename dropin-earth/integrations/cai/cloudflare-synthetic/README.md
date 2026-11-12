@@ -46,11 +46,19 @@ A compromised Worker with access to its DO storage is outside this experiment's 
 
 ## Verified local tests
 
-16 tests run inside actual workerd/SQLite through the official Cloudflare Vitest integration, with no skips. They cover concurrent identical submissions, replay/mismatch/nonce reuse, consent withdrawal and regrant, guardian renewal and assent ordering, exact-object scope, strict non-signer roles, expiry on receipt replay, injected audit failure rollback/retry, real runtime restart with persisted storage, stale snapshot mismatch and negative-withdrawal admission handling, and persistent clock quarantine. Typecheck and local Wrangler dry-run build also pass.
+16 account tests run inside actual workerd/SQLite through the official Cloudflare Vitest integration, with no skips. They cover concurrent identical submissions, replay/mismatch/nonce reuse, consent withdrawal and regrant, guardian renewal and assent ordering, exact-object scope, strict non-signer roles, expiry on receipt replay, injected audit failure rollback/retry, real runtime restart with persisted storage, stale snapshot mismatch and negative-withdrawal admission handling, and persistent clock quarantine. Typecheck and local Wrangler dry-run build also pass.
 
 The stale-snapshot test deliberately replaces SQL rows through **test-only internal access**. It is not a Cloudflare PITR trial. Official docs state PITR is unavailable locally and can restore the entire SQLite database. DO backups, a local epoch, a bookmark or an audit head cannot serve as an independent anti-rollback anchor. The test harness reference can be fabricated by its trusted caller; production admission remains absent.
 
 This is behavioral porting of selected PostgreSQL invariants, not a fresh side-by-side PostgreSQL execution or full security-equivalence proof. Existing PostgreSQL suites were read as references; they were not rerun as part of this package.
+
+### Signature interoperability, still not guardian authorization
+
+`src/signature.ts` provides an unwired Web Crypto Ed25519 verification primitive. It takes the exact expected bytes and registered public key from its caller. It never selects a registry, grants consent, signs, or changes DO state. Byte arrays are copied before the first await to prevent caller mutation while key import/verification is pending. Only canonical RFC8410 Ed25519 public SPKI PEM (including CRLF line endings) is accepted; this deliberately supports a narrower key-input interface than Node KeyObject. It exports no private-key or signing operation.
+
+The same60 positive/negative cases run against **the existing API's actual, unmodified `verifyChildSignatureBytes`** in Node and this primitive inside workerd. They cover valid signatures, wrong exact envelope, tampered/truncated/oversized/detached signature, wrong key, public PEM aliases, invalid/private-key headers, size limits and unsupported algorithms. Test material consists only of three public vectors from the current AHIN signer contract and one public vector generated with a discarded ephemeral synthetic guardian test key. A Node test checks those three vectors against the actual checked-in contract. No real guardian identity or private credential is included. Additional workerd tests check input mutation across the asynchronous boundary and six deliberately strict public-key encoding rejections.
+
+Total current local results: **61/61 Node checks and83/83 workerd checks** (16 account +67 signature/encoding), zero skipped; strict TypeScript and local dry-run pass. This shows agreement on the60 shared cases, not universal parser equivalence: Node also accepts KeyObject and some PEM encodings such as spaces in the body or trailing text that this intentionally narrow parser rejects. This is not a PostgreSQL server comparison and does not prove a full current-registry/guardian authorization protocol. WebAuthn/ES256 is explicitly rejected rather than misinterpreted as raw Ed25519: authenticatorData, clientDataJSON, challenge, RP ID, origin, flags and protocol-specific signature format still need the existing WebAuthn verifier. The Worker primitive is not connected to the fixture consent bypass or any production endpoint. Signature verification alone must never become authority.
 
 ## Official documentation used
 
@@ -61,6 +69,7 @@ Retrieved through Cloudflare's documentation connector, not blocked deployment a
 - [Testing Durable Objects](https://developers.cloudflare.com/durable-objects/examples/testing-with-durable-objects/): actual workerd SQLite tests and runInDurableObject.
 - [Vitest configuration](https://developers.cloudflare.com/workers/testing/vitest-integration/configuration/) and [test APIs](https://developers.cloudflare.com/workers/testing/vitest-integration/test-apis/): current cloudflareTest plugin, reset and abortAllDurableObjects.
 - [DO pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/): compute and storage are metered; SQLite DOs can be used on Free or Paid. The current account plan/quotas were not accessed or changed. There is no quoted bill, purchase or promise of zero cost.
+- [Workers Web Crypto](https://developers.cloudflare.com/workers/runtime-apis/web-crypto/): standard Ed25519 SPKI import and verify; no dependency on the legacy NODE-ED25519 API.
 
 ## Before any hosted integration
 

@@ -3,6 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "scripts": {"test":"vitest run", "types":"wrangler types", "typecheck":"tsc --noEmit"},
+  "scripts": {"test":"npm run test:node && vitest run", "test:node":"node --experimental-strip-types --test test/signature-node.test.mjs", "types":"wrangler types", "typecheck":"tsc --noEmit"},
   "devDependencies": {"@cloudflare/vitest-plugin":"1.8.0", "vitest":"5.1.0", "typescript":"5.9.3", "wrangler":"4.148.0"}
 }
