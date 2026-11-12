@@ -11,6 +11,7 @@ import {backendSql,backendPool} from '../../services/api/src/child-backend/datab
 import {createChildBackend} from '../../services/api/src/child-backend/app.js';
 import {loadChildMigrations,migrateChildBackend,childMigrationReady} from '../../services/api/src/child-backend/migrations.js';
 import {PostgresChildStore,assertChildRestoreReady,type ChildSqlClient} from '../../services/api/src/domain/child-stewardship/postgres-store.js';
+import {PostgresChildResumeStore} from '../../services/api/src/domain/child-stewardship/resume-store.js';
 import {closeNativeChildPool} from '../fixtures/child-stewardship-pool-close.js';
 import {ChildRestoreVerifier,type RestoreAnchor,type RestoreRoots,type RestoreCheckpointKey,type SignedRestoreCheckpoint} from '../../services/api/src/domain/child-stewardship/restore-checkpoint.js';
 import {syntheticCurrentAuthorityProvider} from '../../integrations/cai/synthetic-current-authority.js';
@@ -134,7 +135,7 @@ test('backend native migration, direct runtime role, external current anchor and
    assert.deepEqual((await owner.query('SELECT revision FROM child_stewardship.sessions WHERE id=$1',[session])).rows,before);
    assert.equal((await backend.app.request('/canopyproof/child-stewardship/v1/view',{headers:{authorization:`Bearer ${tokens.publicTokens.child}`}})).status,503);
   });
-  await t.test('actual signed external read plus distinct verifier admits current state; changed floor or outage closes existing sessions',async()=>{
+  await t.test('actual signed external read plus distinct verifier admits current state; changed floor or outage closes existing sessions',async lifecycle=>{
    const roots=await nativeChildSql(owner).transaction(async c=>{await c.query("SELECT set_config('app.child_session_id',$1,true)",[session]);return (await c.query<{roots:RestoreRoots}>('SELECT child_stewardship.restore_state_roots($1::uuid) roots',[session]))[0]!.roots;});
    const checkpoint:SignedRestoreCheckpoint['checkpoint']={protocol:'CanopyProof-RestoreCheckpoint/1',environment:'SIMULATION_ONLY',domainSeparator:'canopyproof:synthetic:restore:v1',checkpointId:anchor.checkpointId,sequence:1,sessionId:session,keyRegistryVersion:registry.version,issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+60_000).toISOString(),roots};
    anchor={...anchor,digest:childDigest(checkpoint)};
@@ -186,6 +187,47 @@ test('backend native migration, direct runtime role, external current anchor and
    offline=true;assert.equal((await view()).status,503);offline=false;
    anchor={...anchor,sequence:2};assert.equal((await view()).status,503,'external floor advanced: old restored/admitted state denied');
    assert.equal((await owner.query('SELECT count(*)::int n FROM child_stewardship.restore_admissions')).rows[0].n,1);
+   anchor={...anchor,sequence:1};
+   await lifecycle.test('native capability writes roll back on a late authority change; positive retry retains restore admission',async()=>{
+    for(const purpose of ['learning','upload']){
+     const granted=await command('guardian',{type:'grant-consent',profileId:'demo-profile-a',purpose,policyVersion:'child-learning-demo-v1'});assert.equal(granted.status,200);
+     const assented=await command('child',{type:'set-assent',profileId:'demo-profile-a',purpose,willing:true});assert.equal(assented.status,200);
+    }
+    const assigned=await command('child',{type:'assign-task',profileId:'demo-profile-a',taskId:'demo-task-leaf-comparison'});assert.equal(assigned.status,200);
+    const assignmentId=(await assigned.json()).data.id,current=(await (await view()).json()).data,draftId=randomUUID();
+    const packet={type:'submit-observation',commandId:`demo-${draftId}`,expectedVersion:current.version,assignmentId,sampleId:'demo-leaf-green',answer:'green',capturedAtClaimed:new Date().toISOString()};
+    const proposal={draftId,intentDigest:childDigest(packet),assignmentId,originalSessionId:session,originalConsentEpoch:current.uploadEligibility[0].consentEpoch,
+     purpose:'synthetic-learning-upload',schemaVersion:'CanopyProof-SyntheticDraft/2',policyVersion:current.policyVersion,expectedVersion:current.version};
+    let fault='';
+    const watched:ChildSqlClient={query:db.query,transaction:run=>db.transaction(connection=>run({query:async<T extends Record<string,unknown>>(sql:string,values?:unknown[]):Promise<T[]>=>{
+     const rows=await connection.query<T>(sql,values);
+     if(fault&&sql.startsWith(fault)){fault='';keys[1]!.revoked=true;}
+     return rows;
+    }}))};
+    const currentAnchor=async(id:string)=>{const value=await read(id);return {...value.anchor,registryDigest:childDigest(value.registry),authorityExpiresAt:value.expiresAt};};
+    const grants=new PostgresChildStore(watched,currentAnchor),resume=new PostgresChildResumeStore(watched,currentAnchor);
+    const snapshot=async()=>{
+     const state:Record<string,unknown>={};
+     for(const table of ['draft_authorizations','session_resumption','resume_tickets','resume_mints','resume_token_lookup','session_tokens'])
+      state[table]=(await owner.query(`SELECT to_jsonb(t) value FROM child_stewardship.${table} t WHERE session_id=$1 ORDER BY to_jsonb(t)::text`,[session])).rows;
+     return state;
+    };
+    for(const kind of ['draft','suspend'] as const){
+     const before=await snapshot();fault=kind==='draft'?'SELECT child_stewardship.issue_draft_authorization(':'SELECT child_stewardship.suspend_synthetic_session(';
+     await assert.rejects(kind==='draft'?grants.issueDraftAuthorization(tokens.publicTokens.child,proposal):resume.suspend(tokens.publicTokens.child),/RESTORATION_UNVERIFIED/);
+     assert.equal(fault,'','fault injected after the actual SQL function completed');assert.deepEqual(await snapshot(),before);
+     keys[1]!.revoked=false;
+    }
+    assert.match(await grants.issueDraftAuthorization(tokens.publicTokens.child,proposal),/^cp-upload\./);
+    const suspended=await resume.suspend(tokens.publicTokens.child),before=await snapshot();
+    fault='SELECT child_stewardship.resume_synthetic_session(';
+    await assert.rejects(resume.resume(suspended.resumeTicket),/RESTORATION_UNVERIFIED/);
+    assert.equal(fault,'');assert.deepEqual(await snapshot(),before,'failed final read restores ticket, generation and all token/mint rows');
+    keys[1]!.revoked=false;
+    const resumed=await resume.resume(suspended.resumeTicket);Object.assign(tokens.publicTokens,resumed.tokens);
+    assert.equal((await view()).status,200,'new tokens work after both current-authority checks pass');
+    await assert.rejects(resume.resume(suspended.resumeTicket),/UNAUTHORIZED/,'successful redemption remains one-use');
+   });
    provider.stop();assert.equal((await view()).status,503);
    backend.stop();assert.equal((await backend.app.request('/health/ready')).status,503);
   });
