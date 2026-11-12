@@ -40,10 +40,14 @@ export class PostgresGuardianSessions {
     const {authenticationToken,bindingId}=input as Record<string,unknown>;
     if(typeof authenticationToken!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(authenticationToken)||typeof bindingId!=='string'||!uuid.test(bindingId))throw new ChildApiError('INVALID_INPUT');
     return this.client.transaction(async db=>{
-      await this.scope(db,authenticationToken,bindingId);
+      const sessionId=await this.scope(db,authenticationToken,bindingId);
       const rows=await db.query<{result:(GuardianIdentity&{sessionToken:string;expiresAt:string;syntheticOnly:true;identityVerified:false})|null}>(
         'SELECT child_stewardship_guardian.exchange($1,$2::uuid) AS result',[authenticationToken,bindingId]);
       if(!rows[0]?.result)throw new ChildApiError('UNAUTHORIZED',401);
+      // Exchange can wait on binding/WebAuthn locks after the first check.
+      // Keep its session and audit tentative until a fresh authority read passes.
+      // This detects observed changes, not an atomic lease on an external service.
+      if(this.restoreAnchor)await assertChildRestoreReady(db,sessionId,this.restoreAnchor);
       return rows[0].result;
     });
   }
