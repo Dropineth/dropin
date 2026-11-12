@@ -76,7 +76,7 @@ test('protocol invalidation during inference rejects the output before the human
     if(mode==='malformed')assert.throws(()=>f.protocolBoundary.observeFixture({}));
     if(mode==='rollback')f.advance(999);
     complete({kind:'learning-review-proposal',evidenceDigest:f.request.evidenceDigest,tools:[]});
-    await assert.rejects(pending,/LIFEPP_(LEARNING_INELIGIBLE|EVICTED_TERMINAL|CLOCK_ROLLBACK)/);
+    await assert.rejects(pending,mode==='rollback'?/AUTHORITY_UNAVAILABLE/:/LIFEPP_(LEARNING_INELIGIBLE|EVICTED_TERMINAL)/);
     assert.equal(twin.snapshot().state,'denied');assert.deepEqual(f.network.snapshot().receipts,[]);
   }
 });
@@ -85,5 +85,19 @@ test('fresh fixture allows proposal only; expiry cannot be reversed to authorize
   const twin=createChildTwinOrchestration(f.network,{async propose(input){calls++;return {kind:'learning-review-proposal',evidenceDigest:input.evidenceDigest,tools:[]};}});
   await twin.propose(f.request);assert.equal(calls,1);assert.equal(twin.snapshot().state,'awaiting-human-consent');
   f.network.recordChildAssent(f.request);f.advance(2000);assert.throws(()=>f.network.assertProposalAllowed(f.request),/INELIGIBLE/);
-  f.advance(1500);assert.throws(()=>twin.authorize(f.approvals()),/INELIGIBLE/);assert.equal(twin.snapshot().state,'denied');
+  f.advance(1500);assert.throws(()=>twin.authorize(f.approvals()),/AUTHORITY_UNAVAILABLE/);assert.equal(twin.snapshot().state,'denied');
+});
+
+test('request expiry observed before the protocol check cannot revive under a still-current fixture',()=>{
+  const f=fixture(),request={...f.request,expiresAt:2000};
+  f.protocolBoundary.observeFixture({...f.protocol,expiresAt:3000});
+  f.network.recordChildAssent(request);f.advance(2000);
+  assert.throws(()=>f.network.check(request,f.approvals(request)),/AUTHORITY_UNAVAILABLE/);
+  f.advance(1500);
+  // The independently scoped protocol fixture is still eligible. It cannot
+  // override the account's observed request expiry or restore its child assent.
+  f.protocolBoundary.assertLearningAllowed();
+  assert.throws(()=>f.network.commit(request,f.approvals(request)),/AUTHORITY_UNAVAILABLE/);
+  assert.throws(()=>f.network.recordChildAssent(request),/AUTHORITY_UNAVAILABLE/);
+  assert.equal(f.network.snapshot().assent,false);assert.deepEqual(f.network.snapshot().receipts,[]);
 });
