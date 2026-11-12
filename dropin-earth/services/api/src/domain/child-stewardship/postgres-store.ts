@@ -311,6 +311,11 @@ export class PostgresChildStore implements ChildStore {
         if(suppressed.length) throw new ChildApiError('PRIVACY_SUPPRESSED',403);
         const objects=await db.query<{content:Uint8Array;expires_at:Date}>("SELECT content,expires_at FROM child_stewardship.privacy_objects WHERE session_id=$1::uuid AND object_id=$2 AND kind='export' AND expires_at>clock_timestamp()",[sessionId,`export:${requestId}`]);
         if(!objects[0]) throw new ChildApiError('EXPORT_UNAVAILABLE',503);
+        // Reads and guardian authorization above can wait after initial admission.
+        // Recheck current restore authority before releasing any export bytes, then
+        // recompute expiry after that asynchronous check. This is a last observed
+        // authority check, not a distributed lease or external revocation fence.
+        await assertChildRestoreReady(db,sessionId,this.restoreAnchor);
         const releaseTime=Date.parse(childExecutionTime(now,started));
         if(sessions[0]!.expires_at.getTime()<=releaseTime||Date.parse(actor.expiresAt)<=releaseTime)throw new ChildApiError('UNAUTHORIZED',401);
         if(objects[0].expires_at.getTime()<=releaseTime)throw new ChildApiError('EXPORT_UNAVAILABLE',503);
@@ -320,3 +325,4 @@ export class PostgresChildStore implements ChildStore {
     });
   }
 }
+
