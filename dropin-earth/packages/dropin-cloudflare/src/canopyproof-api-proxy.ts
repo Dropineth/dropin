@@ -279,6 +279,14 @@ export function createCanopyproofApiProxy(options: CanopyproofProxyOptions = {})
       if (request.method === "OPTIONS") {
         const headers = buildCanopyproofSecurityHeaders(config.mode);
         appendCorsHeaders(headers, origin, config.allowedOrigins);
+        // Only this command endpoint needs revision and draft-authorization
+        // headers. Keep the generic CORS policy and exact origin checks intact;
+        // permitting headers does not authorize a command or enable enrollment.
+        if (origin && config.allowedOrigins.includes(origin)
+          && request.headers.get("access-control-request-method") === "POST"
+          && new URL(request.url).pathname === "/api/canopyproof/child-stewardship/v1/commands") {
+          headers.set("access-control-allow-headers", `${headers.get("access-control-allow-headers")},if-match,x-child-upload-authorization`);
+        }
         return new Response(null, { status: 204, headers });
       }
 
