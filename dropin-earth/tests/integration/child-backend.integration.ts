@@ -135,7 +135,7 @@ test('backend native migration, direct runtime role, external current anchor and
    assert.deepEqual((await owner.query('SELECT revision FROM child_stewardship.sessions WHERE id=$1',[session])).rows,before);
    assert.equal((await backend.app.request('/canopyproof/child-stewardship/v1/view',{headers:{authorization:`Bearer ${tokens.publicTokens.child}`}})).status,503);
   });
-  await t.test('actual signed external read plus distinct verifier admits current state; changed floor or outage closes existing sessions',async()=>{
+  await t.test('actual signed external read plus distinct verifier admits current state; changed floor or outage closes existing sessions',async lifecycle=>{
    const roots=await nativeChildSql(owner).transaction(async c=>{await c.query("SELECT set_config('app.child_session_id',$1,true)",[session]);return (await c.query<{roots:RestoreRoots}>('SELECT child_stewardship.restore_state_roots($1::uuid) roots',[session]))[0]!.roots;});
    const checkpoint:SignedRestoreCheckpoint['checkpoint']={protocol:'CanopyProof-RestoreCheckpoint/1',environment:'SIMULATION_ONLY',domainSeparator:'canopyproof:synthetic:restore:v1',checkpointId:anchor.checkpointId,sequence:1,sessionId:session,keyRegistryVersion:registry.version,issuedAt:new Date().toISOString(),expiresAt:new Date(Date.now()+60_000).toISOString(),roots};
    anchor={...anchor,digest:childDigest(checkpoint)};
@@ -188,7 +188,7 @@ test('backend native migration, direct runtime role, external current anchor and
    anchor={...anchor,sequence:2};assert.equal((await view()).status,503,'external floor advanced: old restored/admitted state denied');
    assert.equal((await owner.query('SELECT count(*)::int n FROM child_stewardship.restore_admissions')).rows[0].n,1);
    anchor={...anchor,sequence:1};
-   await t.test('native capability writes roll back on a late authority change; positive retry retains restore admission',async()=>{
+   await lifecycle.test('native capability writes roll back on a late authority change; positive retry retains restore admission',async()=>{
     for(const purpose of ['learning','upload']){
      const granted=await command('guardian',{type:'grant-consent',profileId:'demo-profile-a',purpose,policyVersion:'child-learning-demo-v1'});assert.equal(granted.status,200);
      const assented=await command('child',{type:'set-assent',profileId:'demo-profile-a',purpose,willing:true});assert.equal(assented.status,200);
