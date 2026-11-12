@@ -195,6 +195,75 @@ test('native guardian product sessions: exact binding, one-use exchange and exec
    await assert.rejects(guarded.guardianSessions.exchange({bindingId:f.binding,authenticationToken}),/RESTORATION_UNVERIFIED/);
    assert.equal((await owner.query('SELECT count(*)::int AS n FROM child_stewardship_guardian.sessions WHERE binding_id=$1',[f.binding])).rows[0].n,0);
   });
+  await t.test('guardian can revoke one issued token with missing restore readiness without reopening login or reads',async()=>{
+   const f=await fixture(),token=await f.login(),sibling=await f.login(),authenticationToken=await f.authenticate();
+   const guarded=new PostgresChildStore(client,async()=>{throw new Error('synthetic authority unavailable');});
+   const app=createChildStewardshipRoutes({mode:'synthetic-demo',store:guarded});
+   await assert.rejects(guarded.guardianSessions.resolve(token),/RESTORATION_UNVERIFIED/);
+   await assert.rejects(guarded.guardianSessions.exchange({bindingId:f.binding,authenticationToken}),/RESTORATION_UNVERIFIED/);
+   const response=await app.request('/guardian/logout',{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json'},body:'{}'});
+   assert.equal(response.status,200,await response.clone().text());
+   assert.deepEqual((await response.json()).data,{status:'session_revoked',syntheticOnly:true});
+   await assert.rejects(store.guardianSessions.resolve(token),/UNAUTHORIZED/,'restoring admission cannot revive the revoked bearer');
+   assert.equal((await store.guardianSessions.resolve(sibling)).sessionId,f.id,'a different issued bearer is unaffected');
+   assert.equal((await app.request('/view',{headers:{authorization:`Bearer ${sibling}`}})).status,503,'positive admission remains closed');
+  });
+  await t.test('self-revocation rejects unknown, hash-only and cross-tenant capabilities; concurrent retries audit once',async()=>{
+   const f=await fixture(),other=await fixture(),token=await f.login();
+   for(const [raw,target] of [[tokenDigest(token),f.id],[`cp-guardian.${randomBytes(32).toString('base64url')}`,f.id],[token,other.id]]){
+    assert.equal((await runtime!.pool.query('SELECT child_stewardship_guardian.logout($1,$2) AS accepted',[raw,target])).rows[0].accepted,false);
+   }
+   await owner.query('UPDATE child_stewardship_guardian.bindings SET revoked=true WHERE id=$1',[f.binding]);
+   await assert.rejects(store.guardianSessions.resolve(token),/UNAUTHORIZED/);
+   await Promise.all([store.guardianSessions.logout(token),store.guardianSessions.logout(token)]);
+   await store.guardianSessions.logout(token);
+   assert.equal((await owner.query("SELECT count(*)::int AS n FROM child_stewardship_guardian.audit WHERE binding_id=$1 AND action='logout'",[f.binding])).rows[0].n,1);
+   assert.equal((await owner.query('SELECT revoked FROM child_stewardship_guardian.sessions WHERE token_hash=$1',[tokenDigest(token)])).rows[0].revoked,true);
+  });
+  await t.test('expired guardian bearer and revoked authenticator can still be monotonically revoked',async()=>{
+   const f=await fixture(),live=await f.login(),authenticationToken=await f.authenticate();
+   const expired=`cp-guardian.${randomBytes(32).toString('base64url')}`;
+   await owner.query(`INSERT INTO child_stewardship_guardian.sessions SELECT $1,$2,id,clock_timestamp()-interval '20 minutes',clock_timestamp()-interval '15 minutes',false
+    FROM child_stewardship_webauthn.sessions WHERE token_hash=$3`,[tokenDigest(expired),f.binding,tokenDigest(authenticationToken)]);
+   await assert.rejects(store.guardianSessions.resolve(expired),/UNAUTHORIZED/);
+   await store.guardianSessions.logout(expired);
+   await f.webauthn.revoke(f.scope,new Date().toISOString());
+   await assert.rejects(store.guardianSessions.resolve(live),/UNAUTHORIZED/);
+   await store.guardianSessions.logout(live);
+   assert.equal((await owner.query('SELECT count(*)::int AS n FROM child_stewardship_guardian.sessions WHERE binding_id=$1 AND revoked',[f.binding])).rows[0].n,2);
+  });
+  await t.test('self-revocation and its audit commit together or both roll back',async()=>{
+   const f=await fixture(),token=await f.login();
+   await owner.query(`CREATE FUNCTION child_stewardship_guardian.test_reject_logout_audit() RETURNS trigger LANGUAGE plpgsql AS $$BEGIN IF NEW.action='logout' THEN RAISE EXCEPTION 'SYNTHETIC_AUDIT_FAILURE';END IF;RETURN NEW;END$$;
+    CREATE TRIGGER test_reject_logout_audit BEFORE INSERT ON child_stewardship_guardian.audit FOR EACH ROW EXECUTE FUNCTION child_stewardship_guardian.test_reject_logout_audit()`);
+   try{
+    await assert.rejects(store.guardianSessions.logout(token),/SYNTHETIC_AUDIT_FAILURE/);
+    assert.equal((await owner.query('SELECT revoked FROM child_stewardship_guardian.sessions WHERE token_hash=$1',[tokenDigest(token)])).rows[0].revoked,false);
+    assert.equal((await owner.query("SELECT count(*)::int AS n FROM child_stewardship_guardian.audit WHERE binding_id=$1 AND action='logout'",[f.binding])).rows[0].n,0);
+   }finally{await owner.query('DROP TRIGGER test_reject_logout_audit ON child_stewardship_guardian.audit; DROP FUNCTION child_stewardship_guardian.test_reject_logout_audit()');}
+   await store.guardianSessions.logout(token);await assert.rejects(store.guardianSessions.resolve(token),/UNAUTHORIZED/);
+  });
+  await t.test('self-revocation rechecks runtime permission after tenant lock wait and does not accept SET ROLE',async()=>{
+   const f=await fixture(),token=await f.login(),blocker=await owner.connect();
+   const version=Number((await owner.query("SELECT max(scope_version) AS version FROM child_stewardship.service_role_scopes WHERE database_role=$1 AND actor_role='guardian'",[role])).rows[0].version);
+   try{
+    await blocker.query('BEGIN');await blocker.query('SELECT id FROM child_stewardship.sessions WHERE id=$1 FOR UPDATE',[f.id]);
+    const pending=runtime!.pool.query('SELECT child_stewardship_guardian.logout($1,$2) AS accepted',[token,f.id]);
+    const deadline=Date.now()+1000;let waiting=false;
+    while(Date.now()<deadline){waiting=(await owner.query("SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE usename=$1 AND wait_event_type='Lock' AND query LIKE '%child_stewardship_guardian.logout%') AS waiting",[role])).rows[0].waiting;if(waiting)break;await new Promise(resolve=>setTimeout(resolve,10));}
+    assert.equal(waiting,true);
+    await owner.query("INSERT INTO child_stewardship.service_role_scopes VALUES($1,'guardian',$2,false,'synthetic-logout-role-revocation',clock_timestamp()+interval '1 hour')",[role,version+1]);
+    await blocker.query('COMMIT');assert.equal((await pending).rows[0].accepted,false);
+    assert.equal((await owner.query('SELECT revoked FROM child_stewardship_guardian.sessions WHERE token_hash=$1',[tokenDigest(token)])).rows[0].revoked,false);
+    await owner.query("INSERT INTO child_stewardship.service_role_scopes VALUES($1,'guardian',$2,true,'synthetic-logout-role-restoration',clock_timestamp()+interval '1 hour')",[role,version+2]);
+    await blocker.query('BEGIN');await blocker.query(`SET LOCAL ROLE ${role}`);
+    assert.equal((await blocker.query('SELECT child_stewardship_guardian.logout($1,$2) AS accepted',[token,f.id])).rows[0].accepted,false);
+    await blocker.query('ROLLBACK');await store.guardianSessions.logout(token);
+   }finally{
+    await blocker.query('ROLLBACK');blocker.release();
+    await owner.query("INSERT INTO child_stewardship.service_role_scopes SELECT $1,'guardian',coalesce(max(scope_version),0)+1,true,'synthetic-logout-test-cleanup',clock_timestamp()+interval '1 hour' FROM child_stewardship.service_role_scopes WHERE database_role=$1 AND actor_role='guardian'",[role]);
+   }
+  });
   await t.test('non-destructive rollback disables exchange and retains consumed authentication and audit',async()=>{
    const f=await fixture(),token=await f.login(),authenticationToken=await f.authenticate();
    const counts=async()=>(await owner.query('SELECT (SELECT count(*) FROM child_stewardship_guardian.sessions) AS sessions,(SELECT count(*) FROM child_stewardship_guardian.audit) AS audit')).rows[0];
@@ -264,6 +333,15 @@ test('native guardian product sessions: exact binding, one-use exchange and exec
     await f.webauthn.revoke(f.scope,new Date().toISOString());const first=await readRoots('');assert.notEqual(first.security,roots.security);
     await otherService.revoke(otherScope,new Date().toISOString());const second=await readRoots(f.scope.sandboxId);assert.notEqual(second.security,first.security);
    }finally{await owner.query(`REASSIGN OWNED BY ${reader} TO ${originalOwner}`);await owner.query(`DROP OWNED BY ${reader}`);await owner.query(`DROP ROLE ${reader}`);}
+   let providerCalls=0;
+   const unavailable=new PostgresChildStore(client,async()=>{providerCalls++;throw new Error('synthetic restore-provider outage');});
+   await assert.rejects(unavailable.guardianSessions.resolve(token),/RESTORATION_UNVERIFIED/);assert.equal(providerCalls,1,'installed restore gate consults independent provider');
+   const unavailableApp=createChildStewardshipRoutes({mode:'synthetic-demo',store:unavailable});
+   assert.equal((await unavailableApp.request('/guardian/logout',{method:'POST',headers:{authorization:`Bearer ${token}`},body:'{}'})).status,200);
+   assert.equal(providerCalls,1,'monotonic revocation does not consult failed positive authority');
+   assert.equal((await owner.query('SELECT revoked FROM child_stewardship_guardian.sessions WHERE token_hash=$1',[tokenDigest(token)])).rows[0].revoked,true,'expired restore admission and revoked authenticator cannot prevent self-revocation');
+   assert.equal((await owner.query("SELECT count(*)::int AS n FROM child_stewardship_guardian.audit WHERE binding_id=$1 AND action='logout'",[f.binding])).rows[0].n,1);
+   assert.equal((await runtime!.pool.query('SELECT child_stewardship_guardian.authorize($1,$2) AS identity',[token,f.id])).rows[0].identity,null);
 
   });
   assert.equal(external.mock.calls.length,0);

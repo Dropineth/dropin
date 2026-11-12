@@ -90,6 +90,15 @@ export function createChildStewardshipRoutes(options: Options) {
     await options.store!.create({ id: sessionId, expiresAt, snapshot: { version: 0, learning, rights: createEmptyRightsState() } }, tokens.records);
     return c.json(envelope({ sessionId, expiresAt, tokens: tokens.publicTokens, syntheticOnly: true, identityVerified: false }, 0), 201);
   });
+  // This exact endpoint only revokes its presented capability. Keep mode,
+  // origin, body-size and bounded local throttling, without positive admission.
+  app.post('/guardian/logout',async c=>{
+    const value=c.req.header('authorization')??'';
+    if(!/^Bearer cp-guardian\.[A-Za-z0-9_-]{43}$/.test(value)||!options.store?.guardianSessions)throw new ChildApiError('UNAUTHORIZED',401);
+    if(await c.req.text()!=='{}')throw new ChildApiError('INVALID_INPUT');
+    await options.store.guardianSessions.logout(value.slice(7),sessionId=>limited(`${sessionId}:guardian-logout`,120));
+    return c.json(envelope({status:'session_revoked',syntheticOnly:true}));
+  });
   app.use("*", async (c, next) => {
     const value = c.req.header("authorization") ?? "";
     const guardian=/^Bearer cp-guardian\.[A-Za-z0-9_-]{43}$/.test(value);
@@ -102,12 +111,6 @@ export function createChildStewardshipRoutes(options: Options) {
     await options.store!.consumeRateLimit?.('session_request',identity.sessionId,identity.principal.actorId);
     c.set("sessionId", identity.sessionId); c.set("principal", identity.principal);
     await next();
-  });
-  app.post('/guardian/logout',async c=>{
-    if(!c.get('guardianAuthorization')||!options.store?.guardianSessions)throw new ChildApiError('UNAUTHORIZED',401);
-    if(await c.req.text()!=='{}')throw new ChildApiError('INVALID_INPUT');
-    await options.store.guardianSessions.logout(c.get('guardianAuthorization')!.guardianToken);
-    return c.json(envelope({status:'session_revoked',syntheticOnly:true}));
   });
   app.get('/privacy/requests/:id', async c => {
     const id=c.req.param('id');

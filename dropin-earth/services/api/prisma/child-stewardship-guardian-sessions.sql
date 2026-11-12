@@ -152,10 +152,26 @@ BEGIN
 END $$;
 CREATE OR REPLACE FUNCTION child_stewardship_guardian.logout(raw text,target uuid) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,child_stewardship_guardian AS $$
-DECLARE identity jsonb; b uuid;
+DECLARE s sessions%ROWTYPE; b uuid;
 BEGIN
- identity:=authorize(raw,target);IF identity IS NULL THEN RETURN false;END IF;
- UPDATE sessions SET revoked=true WHERE token_hash=encode(sha256(convert_to(raw,'UTF8')),'hex') RETURNING binding_id INTO b;
+ -- Monotonic self-revocation is not positive authentication. The exact bearer
+ -- and tenant binding remain required even when restore/credential admission
+ -- is unavailable. No principal, data, new session or authority is released.
+ IF NOT runtime_allowed() OR raw IS NULL OR raw!~'^cp-guardian\.[A-Za-z0-9_-]{43}$' OR target IS NULL THEN RETURN false;END IF;
+ SELECT binding.id INTO b FROM sessions issued JOIN bindings binding ON binding.id=issued.binding_id
+  WHERE issued.token_hash=encode(sha256(convert_to(raw,'UTF8')),'hex') AND binding.session_id=target;
+ IF NOT FOUND THEN RETURN false;END IF;
+ PERFORM set_config('app.child_session_id',target::text,true);
+ PERFORM 1 FROM child_stewardship.sessions WHERE id=target FOR UPDATE;
+ IF NOT FOUND THEN RETURN false;END IF;
+ PERFORM 1 FROM bindings WHERE id=b AND session_id=target FOR SHARE;
+ IF NOT FOUND THEN RETURN false;END IF;
+ SELECT * INTO s FROM sessions WHERE token_hash=encode(sha256(convert_to(raw,'UTF8')),'hex') AND binding_id=b FOR UPDATE;
+ IF NOT FOUND OR NOT runtime_allowed() THEN RETURN false;END IF;
+ -- Repeated/concurrent logout succeeds without forbidden true-to-true updates
+ -- or duplicate audit records. The token can never be restored by this function.
+ IF s.revoked THEN RETURN true;END IF;
+ UPDATE sessions SET revoked=true WHERE token_hash=s.token_hash;
  INSERT INTO audit(binding_id,action) VALUES(b,'logout');
  RETURN true;
 END $$;

@@ -22,12 +22,16 @@ export async function authorizeGuardianTransaction(db:ChildSqlConnection,session
  * It does not establish legal identity, guardianship or recovery authority. */
 export class PostgresGuardianSessions {
   constructor(private readonly client:ChildSqlClient,private readonly restoreAnchor?:ChildRestoreAnchorProvider){}
-  private async scope(db:ChildSqlConnection,raw:string,binding:string|null):Promise<string> {
+  private async lockCapabilityScope(db:ChildSqlConnection,raw:string,binding:string|null):Promise<string> {
     const rows=await db.query<{id:string|null}>('SELECT child_stewardship_guardian.capability_session($1,$2::uuid)::text AS id',[raw,binding]);
     const id=rows[0]?.id;if(!id)throw new ChildApiError('UNAUTHORIZED',401);
     await db.query("SELECT set_config('app.child_session_id',$1,true),set_config('app.child_actor_role','guardian',true)",[id]);
     const locked=await db.query('SELECT id FROM child_stewardship.sessions WHERE id=$1::uuid FOR UPDATE',[id]);
     if(!locked.length)throw new ChildApiError('UNAUTHORIZED',401);
+    return id;
+  }
+  private async scope(db:ChildSqlConnection,raw:string,binding:string|null):Promise<string> {
+    const id=await this.lockCapabilityScope(db,raw,binding);
     await assertChildRestoreReady(db,id,this.restoreAnchor);
     return id;
   }
@@ -47,10 +51,15 @@ export class PostgresGuardianSessions {
     if(!bearer.test(raw))throw new ChildApiError('UNAUTHORIZED',401);
     return this.client.transaction(async db=>authorizeGuardianTransaction(db,await this.scope(db,raw,null),{guardianToken:raw}));
   }
-  async logout(raw:string):Promise<void> {
+  async logout(raw:string,onScope?:(sessionId:string)=>void):Promise<void> {
     if(!bearer.test(raw))throw new ChildApiError('UNAUTHORIZED',401);
     await this.client.transaction(async db=>{
-      const id=await this.scope(db,raw,null);
+      // Self-revocation releases no data or authority. A temporary restore outage
+      // must not leave this exact bearer usable when positive admission recovers.
+      const id=await this.lockCapabilityScope(db,raw,null);
+      // Internal bounded admission hook receives only the verified tenant scope.
+      // Unknown bearer strings cannot allocate caller-selected quota buckets.
+      onScope?.(id);
       const rows=await db.query<{accepted:boolean}>('SELECT child_stewardship_guardian.logout($1,$2::uuid) AS accepted',[raw,id]);
       if(rows[0]?.accepted!==true)throw new ChildApiError('UNAUTHORIZED',401);
     });
