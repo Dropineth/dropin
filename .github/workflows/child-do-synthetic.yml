@@ -4,6 +4,17 @@ on:
     paths:
       - 'dropin-earth/integrations/cai/cloudflare-synthetic/**'
       - '.github/workflows/child-do-synthetic.yml'
+      - 'dropin-earth/tests/unit/canopyproof-test-suite-contract.test.ts'
+      - 'dropin-earth/services/api/src/domain/child-stewardship/signature.ts'
+      - 'dropin-earth/contracts/ahin-signer-profile/v1/fixtures.json'
+  push:
+    branches: [main]
+    paths:
+      - 'dropin-earth/integrations/cai/cloudflare-synthetic/**'
+      - '.github/workflows/child-do-synthetic.yml'
+      - 'dropin-earth/tests/unit/canopyproof-test-suite-contract.test.ts'
+      - 'dropin-earth/services/api/src/domain/child-stewardship/signature.ts'
+      - 'dropin-earth/contracts/ahin-signer-profile/v1/fixtures.json'
   workflow_dispatch:
 permissions:
   contents: read

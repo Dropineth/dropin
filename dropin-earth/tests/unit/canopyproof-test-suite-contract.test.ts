@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import test from "node:test";
+import { parse } from "yaml";
 
 interface PackageManifest {
   scripts?: Record<string, string>;
@@ -14,6 +15,56 @@ interface PackageManifest {
 const ROOT = process.cwd();
 const PACKAGE_JSON = join(ROOT, "package.json");
 const ROOT_WORKFLOW = join(ROOT, "..", ".github", "workflows", "canopyproof-ci.yml");
+const CHILD_DO_ROOT = "integrations/cai/cloudflare-synthetic";
+const CHILD_DO_WORKFLOW = ".github/workflows/child-do-synthetic.yml";
+const CHILD_DO_TESTS = [
+  "account.test.ts", "authorization-node.test.mjs", "authorized-account.test.ts",
+  "key-encoding.test.ts", "signature-node.test.mjs", "signature.test.ts",
+].map((file) => `${CHILD_DO_ROOT}/test/${file}`);
+const CHILD_DO_INPUTS = [
+  `dropin-earth/${CHILD_DO_ROOT}/**`, CHILD_DO_WORKFLOW,
+  "dropin-earth/tests/unit/canopyproof-test-suite-contract.test.ts",
+  "dropin-earth/services/api/src/domain/child-stewardship/signature.ts",
+  "dropin-earth/contracts/ahin-signer-profile/v1/fixtures.json",
+];
+interface ChildDoWorkflow {
+  on: { pull_request: { paths: string[] }; push: { branches: string[]; paths: string[] }; workflow_dispatch: unknown };
+  permissions: { contents: string };
+  jobs: Record<string, {
+    if?: unknown; "continue-on-error"?: unknown;
+    defaults: { run: { "working-directory": string } };
+    steps: Array<{ uses?: string; run?: string; if?: unknown; "continue-on-error"?: unknown; with?: Record<string, unknown> }>;
+  }>;
+}
+function validateChildDoOwner(files: string[], manifest: PackageManifest, vitest: string, workflow: ChildDoWorkflow): void {
+  assert.deepEqual(files, CHILD_DO_TESTS, "isolated test inventory drifted; declare every file and its runner");
+  assert.equal(requireScript(manifest, "test"), "npm run test:node && vitest run");
+  assert.equal(requireScript(manifest, "test:node"), "node --experimental-strip-types --test test/*-node.test.mjs");
+  assert.match(vitest, /include:\s*\[\s*['"]test\/\*\*\/\*\.test\.ts['"]\s*\]/);
+  assert.equal(files.filter((path) => path.endsWith("-node.test.mjs")).length, 2);
+  assert.equal(files.filter((path) => path.endsWith(".test.ts")).length, 4);
+  assert.deepEqual(Object.keys(workflow.on).sort(), ["pull_request", "push", "workflow_dispatch"]);
+  assert.deepEqual(workflow.on.pull_request.paths, CHILD_DO_INPUTS);
+  assert.deepEqual(workflow.on.push.branches, ["main"]);
+  assert.deepEqual(workflow.on.push.paths, CHILD_DO_INPUTS);
+  assert.deepEqual(workflow.permissions, { contents: "read" });
+  assert.deepEqual(Object.keys(workflow.jobs), ["synthetic-do"]);
+  const job = workflow.jobs["synthetic-do"];
+  assert.equal(job.if, undefined, "suite owner cannot be conditionally omitted");
+  assert.equal(job["continue-on-error"], undefined, "suite failure cannot be ignored");
+  assert.equal(job.defaults.run["working-directory"], `dropin-earth/${CHILD_DO_ROOT}`);
+  assert.deepEqual(job.steps.filter((step) => step.run).map((step) => step.run), [
+    "npm ci", "npm run types", "npm run typecheck", "npm test", "npx wrangler deploy --dry-run --outdir dist",
+  ]);
+  for (const step of job.steps) {
+    assert.equal(step.if, undefined, "required suite setup or execution cannot be skipped");
+    assert.equal(step["continue-on-error"], undefined, "suite step failure cannot be ignored");
+  }
+  const checkout = job.steps.find((step) => step.uses?.startsWith("actions/checkout@"));
+  assert.equal(checkout?.with?.ref, "${{ github.event.pull_request.head.sha || github.sha }}");
+  assert.equal(checkout?.with?.["persist-credentials"], false);
+}
+
 const SKIPPED_DIRECTORIES = new Set([
   ".git",
   ".next",
@@ -200,6 +251,39 @@ test("every first-party file dependency resolves from its declaring manifest", (
   }
 });
 
+function childDoOwnerInputs() {
+  const files = listFiles(join(ROOT, CHILD_DO_ROOT, "test")).filter((path) => /\.test\.(ts|mjs)$/.test(path));
+  const manifest = JSON.parse(readFileSync(join(ROOT, CHILD_DO_ROOT, "package.json"), "utf8")) as PackageManifest;
+  const vitest = readFileSync(join(ROOT, CHILD_DO_ROOT, "vitest.config.ts"), "utf8");
+  const workflow = parse(readFileSync(join(ROOT, "..", CHILD_DO_WORKFLOW), "utf8")) as ChildDoWorkflow;
+  return { files, manifest, vitest, workflow };
+}
+
+test("isolated Cloudflare Node/workerd suites have exact files, runners and exact-head CI ownership", () => {
+  const { files, manifest, vitest, workflow } = childDoOwnerInputs();
+  validateChildDoOwner(files, manifest, vitest, workflow);
+});
+
+test("isolated suite contract rejects orphaned files, omitted runners and skipped or non-exact CI", () => {
+  const valid = childDoOwnerInputs();
+  const reject = (mutate: (v: ReturnType<typeof childDoOwnerInputs>) => void) => {
+    const value = structuredClone(valid); mutate(value);
+    assert.throws(() => validateChildDoOwner(value.files, value.manifest, value.vitest, value.workflow));
+  };
+  reject((v) => { v.files.push(`${CHILD_DO_ROOT}/test/orphan.test.ts`); });
+  reject((v) => { v.files.pop(); });
+  reject((v) => { v.manifest.scripts!.test = "vitest run"; });
+  reject((v) => { v.manifest.scripts!["test:node"] = "node --test test/signature-node.test.mjs"; });
+  reject((v) => { v.vitest = v.vitest.replace("test/**/*.test.ts", "test/signature.test.ts"); });
+  reject((v) => { v.workflow.on.pull_request.paths.pop(); });
+  reject((v) => { v.workflow.on.push.branches = ["feature"]; });
+  reject((v) => { v.workflow.jobs["synthetic-do"].if = "false"; });
+  reject((v) => { v.workflow.jobs["synthetic-do"]["continue-on-error"] = true; });
+  reject((v) => { v.workflow.jobs["synthetic-do"].steps.find((step) => step.run === "npm test")!.if = "false"; });
+  reject((v) => { v.workflow.jobs["synthetic-do"].steps.find((step) => step.run === "npm test")!.run = "npm test || true"; });
+  reject((v) => { v.workflow.jobs["synthetic-do"].steps[0].with!.ref = "main"; });
+});
+
 test("no first-party test file is outside a declared suite family", () => {
   const candidates = ["apps", "contracts", "integrations", "packages", "services", "tests"]
     .flatMap((directory) => listFiles(join(ROOT, directory)))
@@ -214,7 +298,8 @@ test("no first-party test file is outside a declared suite family", () => {
       /^tests\/integration\/[^/]+\.integration\.ts$/.test(path) ||
       /^tests\/browser\/[^/]+\.spec\.ts$/.test(path) ||
       path === "integrations/fiftyone/tests/test_canopyproof_client.py" ||
-      path === "contracts/solana/tests/dropin-anchor.spec.ts",
+      path === "contracts/solana/tests/dropin-anchor.spec.ts" ||
+      CHILD_DO_TESTS.includes(path),
   );
 
   assert.deepEqual(classified, candidates);
