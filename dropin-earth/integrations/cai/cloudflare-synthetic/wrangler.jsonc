@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "canopyproof-child-synthetic-local-only",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-12",
+  "workers_dev": false,
+  "preview_urls": false,
+  "vars": {"CHILD_DO_MODE": "disabled"},
+  "durable_objects": {"bindings": [{"name":"CHILD_ACCOUNT", "class_name":"SyntheticChildAccount"}]},
+  "migrations": [{"tag":"synthetic-v1", "new_sqlite_classes":["SyntheticChildAccount"]}]
+}
