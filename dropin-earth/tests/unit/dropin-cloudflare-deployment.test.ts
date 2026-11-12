@@ -163,11 +163,13 @@ test("Cloudflare child preflight keeps exact origin restrictions and never grant
   assert.equal(absent.headers.get("access-control-allow-headers"), null);
 });
 
-test("Cloudflare child command forwarding preserves the configured origin and opaque authorization headers", async () => {
+test("Cloudflare child command forwarding preserves opaque authorization through the isolated binding", async () => {
   const handler = createCanopyproofApiProxy({
-    requestIdFactory: () => "edge-test-request",
-    fetcher: async request => {
-      assert.equal(request.url, "https://api.dropin.example/canopyproof/child-stewardship/v1/commands?request=synthetic");
+    fetcher: async () => { throw new Error("Child requests must not reach the generic origin"); },
+  });
+  const childBackend = {
+    fetch: async (request: Request) => {
+      assert.equal(request.url, "https://canopyproof.org/canopyproof/child-stewardship/v1/commands?request=synthetic");
       assert.equal(request.method, "POST");
       assert.equal(request.headers.get("authorization"), "Bearer synthetic-test-token");
       assert.equal(request.headers.get("if-match"), '"7"');
@@ -175,13 +177,13 @@ test("Cloudflare child command forwarding preserves the configured origin and op
       assert.equal(await request.text(), "{}");
       return new Response("{}", { status: 200 });
     },
-  });
+  };
   const response = await handler.fetch(new Request(`https://canopyproof.org${childCommandsPath}?request=synthetic`, {
     method: "POST", body: "{}", headers: {
       origin: "https://canopyproof.org", "content-type": "application/json", authorization: "Bearer synthetic-test-token",
       "if-match": '"7"', "x-child-upload-authorization": "synthetic-test-proof",
     },
-  }), env);
+  }), { ...env, DROPIN_CHILD_BACKEND_MODE: "synthetic-demo", CHILD_BACKEND: childBackend });
   assert.equal(response.status, 200);
   assert.equal(response.headers.get("access-control-allow-headers"), ordinaryCorsHeaders);
 });

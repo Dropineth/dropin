@@ -9,6 +9,7 @@
     "DROPIN_API_ORIGIN": "https://canopyproof-staging-origin.invalid",
     "DROPIN_ALLOWED_ORIGINS": "https://canopyproof-web-staging.invalid",
     "DROPIN_ALLOW_ADMIN_PROXY": "false",
+    "DROPIN_CHILD_BACKEND_MODE": "disabled",
     "DROPIN_CANONICAL_HOST": "canopyproof-api-staging.invalid",
     "DROPIN_CANOPYPROOF_MODE": "testnet",
     "CANOPYPROOF_EDGE_OTEL_EXPORT_ENABLED": "false",
