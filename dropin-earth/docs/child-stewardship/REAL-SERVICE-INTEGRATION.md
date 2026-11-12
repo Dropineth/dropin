@@ -135,3 +135,23 @@ verified guardian enrollment/binding and passkey replacement require the approve
 identity/guardian service and recovery authority; dispute handling needs an actual
 accountable safeguarding operator beyond the synthetic role checks. No new public
 registration or recovery endpoint is introduced without those dependencies.
+
+## Guardian exchange final authority check
+
+Guardian session exchange now rereads the current restore authority after the
+exchange SQL and before returning from its transaction. The SQL may have waited
+on binding, WebAuthn sandbox, credential or authentication locks after the initial
+check. If the final read reports revocation, changed restore floor/key material,
+an expired signed response or unavailability, the tentative guardian session and
+exchange audit roll back and no bearer is released. The one-use authentication
+is not spent by that rolled-back exchange. There is no automatic retry; a later
+explicit attempt must pass both fresh checks again. Logout retains its separate
+negative-authority path and does not require positive restore admission.
+
+`child-stewardship-guardian-exchange.test.ts` exercises the actual adapter, signed
+fixture provider, Ed25519 verifier and nonce-bound client with an in-memory SQL
+transaction seam. It proves ordering and rollback behavior at the adapter
+boundary, not native PostgreSQL lock execution, a live HTTPS service or verified
+guardianship. Existing native suites remain required. This final read is not a
+distributed lease or atomic external revocation guarantee; a change after that
+read still requires an agreed authority/commit protocol before real enrollment.
