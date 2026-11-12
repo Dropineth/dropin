@@ -203,8 +203,11 @@ test('synthetic failure diagnostics redact capabilities, payload and nested prov
 test('Node D1 proxy retries only one closed-peer receipt read, never admission writes',async t=>{
  const directory=await mkdtemp(join(tmpdir(),'lifepp-proxy-transport-'));
  const peer=createServer(req=>req.socket.destroy());
+ const resetPeer=createServer(req=>req.socket.resetAndDestroy());
  await new Promise<void>((resolve,reject)=>{peer.once('error',reject);peer.listen(0,'127.0.0.1',resolve);});
+ await new Promise<void>((resolve,reject)=>{resetPeer.once('error',reject);resetPeer.listen(0,'127.0.0.1',resolve);});
  const address=peer.address();assert.ok(address&&typeof address!=='string');
+ const resetAddress=resetPeer.address();assert.ok(resetAddress&&typeof resetAddress!=='string');
  const closePeer=async():Promise<never>=>{
   try{await transportFetch(`http://127.0.0.1:${address.port}`,{method:'POST',body:'LOCAL_SYNTHETIC'});}
   catch(error){
@@ -215,6 +218,16 @@ test('Node D1 proxy retries only one closed-peer receipt read, never admission w
   }
   throw new Error('LOCAL_SYNTHETIC peer must actually close the transport');
  };
+ const resetConnection=async():Promise<never>=>{
+  try{await transportFetch(`http://127.0.0.1:${resetAddress.port}`,{method:'POST',body:'LOCAL_SYNTHETIC'});}
+  catch(error){
+   assert.ok(error instanceof TypeError);assert.equal(error.message,'fetch failed');
+   assert.ok(error.cause instanceof Error);assert.equal(error.cause.name,'Error');assert.equal(error.cause.message,'read ECONNRESET');
+   const cause=error.cause as Error&{code?:string;syscall?:string};assert.equal(cause.code,'ECONNRESET');assert.equal(cause.syscall,'read');
+   throw error;
+  }
+  throw new Error('LOCAL_SYNTHETIC peer must actually reset the TCP connection');
+ };
  const mf=new Miniflare({...convertV4MiniflareOptions({modules:true,script:'export default { fetch() { return new Response("LOCAL_SYNTHETIC"); } };',compatibilityDate:'2026-06-17',d1Databases:{LIFEPP_INQUIRY_DB:'local-synthetic-proxy-recovery'}}),resourcePersistencePath:directory,cf:false,telemetry:{enabled:false}});
  const now=Date.now();
  try{
@@ -223,16 +236,17 @@ test('Node D1 proxy retries only one closed-peer receipt read, never admission w
   await db.batch([db.prepare("INSERT INTO lifepp_inquiry_control(key,value) VALUES ('acceptance_ref',?)").bind(config.acceptanceRef),db.prepare("INSERT INTO lifepp_inquiry_control(key,value) VALUES ('policy_version',?)").bind(config.policyVersion)]);
   const healthy:InquiryRuntime={db,config};await cleanupInquiries(healthy,now);
   const counts=async()=>({rows:Number((await db.prepare('SELECT COUNT(*) AS count FROM lifepp_inquiries').first())?.count),global:Number((await db.prepare('SELECT count FROM lifepp_inquiry_limits WHERE bucket=?').bind(`global:${Math.floor(now/3_600_000)}`).first())?.count??0)});
-  const faultPort=(options:{failures?:number;permanent?:Error;batch?:boolean;prepare?:Error;bind?:Error;query?:string;afterRead?:(attempt:number)=>void;beforePrepare?:(attempt:number)=>void;holdRead?:()=>Promise<void>})=>{
+  const faultPort=(options:{failures?:number;reset?:boolean;permanent?:Error;batch?:boolean;prepare?:Error;bind?:Error;query?:string;afterRead?:(attempt:number)=>void;beforePrepare?:(attempt:number)=>void;holdRead?:()=>Promise<void>})=>{
    let remaining=options.failures??0,prepares=0;const calls={reads:0,batches:0};
+   const breakConnection=options.reset?resetConnection:closePeer;
    const wrap=(statement:InquiryStatement):InquiryStatement=>({
     bind:(...values)=>{if(options.bind)throw options.bind;return wrap(statement.bind(...values));},
-    async first<T>(){calls.reads++;try{if(options.permanent)throw options.permanent;if(remaining-->0)return await closePeer();const result=await statement.first<T>();await options.holdRead?.();return result;}finally{options.afterRead?.(calls.reads);}},
+    async first<T>(){calls.reads++;try{if(options.permanent)throw options.permanent;if(remaining-->0)return await breakConnection();const result=await statement.first<T>();await options.holdRead?.();return result;}finally{options.afterRead?.(calls.reads);}},
     all:<T>()=>statement.all<T>(),run:()=>statement.run(),
    });
    const port:InquiryDatabase={
     prepare(sql){if(sql!==(options.query??INQUIRY_RECEIPT_LOOKUP_SQL))return db.prepare(sql);options.beforePrepare?.(++prepares);if(options.prepare)throw options.prepare;return wrap(db.prepare(sql));},
-    batch(statements){calls.batches++;return options.batch?closePeer():db.batch(statements);},
+    batch(statements){calls.batches++;return options.batch?breakConnection():db.batch(statements);},
    };
    return{port,calls};
   };
@@ -325,7 +339,47 @@ test('Node D1 proxy retries only one closed-peer receipt read, never admission w
     assert.deepEqual(await counts(),{rows:16,global:16},'Late outcomes cannot duplicate committed admissions');
    }finally{for(const item of pending)item.resolve();await new Promise(resolve=>setImmediate(resolve));}
   });
+  await t.test('an actual TCP read reset recovers only the persisted receipt, never the admission',async()=>{
+   const before=await counts(),payload=makeBody(),fault=faultPort({failures:1,reset:true}),metrics={retries:0};
+   const response=await submitInquiry(request(payload),{db:miniflareReceiptReadback(fault.port,metrics),config},'192.0.8.1',now);
+   assert.equal(response.status,201);const receipt=await response.json();
+   assert.ok(await db.prepare('SELECT id FROM lifepp_inquiries WHERE id=?').bind(receipt.receiptId).first());
+   assert.deepEqual(fault.calls,{reads:2,batches:1});assert.equal(metrics.retries,1);
+   assert.deepEqual(await counts(),{rows:before.rows+1,global:before.global+1});
+   const retry=await submitInquiry(request(payload),healthy,'192.0.8.1',now);assert.equal(retry.status,200);assert.equal((await retry.json()).receiptId,receipt.receiptId);
+   assert.deepEqual(await counts(),{rows:before.rows+1,global:before.global+1});
+  });
+  await t.test('two real TCP resets exhaust the same two-read budget and preserve503',async()=>{
+   const before=await counts(),payload=makeBody(),fault=faultPort({failures:2,reset:true}),metrics:MiniflareReadbackMetrics={retries:0};
+   await unavailable(await submitInquiry(request(payload),{db:miniflareReceiptReadback(fault.port,metrics),config},'192.0.8.2',now));
+   assert.deepEqual(fault.calls,{reads:2,batches:1});assert.equal(metrics.retries,1);assert.equal(metrics.exhausted,1);
+   assert.deepEqual(await counts(),{rows:before.rows+1,global:before.global+1});
+   assert.equal((await submitInquiry(request(payload),healthy,'192.0.8.2',now)).status,200);
+   assert.deepEqual(await counts(),{rows:before.rows+1,global:before.global+1});
+  });
+  await t.test('unwrapped read resets and batch resets remain503 without replay',async()=>{
+   const before=await counts(),payload=makeBody(),raw=faultPort({failures:1,reset:true});
+   await unavailable(await submitInquiry(request(payload),{db:raw.port,config},'192.0.8.3',now));
+   assert.deepEqual(raw.calls,{reads:1,batches:1});assert.deepEqual(await counts(),{rows:before.rows+1,global:before.global+1});
+   const batch=faultPort({batch:true,reset:true}),metrics={retries:0};
+   await unavailable(await submitInquiry(request(makeBody()),{db:miniflareReceiptReadback(batch.port,metrics),config},'192.0.8.4',now));
+   assert.deepEqual(batch.calls,{reads:0,batches:1});assert.equal(metrics.retries,0);
+   assert.deepEqual(await counts(),{rows:before.rows+1,global:before.global+1});
+  });
+  await t.test('reset lookalikes, write resets and reset prepare/bind failures are not recovered',async()=>{
+   for(const cause of [Object.assign(new Error('read ECONNRESET'),{code:'ECONNRESET'}),Object.assign(new Error('read ECONNRESET'),{code:'ECONNRESET',syscall:'write'}),Object.assign(new Error('write ECONNRESET'),{code:'ECONNRESET',syscall:'read'}),Object.assign(new Error('read ECONNRESET'),{code:'OTHER_CODE',syscall:'read'}),Object.assign(new Error('read ECONNRESET'),{name:'OtherError',code:'ECONNRESET',syscall:'read'})]){
+    const error=new TypeError('fetch failed',{cause}),fault=faultPort({permanent:error}),metrics={retries:0};
+    await assert.rejects(miniflareReceiptReadback(fault.port,metrics).prepare(INQUIRY_RECEIPT_LOOKUP_SQL).bind('fixture',now).first(),candidate=>candidate===error);
+    assert.deepEqual(fault.calls,{reads:1,batches:0});assert.equal(metrics.retries,0);
+   }
+   const actualReset=await resetConnection().catch((error:Error)=>error);
+   for(const option of [{prepare:actualReset},{bind:actualReset}]){
+    const fault=faultPort(option),metrics={retries:0};
+    assert.throws(()=>miniflareReceiptReadback(fault.port,metrics).prepare(INQUIRY_RECEIPT_LOOKUP_SQL).bind('fixture',now),candidate=>candidate===actualReset);
+    assert.deepEqual(fault.calls,{reads:0,batches:0});assert.equal(metrics.retries,0);
+   }
+  });
  }finally{
-  await mf.dispose();peer.closeAllConnections();await new Promise<void>(resolve=>peer.close(()=>resolve()));await rm(directory,{recursive:true,force:true});
+  await mf.dispose();peer.closeAllConnections();resetPeer.closeAllConnections();await Promise.all([new Promise<void>(resolve=>peer.close(()=>resolve())),new Promise<void>(resolve=>resetPeer.close(()=>resolve()))]);await rm(directory,{recursive:true,force:true});
  }
 });

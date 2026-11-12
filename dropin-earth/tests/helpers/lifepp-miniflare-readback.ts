@@ -4,7 +4,7 @@ export const MINIFLARE_RECEIPT_READ_BUDGET_MS = 5_000;
 export type MiniflareReadbackMetrics = { retries: number; exhausted?: number; deadlines?: number };
 
 /** Node getD1Database() is an RPC proxy, unlike the production Worker binding.
- * Recover only its observed closed-peer transport failure on one exact read.
+ * Recover only its observed closed-peer/read-reset transport failures on one exact read.
  * No write, batch, arbitrary SQL, prepare/bind error or other error is retried.
  * A timer bounds an async pending read, but cannot cancel the underlying RPC.
  * Synchronous proxy RPC can block the event loop; once control returns, late
@@ -39,8 +39,11 @@ export function miniflareReceiptReadback(db: InquiryDatabase, metrics: Miniflare
         catch (error) {
           if (!(error instanceof TypeError) || error.message !== 'fetch failed') throw error;
           const cause = error.cause;
-          if (!(cause instanceof Error) || cause.name !== 'SocketError' || cause.message !== 'other side closed'
-            || !('code' in cause) || cause.code !== 'UND_ERR_SOCKET') throw error;
+          if (!(cause instanceof Error) || !('code' in cause)) throw error;
+          const closedPeer = cause.name === 'SocketError' && cause.message === 'other side closed' && cause.code === 'UND_ERR_SOCKET';
+          const readReset = cause.name === 'Error' && cause.message === 'read ECONNRESET' && cause.code === 'ECONNRESET'
+            && 'syscall' in cause && cause.syscall === 'read';
+          if (!closedPeer && !readReset) throw error;
           withinDeadline();
           metrics.retries++;
           // Rebuild this read alone after the failed transport. A failure here
