@@ -1,3 +1,4 @@
+import { forwardChildBackendRequest, type ChildBackendBindingEnv } from "./child-backend-binding.js";
 import {
   createCanopyproofEdgeRequestId,
   createCanopyproofEdgeTraceContext,
@@ -11,7 +12,7 @@ import {
 
 export type CanopyproofMode = "testnet" | "production";
 
-export interface CanopyproofCloudflareEnv extends CanopyproofEdgeObservabilityEnv {
+export interface CanopyproofCloudflareEnv extends CanopyproofEdgeObservabilityEnv, ChildBackendBindingEnv {
   DROPIN_API_ORIGIN?: string;
   DROPIN_ALLOWED_ORIGINS?: string;
   DROPIN_ALLOW_ADMIN_PROXY?: string;
@@ -288,6 +289,15 @@ export function createCanopyproofApiProxy(options: CanopyproofProxyOptions = {})
           headers.set("access-control-allow-headers", `${headers.get("access-control-allow-headers")},if-match,x-child-upload-authorization`);
         }
         return new Response(null, { status: 204, headers });
+      }
+
+      const childResponse = await forwardChildBackendRequest(request, env);
+      if (childResponse) {
+        appendCorsHeaders(childResponse.headers, origin, config.allowedOrigins);
+        if (config.mode === "production") {
+          childResponse.headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
+        }
+        return childResponse;
       }
 
       if (isAdminProxyPath(request.url) && !config.allowAdminProxy) {
