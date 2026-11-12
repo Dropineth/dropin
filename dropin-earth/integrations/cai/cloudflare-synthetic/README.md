@@ -4,7 +4,7 @@
 
 ## Run
 
-From this directory with Node22.23.4 or a supported newer Node:
+From this directory with Node22.23.5 or a supported newer Node:
 
 ```sh
 npm ci

@@ -11,7 +11,7 @@ let workingTreeDirty=null;
 try{workingTreeDirty=Boolean(execFileSync('git',['status','--porcelain'],{cwd:root,encoding:'utf8'}).trim());}catch{/* image build has no Git metadata; not an independent clean-source attestation */}
 const output=resolve(root,'dist/child-backend');
 const sha=process.env.CHILD_BUILD_SHA??execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
-if(!/^[a-f0-9]{40}$/.test(sha)||process.version!=='v22.23.4')throw new Error('PINNED_BUILD_CONTEXT_REQUIRED');
+if(!/^[a-f0-9]{40}$/.test(sha)||process.version!=='v22.23.5')throw new Error('PINNED_BUILD_CONTEXT_REQUIRED');
 await mkdir(resolve(output,'migrations'),{recursive:true});
 const result=await build({absWorkingDir:root,entryPoints:{server:'services/api/src/child-backend/server.ts',migrate:'services/api/src/child-backend/migrate-cli.ts'},outdir:output,outExtension:{'.js':'.mjs'},bundle:true,platform:'node',target:'node22',format:'esm',metafile:true,external:['pg-native'],banner:{js:"import {createRequire as __createRequire} from 'node:module'; const require=__createRequire(import.meta.url);"}});
 const {childMigrationFiles}=await import('../services/api/src/child-backend/migrations.ts');
