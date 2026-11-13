@@ -80,3 +80,48 @@ observations; this is not an independent durable time/finality source.
 
 Unit tests use ephemeral keys and pseudonymous fixtures only. They test attribution
 and refusal behavior, not hosted E2E, verified real people or production readiness.
+
+## Reproducible local transport acceptance
+
+With the locked dependencies, Node 22.23.5 and an existing official OpenSSL CLI:
+
+```sh
+node --import tsx scripts/guardian-authority-acceptance.mjs --synthetic-only
+```
+
+Without that exact opt-in the command exits closed, without network activity. It
+accepts no external endpoint or real subject IDs. It generates a disposable
+one-day test CA/server certificate and in-memory Ed25519 fixtures, starts HTTPS
+on a random **127.0.0.1-only** port, and runs the actual provider with native
+fetch. The test CA is trusted only by its disposable child process through
+`NODE_EXTRA_CA_CERTS`; certificate verification is never disabled. Missing-CA and
+wrong-hostname controls must fail before reaching the handler.
+The child receives only an explicit operational environment allowlist, not
+ambient application/database credentials. Existing platform security/preload,
+proxy and CA controls are preserved, and TLS-verification disabling is rejected.
+The report describes loopback request targets and listener binding, **not OS
+egress isolation or independence from a modified/untrusted Node runtime**.
+
+The 15-case matrix covers a positive signed observation (never authorization),
+missing configuration, revoked/mismatched/forged/expired/replayed claims,
+unavailable/malformed/oversized/redirecting/stalled responses, and shutdown.
+It checks one wire request per attempt, unique nonces and no followed redirects.
+Handler exceptions are counted and fail acceptance, never counted as successful
+negative controls merely because a broken fixture made the client return closed.
+The test-only `--self-test-handler-failure` option after `--synthetic-only`
+intentionally breaks one refusal handler and must exit with a failed report.
+All listeners are closed and temporary TLS keys removed before success is emitted.
+Unexpected process termination still requires normal temporary-directory cleanup;
+this test is not a persistent service or offsite key-custody mechanism.
+
+The single JSON report contains candidate SHA/tree, actual relevant-source and
+lockfile fingerprint, runtime version, dirty-tree state, case names and counts.
+It excludes subject IDs, endpoint addresses, response bodies and key material.
+Source identity is checked again after execution. `productionReady`,
+`realAuthorityConnected` and `authorizationGranted` remain false even on success.
+An exit code of zero means only that this local synthetic transport matrix passed.
+
+The deployment preparation now records Cloudflare-first with an existing isolated
+Node/PostgreSQL origin candidate, rather than the superseded Render preference.
+It does not create resources, select a production jurisdiction or authorize a
+connector, public route, Access policy or other security-sensitive network change.
