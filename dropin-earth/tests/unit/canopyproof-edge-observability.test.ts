@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import process from "node:process";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   buildCanopyproofEdgeOtlpJsonTraceRequest,
   createCanopyproofEdgeRequestId,
@@ -19,6 +22,9 @@ import { buildCanopyProofRequestTelemetry } from "../../services/api/src/domain/
 const TRACE_ID = "00112233445566778899aabbccddeeff";
 const PARENT_SPAN_ID = "1122334455667788";
 const EDGE_SPAN_ID = "aabbccddeeff0011";
+// Model the transport's externally rooted in-flight request ownership. A local
+// variable in a suspended async continuation alone is not a GC root.
+const pendingDeadlineRequests = new Set<Request>();
 
 const proxyEnv = {
   DROPIN_API_ORIGIN: "https://api.dropin.example",
@@ -266,22 +272,50 @@ test("edge exporter is bounded, exact, and contains transport failures", async (
   assert.equal(calls, 0);
 });
 
-test("edge exporter aborts at the configured deadline without rejection leakage", async () => {
+test("edge exporter aborts at the configured deadline without rejection leakage", async (t) => {
+  // A real fetch retains its in-flight Request. This pending stub must do the
+  // same: Node follows the controller with a weakly held dependent AbortSignal.
+  let outbound: Request | undefined;
+  t.after(() => pendingDeadlineRequests.clear());
   const outcome = await exportCanopyproofEdgeOtlpSpan({
     configuration: readyConfiguration({ timeoutMs: 100 }),
     span: edgeSpanInput(),
-    fetcher: async (request) =>
-      new Promise<Response>((_resolve, reject) => {
+    fetcher: async (request) => {
+      outbound = request;
+      pendingDeadlineRequests.add(request);
+      return new Promise<Response>((_resolve, reject) => {
         const rejectAbort = () => reject(new DOMException("aborted", "AbortError"));
         if (request.signal.aborted) {
           rejectAbort();
           return;
         }
         request.signal.addEventListener("abort", rejectAbort, { once: true });
-      }),
+      });
+    },
   });
 
   assert.equal(outcome, "failed");
+  assert.ok(outbound);
+  assert.equal(outbound.signal.aborted, true);
+});
+
+test("edge deadline fixture survives garbage collection while transport is pending", () => {
+  const environment = { ...process.env };
+  // This is an independent test runner, not the parent's internal child channel.
+  // Preserve NODE_V8_COVERAGE so the regression also runs under the same c8 gate.
+  delete environment.NODE_TEST_CONTEXT;
+  const result = spawnSync(process.execPath, [
+    "--expose-gc",
+    "--import", "tsx",
+    "--import", new URL("../fixtures/force-edge-deadline-gc.ts", import.meta.url).href,
+    "--test",
+    "--test-name-pattern=^edge exporter aborts at the configured deadline without rejection leakage$",
+    fileURLToPath(import.meta.url),
+  ], { encoding: "utf8", timeout: 10_000, maxBuffer: 1024 * 1024, env: environment });
+  assert.ifError(result.error);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  assert.match(result.stdout, /# pass 1\b/);
+  assert.match(result.stdout, /# fail 0\b/);
 });
 
 test("waitUntil scheduling absorbs exporter resolution and rejection", async () => {
