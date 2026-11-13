@@ -415,7 +415,7 @@ async function interactions() {
               assert.match(await page.locator("[data-reference-globe]").first().innerText(), /REFERENCE|参考/i);
             }
             if (view === "earth") {
-              await page.getByRole("button", { name: /Life\+\+HERE three-store concept|Life\+\+HERE 三铺构想/ }).click();
+              await page.getByRole("button", { name: /Life\+\+HERE community plan|Life\+\+HERE 社区规划/ }).click();
               const currentRooms = page.getByLabel(/Three proposed spaces|三处拟议空间/, { exact: true });
               assert.equal(await currentRooms.locator("article").count(), 3);
               for (const id of ["L112", "L203", "L202"]) assert.match(await currentRooms.innerText(), new RegExp(id));
@@ -425,10 +425,10 @@ async function interactions() {
               assert.equal(await page.locator('[data-evidence-state][data-status="not-established"]').count(), 5);
               const tab = page.getByRole("tab", { name: locale === "zh" ? "记录" : "Record", exact: true });
               await tab.focus(); await page.keyboard.press("ArrowRight");
-              assert.equal(await page.getByRole("tab", { name: locale === "zh" ? "来源链" : "Lineage", exact: true }).getAttribute("aria-selected"), "true");
+              assert.equal(await page.getByRole("tab", { name: locale === "zh" ? "来源" : "Sources", exact: true }).getAttribute("aria-selected"), "true");
               assert.match(await page.getByRole("tabpanel").innerText(), /Not supplied|尚未提供/);
               await page.keyboard.press("End");
-              assert.equal(await page.getByRole("tab", { name: locale === "zh" ? "边界" : "Boundaries", exact: true }).getAttribute("aria-selected"), "true");
+              assert.equal(await page.getByRole("tab", { name: locale === "zh" ? "适用范围" : "Use & limits", exact: true }).getAttribute("aria-selected"), "true");
             }
             if (view === "participation") {
               assert.equal(await page.locator('input, [data-wallet], form').count(), 0, "Status page has no payment or entry form");
@@ -554,7 +554,7 @@ async function interactions() {
       assert.match(await form.locator('[role="status"]').innerText(), /尚未发送|not sent/i);
       assert.equal(await page.evaluate(() => localStorage.length), 0);
       assert.equal(await page.evaluate(() => sessionStorage.length), 0);
-      await form.getByRole("button", { name: /清除本页信息|Clear this page/ }).click();
+      await form.getByRole("button", { name: /清空本页|Clear this page/ }).click();
       assert.equal(await page.locator("#inquiry-draft").count(), 0);
       assert.equal(await page.locator("#inquiry-name").inputValue(), "");
       assert.deepEqual(writes, [], "Draft and copy must not send HTTP writes");

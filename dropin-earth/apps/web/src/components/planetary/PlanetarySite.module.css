@@ -28,12 +28,13 @@
 .proofLine { display:flex; flex-wrap:wrap; gap:21px; font-size:8px; letter-spacing:1.5px; margin-top:45px; }
 .micro { font-size:11px; color:var(--muted); line-height:1.7; margin-top:16px; max-width:95%; }
 .portals { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:15px; max-width:1560px; padding:0 5%; margin:0 auto 64px; }
-.portal { position:relative; text-align:left; border:1px solid var(--line); border-radius:12px; background:#ffffffa3; min-height:218px; padding:23px; transition:transform .2s,border-color .2s; }
+.portal { position:relative; text-align:left; border:1px solid var(--line); border-radius:12px; background:#ffffffa3; min-height:268px; padding:23px; transition:transform .2s,border-color .2s; }
 .portal:hover { transform:translateY(-4px); border-color:var(--teal); }
 .number { display:block; font-size:8px; letter-spacing:1.8px; color:var(--muted); padding-right:18px; }
 .portalIcon { display:block; font-size:35px; color:var(--teal); height:60px; padding-top:14px; }
 .portal h2 { font-family:Georgia,"Songti SC",SimSun,serif; font-size:23px; line-height:1.4; font-weight:400; margin:14px 0 9px; }
-.portal p { font-size:11px; color:var(--muted); line-height:1.8; margin:0; }
+.portal p { font-size:13px; color:var(--muted); line-height:1.8; margin:0; }
+.portalCta { display:block; margin-top:18px; font-size:12px; line-height:1.6; font-weight:600; color:var(--teal); }
 .arrow { position:absolute; right:22px; top:22px; font-size:21px; }
 .life { background:linear-gradient(120deg,#eeebf8,#fbfbfd); }
 .life .portalIcon { color:var(--purple); }
@@ -54,7 +55,7 @@
 .workspaceHeading { margin-bottom:28px; }
 .workspaceHeading h1 { font-family:Georgia,"Songti SC",SimSun,serif; font-size:40px; font-weight:400; line-height:1.4; margin:15px 0; }
 .workspaceHeading>p:last-child { color:var(--muted); font-size:14px; }
-@media(max-width:1100px) { .header { padding-inline:4%; gap:15px; } .nav { gap:13px; } .brand { font-size:22px; } .headerActions { gap:8px; } .root .hero { padding-inline:4%; min-height:570px; } .heroCopy { padding-top:40px; } .root .hero h1 { font-size:40px; } .portal { padding:19px; } .portal h2 { font-size:21px; } }
+@media(max-width:1100px) { .header { padding-inline:4%; gap:15px; flex-wrap:wrap; } .nav { gap:13px; order:3; flex:1 0 100%; flex-wrap:wrap; } .brand { font-size:22px; } .headerActions { gap:8px; margin-left:auto; } .root .hero { padding-inline:4%; min-height:570px; } .heroCopy { padding-top:40px; } .root .hero h1 { font-size:40px; } .portal { padding:19px; } .portal h2 { font-size:21px; } }
 @media(max-width:850px) { .header { flex-wrap:wrap; padding:15px 5%; gap:15px; } .nav { order:3; flex:1 0 100%; flex-wrap:wrap; justify-content:flex-start; gap:0 18px; padding-bottom:4px; } .nav a { font-size:12px; padding:12px 0; min-height:44px; } .headerActions { margin-left:auto; } .notice { font-size:10px; } .root .hero { grid-template-columns:minmax(0,1fr); padding-top:0; } .heroCopy { padding:36px 1% 0; } .root .hero h1 { font-size:clamp(32px,6vw,52px); line-height:1.5; letter-spacing:-1.3px; margin-top:23px; } .lead { font-size:14px; } .proofLine { margin-top:28px; } .portals { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .portal { min-height:204px; } .foundation { grid-template-columns:1fr; gap:20px; padding:37px 5%; } .foundation h2 { font-size:30px; } .existing { grid-template-columns:repeat(2,minmax(0,1fr)); gap:25px; } .footer { flex-direction:column; gap:15px; } .workspace { padding:30px 5%; } .workspaceHeading h1 { font-size:32px; } }
 @media(max-width:400px) { .brand { font-size:21px; } .brand small { letter-spacing:1.4px; } .headerActions { margin-left:0; } .portal { padding:16px; } .portal h2 { font-size:20px; } .existing { grid-template-columns:1fr; } }
 @media(prefers-reduced-motion:reduce) { .portal { transition:none; } .portal:hover { transform:none; } }

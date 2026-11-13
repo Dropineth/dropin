@@ -15,13 +15,15 @@ test("CanopyProof homepage exposes the required public narrative", () => {
   const content = read("apps/web/src/data/siteContent.ts");
   const source = `${page}\n${content}`;
 
-  assert.match(source, /Environmental accountability\. Verified\. Transparent\. Restored\./);
+  assert.match(source, /Environmental action\. Evidence you can follow\./);
   assert.match(source, /CanopyProof by Dropin/);
-  assert.match(source, /Reported -> Verified -> Recorded -> Monitored -> Impact Confirmed/);
-  assert.match(source, /Watch 2-minute prototype demo/);
-  assert.match(source, /Prototype transparency: sample metrics and selected visual scenes/);
+  assert.match(source, /Record an observation/);
+  assert.match(source, /See the four steps/);
+  assert.match(source, /Public guide and sample interface/);
   assert.match(source, /sample interface/i);
   assert.match(source, /demo data/i);
+  assert.match(page, /does not report verified results from a real project/);
+  assert.doesNotMatch(page, /https:\/\/www\.youtube\.com\//);
 });
 
 test("CanopyProof Explorer uses the canonical route without sample record fallbacks", () => {
@@ -78,7 +80,7 @@ test("CanopyProof SEO and crawler files are configured for canopyproof.org", () 
   const productionMetadata = renderedMetadata(true);
   const publicSitemap = productionMetadata.sitemap.map(item => `<loc>${item.url}</loc>`).join("\n");
 
-  assert.match(layout, /CanopyProof — Environmental Accountability for Ecological Restoration/);
+  assert.match(layout, /CanopyProof \| Environmental Evidence & Learning/);
   assert.match(layout, /canonical: "https:\/\/canopyproof\.org"/);
   assert.match(robots, /https:\/\/canopyproof\.org\/sitemap\.xml/);
   assert.match(sitemap, /https:\/\/canopyproof\.org/);

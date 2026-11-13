@@ -9,10 +9,10 @@ export const lifePages: Record<string, string> = {
   membership: "membership", partners: "partners", trust: "trust",
 };
 const titles: Record<string, [string, string]> = {
-  home: [LIFEPP_PUBLIC_BRAND, `${LIFEPP_PUBLIC_BRAND} — Living with intelligent collaboration`],
-  spaces: ["空间测试场景", "Spatial test scenes"], center: ["三铺人机共生中心 · 导入期规划", "Three-unit symbiosis center · Pilot planning"],
+  home: [LIFEPP_PUBLIC_BRAND, `${LIFEPP_PUBLIC_BRAND} — Spaces, AI and community`],
+  spaces: ["三维空间与来源说明", "3D spaces and source information"], center: ["三铺共生中心 · 空间规划", "Three-unit community center · Planned spaces"],
   agents: ["数字分身与边缘计算", "Agents & edge computing"], membership: ["拟议会员方案", "Proposed membership"],
-  partners: ["申请空间与业务合作", "Explore a partnership"], trust: ["信任、授权与责任", "Trust, permissions & responsibility"],
+  partners: ["学校、机构与企业合作", "Partnerships for schools, institutions and businesses"], trust: ["授权、隐私与责任", "Permissions, privacy & responsibility"],
   company: ["关于 CanopyProof Limited", "About CanopyProof Limited"],
 };
 export const isProductionSite = process.env.NEXT_PUBLIC_CANOPYPROOF_MODE === "production"
@@ -22,7 +22,7 @@ export function lifeMetadata(path: string, page: string, locale: Locale): Metada
   const isScene = path === "/life/spaces/33" || path === "/life/spaces/31" || path === "/life/spaces/29";
   const baseTitle = isScene ? `${locale === "zh" ? "场景" : "Scene "}${path.split("/").pop()}` : (titles[page]?.[locale === "zh" ? 0 : 1] ?? LIFEPP_PUBLIC_BRAND);
   const title = page === "company" || baseTitle.includes(LIFEPP_PUBLIC_BRAND) ? baseTitle : `${baseTitle} · ${LIFEPP_PUBLIC_BRAND}`;
-  const description = locale === "zh" ? "从真实空间的数字重建开始，连接人的需求、社区服务与可问责的智能协作。会展湾三铺导入期规划与用户提供的测试输入；本轮不纳入L201。" : "Starting with digital reconstruction of real spaces, connecting people, community services and accountable intelligent collaboration. Three-unit pilot planning at Expo Bay and user-provided test inputs; L201 is excluded from this phase.";
+  const description = locale === "zh" ? "了解 Life++HERE 的三维空间、个人智能助手与社区学习规划。深圳会展湾 L112、L203、L202 三铺共 380.48㎡；可浏览方案并整理合作需求。场地服务与会员收费尚未开放。" : "Explore Life++HERE plans for 3D spaces, personal AI assistance and community learning. The proposed 380.48 m² center covers L112, L203 and L202 at Expo Bay, Shenzhen. Browse the plans and prepare an enquiry; venue services and paid memberships are not yet open.";
   const canonical = `https://canopyproof.org${localPath(path, locale)}`;
   return { title, description, alternates: { canonical, languages: { "zh-CN": `https://canopyproof.org${path}`, en: `https://canopyproof.org/en${path}`, "x-default": `https://canopyproof.org${path}` } }, openGraph: { title, description, url: canonical, locale: locale === "zh" ? "zh_CN" : "en_US", siteName: `CanopyProof · ${LIFEPP_PUBLIC_BRAND}` }, twitter: { card: "summary_large_image", title, description, images: ["/icon.jpg"] }, robots: { index: isProductionSite, follow: isProductionSite } };
 }

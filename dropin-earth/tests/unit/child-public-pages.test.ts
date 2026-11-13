@@ -15,13 +15,15 @@ test('public guide routes return fixed bilingual content with no collection or e
     assert.doesNotMatch(html,/<script|<form|<input|<iframe|<button/);
     assert.equal((html.match(/<h1>/g)??[]).length,1);
     assert.equal((html.match(/<details /g)??[]).length,4);
-    assert.match(html,/https:\/\/ahin.io\/(zh\/)?child-accounts/);
-    assert.match(html,/EXP/);
+    assert.match(html,/href="https:\/\/ahin\.io\/"/);
+    assert.doesNotMatch(html,/https:\/\/ahin\.io\/(?:zh\/)?child-accounts/);
+    assert.match(html,/Real enrollment is closed|真实注册尚未开放/);
+    assert.match(html,/Online submission is currently unavailable|在线提交目前未开放|在线提交暂不可用|在线提交.*未开放/);
     const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);
     assert.equal(new Set(ids).size,ids.length);
     for(const [,anchor] of html.matchAll(/href="#([^"]+)"/g))assert.ok(ids.includes(anchor),`missing ${anchor}`);
-    assert.equal((html.match(/class="entry-card"/g)??[]).length,3);
-    assert.equal((html.match(/class="family-note"/g)??[]).length,2);
+    assert.equal((html.match(/class="entry-card"/g)??[]).length,4);
+    assert.equal((html.match(/class="family-note"/g)??[]).length,4);
     assert.match(html,/<nav class="contents" aria-label=/);
   }
   assert.equal(await HEAD().text(),'');

@@ -9,26 +9,26 @@ export const lifePath = (locale: LifeLocale, path = '/life') => `${locale === 'e
 export const currentPlan = manifest.currentPlan;
 
 export const navigation: { path: string; label: Bilingual }[] = [
-  { path: '/life/spaces', label: { zh: '探索空间', en: 'Spaces' } },
+  { path: '/life/spaces', label: { zh: '三维空间', en: '3D spaces' } },
   { path: '/life/center', label: { zh: '共生中心', en: 'Center' } },
   { path: '/life/agents', label: { zh: '数字分身', en: 'Agents' } },
-  { path: '/life/membership', label: { zh: '参与计划', en: 'Membership' } },
-  { path: '/life/trust', label: { zh: '信任与边界', en: 'Trust' } },
+  { path: '/life/membership', label: { zh: '参与计划', en: 'Participation' } },
+  { path: '/life/trust', label: { zh: '授权与隐私', en: 'Trust & privacy' } },
 ];
 
 export const rooms = manifest.spaces.map((room) => {
   const labels: Record<string, { title: Bilingual; description: Bilingual }> = {
     L112: {
       title: { zh: '机器人机库', en: 'Robot Fleet Garage' },
-      description: { zh: '规划机器人回库、自检、自动回充与任务派发，日常无人值守，异常有远程处理和维修响应。装卸自动化另行验证；真实服务须完成设备、路线、保险及安全验收。', en: 'Plan robot return, self-checks, automatic charging and dispatch, with unattended daily operation, remote exception handling and maintenance response. Loading automation needs separate validation; real services require approved devices, routes, insurance and safety acceptance.' },
+      description: { zh: '规划机器人停放、自检、充电与派单，并安排远程值守和维修响应。配送服务须先确认设备、路线、保险与现场安全；自动装卸另行验证。', en: 'A planned base for robot parking, checks, charging and dispatch, supported by remote supervision and maintenance. Delivery services require confirmed equipment, routes, insurance and site safety. Automated loading needs separate assessment.' },
     },
     L203: {
-      title: { zh: '3DGS体验、空间采集与设备展售', en: '3DGS experience, capture & equipment showcase' },
-      description: { zh: '以付费体验、空间采集演示连接数采设备租售咨询与企业应用。运动装置用于体验，不作为本项目的设备销售品类；培训与较长活动共享L202。无穹创新产品引入及合作条件以正式约定为准。', en: 'Connect paid experiences and spatial-capture demonstrations with capture-equipment rental/sales enquiries and enterprise use cases. Sports installations are for experiences, not the equipment sold by this project. Training and longer events share L202; Wuqiong Innovation product introduction and cooperation require a formal agreement.' },
+      title: { zh: '三维体验与空间采集', en: '3D experiences & spatial capture' },
+      description: { zh: '规划三维体验、空间采集演示，以及采集设备的租售咨询。培训和较长活动与 L202 共享场地。运动装置仅用于体验；设备引入、价格和合作条件另行确认。', en: 'Planned 3D experiences, spatial-capture demonstrations and enquiries about capture-equipment rental or purchase. Training and longer events share L202. Sports installations are for experiences; equipment availability, prices and partnerships remain to be agreed.' },
     },
     L202: {
-      title: { zh: '数字分身、共学与生活方式体验', en: 'Digital agents, shared learning & lifestyle experiences' },
-      description: { zh: '规划授权数字分身、社区共学、酒咖交流，以及高尔夫、划船、骑行模拟体验。与L203共享培训和活动；两铺贯通仅为设计意向，须先核查现场、机电、消防和经营条件。', en: 'Plan authorized digital agents, shared learning, café/social activities and simulated golf, rowing and cycling. Share training and events with L203. Connecting the two units is a design intention pending site, building-services, fire-safety and operating checks.' },
+      title: { zh: '数字分身与社区共学', en: 'Digital agents & community learning' },
+      description: { zh: '规划个人智能助手、共学工作坊、咖啡交流及高尔夫、划船、骑行模拟体验。与 L203 共享培训和活动；两铺连接方案须先完成现场、机电与消防核查。', en: 'Planned personal AI assistance, learning workshops, café gatherings and simulated golf, rowing and cycling. Training and events share L203. Connecting the two units requires site, building-services and fire-safety checks.' },
     },
   };
   const content = labels[room.unit];
@@ -37,10 +37,10 @@ export const rooms = manifest.spaces.map((room) => {
 });
 
 export const modules: { number: string; icon: 'space' | 'agent' | 'club' | 'robot'; title: Bilingual; subtitle: string; description: Bilingual; audience: Bilingual; stage: Bilingual; next: Bilingual; path: string }[] = [
-  { number: '01', icon: 'agent', title: { zh: '个人智能助手', en: 'A personal AI assistant' }, subtitle: 'CAI / PERSONAL', audience: { zh: '个人与小团队', en: 'Individuals and small teams' }, description: { zh: '以CAI数字分身探索资料整理、日程建议与有限任务辅助。数据、算力配额和人工确认逐项约定。', en: 'Explore document organization, schedule suggestions and bounded task assistance with CAI. Agree data access, compute quotas and human confirmation for each task.' }, stage: { zh: '内测规划 · 按需求咨询', en: 'Pilot planning · Enquire for scope' }, next: { zh: '描述一个任务', en: 'Describe a task' }, path: '/life/agents#agent-enquiry' },
-  { number: '02', icon: 'space', title: { zh: '三维空间展示', en: 'Show a space in 3D' }, subtitle: 'SPATIAL / PRESENTATION', audience: { zh: '物业、商户与展商', en: 'Property teams, merchants and exhibitors' }, description: { zh: '讨论空间采集、三维展示页面与版本更新。先明确展示许可、交付范围和验收，不预设导航能力。', en: 'Discuss spatial capture, a 3D presentation page and version updates. Define display rights, deliverables and acceptance without assuming navigation capability.' }, stage: { zh: '接入测试 · 逐项报价', en: 'Integration testing · Scoped quotation' }, next: { zh: '查看空间测试', en: 'View spatial tests' }, path: '/life/spaces' },
-  { number: '03', icon: 'club', title: { zh: '社区学习与交流', en: 'Learn and connect' }, subtitle: 'COMMUNITY / LEARNING', audience: { zh: '社区成员与学习伙伴', en: 'Community members and learning partners' }, description: { zh: '规划共学工作坊、主题交流和空间活动。以正式排期、场地条件与服务规则确认每次参与。', en: 'Plan learning workshops, focused conversations and spatial activities. Confirm each session through an agreed schedule, site conditions and service terms.' }, stage: { zh: '规划中 · 尚未售票或收费', en: 'Planned · No ticketing or payments' }, next: { zh: '了解参与计划', en: 'Explore participation plans' }, path: '/life/membership' },
-  { number: '04', icon: 'robot', title: { zh: '企业与机构协作', en: 'Work on a shared pilot' }, subtitle: 'BUSINESS / COLLABORATION', audience: { zh: '企业、机构与场地方', en: 'Businesses, institutions and venue partners' }, description: { zh: '从一个可验收的试点开始，约定职责、排期、对账与退出。设备、边缘终端或机器人另需现场安全验收。', en: 'Start with a reviewable pilot and agree responsibilities, schedule, reconciliation and exit terms. Devices, edge systems or robots require separate site safety acceptance.' }, stage: { zh: '合作咨询 · 范围另行确认', en: 'Partnership enquiries · Scope to be agreed' }, next: { zh: '了解合作试点', en: 'Discuss a pilot' }, path: '/life/partners' },
+  { number: '01', icon: 'agent', title: { zh: '个人智能助手', en: 'Personal AI assistance' }, subtitle: 'PERSONAL AI', audience: { zh: '个人、家庭与小团队', en: 'Individuals, families and small teams' }, description: { zh: '从整理资料、拟定日程或一项重复任务开始，讨论 CAI 如何提供帮助。先约定可用数据、任务范围与需要确认的步骤。', en: 'Start with organizing information, planning a schedule or a recurring task. Discuss how CAI could help, with agreed data access, task limits and confirmation steps.' }, stage: { zh: '试点规划中', en: 'Pilot in planning' }, next: { zh: '描述你的任务', en: 'Describe your task' }, path: '/life/agents#agent-enquiry' },
+  { number: '02', icon: 'space', title: { zh: '三维空间展示', en: 'Present a space in 3D' }, subtitle: 'SPATIAL CAPTURE', audience: { zh: '物业、商户与展商', en: 'Property teams, merchants and exhibitors' }, description: { zh: '讨论空间采集、线上展示与后续更新。先确定哪些区域可展示、谁来使用，以及交付标准。机器人导航需另行验证。', en: 'Discuss spatial capture, online presentation and future updates. Agree which areas may be shown, who will use them and the delivery criteria. Robot navigation requires separate validation.' }, stage: { zh: '方案与来源说明可查看', en: 'Plans and source notes available' }, next: { zh: '了解三维空间', en: 'Explore 3D spaces' }, path: '/life/spaces' },
+  { number: '03', icon: 'club', title: { zh: '社区学习与交流', en: 'Learn and connect' }, subtitle: 'COMMUNITY LEARNING', audience: { zh: '社区、学校与家庭', en: 'Communities, schools and families' }, description: { zh: '讨论共学工作坊、主题交流和体验活动。每次活动需先确认课程目标、适合人群、场地与安排。', en: 'Discuss workshops, focused conversations and shared experiences. Agree learning goals, intended participants, venue and arrangements for each activity.' }, stage: { zh: '活动筹备中 · 暂未开放预约', en: 'In planning · Bookings unavailable' }, next: { zh: '了解参与方式', en: 'Explore participation' }, path: '/life/membership' },
+  { number: '04', icon: 'robot', title: { zh: '企业与机构试点', en: 'Business & institutional pilots' }, subtitle: 'PARTNERSHIPS', audience: { zh: '企业、机构与场地方', en: 'Businesses, institutions and venues' }, description: { zh: '选择一个具体问题，约定试点目标、职责、预算与验收方式。涉及设备或机器人时，另行确认现场安全条件。', en: 'Choose a specific problem and agree pilot goals, responsibilities, budget and review criteria. Equipment and robot projects also require site safety checks.' }, stage: { zh: '可整理合作需求', en: 'Prepare a partnership enquiry' }, next: { zh: '查看合作流程', en: 'See the partnership process' }, path: '/life/partners' },
 ];
 
 export const tiers = manifest.membership.tiers.map((tier, index) => ({
@@ -51,19 +51,19 @@ export const tiers = manifest.membership.tiers.map((tier, index) => ({
     { zh: '共同探索下一步', en: 'Explore what comes next' },
   ][index] ?? { zh: '参与意向', en: 'Participation interest' },
   benefits: [
-    [{ zh: '拟议会所服务', en: 'Proposed club services' }, { zh: '社区交流与活动意向', en: 'Community and activity interests' }],
-    [{ zh: '拟议空间赛事服务', en: 'Proposed spatial event services' }, { zh: '高尔夫、划船、骑行等方向', en: 'Golf, rowing and cycling concepts' }],
-    [{ zh: '拟议CAI数字分身与数据授权服务', en: 'Proposed CAI agent and data permission services' }, { zh: '高端闭门交流等方向', en: 'Focused private discussions and related activities' }],
+    [{ zh: '社区交流与主题活动', en: 'Community gatherings and themed activities' }, { zh: '具体场次与使用安排待确认', en: 'Sessions and access to be confirmed' }],
+    [{ zh: '高尔夫、划船、骑行模拟体验', en: 'Simulated golf, rowing and cycling' }, { zh: '体验次数与活动安排待确认', en: 'Experience quotas and events to be confirmed' }],
+    [{ zh: 'CAI 智能助手与数据授权咨询', en: 'CAI assistance and data-permission guidance' }, { zh: '专题交流与服务范围待确认', en: 'Focused discussions and service scope to be confirmed' }],
   ][index] ?? [],
 }));
 
 export const pageMeta: Record<LifePageId, { title: Bilingual; description: Bilingual }> = {
-  home: { title: { zh: LIFEPP_PUBLIC_BRAND, en: LIFEPP_PUBLIC_BRAND }, description: { zh: '让数字智能，走进真实生活。以会展湾380.48㎡三铺导入期为起点，连接空间采集、数字分身、共学体验与机器人执行。', en: 'Bring digital intelligence into everyday life. A planned 380.48 m², three-unit introduction connects spatial capture, digital agents, shared learning and robot execution.' } },
-  spaces: { title: { zh: '探索空间', en: 'Explore spaces' }, description: { zh: '两个用户提供的三维高斯测试输入，清楚呈现来源、权限与验证状态。', en: 'Two user-provided Gaussian splatting test inputs, with explicit source, permission and verification status.' } },
-  center: { title: { zh: '共生中心', en: `The ${LIFEPP_PUBLIC_BRAND} center` }, description: { zh: '三铺不是三家孤立门店，而是一套协作系统。L112、L203、L202合计380.48㎡，二层两铺321.79㎡；本轮不纳入L201。', en: 'Three units form one collaboration system: L112, L203 and L202 total 380.48 m², with 321.79 m² on the second floor. L201 is excluded from this phase.' } },
+  home: { title: { zh: LIFEPP_PUBLIC_BRAND, en: LIFEPP_PUBLIC_BRAND }, description: { zh: '把三维空间、个人智能助手与社区学习连接起来。以深圳会展湾 380.48㎡ 三铺规划为起点，探索人与智能共同参与的日常服务。', en: 'Connect 3D spaces, personal AI assistance and community learning. Our planned 380.48 m² center at Expo Bay, Shenzhen, brings these ideas into one setting.' } },
+  spaces: { title: { zh: '三维空间', en: '3D spaces' }, description: { zh: '了解三维空间展示、来源说明与使用许可。当前两项场景资料尚未开放站内浏览。', en: 'Explore spatial presentation, source information and permissions. The two current scene references are not yet available in the on-site viewer.' } },
+  center: { title: { zh: '共生中心', en: `The ${LIFEPP_PUBLIC_BRAND} center` }, description: { zh: 'L112、L203、L202 三铺合计 380.48㎡，规划机器人机库、三维空间体验与社区共学。二层两铺共 321.79㎡；L201 不在本期范围。', en: 'L112, L203 and L202 total 380.48 m², with planned areas for a robot garage, 3D experiences and community learning. The two second-floor units total 321.79 m². L201 is outside this phase.' } },
   agents: { title: { zh: '数字分身与边缘计算', en: 'Agents & edge computing' }, description: { zh: '在明确授权、任务边界与可撤回条件下，探索数字分身、边缘终端与云服务。', en: 'Explore digital agents, edge devices and cloud services with explicit authorization, bounded tasks and withdrawal.' } },
   membership: { title: { zh: '参与计划', en: 'Participation plans' }, description: { zh: 'Life、Life+、Life++拟议年度订阅方案。尚未开放收费。', en: 'Proposed annual Life, Life+ and Life++ plans. Payments are not open.' } },
-  partners: { title: { zh: '一起，让想法落地', en: 'Build the next step together' }, description: { zh: '面向物业、商户、展商、设备与研究伙伴的合作意向入口。', en: 'An enquiry route for property managers, merchants, exhibitors, equipment partners and researchers.' } },
+  partners: { title: { zh: '从一个具体问题开始合作', en: 'Start with a specific problem' }, description: { zh: '面向学校、机构、企业与社区伙伴，明确需求、试点范围和下一步。', en: 'For schools, institutions, businesses and community partners: define a need, a pilot scope and the next step.' } },
   trust: { title: { zh: '每一次协作，都有边界', en: 'Every collaboration has boundaries' }, description: { zh: '了解空间来源、独立授权、责任主体、审阅、申诉与撤回。', en: 'Understand sources, separate permissions, responsible parties, review, challenges and withdrawal.' } },
-  company: { title: { zh: 'CanopyProof Limited', en: 'CanopyProof Limited' }, description: { zh: `一个主体，两个业务入口：生态与地球观测，以及${LIFEPP_PUBLIC_BRAND}。`, en: `One company, two business entry points: ecology and Earth observation, and ${LIFEPP_PUBLIC_BRAND}.` } },
+  company: { title: { zh: 'CanopyProof Limited', en: 'CanopyProof Limited' }, description: { zh: `了解 CanopyProof 的生态证据工作与 ${LIFEPP_PUBLIC_BRAND} 的空间、智能助手和社区学习规划。`, en: `Explore CanopyProof’s ecological evidence work and ${LIFEPP_PUBLIC_BRAND} plans for spaces, AI assistance and community learning.` } },
 };

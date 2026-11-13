@@ -194,9 +194,9 @@ export function MobileEvidenceDraftQueue() {
     return (
       <MobileEvidenceVaultFailure
         code={view.code}
-        title="Encrypted offline storage is unavailable"
-        detail="No evidence was queued. Restore browser storage and Web Crypto access before capturing field data."
-        actionLabel="Retry secure storage"
+        title="We could not open or confirm your saved drafts"
+        detail="Check that this browser allows local storage. This message does not mean your existing drafts are empty or deleted."
+        actionLabel="Try opening drafts again"
         action={loadVault}
         actionDisabled={operationPending}
       />
@@ -207,10 +207,10 @@ export function MobileEvidenceDraftQueue() {
     return (
       <section className="border border-rose-800 bg-rose-950/40 p-5 lg:p-6" role="alert">
         <p className="text-xs font-semibold uppercase tracking-widest text-rose-200">Recovery required</p>
-        <h2 className="mt-3 text-2xl font-semibold text-white">The encrypted local vault could not be authenticated.</h2>
+        <h2 className="mt-3 text-2xl font-semibold text-white">Your saved drafts could not be opened.</h2>
         <p className="mt-3 max-w-3xl text-sm leading-6 text-rose-100">
-          The queue is not being shown as empty. This can indicate a damaged record, missing local key, or an invalid
-          legacy migration. No data was synchronized or accepted as proof.
+          The saved data may be damaged or its encryption key may be unavailable. Your drafts have not been sent.
+          You can try again, or choose to erase this device’s drafts and start over.
         </p>
         <p className="mt-3 font-mono text-xs text-rose-200">{view.code}</p>
         <div className="mt-5 flex flex-wrap gap-3">
@@ -220,7 +220,7 @@ export function MobileEvidenceDraftQueue() {
             disabled={operationPending}
             onClick={() => void loadVault()}
           >
-            Retry recovery
+            Try opening drafts again
           </button>
           {!resetConfirmation ? (
             <button
@@ -228,7 +228,7 @@ export function MobileEvidenceDraftQueue() {
               type="button"
               onClick={() => setResetConfirmation(true)}
             >
-              Review local reset
+              Review draft deletion
             </button>
           ) : (
             <button
@@ -249,10 +249,10 @@ export function MobileEvidenceDraftQueue() {
     <section className="grid gap-5 border border-slate-800 bg-slate-900/60 p-5 lg:grid-cols-[1fr_0.8fr] lg:p-6">
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Encrypted offline queue</p>
-        <h2 className="mt-3 text-3xl font-semibold text-white">Capture locally. Preserve authority boundaries.</h2>
+        <h2 className="mt-3 text-3xl font-semibold text-white">Save a draft on this device.</h2>
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          Draft payloads are encrypted in this browser with a non-exportable local key. Production synchronization is
-          not activated, and local capture never issues proof, moves funds, or creates a public claim.
+          Drafts are encrypted and stay in this browser. They are not sent to a server, and clearing browser storage may
+          remove them. Saving locally never issues proof, moves funds, or creates a public claim.
         </p>
 
         {view.migratedLegacyCount > 0 ? (
@@ -307,14 +307,14 @@ export function MobileEvidenceDraftQueue() {
           disabled={!canQueue || operationPending}
           onClick={() => void queueDraft()}
         >
-          {operationPending ? "Securing draft..." : "Encrypt and queue draft"}
+          {operationPending ? "Saving…" : "Save on this device"}
         </button>
       </div>
 
       <aside className="border border-slate-800 bg-slate-950 p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-white">Local vault</h3>
+            <h3 className="text-lg font-semibold text-white">Drafts on this device</h3>
             <p className="mt-1 text-xs text-amber-200">Server sync closed</p>
           </div>
           <span className="border border-slate-700 px-2 py-1 text-xs font-semibold text-slate-300">
@@ -324,7 +324,7 @@ export function MobileEvidenceDraftQueue() {
         <div className="mt-4 grid gap-3">
           {view.drafts.length === 0 ? (
             <p className="border border-slate-800 bg-slate-900 p-4 text-sm leading-6 text-slate-400">
-              No encrypted local drafts. A queued capture remains on this device until the governed sync path is activated.
+              No saved drafts yet. A draft stays on this device; server submission is not available.
             </p>
           ) : view.drafts.map((draft) => (
             <article className="border border-slate-800 bg-slate-900 p-4" key={draft.id}>
@@ -357,7 +357,7 @@ export function MobileEvidenceDraftQueue() {
 
 function MobileEvidenceVaultSkeleton() {
   return (
-    <section className="border border-slate-800 bg-slate-900/60 p-5 lg:p-6" aria-busy="true" aria-label="Loading encrypted evidence vault">
+    <section className="border border-slate-800 bg-slate-900/60 p-5 lg:p-6" aria-busy="true" aria-label="Opening saved drafts">
       <div className="h-4 w-40 bg-slate-800" />
       <div className="mt-4 h-8 w-72 max-w-full bg-slate-800" />
       <div className="mt-6 grid gap-3 md:grid-cols-2">

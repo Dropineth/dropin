@@ -84,6 +84,6 @@ test('source inputs, links and safety defaults are not promoted by a planning up
   assert.equal(manifest.inputProvenance.asOf, '2026-09-30');
   assert.equal(manifest.currentPlan.asOf, '2026-10-19');
   assert.deepEqual(manifest.preserveAnchors, ['#top', '#protocol', '#how-it-works', '#explorer', '#methodology', '#stack', '#contact']);
-  assert.match(source('components/life/BrandSwitcher.tsx'), /href="\/#top"/);
+  assert.match(source('components/life/BrandSwitcher.tsx'), /href=\{zh \? "\/zh#top" : "\/#top"\}/);
   assert.doesNotMatch(source('components/life/BrandSwitcher.tsx'), /business-entrypoints|businessHref/);
 });

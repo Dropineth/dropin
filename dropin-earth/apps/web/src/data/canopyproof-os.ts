@@ -208,11 +208,11 @@ export const globalImpactCommandCenter: CanopyProofOSModule = {
   route: "/dashboard/global",
   layer: "Impact",
   eyebrow: "Global Impact Command Center",
-  title: "Planetary restoration operations, evidence, and risk in one command surface.",
+  title: "Review projects, evidence and environmental risks in one place.",
   summary:
     "A read-only institutional command center for restoration projects, regions, climate risk, biodiversity indicators, water indicators, and impact metrics. Values are separated by observed, reviewed, challenged, and estimated state.",
-  primaryAction: "Open evidence queue",
-  secondaryAction: "Review risk layers",
+  primaryAction: "Evidence overview",
+  secondaryAction: "Risk overview",
   metrics: [
     { label: "Restoration regions", value: "14", detail: "tracked as operational regions", tone: "ok" },
     { label: "Projects in review", value: "38", detail: "pending evidence or governance checks", tone: "review" },
@@ -257,11 +257,11 @@ export const mobileEvidenceNetwork: CanopyProofOSModule = {
   route: "/mobile/report",
   layer: "Evidence",
   eyebrow: "Evidence Collection Network",
-  title: "Offline-first field reporting for restoration, water, biodiversity, soil, and climate observations.",
+  title: "Prepare field observations on your device.",
   summary:
-    "Mobile evidence is captured locally, hashed before upload, synchronized idempotently, and routed through community verification before it can support a public proof record.",
-  primaryAction: "Create offline evidence draft",
-  secondaryAction: "Inspect evidence schema",
+    "The form below saves encrypted drafts in this browser. Sending to the server is not available. The workflow examples explain the checks needed before a field observation could become a public record.",
+  primaryAction: "Local drafts available",
+  secondaryAction: "Record fields explained below",
   metrics: [
     { label: "Report classes", value: "6", detail: "planting, restoration, biodiversity, water, soil, climate", tone: "ok" },
     { label: "Required signals", value: "8", detail: "photo, GPS, timestamp, device, EXIF, sync, scan, community", tone: "review" },
@@ -271,19 +271,19 @@ export const mobileEvidenceNetwork: CanopyProofOSModule = {
   panels: [
     {
       title: "Field capture",
-      body: "Capture photos, GPS, timestamp, device fingerprint, EXIF metadata, and local notes while offline.",
+      body: "A complete field record may include photos, location, observation time and notes, with permission to collect and use them. The form below stores a draft only.",
       items: ["tree planting", "biodiversity", "water project", "soil regeneration"],
       tone: "ok",
     },
     {
-      title: "Sync discipline",
-      body: "Uploads are content-addressed, scan-gated, and replay-safe; conflicts become review tasks instead of overwrites.",
+      title: "Before sending",
+      body: "A future submission must preserve the original record and check attachments. Conflicting information needs review rather than silent replacement.",
       items: ["media hash", "encrypted object", "malware scan", "idempotency key"],
       tone: "review",
     },
     {
       title: "Community verification",
-      body: "Community observations can support proof, but they remain bounded until accredited review completes.",
+      body: "Local observations can add context or raise a concern. They do not replace qualified independent review.",
       items: ["support", "challenge", "needs review", "audit event"],
       tone: "watch",
     },
@@ -302,11 +302,11 @@ export const terraProofIntelligence: CanopyProofOSModule = {
   route: "/terra",
   layer: "Verification",
   eyebrow: "TerraProof Earth Intelligence",
-  title: "Satellite and climate layers for vegetation, water, drought, wildfire, and land-change review.",
+  title: "Use satellite information to understand environmental change.",
   summary:
-    "TerraProof connects Sentinel, Landsat, NASA, and open climate datasets into provenance-rich layers used to challenge or support field evidence.",
-  primaryAction: "Inspect satellite layers",
-  secondaryAction: "Open connector registry",
+    "Explore how satellite imagery and climate information can support a review. Check the source, date and resolution of each layer; an image alone does not verify a project outcome.",
+  primaryAction: "Satellite information",
+  secondaryAction: "Source and method details",
   metrics: [
     { label: "Connector families", value: "4", detail: "Sentinel, Landsat, NASA, open climate", tone: "ok" },
     { label: "Layer classes", value: "7", detail: "imagery, NDVI, vegetation, water, drought, wildfire, land", tone: "ok" },
@@ -345,11 +345,11 @@ export const esgReportingEngine: CanopyProofOSModule = {
   route: "/reports/esg",
   layer: "Impact",
   eyebrow: "ESG Reporting Engine",
-  title: "Institutional reporting with GRI alignment, SDG mapping, TNFD preparation, and proof lineage.",
+  title: "Connect an environmental report to its supporting evidence.",
   summary:
-    "Reports export PDF, JSON, and API-ready records only after lineage validation and human/governance review. They are environmental accountability reports, not offset certificates.",
-  primaryAction: "Draft ESG report",
-  secondaryAction: "Review lineage",
+    "This preview shows how a team could organize evidence and review before reporting. Mentioning GRI, the SDGs or TNFD does not establish compliance, certification or an available export service.",
+  primaryAction: "Reporting workflow example",
+  secondaryAction: "Evidence sources",
   metrics: [
     { label: "Export formats", value: "3", detail: "PDF, JSON, API", tone: "ok" },
     { label: "Framework maps", value: "4", detail: "GRI, SDG, TNFD, biodiversity/climate", tone: "review" },
@@ -370,7 +370,7 @@ export const esgReportingEngine: CanopyProofOSModule = {
       tone: "review",
     },
     {
-      title: "Publication gate",
+      title: "Before publication",
       body: "AI may draft explanations, but humans and governance approve publication.",
       items: ["lineage check", "human review", "approval", "audit export"],
       tone: "watch",
@@ -388,11 +388,11 @@ export const governanceOperatingLayer: CanopyProofOSModule = {
   route: "/governance",
   layer: "Governance",
   eyebrow: "Governance Layer",
-  title: "Policy-bound approvals, reviewer accountability, and conflict disclosure before public records.",
+  title: "Make review decisions and responsibilities clear.",
   summary:
-    "Governance decisions bind to deterministic subjects, authenticated reviewers, conflict disclosures, and append-only audit events before proof, ESG, funding, or public risk actions can become institutional records.",
-  primaryAction: "Review governance policies",
-  secondaryAction: "Inspect conflict queue",
+    "Before publishing a result, identify the reviewer, record the decision and address any conflict of interest. This page explains the proposed process; it does not grant permission or approve a record.",
+  primaryAction: "Review rules",
+  secondaryAction: "Conflicts of interest",
   metrics: [
     { label: "Default policies", value: "5", detail: "proof, ESG, funding, risk, partner", tone: "ok" },
     { label: "Approval binding", value: "exact", detail: "subject ID from project and evidence root", tone: "ok" },
@@ -420,7 +420,7 @@ export const governanceOperatingLayer: CanopyProofOSModule = {
       tone: "watch",
     },
     {
-      title: "Proof challenge lane",
+      title: "Questions and corrections",
       body: "Public proof-record challenges immediately mark records as disputed until accountable review resolves them.",
       items: ["challenger", "reason", "evidence root", "public outcome"],
       tone: "review",
@@ -438,12 +438,12 @@ export const governanceOperatingLayer: CanopyProofOSModule = {
 export const partnerCollaborationLayer: CanopyProofOSModule = {
   route: "/partners",
   layer: "Governance",
-  eyebrow: "UN / NGO Collaboration Layer",
-  title: "Institutional partner profiles, accreditation, RBAC, and governed data-sharing.",
+  eyebrow: "Working with organizations",
+  title: "Agree on roles and information sharing before working together.",
   summary:
-    "Partners operate through organization-scoped roles, explicit accreditation, data-sharing agreements, and auditable membership changes.",
-  primaryAction: "Review partner registry",
-  secondaryAction: "Inspect RBAC matrix",
+    "This example explains how schools, research teams, public bodies and local organizations could work together. Each project needs agreed responsibilities and appropriate permission. No listed organization type implies an existing partnership or endorsement.",
+  primaryAction: "Organization profile example",
+  secondaryAction: "Roles and access",
   metrics: [
     { label: "Organization types", value: "6", detail: "UN, NGO, university, government, investor, operator", tone: "ok" },
     { label: "RBAC roles", value: "6", detail: "owner, admin, verifier, researcher, community, observer", tone: "ok" },
@@ -458,7 +458,7 @@ export const partnerCollaborationLayer: CanopyProofOSModule = {
       tone: "ok",
     },
     {
-      title: "RBAC matrix",
+      title: "Roles and access",
       body: "Role assignment is least-privilege by default and every membership mutation is audited.",
       items: ["Owner", "Admin", "Verifier", "Researcher", "Community", "Observer"],
       tone: "review",
@@ -482,11 +482,11 @@ export const fundingTransparencyLayer: CanopyProofOSModule = {
   route: "/funding",
   layer: "Impact",
   eyebrow: "Funding Transparency Layer",
-  title: "Open-government style traceability from donor and grant to milestone, evidence, and release.",
+  title: "Follow funding from a commitment to a confirmed payment.",
   summary:
-    "Funding records separate pledged, allocated, approved, released, and reconciled amounts. No release can claim verified impact without accepted evidence and approval.",
-  primaryAction: "Open funding ledger",
-  secondaryAction: "Inspect milestones",
+    "A commitment, an approved allocation and a completed payment are different records. This preview explains how to connect them to project milestones and evidence. It does not accept donations or move money.",
+  primaryAction: "Funding record example",
+  secondaryAction: "Project milestones",
   metrics: [
     { label: "Ledger states", value: "5", detail: "pledged, allocated, approved, released, reconciled", tone: "ok" },
     { label: "Release gate", value: "evidence", detail: "accepted evidence and approval required", tone: "review" },
@@ -507,7 +507,7 @@ export const fundingTransparencyLayer: CanopyProofOSModule = {
       tone: "review",
     },
     {
-      title: "Transparency boundary",
+      title: "How to read funding records",
       body: "Funding records are accountability records, not yield instruments, offsets, or token promises.",
       items: ["public ledger", "claim boundary", "reconciliation", "audit"],
       tone: "watch",
@@ -525,11 +525,11 @@ export const earlyWarningSystem: CanopyProofOSModule = {
   route: "/risk",
   layer: "Impact",
   eyebrow: "Early Warning System",
-  title: "Drought, wildfire, flooding, and ecosystem degradation alerts for communities and institutions.",
+  title: "Understand risk signals and the checks they need.",
   summary:
-    "Risk signals combine environmental layers and field evidence, then route alerts to communities, NGOs, governments, project operators, and accredited reviewers.",
-  primaryAction: "Open alert board",
-  secondaryAction: "Review risk policy",
+    "This preview explains how environmental information could support risk review. It is not a live emergency warning service. Use the relevant local authorities for current alerts and urgent assistance.",
+  primaryAction: "Risk review example",
+  secondaryAction: "Response responsibilities",
   metrics: [
     { label: "Risk classes", value: "4", detail: "drought, wildfire, flooding, degradation", tone: "watch" },
     { label: "Alert audiences", value: "5", detail: "community, NGO, government, operator, verifier", tone: "ok" },

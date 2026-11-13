@@ -73,7 +73,7 @@ export async function validateWorkerdResponse(path, response, { preview = false 
     throw new Error("Workerd homepage does not contain CanopyProof HTML.");
   }
   if (path === "/stewardship" &&
-      (!body.includes("全程合成演示") || !body.includes("不采集真实身份") ||
+      (!body.includes("学习演示") || !body.includes("使用虚构示例") ||
        !/<meta\s+name="robots"\s+content="noindex,\s*nofollow"\s*\/?\s*>/iu.test(body))) {
     throw new Error("Workerd stewardship must disclose synthetic scope and retain noindex metadata.");
   }

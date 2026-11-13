@@ -47,7 +47,7 @@
 .primaryLink:hover { background: #23575a; }
 .lifeCard { background: linear-gradient(125deg, #f0ecf8, #faf9fd); }
 .lifeCard .eyebrow, .lifeCard .textLink { color: var(--purple); }
-.roomGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
+.roomGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
 .roomCard { padding: 22px; }
 .roomId { display: block; color: var(--purple); font-family: Georgia, serif; font-size: 29px; margin-bottom: 10px; }
 .proposed { color: var(--purple); border-color: #d9ceea; background: #f5f1fb; font-size: 9px; }
@@ -103,12 +103,18 @@
 .lockSymbol { width: 73px; height: 73px; display: grid; place-items: center; border: 1px solid #c7d8cc; border-radius: 50%; margin-top: 27px; background: #e5eee3; }
 .lockSymbol svg { width: 42px; height: 42px; stroke: #49755d; stroke-width: 1.3; }
 .participationCard h2 { font-size: 31px; }
+.participationCard .primaryLink { margin-top: 24px; }
+.participationDetails { margin-top: 24px; }
+.participationDetails .bodyCopy { padding-bottom: 14px; }
 .disabledAction { width: 100%; min-height: 48px; padding: 12px 16px; font-size: 12px; border-radius: 25px; color: #63766e; background: #e7ece5; border: 1px solid #d6e0d4; cursor: not-allowed; }
 .stackedCards { display: grid; grid-template-rows: 1fr 1fr; gap: 22px; }
 .stackedCards .textLink { margin-top: 17px; }
 .trustGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .trustGrid .card { padding: 26px 29px; }
 .trustGrid h2 { font-size: 27px; }
+.sceneDisclosure { margin-top: 24px; background: linear-gradient(135deg, #f3f0f9, #fdfcfb); }
+.sceneDisclosure > summary { cursor: pointer; font-size: 14px; line-height: 1.7; min-height: 44px; display: list-item; }
+.sceneDisclosure .sceneBoundary { margin-top: 18px; background: none; padding: 0; }
 .sceneBoundary { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 40px; margin-top: 24px; background: linear-gradient(135deg, #f3f0f9, #fdfcfb); }
 .sceneBoundary .eyebrow { color: var(--purple); }
 .sceneBoundary .fields { margin: 0; }

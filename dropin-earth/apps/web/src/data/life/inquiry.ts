@@ -16,6 +16,13 @@ export function composeInquiry(input: Inquiry, locale: "zh" | "en", hasPriorSubm
   const zh = locale === "zh";
   const title = hasPriorSubmissionAttempt
     ? (zh ? "Life++ 本地草稿副本 — 不代表此前提交状态" : "Life++ local draft copy — not a statement of earlier submission status")
-    : (zh ? "Life++ 合作询问草稿 — 尚未发送" : "Life++ inquiry draft — not sent");
-  return [title, `${zh ? "称呼" : "Name"}: ${input.name.trim()}`, `${zh ? "机构（可选）" : "Organization (optional)"}: ${input.organization.trim()}`, `${input.channel}: ${input.contact.trim()}`, `${zh ? "合作类型" : "Interest"}: ${input.type}`, input.message.trim(), zh ? "本意向不授予展示、模型下载、训练、导航或再分发许可。" : "This inquiry grants no display, model download, training, navigation or redistribution rights."].join("\n");
+    : (zh ? "Life++HERE 合作咨询草稿 — 尚未发送" : "Life++HERE enquiry draft — not sent");
+  const topics: Record<Inquiry["type"], [string, string]> = {
+    space: ["空间与商户", "Spaces and merchants"], agent: ["智能助手与边缘设备", "AI assistance and edge devices"],
+    club: ["共学与活动", "Learning and events"], robot: ["机器人试点", "Robot pilot"],
+    membership: ["参与计划", "Participation plans"], rights: ["权限、撤回与反馈", "Permissions, withdrawal and feedback"],
+  };
+  const channels: Record<Inquiry["channel"], [string, string]> = { email: ["电子邮箱", "Email"], phone: ["电话", "Phone"], wechat: ["微信", "WeChat"] };
+  const language = zh ? 0 : 1;
+  return [title, `${zh ? "称呼" : "Name"}: ${input.name.trim()}`, `${zh ? "学校、机构或公司（可选）" : "School, organization or company (optional)"}: ${input.organization.trim()}`, `${channels[input.channel][language]}: ${input.contact.trim()}`, `${zh ? "咨询主题" : "Enquiry topic"}: ${topics[input.type][language]}`, input.message.trim(), zh ? "本咨询不授予展示、模型下载、训练、导航或再分发许可。" : "This enquiry grants no display, model download, training, navigation or redistribution rights."].join("\n");
 }
