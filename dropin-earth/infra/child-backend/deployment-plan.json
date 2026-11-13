@@ -1,11 +1,10 @@
 {
   "kind": "CanopyProofBackendPreparation",
   "status": "not-approved-for-resource-creation",
-  "providerPreference": "Render",
-  "futureAccountLabel": "Bill",
-  "workspaceId": null,
+  "providerPreference": "Cloudflare",
+  "originCandidate": "Existing isolated Node/PostgreSQL host; no new cloud resources or public connection implied",
   "region": null,
-  "regionNote": "Singapore is a synthetic-validation suggestion only, not an approved child-data location.",
+  "regionNote": "No production child-data region has been selected; isolated synthetic validation does not select one.",
   "computePlan": null,
   "databasePlan": null,
   "api": {
@@ -29,7 +28,7 @@
   },
   "database": {
     "engine": "PostgreSQL",
-    "privateNetwork": "same approved workspace and region as API",
+    "privateNetwork": "isolated origin only; public database ingress is not required",
     "publicIngress": "no access required by runtime",
     "runtimePoolMax": 4,
     "sessionIdentity": "direct login; transaction pooler not accepted without separate conformance",
@@ -45,14 +44,23 @@
     "transportRootPublicKey": null,
     "independenceEvidence": null,
     "checkpointContract": "CanopyProof-RestoreCheckpoint/1 SIMULATION_ONLY",
-    "currentReadContract": "CanopyProof-CurrentRestoreAuthority/1 SIMULATION_ONLY"
+    "currentReadContract": "CanopyProof-CurrentRestoreAuthority/1 SIMULATION_ONLY",
+    "guardianObservationContract": "CanopyProof-GuardianAuthorityObservation/1 (proposed, unwired, not an authorization grant)",
+    "guardianIssuer": null,
+    "guardianRootPublicKey": null
   },
   "cloudflare": {
     "entrypoint": "unchanged",
-    "originRoutingChange": "not authorized in this increment"
+    "originRoutingChange": "not performed; synthetic validation does not approve network or access changes",
+    "requiredBeforeHostedE2E": [
+      "dedicated approved preview hostname and connector",
+      "explicit operator access policy and audience",
+      "scoped backend binding with closed unknown routes",
+      "verified rollback and actual deployed source identity"
+    ]
   },
   "realChildren": false,
   "realPayments": false,
   "mainnet": false,
-  "renderBlueprintValidation": "blocked: current documentation fetch CONNECT 403; this file is not a Render Blueprint"
+  "resourceCreation": "not performed or authorized by this preparation file"
 }
