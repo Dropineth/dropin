@@ -21,7 +21,8 @@ export function assertPlanDrag(before: PlanView, after: PlanView, samples: Point
   assert.ok(moves.length > 0, 'At least one pressed pointermove must arrive');
   assert.ok(moves.every(sample => sample.trusted && sample.pointerId === down.pointerId && sample.buttons === 1), 'Moves must remain trusted and pressed');
   assert.ok(up.y > down.y && Math.abs(up.x - down.x) <= 1, 'The real gesture must move downward without horizontal movement');
-  assert.ok(Math.abs(moves.at(-1)!.y - up.y) <= 1, 'The final pressed move must reach the release point');
+  assert.ok(moves.every(sample => sample.y >= down.y && sample.y <= up.y && Math.abs(sample.x - down.x) <= 1),
+    'Pressed moves must stay within the vertical gesture path; release may complete coalesced movement');
   for (const value of [before.x, before.y, before.zoom, after.x, after.y, after.zoom]) assert.ok(Number.isFinite(value));
   assert.ok(before.y + .2 < 0 && before.y > 1 - before.zoom, 'Fixture drag must not be hidden by clamping');
   assert.ok(Math.abs(after.y - (before.y + .2)) <= .002, 'A 20%-height drag must produce the full normalized pan delta');

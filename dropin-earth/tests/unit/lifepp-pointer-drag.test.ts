@@ -18,6 +18,13 @@ const samples: PointerSample[] = [
 test('drag evidence accepts coalesced trusted movement and normal capture loss after release', () => {
   assert.doesNotThrow(() => assertPlanDrag(before, after, samples));
 });
+test('sparse pressed moves accept the full release result and still reject partial displacement', () => {
+  const sparse = samples.map((sample, index) => index === 2 ? { ...sample, y: 125 } : sample);
+  assert.doesNotThrow(() => assertPlanDrag(before, after, sparse));
+  for (const bad of [before, { ...after, y: -1.19 }, { ...after, transform: before.transform }]) {
+    assert.throws(() => assertPlanDrag(before, bad, sparse));
+  }
+});
 test('drag evidence rejects the observed no-movement failure and partial or cosmetic movement', () => {
   for (const bad of [before, { ...after, y: -1.19 }, { ...after, transform: before.transform }, { ...after, x: -.5 }, { ...after, zoom: 4 }, { ...after, y: NaN }]) {
     assert.throws(() => assertPlanDrag(before, bad, samples));
@@ -28,7 +35,8 @@ test('drag evidence refuses fabricated, unpressed, cancelled, mismatched or miss
   for (const bad of [[], samples.filter(sample => sample.type !== 'pointerdown'), samples.filter(sample => sample.type !== 'pointerup'),
     samples.filter(sample => sample.type !== 'pointermove'), change(1, { trusted: false }), change(2, { trusted: false }),
     change(2, { buttons: 0 }), change(2, { pointerId: 2 }), change(3, { pointerId: 2 }), change(3, { trusted: false }),
-    change(2, { y: 125 }), change(2, { type: 'pointercancel' }), [...samples.slice(0, 3), { ...samples[4]!, type: 'lostpointercapture' }, ...samples.slice(3)]]) {
+    change(2, { y: 99 }), change(2, { y: 201 }), change(2, { x: 502 }), change(2, { type: 'pointercancel' }),
+    [...samples.slice(0, 3), { ...samples[4]!, type: 'lostpointercapture' }, ...samples.slice(3)]]) {
     assert.throws(() => assertPlanDrag(before, after, bad));
   }
 });
