@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { build } from 'esbuild';
 import { chromium, firefox, webkit, type Browser } from 'playwright';
+import { verifyPlanPointerDrag } from './lifepp-pointer-drag.ts';
 
 async function main() {
   const directory = await mkdtemp(join(tmpdir(), 'lifepp-floorplan-ui-'));
@@ -81,11 +82,7 @@ async function main() {
       const beforePan = await view.getAttribute('data-pan-x');
       await page.getByRole('button', { name: locale === 'en' ? 'Look left' : '向左查看', exact: true }).click();
       assert.notEqual(await view.getAttribute('data-pan-x'), beforePan);
-      const box = await view.boundingBox(); assert.ok(box);
-      const dragBefore = await view.getAttribute('data-pan-y');
-      await page.mouse.move(box.x + box.width * .8, box.y + box.height * .3);
-      await page.mouse.down(); await page.mouse.move(box.x + box.width * .8, box.y + box.height * .5, { steps: 4 }); await page.mouse.up();
-      assert.notEqual(await view.getAttribute('data-pan-y'), dragBefore, 'Pointer drag changes the visible drawing');
+      await verifyPlanPointerDrag(page, view);
       await page.getByRole('button', { name: locale === 'en' ? 'Zoom in' : '放大图纸', exact: true }).click();
       assert.equal(await view.getAttribute('data-zoom'), '3.5');
       await page.getByRole('button', { name: locale === 'en' ? 'Zoom in' : '放大图纸', exact: true }).click();
