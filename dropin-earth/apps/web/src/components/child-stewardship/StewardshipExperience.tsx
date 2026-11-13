@@ -261,7 +261,7 @@ export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN
       }
       const receipt = await sync.current.sync(bound, api.current.transport(bound));
       setReceived(previous => ({ ...previous, [draft.id]: receipt.receiptId }));
-      setMessage(`合成服务已收到。接收编号：${receipt.receiptId}。还没有练习反馈，不表示树存活。`);
+      setMessage(`演示服务已收到，接收编号：${receipt.receiptId}。这不代表审核通过，也不能证明真实树木存活。`);
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
       setMessage(code === "DRAFT_REAUTHORIZATION_REQUIRED" ? "这份草稿来自较早打开的页面，目前只能在本机阅读。旧的发送选择不能沿用；愿意的话，可重新选择并创建一份新的练习草稿。" : code === "CONSENT_WITHDRAWN" ? "发送选择已撤回或改变，还没开始的发送已经停止。部分内容可能已发出，需要另外核对。" : "没有收到有效的接收确认，结果还不确定。草稿仍在本机；再次核对会沿用同一次请求，不另建记录。");
