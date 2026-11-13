@@ -4,7 +4,25 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { buildSync } from 'esbuild';
-import { assertPlanDrag, type PointerSample } from '../browser/lifepp-pointer-drag.ts';
+import { assertPlanDrag, installPlanDragProbe, type PointerSample } from '../browser/lifepp-pointer-drag.ts';
+
+test('pointer observation serializes into an isolated page without Node transform helpers', () => {
+  const listeners: { type: string; listener: EventListener; options: AddEventListenerOptions }[] = [];
+  const element: { __lifeppDragProbe?: { samples: PointerSample[] }; addEventListener: (type: string, listener: EventListener, options: AddEventListenerOptions) => void } = {
+    addEventListener(type, listener, options) { listeners.push({ type, listener, options }); },
+  };
+  runInNewContext(`(${installPlanDragProbe.toString()})(element)`, { element });
+  assert.deepEqual(listeners.map(entry => entry.type), ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'lostpointercapture']);
+  for (const entry of listeners) {
+    assert.equal(entry.listener, listeners[0]!.listener);
+    assert.equal(entry.options.capture, true); assert.equal(entry.options.passive, true);
+  }
+  listeners[0]!.listener({ type: 'pointerdown', isTrusted: true, pointerId: 7, button: 0, buttons: 1, clientX: 200, clientY: 150 } as unknown as Event);
+  const observed = element.__lifeppDragProbe?.samples;
+  assert.ok(observed); assert.equal(observed.length, 1);
+  assert.equal(observed[0]!.trusted, true); assert.equal(observed[0]!.pointerId, 7);
+  assert.equal(observed[0]!.x, 200); assert.equal(observed[0]!.y, 150);
+});
 
 const before = { x: -.64, y: -1.24, zoom: 3, transform: 'matrix(3, 0, 0, 3, -640, -1240)' };
 const after = { ...before, y: -1.04, transform: 'matrix(3, 0, 0, 3, -640, -1040)' };
