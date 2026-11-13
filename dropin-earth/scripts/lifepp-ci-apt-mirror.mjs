@@ -34,7 +34,14 @@ export function preferUbuntuArchive(mirrors, sources, osRelease) {
     // numeric priorities so a changed hosted image can be diagnosed without
     // logging arbitrary URLs, query parameters or file contents.
     const names = new Map([[azure, 'azure'], [archive, 'archive'], [security, 'security']]);
-    const observed = lines.map(([url, priority]) => `${names.get(url) ?? 'unknown'}=${/^priority:\d{1,3}$/.test(priority) ? priority : 'invalid'}`);
+    // Fixed diagnostic labels are not an allowlist: these variants still throw.
+    const describe = (url) => names.get(url)
+      ?? (/^http:\/\/[a-z]{2}(?:-[a-z]+)+-\d\.ec2\.archive\.ubuntu\.com\/ubuntu\/?$/.test(url) ? 'ubuntu-ec2-http' : undefined)
+      ?? (/^https:\/\/[a-z]{2}(?:-[a-z]+)+-\d\.ec2\.archive\.ubuntu\.com\/ubuntu\/?$/.test(url) ? 'ubuntu-ec2-https' : undefined)
+      ?? (url === 'https://azure.archive.ubuntu.com/ubuntu/' ? 'azure-https' : undefined)
+      ?? (url === 'http://azure.archive.ubuntu.com/ubuntu' ? 'azure-http-no-slash' : undefined)
+      ?? 'unknown';
+    const observed = lines.map(([url, priority]) => `${describe(url)}=${/^priority:\d{1,3}$/.test(priority) ? priority : 'invalid'}`);
     throw new Error(`Unexpected hosted Ubuntu mirror priorities: ${observed.join(', ')}`);
   }
   return mirrors.replace(/priority:1\b/, 'priority:TEMP').replace(/priority:2\b/, 'priority:1').replace('priority:TEMP', 'priority:2');

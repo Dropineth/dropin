@@ -73,3 +73,34 @@ test('both acceptance workflows keep the complete installer within the existing 
     assert.match(yaml, /run browsers -- bash -eo pipefail -c '\n\s+node scripts\/lifepp-ci-apt-mirror\.mjs\n\s+npx playwright install --with-deps chromium firefox webkit\n\s+'/);
   }
 });
+
+test('unsupported hosted endpoint variants get fixed labels but never become trusted mirrors', () => {
+  const variants = [
+    ['http://us-east-1.ec2.archive.ubuntu.com/ubuntu/', 'ubuntu-ec2-http'],
+    ['https://eu-west-2.ec2.archive.ubuntu.com/ubuntu', 'ubuntu-ec2-https'],
+    ['https://azure.archive.ubuntu.com/ubuntu/', 'azure-https'],
+    ['http://azure.archive.ubuntu.com/ubuntu', 'azure-http-no-slash'],
+    ['http://us-east-1.ec2.archive.ubuntu.com.evil.invalid/ubuntu/', 'unknown'],
+    ['http://do-not-log@us-east-1.ec2.archive.ubuntu.com/ubuntu/', 'unknown'],
+    ['http://us-east-1.ec2.archive.ubuntu.com/ubuntu/?token=do-not-log', 'unknown'],
+  ];
+  for (const [endpoint, label] of variants) {
+    const list = mirrors.replace('http://azure.archive.ubuntu.com/ubuntu/', endpoint!);
+    assert.throws(() => preferUbuntuArchive(list, sources, os), error => {
+      assert.ok(error instanceof Error);
+      assert.equal(error.message, `Unexpected hosted Ubuntu mirror priorities: ${label}=priority:1, archive=priority:2, security=priority:3`);
+      assert.doesNotMatch(error.message, /https?:|ec2\.archive|do-not-log|evil\.invalid/);
+      return true;
+    });
+    prepareRejectedWithoutWrites(list);
+  }
+});
+
+function prepareRejectedWithoutWrites(list: string) {
+  const read = (path: string) => path.endsWith('apt-mirrors.txt') ? list : path.endsWith('ubuntu.sources') ? sources : os;
+  assert.throws(() => prepareHostedMirror({
+    env: { GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted' }, read,
+    run: () => assert.fail('unsupported endpoint must not invoke sudo or any other command'),
+    log: () => assert.fail('unsupported endpoint must not report successful mirror preparation'),
+  }), /Unexpected hosted Ubuntu mirror priorities/);
+}
