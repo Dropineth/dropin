@@ -342,28 +342,28 @@ export function ReferenceGlobe({ locale, compact = false }: { locale: "en" | "zh
   return (
     <figure className={`${styles.figure}${compact ? ` ${styles.compact}` : ""}`} data-reference-globe data-globe-status={backend} data-renderer={backend === "canvas" ? "canvas2d-reference" : "static-reference"} data-rotation={backend === "canvas" && spinning ? "rotating" : "paused"}>
       <div className={styles.topline}>
-        <span>{zh ? "地球 / 证据网络" : "Earth / evidence network"}</span>
+        <span>{zh ? "探索地球" : "Explore Earth"}</span>
         <span className={styles.chip}>{zh ? "参考图层" : "Reference layer"}</span>
       </div>
       <div className={styles.scene} ref={sceneRef}>
-        <canvas className={styles.canvas} ref={canvasRef} hidden={backend === "static"} role="img" aria-label={zh ? "可旋转的地球参考图，标示科特迪瓦与深圳区域示例；不是项目边界。" : "Rotatable reference Earth with illustrative regional anchors in Côte d’Ivoire and Shenzhen; not project boundaries."} aria-describedby={captionId} />
+        <canvas className={styles.canvas} ref={canvasRef} hidden={backend === "static"} role="img" aria-label={zh ? "可旋转的地球参考图，标示科特迪瓦与深圳两个地区示例，未标注项目边界。" : "A rotatable reference globe showing Côte d’Ivoire and Shenzhen as regional examples, with no project boundaries."} aria-describedby={captionId} />
         <div className={styles.fallback} hidden={backend === "canvas"}>
           <span aria-hidden="true" className={styles.fallbackIcon}>◎</span>
-          <span>{backend === "static" ? (zh ? "交互地球不可用。区域参考见下方说明。" : "Interactive globe unavailable. Regional references are listed here.") : (zh ? "地球参考视图" : "Earth reference view")}</span>
+          <span>{backend === "static" ? (zh ? "交互地球暂时不可用，请查看下方地区说明。" : "The interactive globe is unavailable. Explore the regional descriptions below.") : (zh ? "正在准备地球视图" : "Preparing the globe")}</span>
         </div>
         <ul className={styles.callouts} aria-label={zh ? "区域参考" : "Regional references"}>
           <li className={`${styles.callout} ${styles.west}`}>
             <span className={styles.calloutIcon} aria-hidden="true">+</span>
-            <div><strong>{zh ? "科特迪瓦" : "CÔTE D’IVOIRE"}</strong><small>{zh ? "森林证据 · 示意锚点" : "Forest evidence · illustrative anchor"}</small></div>
+            <div><strong>{zh ? "科特迪瓦" : "CÔTE D’IVOIRE"}</strong><small>{zh ? "地区示例" : "Regional example"}</small></div>
           </li>
           <li className={`${styles.callout} ${styles.east}`}>
             <span className={styles.calloutIcon} aria-hidden="true">+</span>
-            <div><strong style={{ textTransform: "none" }}>{zh ? "深圳" : "SHENZHEN"} · {LIFEPP_PUBLIC_BRAND}</strong><small>{manifest.currentPlan.totalAreaSqm.toFixed(2)} {zh ? "㎡ · 三铺规划" : "m² · three-unit planning"}</small></div>
+            <div><strong style={{ textTransform: "none" }}>{zh ? "深圳" : "SHENZHEN"} · {LIFEPP_PUBLIC_BRAND}</strong><small>{manifest.currentPlan.totalAreaSqm.toFixed(2)} {zh ? "㎡ · 社区空间规划" : "m² · proposed community spaces"}</small></div>
           </li>
         </ul>
       </div>
       <div className={styles.footer}>
-        <p className={styles.status} role="status">{backend === "static" ? (zh ? "静态区域参考" : "Static regional reference") : spinning ? (zh ? "参考地理 · 缓慢旋转" : "Reference geography · rotating") : (zh ? "参考地理 · 已暂停" : "Reference geography · paused")}</p>
+        <p className={styles.status} role="status">{backend === "static" ? (zh ? "地区参考图" : "Regional reference") : spinning ? (zh ? "参考地球 · 旋转中" : "Reference globe · rotating") : (zh ? "参考地球 · 已暂停" : "Reference globe · paused")}</p>
         <div className={styles.controls} role="group" aria-label={zh ? "地球视图控制" : "Globe controls"}>
           <button type="button" disabled={backend !== "canvas"} aria-label={zh ? "向左旋转地球" : "Rotate globe left"} onClick={() => controlsRef.current?.rotate(-15)}><span aria-hidden="true">←</span></button>
           <button type="button" disabled={backend !== "canvas"} aria-label={spinning ? (zh ? "暂停地球旋转" : "Pause globe rotation") : (zh ? "恢复地球旋转" : "Resume globe rotation")} onClick={() => controlsRef.current?.toggle()}><span aria-hidden="true">{spinning ? "Ⅱ" : "▷"}</span>{spinning ? (zh ? "暂停" : "Pause") : (zh ? "旋转" : "Resume")}</button>
@@ -371,8 +371,8 @@ export function ReferenceGlobe({ locale, compact = false }: { locale: "en" | "zh
         </div>
       </div>
       <figcaption className={styles.caption} id={captionId}>
-        <span>{zh ? "Natural Earth 低分辨率参考地理（原型提供，公有领域）。区域锚点不是实测地块或已核证项目。" : "Natural Earth low-resolution reference geography (supplied prototype, public domain). Anchors are not surveyed parcels or verified projects."}</span>
-        <span>{zh ? "拖动或使用按钮旋转。深圳面积为规划输入，不代表实测或已建成。" : "Drag or use the buttons to rotate. The Shenzhen area is a planning input, not a survey or completed site."}</span>
+        <span>{zh ? "地图底图：Natural Earth（公有领域）。标记仅表示地区示例，不代表实测地块或已核证项目。" : "Map: Natural Earth, public domain. Markers show regional examples, not surveyed sites or verified projects."}</span>
+        <span>{zh ? "拖动地球或使用按钮旋转。深圳面积来自规划资料，不能据此认定实测面积或场地已开放。" : "Drag the globe or use the buttons to rotate. The Shenzhen area comes from planning documents. It does not confirm surveyed dimensions or an open venue."}</span>
       </figcaption>
     </figure>
   );

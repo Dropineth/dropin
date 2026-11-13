@@ -85,7 +85,7 @@ export function FourShopPlan({ locale, initialFloor = '1F' }: { locale: Locale; 
 
   return <section className={styles.plan} aria-labelledby={`${id}-title`} data-four-shop-plan data-plan-units={rooms.length}>
     <header className={styles.header}>
-      <div><p className={styles.eyebrow}>{pick(locale, '三铺 · 一个导入期计划', 'THREE ROOMS · ONE INTRODUCTORY PLAN')}</p><h3 id={`${id}-title`}>{pick(locale, '查看三铺位置', 'Locate the three rooms')}</h3></div>
+      <div><p className={styles.eyebrow}>{pick(locale, '三铺 · 一个社区空间计划', 'THREE UNITS · ONE COMMUNITY PLAN')}</p><h3 id={`${id}-title`}>{pick(locale, '查看三铺位置', 'Explore the three units')}</h3></div>
       <div className={styles.total}><strong>{totalArea}<span> m²</span></strong><span>{pick(locale, '规划空间 · 尚未开放', 'Planned space · not open')}</span></div>
     </header>
     <div className={styles.layout}>
@@ -94,7 +94,7 @@ export function FourShopPlan({ locale, initialFloor = '1F' }: { locale: Locale; 
           {floors.map((value, index) => <button key={value} type="button" role="tab" id={`${id}-tab-${value}`} aria-controls={`${id}-panel`} aria-selected={floor === value} tabIndex={floor === value ? 0 : -1} ref={node => { tabRefs.current[index] = node; }} onClick={() => changeFloor(value)} onKeyDown={event => tabKey(event, index)}>{value} · {value === '1F' ? pick(locale, '机库', 'Garage') : pick(locale, '两个服务空间', 'Two service spaces')}</button>)}
         </div>
         <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${floor}`}>
-          <div className={styles.drawingMeta}><span>{pick(locale, '来源图纸', 'SOURCE DIAGRAM')} · {floor}</span><span>{floorArea} m² · {pick(locale, `第 ${sourcePage} 页`, `p. ${sourcePage}`)}</span></div>
+          <div className={styles.drawingMeta}><span>{pick(locale, '来源图纸', 'SOURCE FLOOR PLAN')} · {floor}</span><span>{floorArea} m² · {pick(locale, `第 ${sourcePage} 页`, `p. ${sourcePage}`)}</span></div>
           <figure className={styles.figure}>
             <div className={styles.viewport} ref={viewport} data-plan-viewport data-zoom={view.zoom} data-pan-x={view.x.toFixed(3)} data-pan-y={view.y.toFixed(3)} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag} style={{ touchAction: view.zoom > 1 ? 'none' : 'pan-y' }}>
               <div className={styles.stage} style={{ transform: `translate(${view.x * 100}%, ${view.y * 100}%) scale(${view.zoom})` }}>
@@ -142,7 +142,7 @@ export function FourShopPlan({ locale, initialFloor = '1F' }: { locale: Locale; 
       <summary>{pick(locale, '查看文字替代与图纸说明', 'Read the text alternative and source notes')}</summary>
       <p>{pick(locale, '1F：L112 位于原图左下侧翼。2F：本轮L203、L202位于原图下侧偏右；原图仍可见相邻L201，但其不纳入本轮。', '1F: L112 is in the lower-left wing of the original drawing. 2F: L203 and L202 are in the lower-right portion. The original drawing still shows adjacent L201, which is excluded from this phase.')}</p>
       <ul>{rooms.map(room => <li key={room.unit}>{room.markerNumber}. {room.unit} · {room.floor} · {room.areaSqm.toFixed(2)} m² · {locale === 'zh' ? room.programZh : room.programEn} · {pick(locale, `原平面第 ${room.sourcePage} 页`, `source plan p. ${room.sourcePage}`)}</li>)}</ul>
-      <p>{pick(locale, '本轮范围、面积与规划功能据2026-10-19《Life++HERE × CoHERE 三铺导入期孵化方案》第1–5页。原图及其来源未改写。方案不代表已签约、消防批准或对外开放；L202/L203贯通及两层实际通行条件须另行确认。', 'Current scope, documented areas and planned uses follow the 2026-10-19 Life++HERE × CoHERE three-store proposal, pp.1–5. The original drawings and their provenance are unchanged. The plan is not an executed lease, fire approval or public opening; connections between L202/L203 and between floors require separate confirmation.')}</p>
+      <p>{pick(locale, '本轮范围、面积与规划功能据2026-10-19《Life++HERE × CoHERE 三铺导入期孵化方案》第1–5页。原图及其来源未改写。方案不代表已签约、消防批准或对外开放；L202/L203贯通及两层实际通行条件须另行确认。', 'Current scope, documented areas and planned uses follow the 2026-10-19 Life++HERE × CoHERE three-unit proposal, pp.1–5. The original drawings and their provenance are unchanged. The plan is not an executed lease, fire approval or public opening; connections between L202/L203 and between floors require separate confirmation.')}</p>
     </details>
   </section>;
 }

@@ -8,9 +8,9 @@ import "./globals.css";
 const siteUrl = "https://canopyproof.org";
 const iconUrl = "/icon.jpg";
 const appleTouchIconUrl = "/apple-touch-icon.jpg";
-const siteTitle = "CanopyProof — Environmental Accountability for Ecological Restoration";
+const siteTitle = "CanopyProof | Environmental Evidence & Learning";
 const siteDescription =
-  "CanopyProof by Dropin turns restoration evidence into transparent environmental records, impact certificates, and traceable proof workflows.";
+  "Explore environmental evidence, try nature-learning activities with children and prepare a pilot enquiry for your school or organisation. Sample records are clearly labelled.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -52,14 +52,7 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * Structured data (schema.org). Modeled with real vocabulary — Organization +
- * DataCatalog + Dataset — and kept deliberately honest: CanopyProof is described
- * as open, public-interest infrastructure with transparent, auditable,
- * append-only proof records. It does NOT assert "tamper-proof verified" outcomes
- * as fact, because the current interface serves clearly-labeled demonstration
- * data and public dataset access is still in development.
- */
+/** Public descriptions distinguish the current examples from verified project data. */
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -70,16 +63,16 @@ const structuredData = {
       url: siteUrl,
       logo: `${siteUrl}${iconUrl}`,
       description:
-        "Open, public-interest environmental accountability infrastructure by Dropin: transparent, auditable proof records for ecological restoration.",
+        "CanopyProof by Dropin helps people explore environmental evidence and nature learning, with sample records, learning demos and information about possible pilots.",
       brand: [{ "@type": "Brand", name: "CanopyProof" }, { "@type": "Brand", name: LIFEPP_PUBLIC_BRAND }],
     },
     {
       "@type": "DataCatalog",
       "@id": `${siteUrl}/#data-catalog`,
-      name: "CanopyProof Environmental Proof Catalog",
+      name: "CanopyProof Environmental Record Examples",
       url: `${siteUrl}/#explorer`,
       description:
-        "A catalog of ecological restoration proof records — evidence sources, verification status, monitoring state, and proof references — for transparent climate accountability. Public dataset access is in active development; values in the current interface are clearly labeled sample data.",
+        "Examples of how environmental records can show sources, review status and supporting information. The current interface contains labelled sample data; it is not a catalog of verified project results.",
       isAccessibleForFree: true,
       creativeWorkStatus: "Prototype",
       provider: { "@id": `${siteUrl}/#organization` },
@@ -94,18 +87,12 @@ const structuredData = {
       dataset: [
         {
           "@type": "Dataset",
-          name: "Restoration proof records (sample)",
+          name: "Environmental records (sample)",
           description:
-            "Append-only, auditable environmental proof records linking field evidence, GPS/EXIF metadata, satellite cross-checks, and verification status. Current records are demonstration data for interface evaluation, not certified carbon credits or verified claims about specific real-world projects.",
+            "Sample environmental records for learning how to read sources and review status. These examples contain no certified carbon credits or verified claims about specific real-world projects.",
           license: "https://opensource.org/licenses/MIT",
           isAccessibleForFree: true,
           creator: { "@id": `${siteUrl}/#organization` },
-          measurementTechnique: [
-            "Field evidence capture",
-            "Metadata / EXIF ingestion",
-            "Satellite cross-validation",
-            "Human-reviewed AI assistance",
-          ],
         },
       ],
     },

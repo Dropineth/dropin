@@ -23,10 +23,10 @@ try {
   assert.equal(await page.locator('input[type="file"],input[type="text"],textarea').count(), 0);
   const scripts = await page.locator("script[src]").evaluateAll(elements => elements.map(element => (element as HTMLScriptElement).src));
   assert.ok(scripts.every(url => new URL(url).origin === new URL(base).origin));
-  const navigate = async (screen: string) => { const details = page.locator("details"); if (!await details.evaluate(element => element.hasAttribute("open"))) await page.getByText("成人演示导览 · 全部 35 个屏幕与状态", { exact: true }).click(); await page.getByRole("button", { name: new RegExp(`^${screen} ·`) }).click(); };
-  await navigate("S04"); await page.getByRole("checkbox", { name: /愿意进行这次合成学习/ }).check(); await page.getByRole("checkbox", { name: /愿意在明确点击发送后/ }).check(); await page.getByRole("button", { name: "保存我的选择", exact: true }).click();
-  await navigate("S14"); await page.getByRole("button", { name: "加密保存到本机", exact: true }).click(); await page.getByRole("heading", { name: "1 份本机草稿", exact: true }).waitFor();
-  await navigate("S16"); assert.equal(await page.getByRole("button", { name: "发送这份合成草稿", exact: true }).isDisabled(), true);
+  const navigate = async (screen: string) => { const details = page.locator("details"); if (!await details.evaluate(element => element.hasAttribute("open"))) await page.getByText("家长与老师导览 · 查看全部主题", { exact: true }).click(); await page.locator(`button[data-screen-id="${screen}"]`).click(); };
+  await navigate("S04"); await page.getByRole("checkbox", { name: /我愿意做这次练习/ }).check(); await page.getByRole("checkbox", { name: /如果演示服务可用/ }).check(); await page.getByRole("button", { name: "确认这次选择", exact: true }).click();
+  await navigate("S14"); await page.getByRole("button", { name: "加密保存到这个浏览器", exact: true }).click(); await page.getByRole("heading", { name: "1 份本机草稿", exact: true }).waitFor();
+  await navigate("S16"); assert.equal(await page.getByRole("button", { name: "发送这份练习草稿", exact: true }).isDisabled(), true);
   await page.evaluate(() => { window.scrollTo(0, document.documentElement.scrollHeight); window.dispatchEvent(new Event("scroll")); window.dispatchEvent(new Event("pagehide")); });
   await page.waitForTimeout(100);
   const storage = await page.evaluate(async () => ({ localStorageKeys: Object.keys(localStorage), sessionStorageKeys: Object.keys(sessionStorage), databases: (await indexedDB.databases()).map(database => database.name), resources: performance.getEntriesByType("resource").map(entry => ({ name: new URL(entry.name).pathname, encodedBodySize: (entry as PerformanceResourceTiming).encodedBodySize })) }));

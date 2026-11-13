@@ -34,7 +34,7 @@ async function ready(page) {
   assert.equal(await root.count(), 1, 'Exactly one integrated spatial workbench');
   assert.equal(await root.getAttribute('data-external-actions'), '0');
   assert.equal(await root.locator('canvas').count(), 1, 'Software schematic has one actual canvas');
-  assert.match(await root.locator('.ls-stage-sub').innerText(), /WebGL.*(?:未验收|not (?:accepted|validated|verified))/i,
+  assert.match(await root.locator('.ls-stage-sub').innerText(), /WebGL.*(?:未验收|尚未验证|not (?:accepted|validated|verified))/i,
     'Software mode explicitly leaves WebGL unaccepted');
   assert.doesNotMatch(await root.locator('.ls-stage-sub').innerText(), /WebGL\s*(?:不可用|unavailable)/i,
     'A deliberately disabled renderer is not reported as a hardware failure');
@@ -210,8 +210,8 @@ export async function assertSpatialOperations(page, { locale, base }) {
   const dialog = root.locator('dialog');
   assert.equal(await dialog.isVisible(), true);
   assert.equal(await dialog.locator('img, iframe, object, embed').count(), 0, 'Plan reference is text, not a second asset viewer');
-  assert.match(await dialog.innerText(), /第2、3页|pages 2 and 3/);
-  assert.match(await dialog.innerText(), /不另行复制或发布|does not copy or publish/);
+  assert.match(await dialog.innerText(), /第 ?2、3 ?页|pages 2 and 3/);
+  assert.match(await dialog.innerText(), /不提供完整图纸或三维文件下载|offers no download of the full drawings or 3D files/);
   assert.deepEqual(await imageSources(), imagesBefore, 'Reference dialog adds no images to the original page');
   await root.locator('[data-action="close-plan"]').click();
   assert.equal(await dialog.isVisible(), false);
@@ -279,9 +279,10 @@ export async function assertSpatialOperations(page, { locale, base }) {
   await page.waitForURL(url => url.pathname === otherRoute);
   assert.equal(await page.locator('html').getAttribute('lang'), locale === 'en' ? 'zh-CN' : 'en');
   await ready(page);
-  await page.locator('a[href="/"]').first().click();
-  await page.waitForURL(new URL('/', base).href);
-  assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+  const returnPath = locale === 'en' ? '/zh' : '/';
+  await page.locator(`a[href="${returnPath}"]`).first().click();
+  await page.waitForURL(new URL(returnPath, base).href);
+  assert.equal(await page.locator('html').getAttribute('lang'), locale === 'en' ? 'zh-CN' : 'en');
   assert.equal(await page.locator('h1').count(), 1, 'Original ecology homepage remains reachable');
   assert.match(await page.locator('body').innerText(), /CanopyProof/);
   await page.goto(new URL(route, base).href, { waitUntil: 'networkidle' });

@@ -138,7 +138,7 @@ try {
   await page.getByRole("button", { name: "Exit full screen", exact: true }).click();
   await page.waitForFunction(() => document.fullscreenElement === null);
   assert.equal(await page.evaluate(() => document.fullscreenElement), null);
-  await page.getByRole("button", { name: "Exit and destroy viewer", exact: true }).click();
+  await page.getByRole("button", { name: "Close viewer", exact: true }).click();
   await expectState("destroyed");
   assert.equal(await page.locator("iframe").count(), 0);
   assert.equal(await listeners(), 0);

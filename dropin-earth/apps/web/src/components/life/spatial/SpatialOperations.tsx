@@ -21,10 +21,10 @@ export function SpatialOperations({ locale }: { locale: 'zh' | 'en' }) {
     return () => { cancelled = true; dispose?.(); };
   }, [locale]);
   return (
-    <section className={styles.root} aria-label={locale === 'zh' ? '空间与协作交互评审工作台' : 'Spatial collaboration review workbench'}>
-      {failed && <p role="status">{locale === 'zh' ? '交互视图加载失败。上方四铺原图与文字信息仍可使用。' : 'The interactive view did not load. The original four-unit plan and text above remain available.'}</p>}
+    <section className={styles.root} aria-label={locale === 'zh' ? '空间规划与协作演示' : 'Space planning and collaboration demo'}>
+      {failed && <p role="status">{locale === 'zh' ? '交互视图暂时无法加载。请查看上方三铺平面图与文字说明。' : 'The interactive view could not load. Use the three-unit plan and descriptions above.'}</p>}
       <div ref={target} />
-      <noscript>{locale === 'zh' ? '三维与回放需要 JavaScript；请使用上方四铺原图与文字列表。' : '3D and replay require JavaScript. Use the original plan and text list above.'}</noscript>
+      <noscript>{locale === 'zh' ? '启用 JavaScript 后可查看三维演示；也可直接阅读上方三铺平面图与文字说明。' : 'Enable JavaScript to explore the 3D demo, or use the three-unit plan and descriptions above.'}</noscript>
     </section>
   );
 }

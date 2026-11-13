@@ -5,8 +5,8 @@ export type PlanetaryLocale = "en" | "zh";
 export const planetaryViews = ["home", "earth", "evidence", "participation", "trust"] as const;
 export type PlanetaryView = typeof planetaryViews[number];
 export const planetaryTitles = {
-  en: { home: "Overview", earth: "Earth reference", evidence: "Evidence", participation: "Participation status", trust: "Trust center" },
-  zh: { home: "概览", earth: "地球参考视图", evidence: "证据工作台", participation: "参与状态", trust: "信任中心" },
+  en: { home: "Home", earth: "Explore Earth", evidence: "Evidence", participation: "Get involved", trust: "Trust & transparency" },
+  zh: { home: "首页", earth: "探索地球", evidence: "环境记录", participation: "如何参与", trust: "透明说明" },
 } as const;
 
 export function planetaryHref(locale: PlanetaryLocale, view: PlanetaryView = "home") {
@@ -16,10 +16,12 @@ export function planetaryHref(locale: PlanetaryLocale, view: PlanetaryView = "ho
 
 export function planetaryMetadata(locale: PlanetaryLocale, view: PlanetaryView): Metadata {
   const path = planetaryHref(locale, view);
-  const title = `${planetaryTitles[locale][view]} · CanopyProof`;
+  const title = view === "home"
+    ? (locale === "zh" ? "CanopyProof｜环境记录与自然学习" : "CanopyProof | Environmental Evidence & Learning")
+    : `${planetaryTitles[locale][view]} · CanopyProof`;
   const description = locale === "zh"
-    ? "连接空间证据、生态修复与可信协作。地理与项目示意分别标注，观测、估算与核证状态保持清晰。"
-    : "Connect spatial evidence, restoration and accountable collaboration. Reference geography, illustrative projects and evidence status stay distinct.";
+    ? "了解环境记录，和孩子体验自然观察学习，并为机构或学校咨询试点合作。示例与真实成果明确区分。"
+    : "Explore environmental evidence, try nature-learning activities with children and discuss a pilot for your organisation or school. Sample records are clearly labelled.";
   return {
     title, description,
     alternates: { canonical: `https://canopyproof.org${path}`, languages: {

@@ -22,6 +22,7 @@ export function CanopyProofOSPage({ module, children }: CanopyProofOSPageProps) 
     <main className="min-h-screen bg-slate-950 text-slate-50">
       <div className="mx-auto grid max-w-7xl gap-8 px-5 py-6 sm:px-8 lg:px-10">
         <CanopyOSNav activeRoute={module.route} />
+        <p className="rounded border border-amber-300/30 bg-amber-950/20 px-5 py-4 text-sm leading-6 text-amber-100">Workflow preview · Figures and process states below are illustrative. They do not confirm live projects, approvals, payments or partnerships.</p>
         <section className="grid gap-6 rounded border border-slate-800 bg-slate-900/50 p-5 shadow-2xl shadow-slate-950/50 lg:grid-cols-[1.08fr_0.92fr] lg:p-8">
           <div className="grid content-between gap-8">
             <div>
@@ -71,11 +72,11 @@ export function CanopyProofOSPage({ module, children }: CanopyProofOSPageProps) 
 
         <section className="grid gap-5 rounded border border-slate-800 bg-slate-900/60 p-5 lg:grid-cols-[0.92fr_1.08fr] lg:p-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Workflow Control</p>
-            <h2 className="mt-3 text-3xl font-semibold">Evidence to public record, without collapsing review.</h2>
+            <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">How the review would work</p>
+            <h2 className="mt-3 text-3xl font-semibold">From an observation to a reviewed record.</h2>
             <p className="mt-4 text-sm leading-6 text-slate-300">
-              CanopyProof actions use Dropin identity, agents, trust, governance, memory, and AHIN events. AI can
-              observe and recommend, but accredited human review remains final authority for proof records.
+              The steps below explain who checks the information and who makes a decision. AI can observe and recommend,
+              but qualified human review is required before a real result can be approved.
             </p>
           </div>
           <ol className="grid gap-3">
@@ -107,12 +108,13 @@ export function CanopyProofOSPage({ module, children }: CanopyProofOSPageProps) 
         {children}
 
         <section className="rounded border border-slate-800 bg-slate-950 p-5 text-sm leading-6 text-slate-300 lg:p-6">
-          <h2 className="text-xl font-semibold text-white">Production Boundary</h2>
+          <h2 className="text-xl font-semibold text-white">What these records mean</h2>
           <p className="mt-3">
             CanopyProof records are environmental accountability records. They are not certified carbon credits,
             financial assets, carbon-tax offsets, guaranteed yield instruments, or automatic CANOPY distribution
-            claims. Public admin routes must remain blocked and every mutation must be audit logged.
+            claims. This public preview does not perform those actions.
           </p>
+          <details className="mt-4"><summary className="cursor-pointer py-2 font-semibold">Access and audit requirements for project teams</summary><p className="mt-2">Public admin routes must remain blocked. Changes to a real record require authorized access and an audit history.</p></details>
         </section>
       </div>
     </main>
@@ -126,7 +128,7 @@ function CanopyOSNav({ activeRoute }: { activeRoute: string }) {
         <CanopyProofLogo loading="eager" size={42} />
         <span>
           <strong className="block text-lg">CanopyProof OS</strong>
-          <small className="text-xs uppercase tracking-widest text-slate-500">Environmental accountability infrastructure</small>
+          <small className="text-xs uppercase tracking-widest text-slate-500">Project tools and review guides</small>
         </span>
       </Link>
       <nav aria-label="CanopyProof OS modules" className="flex flex-wrap gap-2">
@@ -163,8 +165,8 @@ function OperationalVisual({ module }: { module: CanopyProofOSModule }) {
           />
         ))}
         <div className="absolute bottom-4 left-4 right-4 rounded border border-slate-800 bg-slate-950/90 p-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Earth operations view</p>
-          <p className="mt-2 text-sm leading-6 text-slate-300">Project points are illustrative operational records with visible verification state.</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Example project map</p>
+          <p className="mt-2 text-sm leading-6 text-slate-300">These map points illustrate a workflow. They are not a directory of active projects.</p>
         </div>
       </div>
     );
@@ -184,8 +186,8 @@ function OperationalVisual({ module }: { module: CanopyProofOSModule }) {
         </div>
       </div>
       <div className="mt-6 rounded border border-slate-800 bg-slate-900 p-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">AHIN event contract</p>
-        <p className="mt-2 font-mono text-sm text-cyan-100">ASSERT - REASON - DELEGATE - FULFILL - CHALLENGE</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Record history</p>
+        <p className="mt-2 font-mono text-sm text-cyan-100">Observe · Explain · Assign · Complete · Question</p>
       </div>
     </div>
   );
@@ -194,8 +196,8 @@ function OperationalVisual({ module }: { module: CanopyProofOSModule }) {
 function EvidenceSchemaPanel() {
   return (
     <section className="rounded border border-slate-800 bg-slate-900/60 p-5 lg:p-6">
-      <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Evidence Schema</p>
-      <h2 className="mt-3 text-3xl font-semibold">The mobile report envelope is typed, hashable, and reviewable.</h2>
+      <p className="text-xs font-semibold uppercase tracking-widest text-cyan-200">Record fields</p>
+      <h2 className="mt-3 text-3xl font-semibold">What a field record needs to explain.</h2>
       <div className="mt-5 grid gap-3 md:grid-cols-2">
         {evidenceSchemaFields.map((field) => (
           <article className="rounded border border-slate-800 bg-slate-950 p-4" key={field.key}>

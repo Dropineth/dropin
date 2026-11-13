@@ -26,17 +26,17 @@ export const referenceEvidence = Object.freeze({
 } as const);
 
 export const evidenceStages = [
-  { id: "observation", title: { en: "Observation", zh: "现场观测" }, description: { en: "A sourced capture, its time and permissions.", zh: "有来源的采集、时间与许可。" } },
-  { id: "estimate", title: { en: "Estimate", zh: "独立估算" }, description: { en: "Measurements, a method and stated uncertainty.", zh: "测量、方法与明确的不确定性。" } },
-  { id: "verified", title: { en: "Verified", zh: "独立核证" }, description: { en: "A review tied to the exact claim and version.", zh: "对应精确声明与版本的核证记录。" } },
-  { id: "issued", title: { en: "Issued", zh: "登记签发" }, description: { en: "An attributable registry issuance record.", zh: "可追溯的登记签发记录。" } },
-  { id: "retired", title: { en: "Retired", zh: "额度注销" }, description: { en: "A separate, attributable retirement record.", zh: "独立、可追溯的注销记录。" } },
+  { id: "observation", title: { en: "Observation", zh: "现场观测" }, description: { en: "A record of what was observed, when and by whom.", zh: "记录看到了什么、观察时间及资料来源。" } },
+  { id: "estimate", title: { en: "Estimate", zh: "估算" }, description: { en: "A calculation with its method, inputs and uncertainty.", zh: "说明计算方法、输入数据与误差范围。" } },
+  { id: "verified", title: { en: "Verified", zh: "独立核证" }, description: { en: "An independent review of a specific claim and version.", zh: "由独立方审核具体声明及对应版本。" } },
+  { id: "issued", title: { en: "Issued", zh: "登记签发" }, description: { en: "A registry record showing that credits were issued.", zh: "通过登记记录确认碳信用是否已签发。" } },
+  { id: "retired", title: { en: "Retired", zh: "额度注销" }, description: { en: "A registry record showing credits have been retired and cannot be used again.", zh: "通过登记记录确认碳信用已注销，不能再次使用。" } },
 ] as const;
 
 export const referenceRooms = manifest.spaces.map(room => ({
   id: room.unit,
   title: { en: room.programEn, zh: room.programZh },
-  description: { en: "Proposed use; lease, opening and operational acceptance remain unverified.", zh: "拟议用途；租约、开放与运营验收仍未核实。" },
+  description: { en: "Planned use. Lease arrangements and opening dates are not confirmed.", zh: "规划用途，租赁安排与开放时间尚未确认。" },
 }));
 
 export function planetaryPath(path: string, locale: PlanetaryLocale) {

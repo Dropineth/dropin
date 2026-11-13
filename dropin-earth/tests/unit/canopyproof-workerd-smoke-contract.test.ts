@@ -26,8 +26,8 @@ test("local workerd smoke owns all public routes and the removed SVG boundary", 
 
 test("stewardship smoke rejects a generic success page or missing synthetic disclosure", async () => {
   await assert.rejects(validateWorkerdResponse("/stewardship", new Response("<main>OK</main>")), /synthetic scope/);
-  await assert.rejects(validateWorkerdResponse("/stewardship", new Response("全程合成演示 · 不采集真实身份")), /noindex/);
-  await validateWorkerdResponse("/stewardship", new Response('<meta name="robots" content="noindex, nofollow"><main>全程合成演示 · 不采集真实身份</main>'));
+  await assert.rejects(validateWorkerdResponse("/stewardship", new Response("学习演示 · 使用虚构示例")), /noindex/);
+  await validateWorkerdResponse("/stewardship", new Response('<meta name="robots" content="noindex, nofollow"><main>学习演示 · 使用虚构示例</main>'));
 });
 
 test("local workerd response validator rejects missing branding and raw coordinates", async () => {
