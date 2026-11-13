@@ -73,6 +73,15 @@ export function FourShopPlan({ locale, initialFloor = '1F' }: { locale: Locale; 
     const box = viewport.current.getBoundingClientRect();
     setView({ zoom: current.view.zoom, x: bound(current.view.x + (event.clientX - current.x) / box.width, current.view.zoom), y: bound(current.view.y + (event.clientY - current.y) / box.height, current.view.zoom) });
   }
+  function finishDrag(event: PointerEvent<HTMLDivElement>) {
+    if (drag.current?.pointerId !== event.pointerId) return;
+    // Release coordinates are authoritative even when move events are coalesced.
+    moveDrag(event);
+    drag.current = null;
+  }
+  function cancelDrag(event: PointerEvent<HTMLDivElement>) {
+    if (drag.current?.pointerId === event.pointerId) drag.current = null;
+  }
 
   return <section className={styles.plan} aria-labelledby={`${id}-title`} data-four-shop-plan data-plan-units={rooms.length}>
     <header className={styles.header}>
@@ -87,7 +96,7 @@ export function FourShopPlan({ locale, initialFloor = '1F' }: { locale: Locale; 
         <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${floor}`}>
           <div className={styles.drawingMeta}><span>{pick(locale, '来源图纸', 'SOURCE DIAGRAM')} · {floor}</span><span>{floorArea} m² · {pick(locale, `第 ${sourcePage} 页`, `p. ${sourcePage}`)}</span></div>
           <figure className={styles.figure}>
-            <div className={styles.viewport} ref={viewport} data-plan-viewport data-zoom={view.zoom} data-pan-x={view.x.toFixed(3)} data-pan-y={view.y.toFixed(3)} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }} onLostPointerCapture={() => { drag.current = null; }} style={{ touchAction: view.zoom > 1 ? 'none' : 'pan-y' }}>
+            <div className={styles.viewport} ref={viewport} data-plan-viewport data-zoom={view.zoom} data-pan-x={view.x.toFixed(3)} data-pan-y={view.y.toFixed(3)} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={finishDrag} onPointerCancel={cancelDrag} onLostPointerCapture={cancelDrag} style={{ touchAction: view.zoom > 1 ? 'none' : 'pan-y' }}>
               <div className={styles.stage} style={{ transform: `translate(${view.x * 100}%, ${view.y * 100}%) scale(${view.zoom})` }}>
                 <img src={`/life/floorplan-${floor.toLowerCase()}-reference.webp`} width={1684} height={1191} loading="lazy" draggable={false} onError={() => setImageFailed(true)} alt={pick(locale, `${floor} 原平面图，第 ${sourcePage} 页。房间详情及位置说明见下方文字替代；L201不纳入本轮。`, `Supplied ${floor} floor plan, page ${sourcePage}. Room details and approximate positions are available in the text alternative below; L201 is excluded from this phase.`)} />
                 {!imageFailed && floorRooms.map(room => {
