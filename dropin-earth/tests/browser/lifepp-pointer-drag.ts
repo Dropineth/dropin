@@ -6,6 +6,19 @@ export type PointerSample = { type: string; trusted: boolean; pointerId: number;
 type Probe = { samples: PointerSample[]; listener: EventListener };
 type ProbedElement = HTMLElement & { __lifeppDragProbe?: Probe };
 
+export function installPlanDragProbe(element: HTMLElement) {
+  const node = element as ProbedElement;
+  const samples: PointerSample[] = [];
+  // Method syntax avoids a module-scoped keepNames helper in the serialized callback.
+  const probe: Probe = { samples, listener(event) {
+    const pointer = event as PointerEvent;
+    if (samples.length < 32) samples.push({ type: pointer.type, trusted: pointer.isTrusted, pointerId: pointer.pointerId,
+      button: pointer.button, buttons: pointer.buttons, x: pointer.clientX, y: pointer.clientY });
+  } };
+  node.__lifeppDragProbe = probe;
+  for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'lostpointercapture']) node.addEventListener(type, probe.listener, { capture: true, passive: true });
+}
+
 export function assertPlanDrag(before: PlanView, after: PlanView, samples: PointerSample[]) {
   const downIndex = samples.findIndex(sample => sample.type === 'pointerdown');
   assert.ok(downIndex >= 0, 'The gesture must deliver pointerdown');
@@ -47,17 +60,7 @@ export async function verifyPlanPointerDrag(page: Page, view: Locator) {
   const snapshot = () => view.evaluate(element => ({ x: Number(element.getAttribute('data-pan-x')), y: Number(element.getAttribute('data-pan-y')),
     zoom: Number(element.getAttribute('data-zoom')), transform: getComputedStyle(element.firstElementChild!).transform }));
   const before = await snapshot();
-  await view.evaluate(element => {
-    const node = element as ProbedElement;
-    const samples: PointerSample[] = [];
-    const listener: EventListener = event => {
-      const pointer = event as PointerEvent;
-      if (samples.length < 32) samples.push({ type: pointer.type, trusted: pointer.isTrusted, pointerId: pointer.pointerId,
-        button: pointer.button, buttons: pointer.buttons, x: pointer.clientX, y: pointer.clientY });
-    };
-    node.__lifeppDragProbe = { samples, listener };
-    for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'lostpointercapture']) node.addEventListener(type, listener, { capture: true, passive: true });
-  });
+  await view.evaluate(installPlanDragProbe);
   let held = false;
   try {
     await page.mouse.move(points[0]!.x, points[0]!.y);
