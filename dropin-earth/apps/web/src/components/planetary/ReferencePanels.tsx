@@ -159,7 +159,7 @@ function ParticipationPanel({ locale }: LocalizedProps) {
         <span className={styles.eyebrow}>{t("FAMILIES & CLASSROOMS", "家庭与课堂")}</span>
         <h2>{t("Make room for curiosity.", "从一个小发现开始。")}</h2>
         <p className={styles.bodyCopy}>{t("Try a nature-learning demo together. Children can explore sample observations, make their own choices and pause when they want. Parents and teachers can preview the experience before discussing a real activity.", "一起体验自然观察学习：看看示例，说说发现，让孩子自己选择，也可以随时停下来。家长和老师可以先了解体验，再讨论适合孩子的真实活动。")}</p>
-        <Link className={styles.primaryLink} href={children}>{t("Try the learning demo", "体验自然观察学习")}<Arrow /></Link>
+        <a className={styles.primaryLink} href={children}>{t("Read the learning guide", "阅读学习指南")}<Arrow /></a>
         <p className={styles.caption}>{t("The demo uses sample information. You do not need to upload a child’s photo or identity documents.", "演示使用示例信息，无需上传孩子的照片或身份证明。")}</p>
         <div className={styles.notice}>{t("Planning a class or family activity? Start by reviewing the demo with the adults and children who would take part.", "准备开展课堂或家庭活动？先和参与的成人、孩子一起了解演示内容与参与选择。")}</div>
       </section>
