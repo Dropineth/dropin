@@ -24,7 +24,7 @@ export default async function AboutPage({ searchParams }: { searchParams: Promis
         <Link className="flex min-h-11 items-center gap-3 text-xl font-semibold" href={home}><CanopyProofLogo size={36} />CanopyProof</Link>
         <nav className="flex flex-wrap items-center gap-6 text-sm" aria-label={t("Page navigation", "页面导航")}>
           <Link className="py-3" href={zh ? "/faq?lang=zh" : "/faq"}>{t("Common questions", "常见问题")}</Link>
-          <Link className="py-3" href={zh ? "/about" : "/about?lang=zh"} lang={zh ? "en" : "zh-CN"}>{zh ? "English" : "中文"}</Link>
+          <a className="py-3" href={zh ? "/about" : "/about?lang=zh"} lang={zh ? "en" : "zh-CN"}>{zh ? "English" : "中文"}</a>
         </nav>
       </header>
       <section className="py-12 sm:py-20">
@@ -35,7 +35,7 @@ export default async function AboutPage({ searchParams }: { searchParams: Promis
       </section>
       <section aria-labelledby="audiences" className="border-t border-[#b9c6bb] py-12">
         <h2 id="audiences" className="text-3xl font-semibold">{t("Choose a starting point", "找到适合你的入口")}</h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-2">{audiences.map(([title, description, href, action]) => <article className="flex flex-col items-start border border-[#b9c6bb] p-6 sm:p-8" key={title}><h3 className="text-2xl font-semibold">{title}</h3><p className="mb-6 mt-4 leading-7 text-[#4b6258]">{description}</p><Link className="mt-auto py-3 font-semibold underline underline-offset-4" href={href!}>{action} →</Link></article>)}</div>
+        <div className="mt-8 grid gap-5 md:grid-cols-2">{audiences.map(([title, description, href, action]) => <article className="flex flex-col items-start border border-[#b9c6bb] p-6 sm:p-8" key={title}><h3 className="text-2xl font-semibold">{title}</h3><p className="mb-6 mt-4 leading-7 text-[#4b6258]">{description}</p><a className="mt-auto py-3 font-semibold underline underline-offset-4" href={href!}>{action} →</a></article>)}</div>
       </section>
       <section className="border-t border-[#b9c6bb] py-12">
         <h2 className="text-3xl font-semibold">{t("From an observation to a reliable record", "从一次观察，到一份可靠的记录")}</h2>

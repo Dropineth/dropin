@@ -6,9 +6,9 @@ const nodes = [
   { className: "node-e", label: "Field evidence proof node" },
 ] as const;
 
-export function EarthOrb() {
+export function EarthOrb({ label = "Illustration of connected environmental records" }: { label?: string } = {}) {
   return (
-    <div aria-label="CanopyProof global restoration evidence orb" className="cp-earth-orb" role="img">
+    <div aria-label={label} className="cp-earth-orb" role="img">
       <div className="cp-earth-glow" />
       <div className="cp-earth-sphere">
         <span className="cp-continent cp-continent-a" />

@@ -279,9 +279,10 @@ export async function assertSpatialOperations(page, { locale, base }) {
   await page.waitForURL(url => url.pathname === otherRoute);
   assert.equal(await page.locator('html').getAttribute('lang'), locale === 'en' ? 'zh-CN' : 'en');
   await ready(page);
-  await page.locator('a[href="/"]').first().click();
-  await page.waitForURL(new URL('/', base).href);
-  assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+  const returnPath = locale === 'en' ? '/zh' : '/';
+  await page.locator(`a[href="${returnPath}"]`).first().click();
+  await page.waitForURL(new URL(returnPath, base).href);
+  assert.equal(await page.locator('html').getAttribute('lang'), locale === 'en' ? 'zh-CN' : 'en');
   assert.equal(await page.locator('h1').count(), 1, 'Original ecology homepage remains reachable');
   assert.match(await page.locator('body').innerText(), /CanopyProof/);
   await page.goto(new URL(route, base).href, { waitUntil: 'networkidle' });

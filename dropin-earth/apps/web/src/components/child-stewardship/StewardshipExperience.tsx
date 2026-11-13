@@ -16,6 +16,17 @@ function Leaves({ locale }: { locale: ChildLocale }) {
 }
 export function StewardshipExperience({ apiBase = process.env.NEXT_PUBLIC_DROPIN_API_URL ?? "", initialLocale = "zh-CN" }: { apiBase?: string; initialLocale?: ChildLocale }) {
   const [locale, setLocale] = useState<ChildLocale>(initialLocale);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("lang") !== locale) {
+      url.searchParams.set("lang", locale);
+      window.history.replaceState(window.history.state, "", url.href);
+    }
+    document.documentElement.lang = locale;
+    document.title = locale === "en"
+      ? "Look, ask and learn together · CanopyProof learning demo"
+      : "一起观察，一起提问 · CanopyProof 学习演示";
+  }, [locale]);
   const [screen, setScreen] = useState<StewardshipScreenId>("S01");
   const visited = useRef<StewardshipScreenId[]>(["S01"]);
   const cursor = useRef(0);

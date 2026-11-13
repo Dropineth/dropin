@@ -61,7 +61,7 @@ async function assertBlockedScene(page: Page, id: string) {
   assert.match(await link.getAttribute("rel") ?? "", /noopener/);
   assert.match(await link.getAttribute("rel") ?? "", /noreferrer/);
   assert.equal(await link.getAttribute("referrerpolicy"), "no-referrer");
-  assert.match(await viewer.innerText(), /非实景影像|not a scene capture/);
+  assert.match(await viewer.innerText(), /空间示意图 · 非实景照片|Spatial illustration · not a site photo/);
   return viewer;
 }
 
@@ -465,7 +465,7 @@ async function interactions() {
         await fallbackPage.goto(new URL("/zh", base).href, { waitUntil: "networkidle" });
         const globe = fallbackPage.locator("[data-reference-globe]");
         if (fallback === "no-canvas") {
-          await globe.locator('[role="status"]').filter({ hasText: "静态区域参考" }).waitFor();
+          await globe.locator('[role="status"]').filter({ hasText: "地区参考图" }).waitFor();
           assert.equal(await globe.getAttribute("data-renderer"), "static-reference");
           assert.equal(await globe.locator("button:disabled").count(), 3);
           assert.match(await globe.innerText(), /380\.48/);
@@ -480,26 +480,30 @@ async function interactions() {
         }
       } finally { await isolated.close(); }
     });
-    await check("New homepage preserves original anchor entry points", async () => {
+    await check("Homepage preserves original anchors and reaches the public Explorer", async () => {
       const response = await page.goto(base.href, { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
       for (const id of ["top", "protocol", "how-it-works", "explorer", "methodology", "telemetry", "stack", "contact"]) assert.equal(await page.locator(`#${id}`).count(), 1, `Preserved #${id}`);
-      assert.ok(await page.locator('a[href="/ecology"]').count() > 0);
-      assert.ok(await page.locator('a[href="/explorer"]').count() > 0);
+      for (const id of ["methodology", "telemetry", "stack"]) assert.equal(await page.locator(`#${id} a[href="/ecology#${id}"]`).count(), 1, `Ecology #${id} remains reachable`);
+      assert.ok(await page.locator('a[href="/explorer"]').count() > 0, "Public record lookup remains directly reachable from the homepage");
+      await page.locator('a[href="/evidence"]').first().click(); await page.waitForURL(new URL("/evidence", base).href);
+      await page.locator('a[href="/explorer"]').first().click(); await page.waitForURL(new URL("/explorer", base).href);
+      await page.locator("#public-project-id").waitFor({ state: "visible" });
     });
-    await check("Original ecology anchors and content", async () => {
+    await check("Ecology guide preserves source links, safeguards and responsive content", async () => {
       const response = await page.goto(new URL("/ecology", base).href, { waitUntil: "networkidle" }); assert.equal(response?.status(), 200);
       for (const id of ["top", "protocol", "how-it-works", "explorer", "methodology", "telemetry", "stack", "contact"]) assert.equal(await page.locator(`#${id}`).count(), 1, `Preserved #${id}`);
       const body = await page.locator("body").innerText();
-      for (const copy of [/Proof Explorer/, /TerraProof/i, /Methodology/, /Open Stack/, /sample/, /not certified carbon credits|nothing here is a certified carbon credit/]) assert.match(body, copy);
+      for (const copy of [/Public records/i, /Earth observation/i, /Review approach/i, /For project teams/i, /Public guide and sample interface\./, /A record is not a certified carbon credit\./, /never substitutes demo records/]) assert.match(body, copy);
       assert.ok(await page.locator('a[href="#explorer"]').count() > 0);
-      for (const selector of [".cp-hero h1", ".cp-status-terminal", ".cp-panel-heading"]) assert.ok(await page.locator(selector).count() > 0, `Original ${selector} remains present`);
+      for (const selector of ['#explorer a[href="/explorer"]', '#telemetry a[href="/terra"]', '#stack a[href="https://github.com/Dropineth/dropin"]']) assert.equal(await page.locator(selector).count(), 1, `Source entry point ${selector} remains present`);
+      for (const selector of [".cp-hero h1", ".cp-section-heading", ".cp-section h2"]) assert.ok(await page.locator(selector).count() > 0, `Ecology guide ${selector} remains present`);
       for (const profile of profiles) {
         await page.setViewportSize({ width: profile.width, height: profile.height });
-        const bounds = await page.locator(".cp-hero h1, .cp-status-terminal, .cp-panel-heading").evaluateAll((elements) => elements.map((element) => {
+        const bounds = await page.locator(".cp-hero h1, .cp-section-heading, .cp-section h2").evaluateAll((elements) => elements.map((element) => {
           const rect = element.getBoundingClientRect();
           return { text: element.textContent?.slice(0, 80), left: rect.left, right: rect.right, viewport: innerWidth };
         }));
-        assert.ok(bounds.length > 0, "Original ecology content is present");
+        assert.ok(bounds.length > 0, "Ecology guide content is present");
         assert.deepEqual(bounds.filter((rect) => rect.left < -1 || rect.right > rect.viewport + 1), [], `${profile.name} ecology content is not clipped at the viewport`);
         await prepareFullPageImages(page);
         const name = `after-${profile.name}-ecology.png`;
@@ -509,8 +513,8 @@ async function interactions() {
     await check("Primary scenes 33 and 29 reachable within two homepage clicks", async () => {
       for (const id of ["33", "29"]) {
         await page.goto(base.href, { waitUntil: "networkidle" });
-        await page.locator('a[href="/life"]').first().click(); await page.waitForURL("**/life");
-        await page.locator(`a[href="/life/spaces/${id}"]`).first().click(); await page.waitForURL(`**/life/spaces/${id}`);
+        await page.locator('a[href="/en/life"]').first().click(); await page.waitForURL(new URL("/en/life", base).href);
+        await page.locator(`a[href="/en/life/spaces/${id}"]`).first().click(); await page.waitForURL(new URL(`/en/life/spaces/${id}`, base).href);
         await assertBlockedScene(page, id);
       }
     });
@@ -527,10 +531,12 @@ async function interactions() {
       await page.goto(new URL("/life/spaces/31", base).href, { waitUntil: "networkidle" });
       await page.locator('a[hreflang="en"]').click(); await page.waitForURL("**/en/life/spaces/31");
       assert.equal(await page.locator("html").getAttribute("lang"), "en");
+      assert.equal(await page.locator('footer a[href="/explorer"]').count(), 1, "English public records link targets the real Explorer");
       await page.locator('a[hreflang="zh-CN"]').click(); await page.waitForURL("**/life/spaces/31");
       assert.equal(await page.locator("html").getAttribute("lang"), "zh-CN");
-      await page.locator('a[href="/"]').first().click(); await page.waitForURL(base.href);
-      assert.equal(await page.locator("html").getAttribute("lang"), "en");
+      assert.equal(await page.locator('footer a[href="/explorer?lang=zh"]').count(), 1, "Chinese public records link targets the localized Explorer");
+      await page.locator('a[href="/zh"]').first().click(); await page.waitForURL(new URL("/zh", base).href);
+      assert.equal(await page.locator("html").getAttribute("lang"), "zh-CN");
     });
     for (const locale of ["zh", "en"]) await check(`${locale} keyboard draft and no false receipt`, async () => {
       await page.goto(new URL(locale === "en" ? "/en/life/partners" : "/life/partners", base).href, { waitUntil: "networkidle" });

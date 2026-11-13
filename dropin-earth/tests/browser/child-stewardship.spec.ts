@@ -91,6 +91,9 @@ async function main() {
     await navigate("S03"); await page.getByLabel("虚构的练习角色").selectOption("synthetic-a"); await navigate("S15"); await page.getByRole("heading", { name: "1 份本机草稿" }).waitFor();
     for (let index = 1; index <= 35; index++) { await navigate(`S${String(index).padStart(2, "0")}`); assert.equal(await page.locator("h1").count(), 1); assert.equal(await page.locator("h1").evaluate(element => element === document.activeElement), true); }
     await page.getByRole("combobox", { name: "语言", exact: true }).selectOption("en");
+    await page.waitForURL(url => url.searchParams.get("lang") === "en");
+    assert.equal(await page.locator("html").getAttribute("lang"), "en");
+    assert.equal(await page.title(), "Look, ask and learn together · CanopyProof learning demo");
     for (let index = 1; index <= 35; index++) {
       const details = page.locator("details"); if (!await details.evaluate(element => element.hasAttribute("open"))) await page.getByText("For parents and teachers · Browse all topics", { exact: true }).click();
       await page.locator(`button[data-screen-id="S${String(index).padStart(2, "0")}"]`).click();
@@ -98,6 +101,9 @@ async function main() {
       assert.equal(await page.locator("main").evaluate(element => /[\u3400-\u9fff]/.test(element.textContent ?? "")), false, `English screen ${index} has no untranslated Chinese body text: ${await page.locator("main").innerText()}`);
     }
     await page.getByRole("combobox", { name: "Language", exact: true }).selectOption("zh-CN");
+    await page.waitForURL(url => url.searchParams.get("lang") === "zh-CN");
+    assert.equal(await page.locator("html").getAttribute("lang"), "zh-CN");
+    assert.equal(await page.title(), "一起观察，一起提问 · CanopyProof 学习演示");
     await navigate("S06"); await page.setViewportSize({ width: 390, height: 844 });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
     await page.locator("details").evaluate(element => element.removeAttribute("open"));

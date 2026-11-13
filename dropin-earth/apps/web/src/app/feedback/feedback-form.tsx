@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StatusBadge } from "@dropin/ui";
 import { apiBaseUrl } from "@/lib/api";
 
@@ -21,6 +21,10 @@ export function FeedbackForm({ locale = "en" }: { locale?: "en" | "zh" }) {
   const [category, setCategory] = useState("bug");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+  }, [locale]);
 
   async function submit() {
     if (!message.trim()) {

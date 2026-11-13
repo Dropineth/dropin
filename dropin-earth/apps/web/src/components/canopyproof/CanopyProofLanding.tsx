@@ -31,7 +31,7 @@ export function CanopyProofLanding({ locale = "en" }: { locale?: "en" | "zh" }) 
         <div className="cp-hero-actions"><a className="cp-button cp-button-primary" href="#how-it-works">{t("See the four steps", "了解四个步骤")}</a><a className="cp-button cp-button-secondary" href={zh ? "/zh/evidence" : "/evidence"}>{t("Explore an example", "查看记录示例")}</a></div>
         <p className="mt-6 max-w-xl text-sm leading-6 text-zinc-300">{t("Public guide and sample interface. Demo data explains the process; it does not report verified results from a real project.", "公开指南与界面示例。演示数据用于说明流程，不代表真实项目的已核实成果。")}</p>
       </div>
-      <div className="cp-hero-visual"><EarthOrb /><p className="text-center text-sm text-zinc-400">{t("Illustration of connected evidence sources", "不同证据来源之间的联系示意")}</p></div>
+      <div className="cp-hero-visual"><EarthOrb label={t("Illustration of connected environmental records", "环境记录联系示意图")} /><p className="text-center text-sm text-zinc-400">{t("Illustration of connected evidence sources", "不同证据来源之间的联系示意")}</p></div>
     </section>
     <section className="cp-section" id="protocol">
       <div className="cp-section-heading"><p className="cp-eyebrow">{t("A SHARED RECORD", "让记录更清楚")}</p><h2>{t("Know what happened, and how we know.", "发生了什么？我们凭什么知道？")}</h2><p>{t("An observation, an estimate and a verified result answer different questions. Keeping their status clear helps people decide what they can rely on.", "观察、估算和核实结果回答的是不同问题。标明各自的状态，才能帮助读者判断哪些信息可以作为依据。")}</p></div>

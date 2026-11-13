@@ -48,6 +48,10 @@ export function PublicExplorer({ initialPublicProjectId, locale = "en" }: Public
   );
 
   useEffect(() => {
+    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+  }, [locale]);
+
+  useEffect(() => {
     if (!initialPublicProjectId) {
       setView({ kind: "idle" });
       return;
