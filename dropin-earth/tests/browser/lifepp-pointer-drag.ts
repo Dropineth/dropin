@@ -34,7 +34,9 @@ export function assertPlanDrag(before: PlanView, after: PlanView, samples: Point
 export async function verifyPlanPointerDrag(page: Page, view: Locator) {
   await view.scrollIntoViewIfNeeded();
   const box = await view.boundingBox(); assert.ok(box);
-  const points = [{ x: box.x + box.width * .8, y: box.y + box.height * .3 }, { x: box.x + box.width * .8, y: box.y + box.height * .5 }];
+  // After focusing L203 and panning left, L202 occupies the 80% column.
+  // Keep the same rapid 20%-height gesture in the clear left-hand drawing area.
+  const points = [{ x: box.x + box.width * .2, y: box.y + box.height * .3 }, { x: box.x + box.width * .2, y: box.y + box.height * .5 }];
   const hits = await view.evaluate((element, positions) => positions.map(point => {
     const target = document.elementFromPoint(point.x, point.y);
     return { visible: point.x >= 0 && point.y >= 0 && point.x < innerWidth && point.y < innerHeight,
