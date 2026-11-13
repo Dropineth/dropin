@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import pg from 'pg';
 import {nativeChildPool,nativeChildSql,scopedNativeChildPool} from '../fixtures/child-stewardship-postgres.js';
+import {assertNativeQuotaMinute,waitForNativeQuotaMinute} from '../fixtures/child-stewardship-quota-window.js';
 import {PostgresChildStore} from '../../services/api/src/domain/child-stewardship/postgres-store.js';
 import {ChildPrivacyWorker} from '../../services/api/src/domain/child-stewardship/privacy.js';
 import {PostgresChildAgentGateway} from '../../services/api/src/domain/child-stewardship/agent-gateway-store.js';
@@ -120,18 +121,22 @@ test('native signed static agent gateway: dedicated verifier, atomic replay prot
   });
   await t.test('durable actor-specific gateway quota counts failed signatures and isolates other actors and tenants',async()=>{
    const f=await fixture(),other=await fixture();
+   const readQuotaTime=async()=>Number((await owner.query('SELECT extract(epoch FROM clock_timestamp())*1000 AS milliseconds')).rows[0].milliseconds);
+   const quotaMinute=await waitForNativeQuotaMinute(readQuotaTime);
    const invalid=f.signed();invalid.approval.signature=Buffer.alloc(64).toString('base64url');
    // Different native connections share the committed counter. Invalid business
    // requests consume capacity but never admit a nonce/output/audit record.
    const results=await Promise.all(Array.from({length:120},()=>f.post(invalid)));
    assert.ok(results.every(result=>result.status===403));
-   const limited=await f.post(f.signed());assert.equal(limited.status,429);assert.equal(limited.body.error.code,'RATE_LIMITED');
+   const limited=await f.post(f.signed());assertNativeQuotaMinute(await readQuotaTime(),quotaMinute);assert.equal(limited.status,429);assert.equal(limited.body.error.code,'RATE_LIMITED');
    assert.deepEqual(await counts(f.id),{admissions:0,outputs:0,audit:0});
    assert.equal((await other.post(other.signed())).status,200);
    const guardian=await verification!.query("SELECT child_stewardship.consume_child_capability_limit('agent_request',$1) status",[f.tokens.publicTokens.guardian]);assert.equal(guardian.rows[0].status,'allowed');
    assert.equal((await runtime!.pool.query("SELECT child_stewardship.consume_child_capability_limit('agent_request',$1) status",[f.tokens.publicTokens.child])).rows[0].status,'unavailable');
    assert.equal((await verification!.query("SELECT child_stewardship.consume_child_capability_limit('agent_request',$1) status",[tokenDigest(f.tokens.publicTokens.child)])).rows[0].status,'unauthorized');
-   const counters=(await owner.query("SELECT bucket_id,consumed FROM child_stewardship.api_rate_limits WHERE kind='agent_request' AND bucket_id LIKE $1",[`${f.id}:%`])).rows;assert.equal(counters.length,2);assert.deepEqual(counters.map(row=>row.consumed).sort((a:number,b:number)=>a-b),[1,120]);
+   const counters=(await owner.query("SELECT bucket_id,consumed,window_start FROM child_stewardship.api_rate_limits WHERE kind='agent_request' AND bucket_id LIKE $1",[`${f.id}:%`])).rows;assert.equal(counters.length,2);assert.deepEqual(counters.map(row=>row.consumed).sort((a:number,b:number)=>a-b),[1,120]);
+   assertNativeQuotaMinute(await readQuotaTime(),quotaMinute);
+   for(const row of counters)assert.equal(row.window_start.getTime(),quotaMinute*60_000,'Every asserted quota counter must belong to the same server minute');
    assert.equal(JSON.stringify(counters).includes(f.tokens.publicTokens.child),false);
   });
   await t.test('unconfigured/real router is unavailable and SQL rollback pauses explicitly granted verifier without erasing history',async()=>{
