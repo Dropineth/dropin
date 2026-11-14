@@ -8,6 +8,7 @@ import {createServer,createConnection,isIPv4} from 'node:net';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {promisify} from 'node:util';
 import {authorityOnly} from './signed-current-authority.mjs';
+import {ownerMigrationEnv,verifyImagePlan} from './image-migration-plan.mjs';
 const exec=promisify(execFile),here=dirname(fileURLToPath(import.meta.url));
 export const PIN=Object.freeze({
   candidate:'0e3d33b36beac4502488b18a0707c17fd34062e5',candidateTree:'b21c6879460663eb391e94d281cbcb0b042c1dfb',
@@ -19,7 +20,7 @@ const stages=['source_preflight','docker_preflight','build_candidate','build_rol
   'private_environment','private_postgres','native_dependencies','native_synthetic_lifecycle','prepare_session','signed_authority',
   'combined_candidate_readiness','postgres_tls_observed','combined_tls_hostname_denial','before_admission','signed_sql_admission','candidate_valid',
   'revoked_denied','revoked_healthy_control','expired_denied','expired_healthy_control','unavailable_denied','unavailable_healthy_control',
-  'rollback_data_baseline','candidate_stop','backup_before_migration','append_outbox_hold','prior_image_rejects_migrated_db','restore_to_separate_database','verify_restored_snapshot','configure_rollback_target','advance_floor_before_restore_probe','combined_rollback_readiness','rollback_data_invariants',
+  'rollback_data_baseline','candidate_stop','backup_before_migration','derive_packaged_candidate','build_patched','verify_packaged_plan','append_outbox_hold','patched_image_readiness','prior_image_rejects_migrated_db','restore_to_separate_database','verify_restored_snapshot','configure_rollback_target','advance_floor_before_restore_probe','combined_rollback_readiness','rollback_data_invariants',
   'rollback_advanced_floor_denied','rollback_stop',
   'source_recheck','cleanup'];
 export function receipt(){return {kind:'CanopyProofHostedSeparateDatabaseRehearsal/1',candidateSha:PIN.candidate,rollbackSha:PIN.rollback,
@@ -342,23 +343,53 @@ export async function main(args){
       const hash=(await pgcmd('sha256sum',dump)).split(' ')[0];assert.match(hash,/^[a-f0-9]{64}$/);
       return {sha256:hash,disposableDatabase:true};
     });
+    const patch=join(here,'closed-delivery.patch'),patchSha=digest(await readFile(patch));
+    assert.equal(patchSha,'dd6c6dc32332016de12dd6f9da7a5f0a0c0ac2c59b220e1061be50c2872873a0');
+    const derived=join(privateDir,'patched-source');
+    const allowed=['dropin-earth/services/api/prisma/child-stewardship-outbox-hold.sql','dropin-earth/services/api/src/child-backend/migrations.ts'];
+    const provenance=await stage('derive_packaged_candidate',async()=>{
+      const git=(args,cwd=derived,env={})=>run('git',['-c','core.hooksPath=/dev/null',...args],{cwd,env});
+      await git(['clone','--shared','--no-checkout','--local',candidate,derived],privateDir);
+      await git(['checkout','--detach',PIN.candidate]);
+      await git(['apply','--index',patch]);
+      assert.deepEqual((await git(['diff','--cached','--name-only'])).split('\n').sort(),allowed);
+      await git(['-c','user.name=CanopyProof Rehearsal','-c','user.email=synthetic@example.invalid','-c','commit.gpgsign=false','commit','-m','Isolated synthetic migration assembly'],derived,{
+        GIT_AUTHOR_DATE:'2026-11-14T00:00:00Z',GIT_COMMITTER_DATE:'2026-11-14T00:00:00Z'});
+      const derivedSha=await git(['rev-parse','HEAD']);assert.match(derivedSha,/^[a-f0-9]{40}$/);
+      const tree=await git(['rev-parse','HEAD^{tree}']);assert.match(tree,/^[a-f0-9]{40}$/);
+      assert.equal(await git(['rev-parse','HEAD^']),PIN.candidate);
+      await source(derived,derivedSha,tree);
+      return {derivedSha,tree,baseCommit:PIN.candidate,patchSha,syntheticOnly:true};
+    });
+    const patchedImage=(await build('patched',derived,provenance.derivedSha)).imageId;
+    await stage('verify_packaged_plan',async()=>{
+      const plan=await start(['--network','none',...common,patchedImage]);containerBoundary(await inspect('container',plan),patchedImage);
+      try{
+        const observed=await probe(plan,provenance.derivedSha,503);
+        const cli=JSON.parse(await docker(['exec',plan,'node','/app/migrate.mjs','--plan']));
+        const files=JSON.parse(await docker(['exec',plan,'node','-e',`const f=require('node:fs'),c=require('node:crypto'),a=require('node:assert/strict');const h=b=>c.createHash('sha256').update(b).digest('hex'),m=JSON.parse(f.readFileSync('/app/build.json'));for(const n of ['server.mjs','migrate.mjs'])a.equal(h(f.readFileSync('/app/'+n)),m.artifacts[n]);a.equal(m.sourceSha,process.argv[1]);a.equal(m.syntheticOnly,true);a.equal(m.releaseApproval,false);const p='/app/migrations/';console.log(JSON.stringify(Object.fromEntries(f.readdirSync(p).map(n=>[n,h(f.readFileSync(p+n))]))));`,provenance.derivedSha]));
+        const baseline=(await snapshot('packed-baseline')).tables.find(t=>t.table==='child_backend_migrations.entries');
+        assert.equal(baseline.count,12);
+        const rowsText=await pgQuery(pgFrom,"SELECT json_agg(json_build_object('name',name,'digest',digest) ORDER BY ordinal)::text FROM child_backend_migrations.entries");
+        const reviewedSql=await readFile(join(derived,allowed[0]),'utf8');
+        return {...observed,...verifyImagePlan({baseline:JSON.parse(rowsText),manifest:cli,files,reviewedSql}),imageId:patchedImage};
+      }finally{await stop(plan);}
+    });
     await stage('append_outbox_hold',async()=>{
-      const patch=join(here,'closed-delivery.patch');
-      assert.equal(digest(await readFile(patch)), 'dd6c6dc32332016de12dd6f9da7a5f0a0c0ac2c59b220e1061be50c2872873a0');
-      const scratch=join(privateDir,'patched');
-      await mkdir(scratch,{mode:0o700});
-      // Copy exact committed inputs from the pinned source without changing it.
-      const target=join(scratch,'dropin-earth/services/api');
-      for(const part of ['prisma','src/child-backend']) await mkdir(join(target,part),{recursive:true});
-      for(const name of (await run('git',['ls-files','dropin-earth/services/api/prisma'],{cwd:candidate})).split('\n')){
-        assert.match(name,/^dropin-earth\/services\/api\/prisma\/[a-zA-Z0-9_.-]+$/);
-        await copyFile(join(candidate,name),join(scratch,name));
-      }
-      await copyFile(join(app,'services/api/src/child-backend/migrations.ts'),join(target,'src/child-backend/migrations.ts'));
-      await run('git',['apply',patch],{cwd:scratch});
-      const result=JSON.parse(await helper('apply-disposable-migration.mjs',[app,target,fixtureFile]));
+      const migratorEnv=join(privateDir,'migration.env');
+      await writeFile(migratorEnv,ownerMigrationEnv(fixture.ownerDatabaseUrl),{mode:0o600});
+      const id=await start(['--network',networkName,...common,'--env-file',migratorEnv,
+        '--mount',`type=bind,source=${join(tls,'ca.crt')},target=/rehearsal-ca.crt,readonly`,patchedImage,'node','/app/migrate.mjs','--apply-synthetic']);
+      const done=await inspect('container',id);assert.equal(done.Image,patchedImage);
+      assert.equal(await docker(['wait',id],{timeout:90_000}),'0');
+      const r=JSON.parse(await docker(['logs',id]));
+      assert.deepEqual(r.applied,['child-stewardship-outbox-hold.sql']);assert.equal(r.unchanged.length,12);
       assert.equal(await pgQuery(pgFrom,"SELECT count(*) FROM child_stewardship.outbox WHERE event_id='hosted-pending' AND delivered_at IS NULL"),'1');
-      return {...result,pendingPreserved:true,patchedMigratorHostedNotImage:true};
+      return {applied:r.applied,priorMigrationsUnchanged:r.unchanged.length,pendingPreserved:true,packagedMigratorRanInImage:true,imageId:patchedImage};
+    });
+    await stage('patched_image_readiness',async()=>{
+      const result=await combined(patchedImage,provenance.derivedSha);
+      await stop(result.id);return result.observed;
     });
     await stage('prior_image_rejects_migrated_db',async()=>{
       const denied=await combined(rollbackImage,PIN.rollback,{status:503});
@@ -410,7 +441,7 @@ export async function main(args){
       return {pendingPreservedInBothDatabases:true,restoreRetainsPriorSchema:true,externalDispatch:'NOT_RUN'};
     });
     await stage('rollback_stop',async()=>{await stop(older.containerId);return {cleanExit:true};});
-    report.ociSignedPerSessionCheckpoint={status:'PASS',scope:'isolated OCI images against separate PostgreSQL databases with synthetic signed HTTPS; patched migrator ran on the host, not in an image',productionReady:false};
+    report.ociSignedPerSessionCheckpoint={status:'PASS',scope:'isolated OCI images against separate PostgreSQL databases with synthetic signed HTTPS; migration ran inside the derived synthetic candidate image',productionReady:false};
     await stage('source_recheck',async()=>{await source(candidate,PIN.candidate,PIN.candidateTree);await source(rollback,PIN.rollback,PIN.rollbackTree);return {unchanged:true};});
   }catch(error){failed=true;report.stages[active]={status:'FAIL',errorCode:typeof error?.code==='string'?error.code:'ASSERTION_OR_COMMAND_FAILED',outcomeUncertain:Boolean(error?.killed),...(active==='verify_restored_snapshot'&&error?.code==='RESTORED_SNAPSHOT_MISMATCH'?{diagnostic:error.restoreDiagnostic}:{}),...(active==='private_postgres'&&error?.code==='POSTGRES_REHEARSAL_STAGE_FAILED'?{diagnostic:error.diagnostic}:{})};}
   finally{
