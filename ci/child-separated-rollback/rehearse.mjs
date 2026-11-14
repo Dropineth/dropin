@@ -27,6 +27,26 @@ export function receipt(){return {kind:'CanopyProofHostedSeparateDatabaseRehears
   ociSignedPerSessionCheckpoint:{status:'NOT_RUN'},productionEnrollment:{status:'NOT_RUN',reason:'Real enrollment must remain unavailable.'},
   crossServiceWritesRevocationRace:{status:'NOT_RUN'},productionFinality:{status:'NOT_RUN'},
   productionReady:false,authorizationGranted:false,releaseApproval:false,productionDeployed:false};}
+export function schemaDiagnostic(before,after){
+  const result={};
+  for(const kind of ['columns','constraints','functions','policies']){
+    const a=before?.[kind],b=after?.[kind];
+    if(!Array.isArray(a)||!Array.isArray(b))continue;
+    const key=x=>x.identity;
+    const multiset=rows=>{
+      const by=new Map();
+      for(const r of rows){const k=key(r);by.set(k,[...(by.get(k)??[]),r.sha256]);}
+      return by;
+    };
+    const left=multiset(a),right=multiset(b);
+    const ids=[...new Set([...left.keys(),...right.keys()])].sort();
+    const changed=ids.filter(k=>JSON.stringify((left.get(k)??[]).sort())!==JSON.stringify((right.get(k)??[]).sort()));
+    const reportable=changed.filter(k=>/^(child_stewardship(?:_webauthn|_guardian)?|child_backend_migrations|rehearsal_fixture)\.[a-zA-Z0-9_.-]{1,250}$/.test(k)).slice(0,8);
+    result[kind]={beforeCount:a.length,restoredCount:b.length,changedCount:changed.length,objects:reportable,
+      orderOnly:changed.length===0&&JSON.stringify(a)!==JSON.stringify(b)};
+  }
+  return result;
+}
 export function parseTap(text){
   const value=name=>Number(text.match(new RegExp(`^# ${name} (\\d+)$`,'m'))?.[1]??NaN);
   const result={tests:value('tests'),passed:value('pass'),failed:value('fail'),cancelled:value('cancelled'),skipped:value('skipped')};
@@ -309,7 +329,7 @@ export async function main(args){
     }
     const snapshot=async (name,mode='snapshot')=>{const file=join(privateDir,`${name}.json`);await helper('inspect-session.mjs',[mode,app,file]);return JSON.parse(await readFile(file,'utf8'));};
     let before;
-    await stage('rollback_data_baseline',async()=>{before=await snapshot('before-switch');return {snapshot:before};});
+    await stage('rollback_data_baseline',async()=>{before=await snapshot('before-switch');const {schemaObjects,...sanitized}=before;return {snapshot:sanitized};});
     await stage('candidate_stop',async()=>{await stop(current.containerId);return {cleanExit:true};});
     const pgcmd=(name,...args)=>docker(['exec',pg.containerId,name,...args]);
     const pgQuery=(db,sql)=>pgcmd('psql','-X','-v','ON_ERROR_STOP=1','-U','rehearsal_admin','-d',db,'-Atc',sql);
@@ -365,7 +385,7 @@ export async function main(args){
         const changed=[...new Set([...prior.keys(),...restored.keys()])].filter(k=>{
           const a=prior.get(k),b=restored.get(k);return a?.count!==b?.count||a?.sha256!==b?.sha256;
         }).filter(k=>/^(child_stewardship(?:_webauthn|_guardian)?|child_backend_migrations)\.[a-z_]+$/.test(k)).slice(0,20);
-        throw Object.assign(new Error('RESTORED_SNAPSHOT_MISMATCH'),{code:'RESTORED_SNAPSHOT_MISMATCH',restoreDiagnostic:{schemaMismatch,dataMismatch,changedTables:changed}});
+        throw Object.assign(new Error('RESTORED_SNAPSHOT_MISMATCH'),{code:'RESTORED_SNAPSHOT_MISMATCH',restoreDiagnostic:{schemaMismatch,dataMismatch,changedTables:changed,schemaObjects:schemaDiagnostic(before.schemaObjects,actual.schemaObjects)}});
       }
       return {schemaMatch:true,dataMatch:true};
     });

@@ -70,9 +70,19 @@ async function snapshot(root,adminUrl,output,db=database){
       FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname=ANY($1) AND p.prokind IN('f','p') ORDER BY 1,2,3`,[schemas])).rows;
     const policies=(await client.query('SELECT schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check FROM pg_policies WHERE schemaname=ANY($1) ORDER BY 1,2,3',[schemas])).rows;
     const schemaSha256=hash(JSON.stringify({columns,constraints,functions,policies}));
+    // Additional diagnostics only. Do not normalize or change the strict schema digest.
+    const identities={
+      columns:r=>[r.nspname,r.relname,r.attname],
+      constraints:r=>[r.nspname,r.relname,r.conname],
+      functions:r=>[r.nspname,r.proname,hash(r.arguments)],
+      policies:r=>[r.schemaname,r.tablename,r.policyname]
+    };
+    const schemaObjects=Object.fromEntries(Object.entries({columns,constraints,functions,policies}).map(([kind,rows])=>
+      [kind, rows.map(r=>({identity:identities[kind](r).join('.'),sha256:hash(JSON.stringify(r))}))]));
+
     await client.query('COMMIT');
     await writePrivate(output,{kind:'DisposableChildRehearsalSnapshot/1',syntheticOnly:true,
-      schemaScope:'table-columns-constraints-functions-rls-policies',schemaSha256,
+      schemaScope:'table-columns-constraints-functions-rls-policies',schemaSha256,schemaObjects,
       dataSha256:hash(JSON.stringify(tableDigests)),tables:tableDigests,
       perSessionAuth:'NOT_RUN',productionReady:false,releaseApproval:false});
   }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}
