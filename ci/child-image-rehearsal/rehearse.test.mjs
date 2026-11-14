@@ -59,3 +59,5 @@ test('standalone source does not deploy, publish, mount host Docker socket or we
   assert.ok(text.includes("['network','create','--internal'"));
   assert.ok(text.includes('CHILD_DATABASE_TLS=verify-full'));
 });
+
+test('PostgreSQL diagnostic is a closed category, not raw logs or credentials',async()=>{const {postgresFailureClass}=await import('./rehearse.mjs');assert.equal(postgresFailureClass('secret=fixture postgres: permission denied'), 'PERMISSION_OR_OWNERSHIP');assert.equal(postgresFailureClass('registry: manifest unknown'), 'IMAGE_MANIFEST_UNAVAILABLE');assert.equal(postgresFailureClass('postgresql://user:secret@unexpected.example/db'), 'UNCLASSIFIED');});

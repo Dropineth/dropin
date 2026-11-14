@@ -27,6 +27,18 @@ export function parseTap(text){
   const result={tests:value('tests'),passed:value('pass'),failed:value('fail'),cancelled:value('cancelled'),skipped:value('skipped')};
   assert.ok(result.tests>0&&result.passed===result.tests&&result.failed===0&&result.cancelled===0&&result.skipped===0,'NATIVE_TESTS_INCOMPLETE');return result;
 }
+// Only fixed categories escape to the receipt. Never persist command arguments,
+ // raw stderr, container logs, database URLs, or credential material.
+export function postgresFailureClass(details){
+  const value=String(details??'').slice(-16000);
+  if(/manifest unknown|no matching manifest|not found: manifest/i.test(value))return 'IMAGE_MANIFEST_UNAVAILABLE';
+  if(/toomanyrequests|rate limit/i.test(value))return 'REGISTRY_RATE_LIMIT';
+  if(/permission denied|wrong ownership|group or world access/i.test(value))return 'PERMISSION_OR_OWNERSHIP';
+  if(/failed to load|could not load|private key file|certificate file/i.test(value))return 'TLS_FILE_LOAD';
+  if(/bind for.+failed|port is already allocated|failed to bind host port/i.test(value))return 'LOOPBACK_PORT_BIND';
+  if(/database system is starting up|not yet accepting connections/i.test(value))return 'DB_STARTING';
+  return 'UNCLASSIFIED';
+}
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 const idPattern=/^[a-f0-9]{64}$/;
 const imagePattern=/^sha256:[a-f0-9]{64}$/;
@@ -60,8 +72,8 @@ export async function main(args){
   await mkdir(output,{mode:0o700});
   const report=receipt();let privateDir;const containers=[],networks=[],images=[];let active='source_preflight';
   const save=()=>writeFile(join(output,'receipt.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600});
-  const run=async(file,argv,{cwd=here,env={},timeout=120_000}={})=>{
-    const result=await exec(file,argv,{cwd,env:{...operationalEnv(),...env},timeout,maxBuffer:32*1024*1024});return result.stdout.trim();
+  const run=async(file,argv,{cwd=here,env={},timeout=120_000,diagnostic=false}={})=>{
+    const result=await exec(file,argv,{cwd,env:{...operationalEnv(),...env},timeout,maxBuffer:32*1024*1024});return (diagnostic?result.stdout+'\n'+result.stderr:result.stdout).trim();
   };
   const docker=(argv,options)=>run('docker',['--host','unix:///var/run/docker.sock',...argv],options);
   const inspect=async(kind,id)=>JSON.parse(await docker([kind,'inspect',id]))[0];
@@ -131,17 +143,43 @@ export async function main(args){
     const password=randomBytes(32).toString('hex'),pgEnv=join(privateDir,'pg.env');
     await writeFile(pgEnv,`POSTGRES_USER=rehearsal_admin\nPOSTGRES_PASSWORD=${password}\nPOSTGRES_DB=rehearsal_native_test\n`,{mode:0o600});
     const pg=await stage('private_postgres',async()=>{
-      await docker(['pull',PIN.postgres],{timeout:300_000});const pgImage=imageIdentity(await inspect('image',PIN.postgres));
-      const id=await start(['--network',networkName,'--network-alias','rehearsal-pg','--network-alias','rehearsal-pg-wrong','--user',`${process.getuid()}:${process.getgid()}`,
+      let phase='image_pull', id;const ownedBefore=containers.length;
+      try{
+      await docker(['pull',PIN.postgres],{timeout:300_000});
+      phase='image_identity';const pgImage=imageIdentity(await inspect('image',PIN.postgres));
+      phase='container_launch';
+      id=await start(['--network',networkName,'--network-alias','rehearsal-pg','--network-alias','rehearsal-pg-wrong','--user',`${process.getuid()}:${process.getgid()}`,
         '--env-file',pgEnv,'--mount',`type=bind,source=${join(tls,'pg.crt')},target=/certs/pg.crt,readonly`,
         '--mount',`type=bind,source=${join(tls,'pg.key')},target=/certs/pg.key,readonly`,
         '--tmpfs',`/var/lib/postgresql/data:rw,nosuid,size=1g,mode=0700,uid=${process.getuid()},gid=${process.getgid()}`,
         '--tmpfs',`/var/run/postgresql:rw,nosuid,size=8m,mode=0770,uid=${process.getuid()},gid=${process.getgid()}`,
         '-p','127.0.0.1::5432',pgImage,'postgres','-c','ssl=on','-c','ssl_cert_file=/certs/pg.crt','-c','ssl_key_file=/certs/pg.key']);
-      let ready=false;for(let i=0;i<90;i++){try{await docker(['exec',id,'pg_isready','-U','rehearsal_admin','-d','rehearsal_native_test']);ready=true;break;}catch{await new Promise(r=>setTimeout(r,1000));}}
-      assert.ok(ready,'POSTGRES_NOT_READY');const info=await inspect('container',id),ports=info.NetworkSettings.Ports['5432/tcp'];assert.equal(ports.length,1);assert.equal(ports[0].HostIp,'127.0.0.1');assert.match(ports[0].HostPort,/^[0-9]+$/);
-      const version=await docker(['exec',id,'psql','-U','rehearsal_admin','-d','rehearsal_native_test','-Atc','SHOW server_version']);assert.match(version,/^17\.12(?:\s|$)/);
+      phase='tcp_readiness';let ready=false;
+      // The image entrypoint starts a Unix-socket-only temporary server first.
+      // Wait for the actual TCP server, not its initialization process.
+      for(let i=0;i<90;i++){
+        const state=(await inspect('container',id)).State;
+        if(!state.Running)break;
+        try{await docker(['exec',id,'pg_isready','-h','127.0.0.1','-p','5432','-U','rehearsal_admin','-d','rehearsal_native_test'],{timeout:4000});ready=true;break;}
+        catch{await new Promise(r=>setTimeout(r,1000));}
+      }
+      assert.ok(ready,'POSTGRES_NOT_READY');
+      phase='loopback_mapping';const info=await inspect('container',id),ports=info.NetworkSettings.Ports?.['5432/tcp'];
+      assert.equal(ports?.length,1);assert.equal(ports[0].HostIp,'127.0.0.1');assert.match(ports[0].HostPort,/^[0-9]+$/);
+      phase='server_version';const version=await docker(['exec',id,'psql','-U','rehearsal_admin','-d','rehearsal_native_test','-Atc','SHOW server_version']);assert.match(version,/^17\.12(?:\s|$)/);
       return {containerId:id,port:Number(ports[0].HostPort),imageId:pgImage,version,privateNetwork:true,hostBinding:'127.0.0.1-only'};
+      }catch(error){
+        const ownedId=id??(containers.length>ownedBefore?containers[containers.length-1]:undefined);
+        let state, logs='';
+        if(ownedId && ['container_launch','tcp_readiness','loopback_mapping','server_version'].includes(phase)){
+          try{ state=(await inspect('container',ownedId)).State; }catch{}
+          try{ logs=await docker(['logs','--tail','40',ownedId],{timeout:4000,diagnostic:true}); }catch(e){ logs=e?.stderr??''; }
+        }
+        const categories=[postgresFailureClass(error?.stderr),postgresFailureClass(logs)].filter(x=>x!=='UNCLASSIFIED');
+        throw Object.assign(new Error('POSTGRES_REHEARSAL_STAGE_FAILED'),{code:'POSTGRES_REHEARSAL_STAGE_FAILED',
+          diagnostic:{phase,categories:[...new Set(categories)],containerState:['created','running','exited','dead','restarting'].includes(state?.Status)?state.Status:null,
+            containerExitCode:Number.isInteger(state?.ExitCode)?state.ExitCode:null}});
+      }
     });
     const dbUrl=`postgresql://rehearsal_admin:${password}@127.0.0.1:${pg.port}/rehearsal_native_test`,app=join(candidate,'dropin-earth');
     const npmHome=join(privateDir,'npm'),npm=join(npmHome,'node_modules/npm/bin/npm-cli.js');
@@ -201,7 +239,7 @@ export async function main(args){
     await stage('combined_rollback_readiness',async()=>{const value=await combined(rollbackImage,PIN.rollback);await stop(value.id);return {...value.observed,imageId:rollbackImage,cleanExit:true,scope:'distinct-older-image-same-disposable-database'};});
     await stage('rollback_data_invariants',async()=>{const afterFile=join(privateDir,'after.json');await helper('snapshot',[afterFile]);const after=JSON.parse(await readFile(afterFile,'utf8'));assert.deepEqual(after,before);return {unchanged:true,snapshot:after,scope:'closed/no-session image switch; not a live account or asset rollback'};});
     await stage('source_recheck',async()=>{await source(candidate,PIN.candidate,PIN.candidateTree);await source(rollback,PIN.rollback,PIN.rollbackTree);return {unchanged:true};});
-  }catch(error){failed=true;report.stages[active]={status:'FAIL',errorCode:typeof error?.code==='string'?error.code:'ASSERTION_OR_COMMAND_FAILED',outcomeUncertain:Boolean(error?.killed)};}
+  }catch(error){failed=true;report.stages[active]={status:'FAIL',errorCode:typeof error?.code==='string'?error.code:'ASSERTION_OR_COMMAND_FAILED',outcomeUncertain:Boolean(error?.killed),...(active==='private_postgres'&&error?.code==='POSTGRES_REHEARSAL_STAGE_FAILED'?{diagnostic:error.diagnostic}:{})};}
   finally{
     const failures=[];
     for(const id of containers.reverse()){try{await docker(['rm','--force','--volumes',id]);}catch{failures.push('container');}}
