@@ -4,6 +4,7 @@ import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {chmod,copyFile,mkdir,mkdtemp,readFile,realpath,rm,writeFile} from 'node:fs/promises';
 import {isAbsolute,join,relative,resolve,dirname} from 'node:path';
 import process from 'node:process';
+import {createServer,createConnection,isIPv4} from 'node:net';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {promisify} from 'node:util';
 const exec=promisify(execFile),here=dirname(fileURLToPath(import.meta.url));
@@ -39,6 +40,42 @@ export function postgresFailureClass(details){
   if(/database system is starting up|not yet accepting connections/i.test(value))return 'DB_STARTING';
   return 'UNCLASSIFIED';
 }
+export function privateContainerAddress(container,networkName,networkId){
+  const endpoint=container.NetworkSettings?.Networks?.[networkName];
+  assert.deepEqual(Object.keys(container.NetworkSettings?.Networks??{}),[networkName]);
+  assert.equal(endpoint?.NetworkID,networkId);
+  assert.ok(!container.HostConfig?.PortBindings||Object.keys(container.HostConfig.PortBindings).length===0);
+  const target=endpoint?.IPAddress;
+  assert.ok(isIPv4(target),'PRIVATE_PG_IPV4_REQUIRED');
+  const [a,b]=target.split('.').map(Number);
+  assert.ok(a===10||(a===172&&b>=16&&b<=31)||(a===192&&b===168),'PRIVATE_PG_IPV4_REQUIRED');
+  return target;
+}
+async function openPgRelay(target){
+  await new Promise((resolve,reject)=>{
+    const socket=createConnection({host:target,port:5432});
+    socket.setTimeout(4000,()=>socket.destroy(new Error('PRIVATE_PG_CONNECT_TIMEOUT')));
+    socket.once('error',reject);
+    socket.once('connect',()=>{socket.destroy();resolve();});
+  });
+  const sockets=new Set();
+  const server=createServer(client=>{
+    if(client.remoteAddress!=='127.0.0.1'||sockets.size>=48){client.destroy();return;}
+    const upstream=createConnection({host:target,port:5432});
+    for(const socket of [client,upstream]){
+      sockets.add(socket);socket.setTimeout(120000,()=>socket.destroy());
+      socket.on('error',()=>socket.destroy());socket.on('close',()=>sockets.delete(socket));
+    }
+    client.on('close',()=>upstream.destroy());upstream.on('close',()=>client.destroy());
+    client.pipe(upstream);upstream.pipe(client);
+  });
+  await new Promise((resolve,reject)=>{
+    server.once('error',reject);server.listen(0,'127.0.0.1',()=>{server.removeListener('error',reject);resolve();});
+  });
+  server.on('error',()=>{for(const socket of sockets)socket.destroy();});
+  const address=server.address();assert.equal(address?.address,'127.0.0.1');assert.ok(address.port>0);
+  return {port:address.port,close:async()=>{for(const socket of sockets)socket.destroy();await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}};
+}
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 const idPattern=/^[a-f0-9]{64}$/;
 const imagePattern=/^sha256:[a-f0-9]{64}$/;
@@ -70,7 +107,7 @@ export async function main(args){
   safePaths(candidate,rollback,output);assert.ok(isAbsolute(args[2]));
   // New output directory only. Never overwrite an existing receipt or user tree.
   await mkdir(output,{mode:0o700});
-  const report=receipt();let privateDir;const containers=[],networks=[],images=[];let active='source_preflight';
+  const report=receipt();let privateDir,pgRelay;const containers=[],networks=[],images=[];let active='source_preflight';
   const save=()=>writeFile(join(output,'receipt.json'),JSON.stringify(report,null,2)+'\n',{mode:0o600});
   const run=async(file,argv,{cwd=here,env={},timeout=120_000,diagnostic=false}={})=>{
     const result=await exec(file,argv,{cwd,env:{...operationalEnv(),...env},timeout,maxBuffer:32*1024*1024});return (diagnostic?result.stdout+'\n'+result.stderr:result.stdout).trim();
@@ -126,7 +163,7 @@ export async function main(args){
     // All networked fixtures use a newly owned internal network. Only PG is bound
     // to an ephemeral 127.0.0.1 host port so the repository native tests can use it.
     const networkName=`cp-rehearsal-${randomUUID()}`,tls=join(privateDir,'tls');
-    await stage('private_environment',async()=>{
+    const privateNet=await stage('private_environment',async()=>{
     const network=await docker(['network','create','--internal',networkName]);assert.match(network,idPattern);networks.push(network);
     assert.equal((await inspect('network',network)).Internal,true);
     await mkdir(tls,{mode:0o700});
@@ -138,7 +175,7 @@ export async function main(args){
       await run('openssl',['x509','-req','-days','1','-in',join(tls,`${name}.csr`),'-CA',join(tls,'ca.crt'),'-CAkey',join(tls,'ca.key'),'-CAcreateserial','-extfile',join(tls,`${name}.ext`),'-out',join(tls,`${name}.crt`)]);
       await chmod(join(tls,`${name}.key`),0o600);
     }
-    return {internalDockerNetwork:true,temporaryCA:true,systemTrustModified:false};
+    return {networkId:network,internalDockerNetwork:true,temporaryCA:true,systemTrustModified:false};
     });
     const password=randomBytes(32).toString('hex'),pgEnv=join(privateDir,'pg.env');
     await writeFile(pgEnv,`POSTGRES_USER=rehearsal_admin\nPOSTGRES_PASSWORD=${password}\nPOSTGRES_DB=rehearsal_native_test\n`,{mode:0o600});
@@ -153,7 +190,7 @@ export async function main(args){
         '--mount',`type=bind,source=${join(tls,'pg.key')},target=/certs/pg.key,readonly`,
         '--tmpfs',`/var/lib/postgresql/data:rw,nosuid,size=1g,mode=0700,uid=${process.getuid()},gid=${process.getgid()}`,
         '--tmpfs',`/var/run/postgresql:rw,nosuid,size=8m,mode=0770,uid=${process.getuid()},gid=${process.getgid()}`,
-        '-p','127.0.0.1::5432',pgImage,'postgres','-c','ssl=on','-c','ssl_cert_file=/certs/pg.crt','-c','ssl_key_file=/certs/pg.key']);
+        pgImage,'postgres','-c','ssl=on','-c','ssl_cert_file=/certs/pg.crt','-c','ssl_key_file=/certs/pg.key']);
       phase='tcp_readiness';let ready=false;
       // The image entrypoint starts a Unix-socket-only temporary server first.
       // Wait for the actual TCP server, not its initialization process.
@@ -164,14 +201,15 @@ export async function main(args){
         catch{await new Promise(r=>setTimeout(r,1000));}
       }
       assert.ok(ready,'POSTGRES_NOT_READY');
-      phase='loopback_mapping';const info=await inspect('container',id),ports=info.NetworkSettings.Ports?.['5432/tcp'];
-      assert.equal(ports?.length,1);assert.equal(ports[0].HostIp,'127.0.0.1');assert.match(ports[0].HostPort,/^[0-9]+$/);
+      phase='loopback_relay';
+      const target=privateContainerAddress(await inspect('container',id),networkName,privateNet.networkId);
+      pgRelay=await openPgRelay(target);
       phase='server_version';const version=await docker(['exec',id,'psql','-U','rehearsal_admin','-d','rehearsal_native_test','-Atc','SHOW server_version']);assert.match(version,/^17\.12(?:\s|$)/);
-      return {containerId:id,port:Number(ports[0].HostPort),imageId:pgImage,version,privateNetwork:true,hostBinding:'127.0.0.1-only'};
+      return {containerId:id,port:pgRelay.port,imageId:pgImage,version,privateNetwork:true,hostBinding:'127.0.0.1-relay-only',dockerPortPublished:false};
       }catch(error){
         const ownedId=id??(containers.length>ownedBefore?containers[containers.length-1]:undefined);
         let state, logs='';
-        if(ownedId && ['container_launch','tcp_readiness','loopback_mapping','server_version'].includes(phase)){
+        if(ownedId && ['container_launch','tcp_readiness','loopback_relay','server_version'].includes(phase)){
           try{ state=(await inspect('container',ownedId)).State; }catch{}
           try{ logs=await docker(['logs','--tail','40',ownedId],{timeout:4000,diagnostic:true}); }catch(e){ logs=e?.stderr??''; }
         }
@@ -242,6 +280,7 @@ export async function main(args){
   }catch(error){failed=true;report.stages[active]={status:'FAIL',errorCode:typeof error?.code==='string'?error.code:'ASSERTION_OR_COMMAND_FAILED',outcomeUncertain:Boolean(error?.killed),...(active==='private_postgres'&&error?.code==='POSTGRES_REHEARSAL_STAGE_FAILED'?{diagnostic:error.diagnostic}:{})};}
   finally{
     const failures=[];
+    if(pgRelay){try{await pgRelay.close();}catch{failures.push('loopback-relay');}}
     for(const id of containers.reverse()){try{await docker(['rm','--force','--volumes',id]);}catch{failures.push('container');}}
     for(const id of networks.reverse()){try{await docker(['network','rm',id]);}catch{failures.push('network');}}
     for(const id of [...new Set(images)]){try{await docker(['image','rm',id]);}catch{failures.push('image');}}

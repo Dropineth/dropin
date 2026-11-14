@@ -61,3 +61,15 @@ test('standalone source does not deploy, publish, mount host Docker socket or we
 });
 
 test('PostgreSQL diagnostic is a closed category, not raw logs or credentials',async()=>{const {postgresFailureClass}=await import('./rehearse.mjs');assert.equal(postgresFailureClass('secret=fixture postgres: permission denied'), 'PERMISSION_OR_OWNERSHIP');assert.equal(postgresFailureClass('registry: manifest unknown'), 'IMAGE_MANIFEST_UNAVAILABLE');assert.equal(postgresFailureClass('postgresql://user:secret@unexpected.example/db'), 'UNCLASSIFIED');});
+
+test('PG relay resolves only the exact internal Docker endpoint with no published port',async()=>{
+ const {privateContainerAddress}=await import('./rehearse.mjs'), good={NetworkSettings:{Networks:{private:{NetworkID:'owned',IPAddress:'172.20.0.2'}}},HostConfig:{PortBindings:{}}};
+ assert.equal(privateContainerAddress(good,'private','owned'),'172.20.0.2');
+ assert.throws(()=>privateContainerAddress(good,'private','different'));
+ const publicIP=structuredClone(good);publicIP.NetworkSettings.Networks.private.IPAddress='1.1.1.1';
+ assert.throws(()=>privateContainerAddress(publicIP,'private','owned'));
+ const published=structuredClone(good);published.HostConfig.PortBindings={'5432/tcp':[]};
+ assert.throws(()=>privateContainerAddress(published,'private','owned'));
+ const extra=structuredClone(good);extra.NetworkSettings.Networks.other={};
+ assert.throws(()=>privateContainerAddress(extra,'private','owned'));
+});
