@@ -40,6 +40,23 @@ function fixturePool(pg,url){
   return pool;
 }
 
+// PostgreSQL 17 dump/restore flattens the AND introduced by BETWEEN for
+// these two known CHECKs. Recognize only the two exact deparsed forms. No
+// other definitions, predicate order or constraint flags are normalized.
+export function canonicalConstraint(row) {
+  if(row.nspname!=='child_stewardship_webauthn'||row.contype!=='c'||row.convalidated!==true||
+     row.connoinherit!==false||row.condeferrable!==false||row.condeferred!==false)return row;
+  let col;
+  if(row.relname==='credentials'&&row.conname==='credentials_credential_id_check')col='credential_id';
+  if(row.relname==='sandboxes'&&row.conname==='sandboxes_fixture_credential_id_check')col='fixture_credential_id';
+  if(!col)return row;
+  const lo=`(length(${col}) >= 16)`,hi=`(length(${col}) <= 512)`;
+  const chars=`(${col} ~ '^[A-Za-z0-9_-]+$'::text)`;
+  const nested=`CHECK (((${lo} AND ${hi}) AND ${chars}))`;
+  const flat=`CHECK ((${lo} AND ${hi} AND ${chars}))`;
+  return row.definition===nested?{...row,definition:flat}:row;
+}
+
 async function snapshot(root,adminUrl,output,db=database){
   const pg=createRequire(join(root,'services/api/package.json'))('pg');
   const target=new URL(adminUrl);target.pathname=`/${db}`;
@@ -64,8 +81,8 @@ async function snapshot(root,adminUrl,output,db=database){
       FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace
       LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum
       WHERE n.nspname=ANY($1) AND c.relkind='r' AND a.attnum>0 AND NOT a.attisdropped ORDER BY 1,2,3`,[schemas])).rows;
-    const constraints=(await client.query(`SELECT n.nspname,c.relname,k.conname,pg_get_constraintdef(k.oid) AS definition
-      FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=ANY($1) ORDER BY 1,2,3`,[schemas])).rows;
+    const constraints=(await client.query(`SELECT n.nspname,c.relname,k.conname,k.contype,k.convalidated,k.connoinherit,k.condeferrable,k.condeferred,pg_get_constraintdef(k.oid) AS definition
+      FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=ANY($1) ORDER BY 1,2,3`,[schemas])).rows.map(canonicalConstraint);
     const functions=(await client.query(`SELECT n.nspname,p.proname,pg_get_function_identity_arguments(p.oid) AS arguments,pg_get_functiondef(p.oid) AS definition
       FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname=ANY($1) AND p.prokind IN('f','p') ORDER BY 1,2,3`,[schemas])).rows;
     const policies=(await client.query('SELECT schemaname,tablename,policyname,permissive,roles,cmd,qual,with_check FROM pg_policies WHERE schemaname=ANY($1) ORDER BY 1,2,3',[schemas])).rows;
