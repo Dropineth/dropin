@@ -19,7 +19,7 @@ const stages=['source_preflight','docker_preflight','build_candidate','build_rol
   'private_environment','private_postgres','native_dependencies','native_synthetic_lifecycle','prepare_session','signed_authority',
   'combined_candidate_readiness','postgres_tls_observed','combined_tls_hostname_denial','before_admission','signed_sql_admission','candidate_valid',
   'revoked_denied','revoked_healthy_control','expired_denied','expired_healthy_control','unavailable_denied','unavailable_healthy_control',
-  'rollback_data_baseline','candidate_stop','backup_before_migration','append_outbox_hold','prior_image_rejects_migrated_db','restore_to_separate_database','advance_floor_before_restore_probe','combined_rollback_readiness','rollback_data_invariants',
+  'rollback_data_baseline','candidate_stop','backup_before_migration','append_outbox_hold','prior_image_rejects_migrated_db','restore_to_separate_database','verify_restored_snapshot','configure_rollback_target','advance_floor_before_restore_probe','combined_rollback_readiness','rollback_data_invariants',
   'rollback_advanced_floor_denied','rollback_stop',
   'source_recheck','cleanup'];
 export function receipt(){return {kind:'CanopyProofHostedSeparateDatabaseRehearsal/1',candidateSha:PIN.candidate,rollbackSha:PIN.rollback,
@@ -348,13 +348,36 @@ export async function main(args){
     await stage('restore_to_separate_database',async()=>{
       await pgcmd('createdb','-U','rehearsal_admin','-O',owner,pgTo);
       const distinct=await pgQuery('rehearsal_native_test',"SELECT count(DISTINCT oid) FROM pg_database WHERE datname IN ('rehearsal_session_test','rehearsal_separate_test')");
-      assert.equal(distinct,'2');
+      if(distinct!=='2')throw Object.assign(new Error('DISTINCT_DATABASE_REQUIRED'),{code:'DISTINCT_DATABASE_REQUIRED'});
       await pgcmd('pg_restore','-U','rehearsal_admin','--single-transaction','--exit-on-error','-d',pgTo,dump);
       await pgQuery(pgTo,`REVOKE ALL ON DATABASE ${pgTo} FROM PUBLIC; GRANT CONNECT ON DATABASE ${pgTo} TO ${fixture.runtimeRole}`);
-      assert.deepEqual(await snapshot('restored-before-application','snapshot-restored'),before);
-      const text=await readFile(envFile,'utf8');assert.ok(text.includes('/'+pgFrom+'\n'));
-      await writeFile(separateEnv,text.replace('/'+pgFrom+'\n','/'+pgTo+'\n'),{mode:0o600});
-      return {distinctDatabase:true,deliveryConsumerStarted:false,deliveryReceiverConfigured:false};
+      return {distinctDatabase:true,logicalRestore:true,deliveryConsumerStarted:false,deliveryReceiverConfigured:false};
+    });
+    await stage('verify_restored_snapshot',async()=>{
+      try{
+        assert.deepEqual(await snapshot('restored-before-application','snapshot-restored'),before);
+      }catch(e){
+        const actual=e?.actual;
+        if(e?.code!=='ERR_ASSERTION'||!Array.isArray(actual?.tables))throw e;
+        const schemaMismatch=actual.schemaSha256!==before.schemaSha256;
+        const dataMismatch=actual.dataSha256!==before.dataSha256;
+        const prior=new Map(before.tables.map(t=>[t.table,t])), restored=new Map(actual.tables.map(t=>[t.table,t]));
+        const changed=[...new Set([...prior.keys(),...restored.keys()])].filter(k=>{
+          const a=prior.get(k),b=restored.get(k);return a?.count!==b?.count||a?.sha256!==b?.sha256;
+        }).filter(k=>/^(child_stewardship(?:_webauthn|_guardian)?|child_backend_migrations)\.[a-z_]+$/.test(k)).slice(0,20);
+        throw Object.assign(new Error('RESTORED_SNAPSHOT_MISMATCH'),{code:'RESTORED_SNAPSHOT_MISMATCH',restoreDiagnostic:{schemaMismatch,dataMismatch,changedTables:changed}});
+      }
+      return {schemaMatch:true,dataMatch:true};
+    });
+    await stage('configure_rollback_target',async()=>{
+      const alternate=new URL(runtimeUrl);
+      assert.equal(alternate.pathname,'/'+pgFrom);
+      alternate.pathname='/'+pgTo;
+      const text=await readFile(envFile,'utf8');
+      const entry='CHILD_DATABASE_URL='+runtimeUrl.toString();
+      const lines=text.split('\n');assert.equal(lines.filter(line=>line===entry).length,1);
+      await writeFile(separateEnv,lines.map(line=>line===entry?'CHILD_DATABASE_URL='+alternate.toString():line).join('\n'),{mode:0o600});
+      return {targetDatabase:pgTo,deliveryConsumerStarted:false,deliveryReceiverConfigured:false};
     });
     await stage('advance_floor_before_restore_probe',async()=>{const result=await control('advance-floor');assert.equal(result.sequence,2);return {sequence:2};});
     const older=await stage('combined_rollback_readiness',async()=>{const value=await combined(rollbackImage,PIN.rollback,{file:separateEnv});return {containerId:value.id,...value.observed,imageId:rollbackImage,sameDatabase:false};});
@@ -369,7 +392,7 @@ export async function main(args){
     await stage('rollback_stop',async()=>{await stop(older.containerId);return {cleanExit:true};});
     report.ociSignedPerSessionCheckpoint={status:'PASS',scope:'isolated OCI images against separate PostgreSQL databases with synthetic signed HTTPS; patched migrator ran on the host, not in an image',productionReady:false};
     await stage('source_recheck',async()=>{await source(candidate,PIN.candidate,PIN.candidateTree);await source(rollback,PIN.rollback,PIN.rollbackTree);return {unchanged:true};});
-  }catch(error){failed=true;report.stages[active]={status:'FAIL',errorCode:typeof error?.code==='string'?error.code:'ASSERTION_OR_COMMAND_FAILED',outcomeUncertain:Boolean(error?.killed),...(active==='private_postgres'&&error?.code==='POSTGRES_REHEARSAL_STAGE_FAILED'?{diagnostic:error.diagnostic}:{})};}
+  }catch(error){failed=true;report.stages[active]={status:'FAIL',errorCode:typeof error?.code==='string'?error.code:'ASSERTION_OR_COMMAND_FAILED',outcomeUncertain:Boolean(error?.killed),...(active==='verify_restored_snapshot'&&error?.code==='RESTORED_SNAPSHOT_MISMATCH'?{diagnostic:error.restoreDiagnostic}:{}),...(active==='private_postgres'&&error?.code==='POSTGRES_REHEARSAL_STAGE_FAILED'?{diagnostic:error.diagnostic}:{})};}
   finally{
     const failures=[];
     if(authorityRelay){try{await authorityRelay.close();}catch{failures.push('authority-loopback-relay');}}
