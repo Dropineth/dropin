@@ -1,0 +1,25 @@
+diff --git a/dropin-earth/services/api/prisma/child-stewardship-outbox-hold.sql b/dropin-earth/services/api/prisma/child-stewardship-outbox-hold.sql
+new file mode 100644
+index 0000000..42502f8
+--- /dev/null
++++ b/dropin-earth/services/api/prisma/child-stewardship-outbox-hold.sql
+@@ -0,0 +1,7 @@
++BEGIN;
++-- These rows record internal events only. Until a delivery verifier can fence
++-- the downstream effect against current authorization, no row is deliverable.
++-- Validate historical rows too; never silently clear or reclassify a receipt.
++ALTER TABLE child_stewardship.outbox
++  ADD CONSTRAINT child_outbox_delivery_closed CHECK (delivered_at IS NULL);
++COMMIT;
+diff --git a/dropin-earth/services/api/src/child-backend/migrations.ts b/dropin-earth/services/api/src/child-backend/migrations.ts
+index 028d591..39cc0f3 100644
+--- a/dropin-earth/services/api/src/child-backend/migrations.ts
++++ b/dropin-earth/services/api/src/child-backend/migrations.ts
+@@ -9,6 +9,7 @@ export const childMigrationFiles = [
+   'child-stewardship-rate-limit.sql','child-stewardship-media.sql','child-stewardship-agent-gateway.sql',
+   'child-stewardship-guardian-sessions.sql','child-stewardship-restore.sql',
+   'child-stewardship-restore-registry.sql',
++  'child-stewardship-outbox-hold.sql',
+ ] as const;
+ export type ChildMigration = {name:string;digest:string;sql:string};
+ export async function loadChildMigrations(directory:URL):Promise<ChildMigration[]> {
