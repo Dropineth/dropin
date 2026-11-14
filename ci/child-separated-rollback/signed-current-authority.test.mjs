@@ -28,10 +28,10 @@ test('OCI expectation modes cannot promote an unimplemented or negative case to 
   for(const mode of ['production','enrolled','',undefined])assert.throws(()=>expectedStatus(mode));
 });
 test('no opt-in rejects without network or output writes',async()=>{
-  const run=promisify(execFile);await assert.rejects(run(process.execPath,[new URL('./run-transport.mjs',import.meta.url).pathname]),error=>error.code===1&&JSON.parse(error.stdout).status==='FAIL');
+  const run=promisify(execFile);await assert.rejects(run(process.execPath,[new URL('./rehearse.mjs',import.meta.url).pathname]),error=>error.code===1&&error.stdout===''&&error.stderr.trim()==='REHEARSAL_PREFLIGHT_FAILED');
 });
 test('existing output is never overwritten, even on rejection',async()=>{
   const dir=await mkdtemp(join(tmpdir(),'signed-current-contract-')),receipt=join(dir,'receipt.json');await writeFile(receipt,'KEEP');
-  try{await assert.rejects(promisify(execFile)(process.execPath,[new URL('./run-transport.mjs',import.meta.url).pathname,'--synthetic-only','/tmp',dir]));assert.equal(await readFile(receipt,'utf8'),'KEEP');}
+  try{await assert.rejects(promisify(execFile)(process.execPath,[new URL('./rehearse.mjs',import.meta.url).pathname,'/tmp','/workspace',dir]),error=>error.code===1&&error.stderr.trim()==='REHEARSAL_PREFLIGHT_FAILED');assert.equal(await readFile(receipt,'utf8'),'KEEP');}
   finally{await rm(dir,{recursive:true,force:true});}
 });
