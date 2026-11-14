@@ -1,0 +1,68 @@
+name: CanopyProof isolated child image rehearsal
+
+on:
+  push:
+    branches: ['codex/child-closed-candidate-offline']
+    paths:
+      - '.github/workflows/child-image-rehearsal.yml'
+      - 'ci/child-image-rehearsal/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canopyproof-child-image-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  rehearse:
+    if: github.repository == 'Dropineth/dropin' && github.ref == 'refs/heads/codex/child-closed-candidate-offline'
+    name: Disposable Docker and PostgreSQL rehearsal
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the test-only harness
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          path: harness
+          sparse-checkout: ci/child-image-rehearsal
+
+      - name: Check out the exact validated candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: 0e3d33b36beac4502488b18a0707c17fd34062e5
+          path: candidate
+
+      - name: Check out the distinct rollback source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: 1d2efaa5258b70ed9f815af0ebf7109443734e59
+          path: rollback
+
+      - name: Set up pinned Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.23.5
+
+      - name: Rehearse without deployments or secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          harness="$GITHUB_WORKSPACE/harness/ci/child-image-rehearsal"
+          bash -n "$harness/rehearse.sh"
+          node --test "$harness/"*.test.mjs
+          bash "$harness/rehearse.sh" \
+            "$GITHUB_WORKSPACE/candidate" "$GITHUB_WORKSPACE/rollback" \
+            "$RUNNER_TEMP/canopyproof-child-rehearsal"
+
+      - name: Retain sanitized assertion receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: canopyproof-child-rehearsal-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/canopyproof-child-rehearsal/receipt.json
+          retention-days: 7
+          if-no-files-found: warn
