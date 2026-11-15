@@ -1,0 +1,27 @@
+name: Child Network Convergence
+on:
+  pull_request:
+    paths:
+      - 'workers/children-2050/**'
+      - 'dropin-earth/integrations/care-continuity-v2/**'
+      - '.github/workflows/child-network.yml'
+  push:
+    paths:
+      - 'workers/children-2050/**'
+      - 'dropin-earth/integrations/care-continuity-v2/**'
+      - '.github/workflows/child-network.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - run: node --check workers/children-2050/worker.mjs
+      - run: node --check workers/children-2050/network.mjs
+      - run: node --check workers/children-2050/network-page.mjs
+      - run: node --test workers/children-2050/worker.test.mjs workers/children-2050/network.test.mjs workers/children-2050/network-worker.test.mjs dropin-earth/integrations/care-continuity-v2/tests/contract.test.mjs
