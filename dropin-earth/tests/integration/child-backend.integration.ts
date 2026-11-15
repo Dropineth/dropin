@@ -27,6 +27,8 @@ test('backend native migration, direct runtime role, external current anchor and
  const url=new URL(original);url.pathname=`/${database}`;process.env.CANOPYPROOF_NATIVE_DATABASE_URL=url.toString();
  const owner=nativeChildPool();let runtime:Awaited<ReturnType<typeof scopedNativeChildPool>>|undefined;let live:pg.Pool|undefined;let verifier:pg.Pool|undefined;let verifierRole='';
  const migrations=await loadChildMigrations(pathToFileURL(resolve('services/api/prisma')+'/'));
+ const expectedJournal=migrations.map(({name,digest},index)=>({ordinal:index+1,name,digest}));
+ const migrationNames=expectedJournal.map(({name})=>name);
  try{
   // Pre-existing fixed fixture, before installing the strict restore gate. This
   // is not a production enrollment API and is never shipped as a seed command.
@@ -37,11 +39,24 @@ test('backend native migration, direct runtime role, external current anchor and
   const ownerRole=(await owner.query('SELECT current_user role')).rows[0].role;
   await t.test('migration is atomic, serialized, exactly journaled and replayed without rewriting data',async()=>{
    const results=await Promise.all([migrateChildBackend(owner,migrations,{database,role:ownerRole}),migrateChildBackend(owner,migrations,{database,role:ownerRole})]);
-   assert.deepEqual(results.map(r=>r.applied.length).sort((a,b)=>a-b),[0,12]);
-   assert.equal((await owner.query('SELECT count(*)::int n FROM child_backend_migrations.entries')).rows[0].n,12);
+   assert.equal(expectedJournal.length,13);
+   assert.deepEqual(expectedJournal.at(-1),{ordinal:13,name:'child-stewardship-outbox-hold.sql',digest:'62fae28bdd5d0f7ad95f8839c94f492dbd6266473b417cfef76b466aeccf611b'});
+   assert.deepEqual(results.sort((a,b)=>a.applied.length-b.applied.length),[
+    {applied:[],unchanged:migrationNames},{applied:migrationNames,unchanged:[]},
+   ]);
+   assert.deepEqual((await owner.query('SELECT ordinal,name,digest FROM child_backend_migrations.entries ORDER BY ordinal')).rows,expectedJournal);
    const changed=migrations.map(m=>({...m}));changed[0]!.digest='a'.repeat(64);await assert.rejects(migrateChildBackend(owner,changed,{database,role:ownerRole}),/MANIFEST_INVALID/);
    await assert.rejects(migrateChildBackend(owner,migrations,{database,role:'wrong-role'}),/IDENTITY_MISMATCH/);
    assert.equal((await owner.query('SELECT count(*)::int n FROM child_stewardship.sessions')).rows[0].n,1);
+  });
+  await t.test('child backend keeps pending outbox rows but cannot mark them delivered',async()=>{
+   const event='migration-hold-fixture';
+   await owner.query("INSERT INTO child_stewardship.outbox(session_id,event_id,kind,resource_id,audience) VALUES($1,$2,'fixture','fixture','ordinary')",[session,event]);
+   try{
+    await assert.rejects(owner.query('UPDATE child_stewardship.outbox SET delivered_at=clock_timestamp() WHERE session_id=$1 AND event_id=$2',[session,event]),{code:'23514',constraint:'child_outbox_delivery_closed'});
+    const pending=await owner.query('SELECT delivered_at FROM child_stewardship.outbox WHERE session_id=$1 AND event_id=$2',[session,event]);
+    assert.deepEqual(pending.rows,[{delivered_at:null}]);
+   }finally{await owner.query('DELETE FROM child_stewardship.outbox WHERE session_id=$1 AND event_id=$2',[session,event]);}
   });
   await t.test('managed-style migration owner needs neither superuser, BYPASSRLS, role creation nor database creation',async()=>{
    const ownerLogin=`backend_owner_${randomUUID().replaceAll('-','')}`,ownerPassword=randomUUID();
@@ -52,8 +67,8 @@ test('backend native migration, direct runtime role, external current anchor and
    const limitedOwner=new pg.Pool({connectionString:target.toString()});
    try{
     const privileges=(await limitedOwner.query('SELECT rolsuper,rolbypassrls,rolcreaterole,rolcreatedb FROM pg_roles WHERE rolname=current_user')).rows[0];assert.deepEqual(Object.values(privileges),[false,false,false,false]);
-    assert.equal((await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin})).applied.length,12);
-    assert.equal((await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin})).unchanged.length,12);
+    assert.deepEqual(await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin}),{applied:migrationNames,unchanged:[]});
+    assert.deepEqual(await migrateChildBackend(limitedOwner,migrations,{database:ownedDatabase,role:ownerLogin}),{applied:[],unchanged:migrationNames});
     assert.equal(await new PostgresChildStore(nativeChildSql(limitedOwner),async()=>({checkpointId:'not-an-admission',sequence:1,digest:'a'.repeat(64)})).ready(),false);
    }finally{await closeNativeChildPool(limitedOwner);await admin.query(`DROP DATABASE ${ownedDatabase} WITH (FORCE)`);await admin.query(`DROP ROLE ${ownerLogin}`);}
   });
