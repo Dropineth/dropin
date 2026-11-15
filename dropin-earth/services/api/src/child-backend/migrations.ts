@@ -9,6 +9,7 @@ export const childMigrationFiles = [
   'child-stewardship-rate-limit.sql','child-stewardship-media.sql','child-stewardship-agent-gateway.sql',
   'child-stewardship-guardian-sessions.sql','child-stewardship-restore.sql',
   'child-stewardship-restore-registry.sql',
+  'child-stewardship-outbox-hold.sql',
 ] as const;
 export type ChildMigration = {name:string;digest:string;sql:string};
 export async function loadChildMigrations(directory:URL):Promise<ChildMigration[]> {

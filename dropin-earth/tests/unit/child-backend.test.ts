@@ -81,7 +81,24 @@ test('real bundled producer starts closed, serves safe health, plans migrations 
  const run=promisify(execFile);
  await run(process.execPath,['--import','tsx','scripts/build-child-backend.mjs'],{timeout:10_000});
  const plan=await run(process.execPath,['dist/child-backend/migrate.mjs','--plan'],{env:{PATH:process.env.PATH},timeout:5000});
- assert.equal(JSON.parse(plan.stdout).migrations.length,12);assert.equal(JSON.parse(plan.stdout).createsRoles,false);
+ const parsed=JSON.parse(plan.stdout);
+ // Pin the original migration journal names and bytes, and the exact append-only hold.
+ assert.deepEqual(parsed.migrations,[
+  {name:'child-stewardship.sql',digest:'0de3410ef9b3a944ab793dd27607f170c284cbb30877a511a55408a894d682a0'},
+  {name:'child-stewardship-authority.sql',digest:'c993db69a00463bd7b41526e94fc1c17461ade3bafd8317ce88008964e9c1d29'},
+  {name:'child-stewardship-privacy.sql',digest:'76e2c827a13f44c293ccf626b62bbadfdb5fb05f046685822d6b19915ab461ea'},
+  {name:'child-stewardship-webauthn.sql',digest:'0591d72866ff6361e1f998515f73a616497f7cfd8cc45f30f2592676ea1617ed'},
+  {name:'child-stewardship-resume.sql',digest:'7d1fce33c6c1da05344711fea4e643923701a39ffcebfdbcb3d738e8e9469c8a'},
+  {name:'child-stewardship-draft-authorization.sql',digest:'f973add7187a9f39a77358a69a03ba2a875ef19127442ae983cc049d2af741eb'},
+  {name:'child-stewardship-rate-limit.sql',digest:'e486540a7d002b2e1cf84454af39cc5c06c30bd382b77174cda470a354bece61'},
+  {name:'child-stewardship-media.sql',digest:'29e74a9353767df6be27cad2684de03fe0092453264ef6e51f69fb88489af46a'},
+  {name:'child-stewardship-agent-gateway.sql',digest:'446105719297ff21a8092d91a0320420ce1a850868a8e1568021402456e51b1b'},
+  {name:'child-stewardship-guardian-sessions.sql',digest:'eff163c6c36174e99407a328fae8c295ee556a370125266967d99ef026812496'},
+  {name:'child-stewardship-restore.sql',digest:'a34bfd03bf1cdcd9a380eef1ca2410083d43c58bdb433e0c0b883db73ca32ffd'},
+  {name:'child-stewardship-restore-registry.sql',digest:'601d7689bd4dbf70facecc0a9edef87251dd0571b11866baa4173adc946e6599'},
+  {name:'child-stewardship-outbox-hold.sql',digest:'62fae28bdd5d0f7ad95f8839c94f492dbd6266473b417cfef76b466aeccf611b'},
+ ]);
+ assert.equal(parsed.createsRoles,false);
  await assert.rejects(run(process.execPath,['dist/child-backend/migrate.mjs','--apply-synthetic'],{env:{PATH:process.env.PATH},timeout:5000}));
  const reservation=createServer();await new Promise<void>(resolve=>reservation.listen(0,'127.0.0.1',resolve));const address=reservation.address();assert.ok(address&&typeof address==='object');const port=address.port;await new Promise<void>(resolve=>reservation.close(()=>resolve()));
  const child=spawn(process.execPath,['dist/child-backend/server.mjs'],{env:{PATH:process.env.PATH,PORT:String(port)},stdio:['ignore','pipe','pipe']});
