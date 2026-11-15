@@ -1,0 +1,91 @@
+name: CanopyProof exact 13-migration image isolated restore
+on:
+  push:
+    branches: [codex/child-closed-candidate-offline]
+    paths:
+      - '.github/workflows/child-published-13-independent-restore.yml'
+permissions:
+  contents: read
+concurrency:
+  group: canopyproof-child-exact-13-independent-restore
+  cancel-in-progress: false
+jobs:
+  rehearsal:
+    if: github.repository == 'Dropineth/dropin' && github.event_name == 'push' && github.ref == 'refs/heads/codex/child-closed-candidate-offline' && github.event.before == '07145a61e9d952a48b09a26dc3952ebc6ff8fb28' && github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: harness
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: ci/child-published-13-independent-restore
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: baseline12
+          ref: dbb6d991bc5d34bbed7946c6b548d904c4a4e9b0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: rollback12
+          ref: 1d2efaa5258b70ed9f815af0ebf7109443734e59
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: candidate13
+          ref: 139cb988a25499dc5f60d6140237d31b02260a83
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.23.5
+      - name: Validate the release receipts and harness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/child-registry-proof"
+          mkdir -m 700 "$work"
+          api=repos/Dropineth/dropin/actions
+          gh api "$api/runs/43691879537" | jq -e '.status == "completed" and .conclusion == "success" and .head_sha == "07145a61e9d952a48b09a26dc3952ebc6ff8fb28" and .head_branch == "codex/child-closed-candidate-offline" and .run_attempt == 1' >/dev/null
+          gh api "$api/artifacts/14153021875/zip" > "$work/publish.zip"
+          gh api "$api/artifacts/14152064415/zip" > "$work/fresh.zip"
+          (cd "$work" && printf '%s\n' 'fca1597993c137ea99ab376b5eb7103b40a6954de8602c28eba30ce22465e744  publish.zip' '894667530dcf2da957c676501f69a9b2e61b0a51da1b9295323484a7d2192d9e  fresh.zip' | sha256sum -c)
+          unzip -p "$work/publish.zip" publication.json > "$work/publication.json"
+          unzip -p "$work/fresh.zip" fresh-pull.json > "$work/fresh-pull.json"
+          jq -e '.images.candidate.image == "ghcr.io/dropineth/canopyproof-child-backend@sha256:493164d43c0be006f314fd43a03ccb49c7f2ee6759a435a1f267e5777fde0e53"' "$work/publication.json" >/dev/null
+          test "$(git -C harness rev-parse HEAD)" = "$GITHUB_SHA"
+          node --test harness/ci/child-published-13-independent-restore/*.test.mjs
+      - name: Pull three immutable images with an ephemeral read-only registry session
+        env:
+          REGISTRY_READ_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          config="$(mktemp -d "$RUNNER_TEMP/child13-ghcr.XXXXXXXX")"
+          trap 'rm -rf -- "$config"' EXIT
+          d=(docker --host unix:///var/run/docker.sock --config "$config")
+          printf '%s' "$REGISTRY_READ_TOKEN" | "${d[@]}" login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          unset REGISTRY_READ_TOKEN
+          "${d[@]}" pull --platform=linux/amd64 ghcr.io/dropineth/canopyproof-child-backend@sha256:aa0b244e61dda9c7fe4c80c39d1eeee4ab32a3da6598cc33d225a745264a2b98
+          "${d[@]}" pull --platform=linux/amd64 ghcr.io/dropineth/canopyproof-child-backend@sha256:b9aedbde4cd8bad133acf4fac8b3c281104953ce146e0b49b6d51c747eb05580
+          "${d[@]}" pull --platform=linux/amd64 ghcr.io/dropineth/canopyproof-child-backend@sha256:493164d43c0be006f314fd43a03ccb49c7f2ee6759a435a1f267e5777fde0e53
+          "${d[@]}" logout ghcr.io
+      - name: Execute exact-image synthetic rehearsal with disposable PostgreSQL
+        run: |
+          set -euo pipefail
+          proof="$RUNNER_TEMP/child-registry-proof"
+          node harness/ci/child-published-13-independent-restore/rehearse.mjs \
+            "$GITHUB_WORKSPACE/baseline12" "$GITHUB_WORKSPACE/rollback12" "$GITHUB_WORKSPACE/candidate13" \
+            "$proof/publication.json" "$proof/fresh-pull.json" "$RUNNER_TEMP/child13-restore-result"
+      - name: Upload only sanitized receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: child13-independent-restore-${{ github.run_id }}
+          path: ${{ runner.temp }}/child13-restore-result/receipt.json
+          if-no-files-found: warn
+          retention-days: 7
