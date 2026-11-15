@@ -92,14 +92,14 @@ async function freshPull(input,output){
   assert.ok(image.RepoDigests.includes(item.image));verifyImageEvidence(await imageEvidence(item.image),item);
   const plan=JSON.parse(await docker(['run','--rm',...secure,item.image,'node','/app/migrate.mjs','--plan']));
   assert.equal(plan.mode,'plan-only');assert.equal(plan.createsRoles,false);assert.equal(plan.grantsAuthority,false);assert.deepEqual(plan.migrations,item.migrations);
-  const name=`child-closed-${randomUUID()}`;let exitCode=null,removed=false;
+  const name=`child-closed-${randomUUID()}`;let exitCode;
   try{
    await docker(['run','--detach','--name',name,...secure,item.image]);
    const probe=`const a=require('node:assert/strict');(async()=>{let r;for(let i=0;i<50;i++){try{r=await fetch('http://127.0.0.1:10000/health/live');break}catch{await new Promise(r=>setTimeout(r,50))}}a.equal(r?.status,200);const b=await r.json();a.equal(b.sourceSha,process.argv[1]);a.equal(b.syntheticOnly,true);a.equal(b.realCapabilities,false);a.equal(process.version,'v22.23.5');a.notEqual(process.getuid(),0);a.equal((await fetch('http://127.0.0.1:10000/health/ready')).status,503);a.equal((await fetch('http://127.0.0.1:10000/canopyproof/child-stewardship/v1/guardian/sessions',{method:'POST',body:'fixed synthetic input'})).status,503)})().catch(()=>process.exit(1));`;
    await docker(['exec',name,'node','-e',probe,item.sourceSha]);
    await docker(['stop','--time','25',name]);exitCode=JSON.parse(await docker(['inspect',name]))[0].State.ExitCode;assert.equal(exitCode,0);
-  }finally{await docker(['rm','--force',name]);removed=true;}
-  checks[role]={image:item.image,imageId:image.Id,sourceSha:item.sourceSha,manifestAndBundleHashesVerified:true,migrationFiles:plan.migrations.length,registryPull:'PASS',closedProbe:'PASS',readinessStatus:503,guardianSessionStatus:503,exitCode,containerRemoved:removed};
+  }finally{await docker(['rm','--force',name]);}
+  checks[role]={image:item.image,imageId:image.Id,sourceSha:item.sourceSha,manifestAndBundleHashesVerified:true,migrationFiles:plan.migrations.length,registryPull:'PASS',closedProbe:'PASS',readinessStatus:503,guardianSessionStatus:503,exitCode,containerRemoved:true};
  }
  const result={kind:'CanopyProofFreshPullClosedProbe/1',...ctx,publicationSha256:hash(bytes),completedAt:new Date().toISOString(),status:'PASS',scope:'registry-availability-and-isolated-closed-runtime',checks,productionDeployed:false,productionReady:false,realEnrollment:false,privateLinkAcceptance:'NOT_RUN',databaseRestoreAcceptance:'NOT_RUN',realAuthorityAcceptance:'NOT_RUN',poccExternalFinality:'NOT_RUN'};
  await writeFile(resolve(output,'fresh-pull.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));
