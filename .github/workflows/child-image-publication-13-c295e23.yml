@@ -1,0 +1,145 @@
+name: Publish and re-pull the pinned closed 13-migration child-backend image
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/child-image-publication-13-c295e23.yml'
+      - 'dropin-earth/scripts/child-image-publication-13-c295e23.mjs'
+      - 'dropin-earth/tests/unit/child-image-publication-13-c295e23.test.mjs'
+  push:
+    branches: [release/child-image-13-c295e23]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: child-image-publication-13-c295e23
+  cancel-in-progress: false
+
+jobs:
+  verify-only:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.5
+      - run: |
+          node --check dropin-earth/scripts/child-image-publication-13-c295e23.mjs
+          node --test dropin-earth/tests/unit/child-image-publication-13-c295e23.test.mjs
+  publish:
+    if: github.event_name == 'push' && github.repository == 'Dropineth/dropin' && github.ref == 'refs/heads/release/child-image-13-c295e23' && github.run_attempt == 1 && github.event.created == true && github.event.before == '0000000000000000000000000000000000000000'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: control
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: c295e23549c85d73625937073a1311f109972570
+          path: sources/candidate
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.5
+      - name: Verify publication control source
+        run: |
+          test "$(git -C control rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C control status --porcelain)"
+          node --test control/dropin-earth/tests/unit/child-image-publication-13-c295e23.test.mjs
+      - name: Verify pinned main gate, native PostgreSQL and immutable tree
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(git -C sources/candidate rev-parse HEAD)" = c295e23549c85d73625937073a1311f109972570
+          test "$(git -C sources/candidate rev-parse 'HEAD^{tree}')" = 01d773e2a7693f88e58125050146a544a4300481
+          gh api repos/Dropineth/dropin/actions/runs/43721069769 > "$RUNNER_TEMP/child13-gate.json"
+          gh api repos/Dropineth/dropin/actions/jobs/132832959741 > "$RUNNER_TEMP/child13-native.json"
+          node --input-type=module - "$RUNNER_TEMP/child13-gate.json" "$RUNNER_TEMP/child13-native.json" <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          import {SOURCES, VERIFIED_GATE_RUN, VERIFIED_GATE_JOB} from './control/dropin-earth/scripts/child-image-publication-13-c295e23.mjs';
+          const [run, job] = process.argv.slice(2).map(path => JSON.parse(readFileSync(path,'utf8')));
+          assert.equal(String(run.id), VERIFIED_GATE_RUN);
+          assert.equal(run.name, 'CanopyProof Trust Gate');
+          assert.equal(run.repository.full_name.toLowerCase(), 'dropineth/dropin');
+          assert.equal(run.event, 'push');
+          assert.equal(run.head_branch, 'main');
+          assert.equal(run.head_sha, SOURCES.candidate);
+          assert.equal(run.status, 'completed');
+          assert.equal(run.conclusion, 'success');
+          assert.equal(String(job.id), VERIFIED_GATE_JOB);
+          assert.equal(String(job.run_id), VERIFIED_GATE_RUN);
+          assert.equal(job.head_sha, SOURCES.candidate);
+          assert.equal(job.conclusion, 'success');
+          assert.ok(job.steps.some(step => step.name === 'Verify native PostgreSQL authority paths' && step.conclusion === 'success'));
+          NODE
+      - name: Authenticate package publication
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Publish exact closed candidate image and preserve manifest digests
+        run: node control/dropin-earth/scripts/child-image-publication-13-c295e23.mjs publish sources publication
+      - name: Logout package session
+        if: always()
+        run: docker logout ghcr.io
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: child-image-publication-${{ github.run_id }}
+          path: publication/
+          if-no-files-found: error
+          retention-days: 30
+
+  fresh-pull:
+    if: github.event_name == 'push' && github.repository == 'Dropineth/dropin' && github.ref == 'refs/heads/release/child-image-13-c295e23' && github.run_attempt == 1 && github.event.created == true && github.event.before == '0000000000000000000000000000000000000000'
+    needs: publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: control
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.5
+      - name: Verify fresh-runner control source
+        run: |
+          test "$(git -C control rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C control status --porcelain)"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: child-image-publication-${{ github.run_id }}
+          path: publication
+      - name: Authenticate read-only package pull
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Pull the exact candidate registry digest on a fresh runner and prove closed runtime
+        run: node control/dropin-earth/scripts/child-image-publication-13-c295e23.mjs fresh-pull publication/publication.json verification
+      - name: Logout package session
+        if: always()
+        run: docker logout ghcr.io
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: child-image-fresh-pull-${{ github.run_id }}
+          path: verification/
+          if-no-files-found: error
+          retention-days: 30
