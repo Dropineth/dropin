@@ -11,7 +11,7 @@ import {pathToFileURL} from 'node:url';
 import {promisify} from 'node:util';
 const exec=promisify(execFile);
 export const SOURCE_TREE='b21c6879460663eb391e94d281cbcb0b042c1dfb';
-const OCI_SOURCE='0e3d33b36beac4502488b18a0707c17fd34062e5';
+const OCI_SOURCE='dbb6d991bc5d34bbed7946c6b548d904c4a4e9b0';
 const DATABASE='rehearsal_session_test';
 const fail=()=>{throw new Error('SYNTHETIC_SESSION_FIXTURE_FAILED');};
 const check=value=>{if(!value)fail();};

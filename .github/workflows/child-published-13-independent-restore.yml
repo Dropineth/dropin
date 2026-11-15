@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   rehearsal:
-    if: github.repository == 'Dropineth/dropin' && github.event_name == 'push' && github.ref == 'refs/heads/codex/child-closed-candidate-offline' && github.event.before == '07145a61e9d952a48b09a26dc3952ebc6ff8fb28' && github.run_attempt == 1
+    if: github.repository == 'Dropineth/dropin' && github.event_name == 'push' && github.ref == 'refs/heads/codex/child-closed-candidate-offline' && github.event.before == 'a65ba820f7593a70c76a3857189588462656d502' && github.run_attempt == 1
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:

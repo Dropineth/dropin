@@ -32,3 +32,12 @@ test('unexecuted receipt makes no readiness, authority or deployment claims',()=
   assert.ok(Object.values(r.stages).every(x=>x.status==='NOT_RUN'));assert.equal(r.productionEnrollment.status,'NOT_RUN');
   assert.equal(r.productionFinality.status,'NOT_RUN');assert.equal(r.productionReady,false);
 });
+test('session probe and persisted synthetic fixture use only the published rehearsal identities',async()=>{
+  const {expectedSource}=await import('./oci-view-probe.mjs');
+  const {readFileSync}=await import('node:fs');
+  assert.equal(expectedSource(PIN.candidate),PIN.candidate);
+  assert.equal(expectedSource(PIN.rollback),PIN.rollback);
+  for(const value of ['0e3d33b36beac4502488b18a0707c17fd34062e5','main','0'.repeat(40)])assert.throws(()=>expectedSource(value));
+  const fixture=readFileSync(new URL('./prepare-session.mjs',import.meta.url),'utf8');
+  assert.ok(fixture.includes("const OCI_SOURCE='"+PIN.candidate+"';"));
+});
