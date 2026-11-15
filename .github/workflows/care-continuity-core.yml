@@ -1,0 +1,24 @@
+name: Care Continuity Core
+on:
+  pull_request:
+    paths:
+      - 'dropin-earth/integrations/care-continuity-v2/**'
+      - '.github/workflows/care-continuity-core.yml'
+  push:
+    paths:
+      - 'dropin-earth/integrations/care-continuity-v2/**'
+      - '.github/workflows/care-continuity-core.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - run: node --check dropin-earth/integrations/care-continuity-v2/src/domain.mjs
+      - run: node --check dropin-earth/integrations/care-continuity-v2/src/ledger.mjs
+      - run: node --test dropin-earth/integrations/care-continuity-v2/tests/contract.test.mjs
