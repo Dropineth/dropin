@@ -14,6 +14,24 @@ test('prefers the existing official HTTPS archive, preserves all endpoints and i
   assert.equal(preferUbuntuArchive(preferred, sources, os), preferred);
 });
 
+test('preserves an existing official EC2 primary while preferring HTTPS archive with unchanged sources and trust', () => {
+  for (const endpoint of ['http://us-east-1.ec2.archive.ubuntu.com/ubuntu/', 'http://eu-west-2.ec2.archive.ubuntu.com/ubuntu']) {
+    const before = mirrors.replace('http://azure.archive.ubuntu.com/ubuntu/', endpoint);
+    const after = preferred.replace('http://azure.archive.ubuntu.com/ubuntu/', endpoint);
+    assert.equal(preferUbuntuArchive(before, sources, os), after);
+    assert.equal(preferUbuntuArchive(after, sources, os), after);
+    let current = before; let writes = 0;
+    prepareHostedMirror({
+      env: {GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted'},
+      read: path => path.endsWith('apt-mirrors.txt') ? current : path.endsWith('ubuntu.sources') ? sources : os,
+      run: (command, args, options) => {assert.equal(command,'sudo');assert.deepEqual(args,['-n','tee','/etc/apt/apt-mirrors.txt']);current=options.input;writes++;return {status:0};},
+      log: () => {},
+    });
+    assert.equal(current,after);assert.equal(writes,1);
+    prepareRejectedWithoutWrites(before.replace('priority:1','priority:0'));
+  }
+});
+
 test('refuses unknown OS, source routing, duplicate mirrors, priorities and extra endpoints', () => {
   for (const [list, source, release] of [
     [mirrors, sources, 'ID=debian\nVERSION_ID="13"\n'],
@@ -76,13 +94,14 @@ test('both acceptance workflows keep the complete installer within the existing 
 
 test('unsupported hosted endpoint variants get fixed labels but never become trusted mirrors', () => {
   const variants = [
-    ['http://us-east-1.ec2.archive.ubuntu.com/ubuntu/', 'ubuntu-ec2-http'],
     ['https://eu-west-2.ec2.archive.ubuntu.com/ubuntu', 'ubuntu-ec2-https'],
     ['https://azure.archive.ubuntu.com/ubuntu/', 'azure-https'],
     ['http://azure.archive.ubuntu.com/ubuntu', 'azure-http-no-slash'],
     ['http://us-east-1.ec2.archive.ubuntu.com.evil.invalid/ubuntu/', 'unknown'],
     ['http://do-not-log@us-east-1.ec2.archive.ubuntu.com/ubuntu/', 'unknown'],
     ['http://us-east-1.ec2.archive.ubuntu.com/ubuntu/?token=do-not-log', 'unknown'],
+    ['http://us-east-1.ec2.archive.ubuntu.com:80/ubuntu/', 'unknown'],
+    ['http://us-east-1.ec2.archive.ubuntu.com/other/', 'unknown'],
   ];
   for (const [endpoint, label] of variants) {
     const list = mirrors.replace('http://azure.archive.ubuntu.com/ubuntu/', endpoint!);
