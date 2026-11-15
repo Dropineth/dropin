@@ -13,6 +13,8 @@ const security = 'https://security.ubuntu.com/ubuntu/';
 // The hosted image already provides these three Ubuntu mirrors with signature
 // verification. Change only their priority, never suites, keys or APT trust.
 // https://github.com/actions/runner-images/blob/main/images/ubuntu/scripts/build/configure-apt-sources.sh
+// Cloud-init uses <region>.ec2.archive.ubuntu.com on EC2 images:
+// https://github.com/canonical/cloud-init/blob/main/doc/examples/cloud-config-apt.txt
 export function preferUbuntuArchive(mirrors, sources, osRelease) {
   if (!/^ID=ubuntu$/m.test(osRelease) || !/^VERSION_ID="24\.04"$/m.test(osRelease)) {
     throw new Error('Expected the pinned Ubuntu 24.04 hosted runner');
@@ -24,8 +26,12 @@ export function preferUbuntuArchive(mirrors, sources, osRelease) {
   if (lines.length !== 3 || lines.some((line) => line.length !== 2)) {
     throw new Error('Unexpected hosted Ubuntu mirror list');
   }
-  const expected = new Map([[azure, 'priority:1'], [archive, 'priority:2'], [security, 'priority:3']]);
-  const alreadyPreferred = new Map([[azure, 'priority:2'], [archive, 'priority:1'], [security, 'priority:3']]);
+  // Preserve an existing official regional EC2 mirror, as well as the Azure
+  // image default. This accepts no alternate scheme, host suffix, credentials,
+  // port, query or path. HTTPS archive/security still become first/third.
+  const primary = lines.find(([url]) => /^http:\/\/[a-z]{2}(?:-[a-z]+)+-\d\.ec2\.archive\.ubuntu\.com\/ubuntu\/?$/.test(url))?.[0] ?? azure;
+  const expected = new Map([[primary, 'priority:1'], [archive, 'priority:2'], [security, 'priority:3']]);
+  const alreadyPreferred = new Map([[primary, 'priority:2'], [archive, 'priority:1'], [security, 'priority:3']]);
   const matches = (entries) => new Set(lines.map(([url]) => url)).size === 3
     && lines.every(([url, priority]) => entries.get(url) === priority);
   if (matches(alreadyPreferred)) return mirrors;
@@ -34,7 +40,7 @@ export function preferUbuntuArchive(mirrors, sources, osRelease) {
     // numeric priorities so a changed hosted image can be diagnosed without
     // logging arbitrary URLs, query parameters or file contents.
     const names = new Map([[azure, 'azure'], [archive, 'archive'], [security, 'security']]);
-    // Fixed diagnostic labels are not an allowlist: these variants still throw.
+    // Fixed diagnostic labels do not admit a malformed mirror list.
     const describe = (url) => names.get(url)
       ?? (/^http:\/\/[a-z]{2}(?:-[a-z]+)+-\d\.ec2\.archive\.ubuntu\.com\/ubuntu\/?$/.test(url) ? 'ubuntu-ec2-http' : undefined)
       ?? (/^https:\/\/[a-z]{2}(?:-[a-z]+)+-\d\.ec2\.archive\.ubuntu\.com\/ubuntu\/?$/.test(url) ? 'ubuntu-ec2-https' : undefined)
@@ -61,7 +67,7 @@ export function prepareHostedMirror({ env, read, run, log }) {
   if (read(mirrorPath, 'utf8') !== after || read(sourcePath, 'utf8') !== sources) {
     throw new Error('Ubuntu mirror/source read-back mismatch');
   }
-  log('CI Ubuntu mirror priority: archive HTTPS first, Azure second, security HTTPS third; sources and signing keys unchanged.');
+  log('CI Ubuntu mirror priority: archive HTTPS first, existing cloud mirror second, security HTTPS third; sources and signing keys unchanged.');
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
