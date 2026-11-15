@@ -1,0 +1,100 @@
+name: Publish and re-pull closed child-backend images
+
+on:
+  push:
+    branches: [release/child-images-20261115]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: child-image-publication-20261115
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'Dropineth/dropin' && github.ref == 'refs/heads/release/child-images-20261115' && github.run_attempt == 1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: control
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: dbb6d991bc5d34bbed7946c6b548d904c4a4e9b0
+          path: sources/candidate
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: 1d2efaa5258b70ed9f815af0ebf7109443734e59
+          path: sources/rollback
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.5
+      - name: Verify publication control source
+        run: |
+          test "$(git -C control rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C control status --porcelain)"
+          node --test control/dropin-earth/tests/unit/child-image-publication.test.mjs
+      - name: Authenticate package publication
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Publish exact closed images and preserve manifest digests
+        run: node control/dropin-earth/scripts/child-image-publication.mjs publish sources publication
+      - name: Logout package session
+        if: always()
+        run: docker logout ghcr.io
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: child-image-publication-${{ github.run_id }}
+          path: publication/
+          if-no-files-found: error
+          retention-days: 30
+
+  fresh-pull:
+    needs: publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          path: control
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.23.5
+      - name: Verify fresh-runner control source
+        run: |
+          test "$(git -C control rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C control status --porcelain)"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: child-image-publication-${{ github.run_id }}
+          path: publication
+      - name: Authenticate read-only package pull
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Pull each registry digest on a fresh runner and prove closed runtime
+        run: node control/dropin-earth/scripts/child-image-publication.mjs fresh-pull publication/publication.json verification
+      - name: Logout package session
+        if: always()
+        run: docker logout ghcr.io
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: child-image-fresh-pull-${{ github.run_id }}
+          path: verification/
+          if-no-files-found: error
+          retention-days: 30
