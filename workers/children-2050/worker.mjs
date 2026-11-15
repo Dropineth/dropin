@@ -1,6 +1,8 @@
 import { renderPage, pageCss } from './page.mjs';
+import { networkReadiness } from './network.mjs';
+import { renderNetworkPage } from './network-page.mjs';
 export const ORIGIN = 'https://children.canopyproof.org';
-export const RELEASE = 'children-2050-2026-11-15-v1';
+export const RELEASE = 'children-global-network-v1';
 export const securityHeaders = Object.freeze({
   'cache-control': 'private, no-store, max-age=0',
   'referrer-policy': 'no-referrer',
@@ -36,6 +38,10 @@ export default {
       return json({error:'SERVICE_NOT_CONNECTED',accepted:false,persisted:false,accountCreated:false},503);
     }
     if (!['GET','HEAD'].includes(request.method)) return reply('Method not allowed',405,undefined,request.method,{'allow':'GET, HEAD'});
+    if (url.pathname === '/api/network/status') return json(networkReadiness());
+    // Access permits editorial reading only. No caller-supplied child/tenant IDs
+    // reach a read-model adapter. Account-specific reads require a future binding.
+    if (url.pathname === '/api/network/home') return json({error:'ACCOUNT_AUTHORITY_NOT_CONNECTED',accepted:false},503);
     if (url.pathname === '/assets/children2050.css') return reply(pageCss,200,'text/css; charset=utf-8',request.method);
     let path=url.pathname; const zh=!(path==='/en'||path.startsWith('/en/'));
     if (!zh) path=path.slice(3)||'/';
@@ -43,6 +49,6 @@ export default {
     if (['/children','/child-accounts'].includes(path)) path='/';
     if (path==='/stewardship') path='/learn';
     if(!pages.has(path)) return reply('Not found',404,undefined,request.method);
-    return reply(renderPage(zh,path),200,'text/html; charset=utf-8',request.method);
+    return reply(path==='/network'?renderNetworkPage(zh):renderPage(zh,path),200,'text/html; charset=utf-8',request.method);
   }
 };
