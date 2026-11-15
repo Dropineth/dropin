@@ -78,7 +78,7 @@ export function transition(state, command, principal, grant, now, ctx) {
   if(state.tenantId!==principal.tenantId) fail('NOT_FOUND',404);
   if(command.expectedRevision!==state.revision) fail('REVISION_CONFLICT',409);
   if(!Number.isSafeInteger(now)||now<state.updatedAt) fail('CLOCK_ROLLBACK',409);
-  const p=command.payload, next=structuredClone(state), actor=principal.actorId;
+  const p=command.payload, next=globalThis.structuredClone(state), actor=principal.actorId;
   const stages=(allowed)=>{if(!allowed.includes(state.stage))fail('INVALID_TRANSITION',409);};
   const assigned=()=>{if(state.assignedTo!==actor)fail('NOT_ASSIGNED',403);};
   switch(command.type) {
@@ -99,13 +99,14 @@ export function transition(state, command, principal, grant, now, ctx) {
       stages(['ASSIGNED','ACCEPTED','BLOCKED']);if(state.handoffTo!==actor)fail('NOT_HANDOFF_TARGET',403);
       if(grant.onDuty!==true)fail('RESPONDER_OFF_DUTY',409);
       next.assignedTo=actor;next.handoffTo=null;next.blockReason=null;next.stage='ACCEPTED';break;
-    case 'RECORD_ACTION':
+    case 'RECORD_ACTION': {
       stages(['ACCEPTED','BLOCKED']);assigned();if(grant.onDuty!==true)fail('RESPONDER_OFF_DUTY',409);
       const actionEvidence=evidence(ctx,p.evidenceId,state,now,actor);
       next.actionEvidenceDigest=actionEvidence.sourceDigest;
       next.actionOutcome=choice(p.outcome,['restored','partial','not_restored']);
       next.actionBy=actor;next.actionOrg=grant.organizationId;next.actionAt=now;next.actionEvidence=p.evidenceId;
       next.reviewBy=null;next.reviewOutcome=null;next.reviewEvidence=null;next.reviewEvidenceDigest=null;next.stage='ACTION_RECORDED';next.handoffTo=null;break;
+    }
     case 'REVIEW': {
       stages(['ACTION_RECORDED']);
       if(actor===state.actionBy||grant.organizationId===state.actionOrg)fail('INDEPENDENT_REVIEW_REQUIRED',403);

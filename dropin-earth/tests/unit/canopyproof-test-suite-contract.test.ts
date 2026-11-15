@@ -17,6 +17,7 @@ const CHILD_IMAGE_PUBLICATION_TESTS = [
   "tests/unit/child-image-publication.test.mjs",
   "tests/unit/child-image-publication-13.test.mjs",
 ];
+const CARE_CONTINUITY_TEST = "integrations/care-continuity-v2/tests/contract.test.mjs";
 const PACKAGE_JSON = join(ROOT, "package.json");
 const ROOT_WORKFLOW = join(ROOT, "..", ".github", "workflows", "canopyproof-ci.yml");
 const CHILD_DO_ROOT = "integrations/cai/cloudflare-synthetic";
@@ -125,9 +126,8 @@ test("root unit and workflow-contract tests are owned by npm run test", () => {
   );
 
   assert.match(unitScript, /tests\/unit\/\*\.test\.ts/);
-  const inventory = listFiles(join(ROOT, "tests", "unit"));
-  for (const receiptTest of CHILD_IMAGE_PUBLICATION_TESTS) {
-    assert.ok(inventory.includes(receiptTest), `${receiptTest} must remain present`);
+  for (const receiptTest of [...CHILD_IMAGE_PUBLICATION_TESTS, CARE_CONTINUITY_TEST]) {
+    assert.ok(existsSync(join(ROOT, receiptTest)), `${receiptTest} must remain present`);
     for (const script of ["test", "test:coverage", "test:coverage:ratchet"]) {
       assert.equal(
         requireScript(manifest, script).split(/\s+/).filter((arg) => arg === receiptTest).length,
@@ -315,6 +315,7 @@ test("no first-party test file is outside a declared suite family", () => {
       path === "integrations/fiftyone/tests/test_canopyproof_client.py" ||
       path === "contracts/solana/tests/dropin-anchor.spec.ts" ||
       CHILD_IMAGE_PUBLICATION_TESTS.includes(path) ||
+      path === CARE_CONTINUITY_TEST ||
       CHILD_DO_TESTS.includes(path),
   );
 
