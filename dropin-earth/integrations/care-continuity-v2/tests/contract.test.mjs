@@ -69,6 +69,6 @@ test('synthetic receipt verification detects tampering; no real multisig is clai
  const key=createSyntheticKey(),s=scenario().state();
  const r=makeReceipt({ticketId:s.id,tenantId:TENANT,revision:1,actorId:'synthetic-reporter',role:'reporter',type:'RECEIVE',grantVersion:1,at:AT,nonce:'contract_receipt',commandDigest:digest({source:'fixture'}),stateDigest:digest(s),previousHash:'0'.repeat(64)},key.privateKey);
  assert.ok(verifyReceipt(r,key.publicKey));assert.equal(verifyChain([r],key.publicKey).externalAnchorVerified,false);assert.equal(r.event.externalEffect,'NONE');
- const bad=structuredClone(r);bad.event.chainRankDelta=-1;assert.equal(verifyReceipt(bad,key.publicKey),false);
+ const bad=globalThis.structuredClone(r);bad.event.chainRankDelta=-1;assert.equal(verifyReceipt(bad,key.publicKey),false);
  assert.equal(canonical({b:2,a:1}),canonical({a:1,b:2}));
 });

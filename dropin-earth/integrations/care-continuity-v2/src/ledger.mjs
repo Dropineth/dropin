@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import {createHash,generateKeyPairSync,sign,verify,createPrivateKey,createPublicKey} from 'node:crypto';
 import {canonical, AHIN_ACTIONS, CareError} from './domain.mjs';
 export const digest = data => createHash('sha256').update(typeof data==='string'?data:canonical(data)).digest('hex');
