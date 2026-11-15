@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {backendConfig} from './config.js';
 import {backendPool,backendSql,backendLog} from './database.js';
 import {loadChildMigrations} from './migrations.js';
+import {attestClosedStartup} from './closed-startup-attestation.js';
 import {createChildBackend} from './app.js';
 
 async function main(){
@@ -11,6 +12,12 @@ async function main(){
   const manifest=JSON.parse(await readFile(new URL('./build.json',import.meta.url),'utf8')) as {sourceSha:string};
   if(!/^[a-f0-9]{40}$/.test(manifest.sourceSha))throw new Error('BUILD_PROVENANCE_REQUIRED');
   const migrations=await loadChildMigrations(new URL('./migrations/',import.meta.url));
+  if(config.closedDbAttestation){
+    const attestor=backendPool(config);
+    try {await attestClosedStartup(attestor,config.closedDbAttestation,migrations);}
+    finally {await attestor.end();}
+    config.databaseUrl=undefined;
+  }
   const pool=config.mode==='synthetic-demo' && config.databaseUrl ? backendPool(config) : null;
   const backend=createChildBackend({config,migrations,sourceSha:manifest.sourceSha,...(pool?{client:backendSql(pool)}:{})});
   const server=serve({fetch:backend.app.fetch,hostname:'0.0.0.0',port:config.port});
