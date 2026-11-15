@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {generateKeyPairSync,randomUUID,sign} from 'node:crypto';
 import test from 'node:test';
+import {attestClosedStartup} from '../../services/api/src/child-backend/closed-startup-attestation.js';
 import {backendConfig} from '../../services/api/src/child-backend/config.js';
 import {backendLog} from '../../services/api/src/child-backend/database.js';
 import {createChildBackend} from '../../services/api/src/child-backend/app.js';
@@ -101,6 +102,12 @@ test('real bundled producer starts closed, serves safe health, plans migrations 
  assert.equal(parsed.createsRoles,false);
  await assert.rejects(run(process.execPath,['dist/child-backend/migrate.mjs','--apply-synthetic'],{env:{PATH:process.env.PATH},timeout:5000}));
  const reservation=createServer();await new Promise<void>(resolve=>reservation.listen(0,'127.0.0.1',resolve));const address=reservation.address();assert.ok(address&&typeof address==='object');const port=address.port;await new Promise<void>(resolve=>reservation.close(()=>resolve()));
+ await assert.rejects(run(process.execPath,['dist/child-backend/server.mjs'],{timeout:7000,env:{
+  PATH:process.env.PATH,PORT:String(port),CHILD_CLOSED_DB_ATTESTATION:'1',
+  CHILD_DATABASE_URL:`postgresql://attestor:fixture@127.0.0.1:${port}/test_db`,
+  CHILD_CLOSED_DB_EXPECTED_DATABASE:'test_db',CHILD_CLOSED_DB_EXPECTED_ROLE:'attestor',
+ }}),error=>typeof error==='object' && error!==null && 'code' in error && error.code===1 &&
+  'stderr' in error && typeof error.stderr==='string' && error.stderr.trim()==='{"service":"canopyproof-child-backend","signal":"startup_failed"}');
  const child=spawn(process.execPath,['dist/child-backend/server.mjs'],{env:{PATH:process.env.PATH,PORT:String(port)},stdio:['ignore','pipe','pipe']});
  const exited=new Promise<number|null>((resolve,reject)=>{child.once('exit',resolve);child.once('error',reject);});let logs='';child.stdout.on('data',chunk=>{logs+=String(chunk);});child.stderr.on('data',chunk=>{logs+=String(chunk);});
  try{
@@ -111,4 +118,26 @@ test('real bundled producer starts closed, serves safe health, plans migrations 
   const denied=await fetch(`http://127.0.0.1:${port}/canopyproof/child-stewardship/v1/guardian/sessions`,{method:'POST',body:'sensitive-request'});assert.equal(denied.status,503);assert.equal(logs.includes('sensitive-request'),false);
  }finally{child.kill('SIGTERM');}
  assert.equal(await exited,0);
+});
+
+test('closed startup attestation checks effective journal privileges before reading migration rows',async()=>{
+ const migrations=Array.from({length:13},(_,i)=>({name:`fixture-${i}`,digest:String(i).padStart(64,'0'),sql:'fixture'}));
+ const meta={db:'test_db',actor:'attestor',login:'attestor',tls:true,read_only:true,restricted:true,separate_owner:true};
+ for(const journalReadOnly of [true,false]){
+  const calls:string[]=[];
+  const pool={connect:async()=>({
+   query:async(sql:string)=>{
+    calls.push(sql);
+    if(sql.includes('pg_stat_ssl'))return{rows:[meta]};
+    if(sql.includes('has_table_privilege'))return{rows:[{can_read:true,journal_read_only:journalReadOnly}]};
+    if(sql.includes('ORDER BY ordinal'))return{rows:migrations.map((m,i)=>({...m,ordinal:i+1}))};
+    return{rows:[]};
+   },
+   release:(destroy:boolean)=>{assert.equal(destroy,true);calls.push('release');},
+  })} as unknown as Parameters<typeof attestClosedStartup>[0];
+  const checked=attestClosedStartup(pool,{database:'test_db',role:'attestor'},migrations);
+  if(journalReadOnly)await checked;else await assert.rejects(checked,/CLOSED_STARTUP_DB_UNVERIFIED/);
+  assert.equal(calls.some(sql=>sql.includes('ORDER BY ordinal')),journalReadOnly);
+  assert.deepEqual(calls.slice(-2),['ROLLBACK','release']);
+ }
 });

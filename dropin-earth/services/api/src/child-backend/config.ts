@@ -5,6 +5,7 @@ export type BackendConfig = {
   databaseUrl: string | undefined; databaseTls: 'verify-full' | 'local-test';
   authorityUrl: string | undefined; authorityPublicKey: string | undefined;
   authorityAudience: string;
+  closedDbAttestation?: {database:string;role:string};
 };
 const invalid = (): never => { throw new Error('CHILD_BACKEND_CONFIGURATION_INVALID'); };
 function https(value: string): URL {
@@ -40,6 +41,16 @@ export function backendConfig(env: NodeJS.ProcessEnv): BackendConfig {
   }
   const authorityAudience = env.CHILD_CURRENT_AUTHORITY_AUDIENCE ?? 'canopyproof:synthetic:child-backend';
   if(!/^[a-zA-Z0-9:_-]{8,160}$/.test(authorityAudience)) return invalid();
+  const attest = env.CHILD_CLOSED_DB_ATTESTATION;
+  const database = env.CHILD_CLOSED_DB_EXPECTED_DATABASE;
+  const role = env.CHILD_CLOSED_DB_EXPECTED_ROLE;
+  let closedDbAttestation: BackendConfig['closedDbAttestation'];
+  if(attest === '1'){
+    if(mode !== 'disabled' || databaseTls !== 'verify-full' || !databaseUrl || authorityUrl || authorityPublicKey ||
+      env.CHILD_CURRENT_AUTHORITY_AUDIENCE !== undefined || env.NODE_TLS_REJECT_UNAUTHORIZED === '0' ||
+      !database || !role || !/^[a-z][a-z0-9_]{0,62}$/.test(database) || !/^[a-z][a-z0-9_]{0,62}$/.test(role)) return invalid();
+    closedDbAttestation={database,role};
+  } else if(attest !== undefined || database !== undefined || role !== undefined) return invalid();
   // Incomplete wiring may boot CLOSED for readiness inspection; never invent a root.
-  return {mode,port,origin,databaseUrl,databaseTls,authorityUrl,authorityPublicKey,authorityAudience};
+  return {mode,port,origin,databaseUrl,databaseTls,authorityUrl,authorityPublicKey,authorityAudience,...(closedDbAttestation?{closedDbAttestation}:{})};
 }
