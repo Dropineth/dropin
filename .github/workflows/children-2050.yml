@@ -1,0 +1,24 @@
+name: Children 2050 Protected Guide
+on:
+  pull_request:
+    paths:
+      - 'workers/children-2050/**'
+      - '.github/workflows/children-2050.yml'
+  push:
+    paths:
+      - 'workers/children-2050/**'
+      - '.github/workflows/children-2050.yml'
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - run: node --check workers/children-2050/page.mjs
+      - run: node --check workers/children-2050/worker.mjs
+      - run: node --test workers/children-2050/worker.test.mjs
