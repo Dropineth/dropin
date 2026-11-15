@@ -13,7 +13,10 @@ interface PackageManifest {
 }
 
 const ROOT = process.cwd();
-const CHILD_IMAGE_PUBLICATION_TEST = "tests/unit/child-image-publication.test.mjs";
+const CHILD_IMAGE_PUBLICATION_TESTS = [
+  "tests/unit/child-image-publication.test.mjs",
+  "tests/unit/child-image-publication-13.test.mjs",
+];
 const PACKAGE_JSON = join(ROOT, "package.json");
 const ROOT_WORKFLOW = join(ROOT, "..", ".github", "workflows", "canopyproof-ci.yml");
 const CHILD_DO_ROOT = "integrations/cai/cloudflare-synthetic";
@@ -122,16 +125,16 @@ test("root unit and workflow-contract tests are owned by npm run test", () => {
   );
 
   assert.match(unitScript, /tests\/unit\/\*\.test\.ts/);
-  assert.ok(
-    listFiles(join(ROOT, "tests", "unit")).includes(CHILD_IMAGE_PUBLICATION_TEST),
-    "closed image publication receipt tests must remain present",
-  );
-  for (const script of ["test", "test:coverage", "test:coverage:ratchet"]) {
-    assert.equal(
-      requireScript(manifest, script).split(/\s+/).filter((arg) => arg === CHILD_IMAGE_PUBLICATION_TEST).length,
-      1,
-      `${script} must include the receipt test exactly once`,
-    );
+  const inventory = listFiles(join(ROOT, "tests", "unit"));
+  for (const receiptTest of CHILD_IMAGE_PUBLICATION_TESTS) {
+    assert.ok(inventory.includes(receiptTest), `${receiptTest} must remain present`);
+    for (const script of ["test", "test:coverage", "test:coverage:ratchet"]) {
+      assert.equal(
+        requireScript(manifest, script).split(/\s+/).filter((arg) => arg === receiptTest).length,
+        1,
+        `${script} must include ${receiptTest} exactly once`,
+      );
+    }
   }
   assert.ok(unitFiles.length > 0, "unit test directory must not be empty");
   assert.ok(workflowContracts.length > 0, "workflow contract tests must remain present");
@@ -311,7 +314,7 @@ test("no first-party test file is outside a declared suite family", () => {
       /^tests\/browser\/[^/]+\.spec\.ts$/.test(path) ||
       path === "integrations/fiftyone/tests/test_canopyproof_client.py" ||
       path === "contracts/solana/tests/dropin-anchor.spec.ts" ||
-      path === CHILD_IMAGE_PUBLICATION_TEST ||
+      CHILD_IMAGE_PUBLICATION_TESTS.includes(path) ||
       CHILD_DO_TESTS.includes(path),
   );
 
