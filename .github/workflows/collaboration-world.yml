@@ -1,0 +1,32 @@
+name: Collaboration World Contract
+on:
+  pull_request:
+    paths:
+      - 'dropin-earth/integrations/collaboration-world-v1/**'
+      - 'dropin-earth/docs/lifepp/TEN-SCALE-PRODUCTION-SCOPE.md'
+      - 'dropin-earth/package.json'
+      - '.github/workflows/collaboration-world.yml'
+  push:
+    paths:
+      - 'dropin-earth/integrations/collaboration-world-v1/**'
+      - 'dropin-earth/docs/lifepp/TEN-SCALE-PRODUCTION-SCOPE.md'
+      - 'dropin-earth/package.json'
+      - '.github/workflows/collaboration-world.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.5'
+      - run: node --check dropin-earth/integrations/collaboration-world-v1/src/world.mjs
+      - run: node --check dropin-earth/integrations/collaboration-world-v1/src/fixtures.mjs
+      - run: npm run test:collaboration-world
+        working-directory: dropin-earth

@@ -1,0 +1,76 @@
+{
+  "profile": "canopyproof.collaboration-world.production-scope.v1",
+  "kind": "requirements_manifest",
+  "releaseApproval": false,
+  "grantsAuthority": false,
+  "automaticDeployment": false,
+  "allProfilesRequire": [
+    "pinned_source_and_artifact",
+    "independent_implementation_review",
+    "current_authentication_and_object_authorization",
+    "bounded_resource_and_load_acceptance",
+    "revocation_and_replay_acceptance",
+    "independent_current_restore_authority",
+    "privacy_and_disclosure_review",
+    "approved_operating_domain",
+    "rollback_and_restore_drill",
+    "monitoring_and_incident_owner"
+  ],
+  "profiles": {
+    "world_read": [
+      "accepted_ahin_read_admission_contract",
+      "current_authenticated_source_and_history",
+      "ten_scale_membership_and_issue_projection",
+      "authorized_world_ui_and_accessibility"
+    ],
+    "physical_evidence": [
+      "authorized_real_capture_manifest",
+      "physical_entity_cai_mapping",
+      "capture_geometry_calibration_and_coordinates",
+      "separate_visual_and_geometry_acceptance",
+      "authorized_asset_delivery_and_revocation",
+      "real_observe_correct_review_acceptance_cycle"
+    ],
+    "child_participation": [
+      "verified_current_caregiver_or_legal_representation",
+      "age_appropriate_child_voice_and_optional_withdrawal",
+      "independent_safeguarding_and_complaints",
+      "local_data_and_operating_responsibility",
+      "private_account_recovery_and_deletion",
+      "benefit_and_basic_help_continuity"
+    ],
+    "robot_action": [
+      "current_command_authority_and_resource_reservation",
+      "robot_local_safety_controller",
+      "localization_and_collision_acceptance",
+      "bounded_offline_permission_and_safe_stop",
+      "real_field_operator_acceptance"
+    ],
+    "benefit_or_asset_execution": [
+      "action_specific_role_and_signer_policy",
+      "verified_entitlement_and_recipient",
+      "independent_control_domain_enrollment",
+      "actual_custody_and_settlement_adapter",
+      "atomic_local_consumption_and_external_idempotency",
+      "execution_receipt_and_failure_reconciliation"
+    ],
+    "federation": [
+      "explicit_domain_participation_agreements",
+      "versioned_cross_domain_trust_and_rule_mapping",
+      "data_residence_and_disclosure_controls",
+      "cross_domain_revocation_and_failure_acceptance",
+      "measured_replication_and_capacity"
+    ]
+  },
+  "independentAxes": [
+    "functional_scale",
+    "infrastructure_partition",
+    "physical_entity_and_coordinates",
+    "display_asset_and_lod",
+    "protocol_history",
+    "physical_capture_time",
+    "display_interpolation",
+    "evidence_class_and_deployment_readiness"
+  ],
+  "conceptualOnlyLevels": ["galaxy", "universe"]
+}
