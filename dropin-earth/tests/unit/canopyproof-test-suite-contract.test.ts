@@ -18,6 +18,7 @@ const CHILD_IMAGE_PUBLICATION_TESTS = [
   "tests/unit/child-image-publication-13.test.mjs",
 ];
 const CARE_CONTINUITY_TEST = "integrations/care-continuity-v2/tests/contract.test.mjs";
+const COLLABORATION_WORLD_TEST = "integrations/collaboration-world-v1/tests/world.test.mjs";
 const PACKAGE_JSON = join(ROOT, "package.json");
 const ROOT_WORKFLOW = join(ROOT, "..", ".github", "workflows", "canopyproof-ci.yml");
 const CHILD_DO_ROOT = "integrations/cai/cloudflare-synthetic";
@@ -126,7 +127,11 @@ test("root unit and workflow-contract tests are owned by npm run test", () => {
   );
 
   assert.match(unitScript, /tests\/unit\/\*\.test\.ts/);
-  for (const receiptTest of [...CHILD_IMAGE_PUBLICATION_TESTS, CARE_CONTINUITY_TEST]) {
+  for (const receiptTest of [
+    ...CHILD_IMAGE_PUBLICATION_TESTS,
+    CARE_CONTINUITY_TEST,
+    COLLABORATION_WORLD_TEST,
+  ]) {
     assert.ok(existsSync(join(ROOT, receiptTest)), `${receiptTest} must remain present`);
     for (const script of ["test", "test:coverage", "test:coverage:ratchet"]) {
       assert.equal(
@@ -136,6 +141,11 @@ test("root unit and workflow-contract tests are owned by npm run test", () => {
       );
     }
   }
+  assert.equal(
+    requireScript(manifest, "test:collaboration-world"),
+    `node --test ${COLLABORATION_WORLD_TEST}`,
+    "collaboration world suite must run its exact declared file",
+  );
   assert.ok(unitFiles.length > 0, "unit test directory must not be empty");
   assert.ok(workflowContracts.length > 0, "workflow contract tests must remain present");
 });
@@ -316,6 +326,7 @@ test("no first-party test file is outside a declared suite family", () => {
       path === "contracts/solana/tests/dropin-anchor.spec.ts" ||
       CHILD_IMAGE_PUBLICATION_TESTS.includes(path) ||
       path === CARE_CONTINUITY_TEST ||
+      path === COLLABORATION_WORLD_TEST ||
       CHILD_DO_TESTS.includes(path),
   );
 
